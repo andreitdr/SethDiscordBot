@@ -1,0 +1,22 @@
+﻿using Discord.Commands;
+using Discord.WebSocket;
+
+using PluginManager.Interfaces;
+
+internal class Echo : DBCommand
+{
+    public string Command => "echo";
+
+    public string Description => "Replay with the same message";
+
+    public string Usage => "echo [message]";
+
+    public bool canUseDM => true;
+    public bool canUseServer => true;
+
+    public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    {
+        string m = message.Content.Substring(6);
+        await message.Channel.SendMessageAsync(m);
+    }
+}
