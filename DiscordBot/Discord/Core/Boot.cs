@@ -46,13 +46,13 @@ namespace PluginManager.Core
         public async Task ShutDown()
         {
             if (client == null) return;
+            await client.LogoutAsync();
             await client.StopAsync();
         }
 
         private void CommonTasks()
         {
-            if (client == null)
-                return;
+            if (client == null) return;
             client.LoggedOut += Client_LoggedOut;
             client.Log += Log;
             client.LoggedIn += LoggedIn;

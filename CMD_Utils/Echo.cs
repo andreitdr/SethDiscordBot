@@ -14,6 +14,8 @@ internal class Echo : DBCommand
     public bool canUseDM => true;
     public bool canUseServer => true;
 
+    public bool requireAdmin => false;
+
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {
         string m = message.Content.Substring(6);

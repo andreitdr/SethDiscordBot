@@ -20,6 +20,8 @@ public class level : DBCommand
 
     public bool canUseServer => true;
 
+    public bool requireAdmin => false;
+
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {
 

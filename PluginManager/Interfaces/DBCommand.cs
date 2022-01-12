@@ -10,6 +10,7 @@
 
         bool canUseDM { get; }
         bool canUseServer { get; }
+        bool requireAdmin { get; }
 
         void Execute(Discord.Commands.SocketCommandContext context,
                      Discord.WebSocket.SocketMessage message,

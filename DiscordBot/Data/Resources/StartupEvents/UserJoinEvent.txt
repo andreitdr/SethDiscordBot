@@ -1,0 +1,13 @@
+Enabled=True
+Embed=True
+#Available placeholders:
+#{user.Name} => Username of the user
+#{time.date} => Current Date
+#{time.time} => Current time (hh:mm::ss)
+MessageTitle = Welcome {user.Name}
+MessageDescription=Embed description
+MessageField1Title=Custom Title
+MessageFiled1Text=Custom Filed 1 text
+MessageField2Title=Custom Title
+MessageFiled2Text=Custom Filed 2 text
+MessageFooter=Today: {time.date} at {time.time}

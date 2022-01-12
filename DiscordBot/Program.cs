@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 using PluginManager.Core;
 using PluginManager.Others;
-
 using PluginManager.Loaders;
 using PluginManager.LanguageSystem;
 using PluginManager.Online;
+
 namespace DiscordBot
 {
     public class Program
@@ -26,8 +26,6 @@ namespace DiscordBot
 
         public static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.AppendPrivatePath(".\\Requirements");
-            Console.Clear();
             Directory.CreateDirectory("./Data/Resources");
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
@@ -39,10 +37,10 @@ namespace DiscordBot
                 {
                     Console.WriteLine("Please insert your token: ");
                     Console.Write("TOKEN: ");
-                    string botToken = Console.ReadLine();
+                    string? botToken = Console.ReadLine();
                     if (botToken.Length == 59)
                     {
-                        string prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX",
+                        string? prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX",
                             '\t');
                         if (prefix == String.Empty || prefix == null)
                             prefix = "!";
@@ -123,8 +121,28 @@ namespace DiscordBot
                         break;
                     case "dwlang":
                         string Lname = data.MergeStrings(1);
-                        string[] link = await languageManager.GetDownloadLink(Lname);
-                        if (link[0] == null)
+                        string?[] link = await languageManager.GetDownloadLink(Lname);
+                        try
+                        {
+                            if (link[0] is null || link is null)
+                            {
+                                if (Lname == "")
+                                {
+                                    Functions.WriteColorText($"Name is invalid");
+                                    break;
+                                }
+                                Functions.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
+                                break;
+                            }
+                            if (link[1].Contains("CrossPlatform") || link[1].Contains("cp"))
+                            {
+                                Downloader dwn = new Downloader(Lname + ".lng", link[0]);
+                                await dwn.DownloadFileAsync(Functions.langFolder);
+                            }
+                            else Functions.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
+                            break;
+                        }
+                        catch
                         {
                             if (Lname == "")
                             {
@@ -134,13 +152,7 @@ namespace DiscordBot
                             Functions.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
                             break;
                         }
-                        if (link[1].Contains("CrossPlatform") || link[1].Contains("cp"))
-                        {
-                            Downloader dwn = new Downloader(Lname + ".lng", link[0]);
-                            await dwn.DownloadFileAsync(Functions.langFolder);
-                        }
-                        else Functions.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
-                        break;
+
                     case "loadplugins":
                     case "lp":
                         LoadPlugins(discordbooter);
@@ -283,18 +295,7 @@ namespace DiscordBot
 
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("Discord BOT for Cross Platform\n\nCreated by: Wizzy\nDiscord: Wizzy#9181\nCommands:");
-            Console.WriteLine(
-                "lp | loadplugins -> load all plugins\n" +
-                "sd | shutdown->close connection to the server(stop bot)\n" +
-                "token -> display the current token\n" +
-                "listplugs -> list all available plugins\n" +
-                "dwplug [name] -> download plugin by name\n" +
-                "listlang -> list all available languages\n" +
-                "dwlang -> download language by name\n" +
-                "setlang [name] -> set language from the downloaded languages\n" +
-                "set-setting [setting.path] [value] -> set setting value"
-            );
+            Console.WriteLine("Discord BOT for Cross Platform\n\nCreated by: Wizzy\nDiscord: Wizzy#9181");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
             string token =
@@ -328,41 +329,21 @@ namespace DiscordBot
         }
 
         /// <summary>
-        /// Replace text in the file
-        /// </summary>
-        /// <param name="file">The file location (path)</param>
-        /// <param name="code">The setting key code where to replace</param>
-        /// <param name="value">The new value</param>
-        /// <exception cref="FileNotFoundException">If the <paramref name="file"/> does not exist, then this error is thrown</exception>
-        private static void ReplaceText(string file, string code, string value)
-        {
-            try
-            {
-                var f = false;
-                string[] text = File.ReadAllLines(file);
-                foreach (string line in text)
-                    if (line.StartsWith(code))
-                    {
-                        line.Replace(line.Split('\t')[1], value);
-                        f = true;
-                    }
-
-                if (f)
-                    File.WriteAllLines(@"./Data/Resources/DiscordBotCore.data", text);
-                else throw new FileNotFoundException();
-            }
-            catch (FileNotFoundException)
-            {
-                File.AppendAllText(file, code + "\t" + value + "\n");
-            }
-        }
-
-        /// <summary>
         /// Handle user input arguments from the startup of the application
         /// </summary>
         /// <param name="args">The arguments</param>
         private static async Task HandleInput(string[] args)
         {
+
+            if (args.Length == 0)
+            {
+                if (File.Exists("./ref/startupArguments.txt"))
+                {
+                    var lines = await File.ReadAllLinesAsync("./ref/startupArguments.txt");
+                    args = lines;
+                }
+            }
+
             int len = args.Length;
             if (len == 1 && args[0] == "--help")
             {

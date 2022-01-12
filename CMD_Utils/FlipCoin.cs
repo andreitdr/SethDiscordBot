@@ -23,6 +23,8 @@ namespace CMD_Utils
 
         public bool canUseServer => true;
 
+        public bool requireAdmin => false;
+
         public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
             System.Random random = new System.Random();

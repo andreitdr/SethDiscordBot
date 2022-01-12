@@ -5,10 +5,12 @@ using PluginManager.Interfaces;
 
 using System.Reflection;
 using PluginManager.Others;
+using PluginManager.Others.Permissions;
 using PluginManager.Loaders;
 
 using System.Threading.Tasks;
 using System.Linq;
+using Discord;
 
 namespace PluginManager.Core
 {
@@ -17,6 +19,9 @@ namespace PluginManager.Core
         private readonly DiscordSocketClient client;
         private readonly CommandService commandService;
         private readonly string botPrefix;
+
+        internal static bool awaitRestartOnSetCommand = false;
+        internal static SocketUser? RestartOnSetCommandCaster = null;
 
         public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
         {
@@ -51,7 +56,26 @@ namespace PluginManager.Core
                 }
 
                 if (!(message.HasStringPrefix(botPrefix, ref argPos) || message.Author.IsBot))
-                    return;
+                    if (message.Author.IsBot) return;
+                    else
+                    {
+                        if (awaitRestartOnSetCommand && RestartOnSetCommandCaster is not null)
+                        {
+                            if (message.Content.ToLower() == "yes")
+                            {
+                                if (!(((SocketGuildUser)message.Author).hasPermission(GuildPermission.Administrator)))
+                                {
+                                    await message.Channel.SendMessageAsync("You do not have permission to use this command !");
+                                    awaitRestartOnSetCommand = false;
+                                    RestartOnSetCommandCaster = null;
+                                    return;
+                                }
+                                var fileName = Assembly.GetExecutingAssembly().Location;
+                                System.Diagnostics.Process.Start(fileName);
+                            }
+                        }
+                        return;
+                    }
 
                 var context = new SocketCommandContext(client, message);
 
@@ -63,19 +87,51 @@ namespace PluginManager.Core
 
                 DBCommand? plugin = PluginLoader.Plugins!.Where(p => p.Command == (message.Content.Split(' ')[0]).Substring(botPrefix.Length)).FirstOrDefault();
 
+
                 if (plugin != null)
                 {
                     if (message.Channel == await message.Author.CreateDMChannelAsync())
                     {
                         if (plugin.canUseDM)
                         {
+                            if (plugin.requireAdmin)
+                            {
+                                if (message.Author.isAdmin())
+                                {
+                                    plugin.Execute(context, message, client, true);
+                                    Functions.WriteLogFile($"[{message.Author.Id}] Executed command (DM) : " + plugin.Command);
+                                    return;
+                                }
+                                await message.Channel.SendMessageAsync("This command is for administrators only !");
+                                return;
+                            }
                             plugin.Execute(context, message, client, true);
-                            Functions.WriteLogFile("Executed command (DM) : " + plugin.Command);
+                            Functions.WriteLogFile($"[{message.Author.Id}] Executed command (DM) : " + plugin.Command);
+                            return;
                         }
+
+                        await message.Channel.SendMessageAsync("This command is not for DMs");
                         return;
                     }
-                    plugin.Execute(context, message, client, false);
-                    Functions.WriteLogFile("Executed command : " + plugin.Command);
+                    if (plugin.canUseServer)
+                    {
+                        if (plugin.requireAdmin)
+                        {
+                            if (message.Author.isAdmin())
+                            {
+                                plugin.Execute(context, message, client, false);
+                                Functions.WriteLogFile($"[{message.Author.Id}] Executed command : " + plugin.Command);
+                                return;
+                            }
+                            await message.Channel.SendMessageAsync("This command is for administrators only !");
+                            return;
+                        }
+                        plugin.Execute(context, message, client, false);
+                        Functions.WriteLogFile($"[{message.Author.Id}] Executed command : " + plugin.Command);
+                        return;
+                    }
+                    return;
+
                 }
             }
             catch { }

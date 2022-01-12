@@ -13,6 +13,7 @@ public class Random : DBCommand
 
     public bool canUseDM => true;
     public bool canUseServer => true;
+    public bool requireAdmin => false;
 
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {

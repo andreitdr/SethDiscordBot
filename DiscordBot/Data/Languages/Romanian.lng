@@ -1,0 +1,16 @@
+########################
+#                      #
+# Language Config File #
+#      Romanian        #
+#                      #
+########################
+
+#Language name
+LANGUAGE_NAME=Romanian
+
+#Language on plugins
+PLUGIN_LOADING_START=Incarcare extensii...
+COMMAND_LOAD_SUCCESS=[COMANDA] Comanda {0} a fost incarcata cu succes
+COMMAND_LOAD_FAIL=[COMANDA] Comanda {0} nu a fost incarcata pentru ca {1}
+EVENT_LOAD_SUCCESS=[EVENIMENT] Evenimentul {0} a fost initializat cu succes
+EVENT_LOAD_FAIL=[EVENIMENT] Evenimentul {0} nu a fost initializat pentru ca {1}
