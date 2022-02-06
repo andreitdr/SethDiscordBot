@@ -263,8 +263,6 @@ namespace DiscordBot
 
         public static void SetLanguage(string LanguageName)
         {
-
-            string folder = Functions.langFolder;
             string langSettings = Functions.dataFolder + "Language.txt";
             File.WriteAllText(langSettings, "Language=" + LanguageName);
 

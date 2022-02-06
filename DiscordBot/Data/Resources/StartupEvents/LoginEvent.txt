@@ -1,7 +1,0 @@
-Enabled=False
-
-Dynamic Title=False
-#For dynamic title add titles like this:
-#Title=Hello,World,Test,Test2
-Title=Hello World
-Dynamic Title Change Rate=3501
