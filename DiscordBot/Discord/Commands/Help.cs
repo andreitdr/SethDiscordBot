@@ -32,21 +32,15 @@ namespace PluginManager.Commands
 
                 foreach (var item in args)
                 {
-                    bool commandExists = false;
                     var e = GenerateHelpCommand(item);
                     if (e != null)
-                    {
-                        commandExists = true;
                         context.Channel.SendMessageAsync(embed: e.Build());
-                    }
-                    if (!commandExists)
+                    else
                         context.Channel.SendMessageAsync("Unknown Command " + item);
                 }
                 return;
             }
-
-            bool isAdmin = ((SocketGuildUser)message.Author).isAdmin();
-            Discord.EmbedBuilder embedBuilder = new Discord.EmbedBuilder();
+            EmbedBuilder embedBuilder = new EmbedBuilder();
 
             string adminCommands = "";
             string normalCommands = "";
