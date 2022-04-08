@@ -30,7 +30,7 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '\t').Length != 59)
+            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '\t')!.Length != 59)
             {
                 File.WriteAllText("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN\ttoken\nBOT_PREFIX\t!\n");
                 while (true)
