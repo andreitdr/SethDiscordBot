@@ -1,4 +1,5 @@
 ﻿using Discord;
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using PluginManager.Others;
 using PluginManager.Loaders;
 using PluginManager.LanguageSystem;
 using PluginManager.Online;
+using System.Diagnostics;
 
 namespace DiscordBot
 {
@@ -37,12 +39,12 @@ namespace DiscordBot
                 {
                     Console.WriteLine("Please insert your token: ");
                     Console.Write("TOKEN: ");
-                    string? botToken = Console.ReadLine();
+                    string botToken = Console.ReadLine();
                     if (botToken.Length == 59)
                     {
-                        string? prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX",
+                        string prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX",
                             '\t');
-                        if (prefix == String.Empty || prefix == null)
+                        if (prefix == string.Empty || prefix == null)
                             prefix = "!";
                         File.WriteAllText("./Data/Resources/DiscordBotCore.data", $"BOT_TOKEN\t{botToken}\nBOT_PREFIX\t{prefix}\n");
                         break;
@@ -71,12 +73,14 @@ namespace DiscordBot
         private static async Task NoGUI(Boot discordbooter)
         {
             LoadLanguage();
-            if (loadPluginsOnStartup) LoadPlugins(discordbooter);
+            if (loadPluginsOnStartup)
+                LoadPlugins(discordbooter);
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.Write('$');
+                Functions.WriteColorText("&mConsole > &c", false);
                 string[] data = Console.ReadLine().Split(' ');
+
                 if (data[0].Length < 2) continue;
                 switch (data[0])
                 {
@@ -85,7 +89,17 @@ namespace DiscordBot
                         if (discordbooter.client.ConnectionState == ConnectionState.Connected)
                             await discordbooter.ShutDown().ContinueWith(t => { Environment.Exit(0); });
                         break;
-
+                    case "reload":
+                    case "rl":
+                        if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+                        {
+                            Console.WriteLine("This command is for windows users ONLY");
+                            break;
+                        }
+                        if (discordbooter.client.ConnectionState == ConnectionState.Connected)
+                            await discordbooter.ShutDown();
+                        Process.Start("./DiscordBot", "--execute:lp");
+                        break;
                     case "listplugs":
                         await manager.ListAvailablePlugins();
                         break;
@@ -121,7 +135,7 @@ namespace DiscordBot
                         break;
                     case "dwlang":
                         string Lname = data.MergeStrings(1);
-                        string?[] link = await languageManager.GetDownloadLink(Lname);
+                        string[] link = await languageManager.GetDownloadLink(Lname);
                         try
                         {
                             if (link[0] is null || link is null)
@@ -180,6 +194,7 @@ namespace DiscordBot
                     default:
                         goto case "help";
                 }
+
             }
         }
 
@@ -356,10 +371,11 @@ namespace DiscordBot
                 return;
             }
 
-            if (len == 2 && args[0] == "--encrypt")
+            if (len >= 2 && args[0] == "--encrypt")
             {
-                Console.WriteLine("MD5: " + await Cryptography.CreateMD5(args[1]));
-                System.Console.WriteLine("SHA356: " + await Cryptography.CreateSHA256(args[1]));
+                string s2e = args.MergeStrings(1);
+                Console.WriteLine("MD5: " + await Cryptography.CreateMD5(s2e));
+                Console.WriteLine("SHA356: " + await Cryptography.CreateSHA256(s2e));
                 return;
             }
 

@@ -4,7 +4,8 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
-
+using Discord.WebSocket;
+using PluginManager.Items;
 
 namespace PluginManager.Others
 {
@@ -167,6 +168,12 @@ namespace PluginManager.Others
             return OperatingSystem.UNKNOWN;
         }
 
+        public static List<string> GetArguments(SocketMessage message)
+        {
+            Command command = new Command(message);
+            return command.Arguments;
+        }
+
         /// <summary>
         /// A way to create a table based on input data
         /// EpicWings (Pasca Robert) este cel mai bun
@@ -223,9 +230,10 @@ namespace PluginManager.Others
 
         /// <summary>
         /// Write the text using color options( &g-green; &b-blue; &r-red; &c-clear; )
+        /// 
         /// </summary>
         /// <param name="text">The text</param>
-        public static void WriteColorText(string text)
+        public static void WriteColorText(string text, bool appendNewLine = true)
         {
             string[] words = text.Split(' ');
             Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
@@ -233,6 +241,7 @@ namespace PluginManager.Others
                 {"&g", ConsoleColor.Green },
                 {"&b", ConsoleColor.Blue  },
                 {"&r", ConsoleColor.Red  },
+                {"&m", ConsoleColor.Magenta },
                 {"&c", Console.ForegroundColor }
             };
             foreach (string word in words)
@@ -244,10 +253,11 @@ namespace PluginManager.Others
                         Console.ForegroundColor = colors[prefix];
                 }
 
-                string m = word.Replace("&g", "").Replace("&b", "").Replace("&r", "").Replace("&c", "");
+                string m = word.Replace("&g", "").Replace("&b", "").Replace("&r", "").Replace("&c", "").Replace("&m", "");
                 Console.Write(m + " ");
             }
-            Console.Write('\n');
+            if (appendNewLine)
+                Console.Write('\n');
         }
 
         /// <summary>

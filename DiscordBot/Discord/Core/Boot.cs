@@ -11,8 +11,8 @@ namespace PluginManager.Core
 {
     internal class Boot
     {
-        private readonly string botPrefix;
-        private readonly string botToken;
+        public readonly string botPrefix;
+        public readonly string botToken;
 
         private bool isReady = false;
 

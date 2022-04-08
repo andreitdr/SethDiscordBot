@@ -1,9 +1,13 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 
 using PluginManager.Loaders;
 using PluginManager.Interfaces;
 using PluginManager.Others.Permissions;
+using PluginManager.Others;
+
+using System.Collections.Generic;
 
 namespace PluginManager.Commands
 {
@@ -22,43 +26,59 @@ namespace PluginManager.Commands
 
         public void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
+            List<string> args = Functions.GetArguments(message);
+            if (args.Count != 0)
+            {
+
+                foreach (var item in args)
+                {
+                    bool commandExists = false;
+                    var e = GenerateHelpCommand(item);
+                    if (e != null)
+                    {
+                        commandExists = true;
+                        context.Channel.SendMessageAsync(embed: e.Build());
+                    }
+                    if (!commandExists)
+                        context.Channel.SendMessageAsync("Unknown Command " + item);
+                }
+                return;
+            }
+
             bool isAdmin = ((SocketGuildUser)message.Author).isAdmin();
-            if (isAdmin)
+            Discord.EmbedBuilder embedBuilder = new Discord.EmbedBuilder();
+
+            string adminCommands = "";
+            string normalCommands = "";
+            string DMCommands = "";
+
+            foreach (var cmd in PluginLoader.Plugins!)
             {
-                if (isDM)
-                {
-                    foreach (DBCommand p in PluginLoader.Plugins!)
-                        if (p.canUseDM)
-                            if (p.requireAdmin)
-                                context.Channel.SendMessageAsync("[ADMIN] " + p.Usage + "\t" + p.Description);
-                            else context.Channel.SendMessageAsync(p.Usage + "\t" + p.Description);
-                }
-                else
-                {
-                    foreach (DBCommand p in PluginLoader.Plugins!)
-                        if (p.canUseServer)
-                            if (p.requireAdmin)
-                                context.Channel.SendMessageAsync("[ADMIN] " + p.Usage + "\t" + p.Description);
-                            else context.Channel.SendMessageAsync(p.Usage + "\t" + p.Description);
-                }
-            }
-            else
-            {
-                if (isDM)
-                {
-                    foreach (DBCommand p in PluginLoader.Plugins!)
-                        if (p.canUseDM && !p.requireAdmin)
-                            context.Channel.SendMessageAsync(p.Usage + "\t" + p.Description);
-                }
-                else
-                {
-                    foreach (DBCommand p in PluginLoader.Plugins!)
-                        if (p.canUseServer && !p.requireAdmin)
-                            context.Channel.SendMessageAsync(p.Usage + "\t" + p.Description);
-                }
+                if (cmd.canUseDM)
+                    DMCommands += cmd.Command + " ";
+                if (cmd.requireAdmin)
+                    adminCommands += cmd.Command + " ";
+                else normalCommands += cmd.Command + " ";
             }
 
+            embedBuilder.AddField("Admin Commands", adminCommands);
+            embedBuilder.AddField("Normal Commands", normalCommands);
+            embedBuilder.AddField("DM Commands", DMCommands);
+            context.Channel.SendMessageAsync(embed: embedBuilder.Build());
 
+        }
+
+        private EmbedBuilder GenerateHelpCommand(string command)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            DBCommand cmd = PluginLoader.Plugins.Find(p => p.Command == command);
+            if (cmd == null)
+                return null;
+
+            embedBuilder.AddField("Usage", cmd.Usage);
+            embedBuilder.AddField("Description", cmd.Description);
+
+            return embedBuilder;
         }
     }
 }

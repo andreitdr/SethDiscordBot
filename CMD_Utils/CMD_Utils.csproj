@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>E:\DiscordBot\BUILDS\</OutputPath>
+    <OutputPath>..\BUILDS\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
