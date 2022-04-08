@@ -3,19 +3,12 @@ using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using Microsoft.VisualBasic;
-
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace CMD_Utils.Music
 {
