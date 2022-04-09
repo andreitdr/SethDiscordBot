@@ -27,8 +27,11 @@ namespace CMD_Utils.Music
 
         public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
-            await Data.audioClient.StopAsync();
-            await Data.voiceChannel.DisconnectAsync();
+            if (Data.audioClient is not null && Data.voiceChannel is not null)
+            {
+                await Data.audioClient.StopAsync();
+                await Data.voiceChannel.DisconnectAsync();
+            }
         }
     }
 }
