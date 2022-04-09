@@ -29,6 +29,8 @@ namespace CMD_Utils.Music
         {
             if (Data.audioClient is not null && Data.voiceChannel is not null)
             {
+                Data.CurrentlyRunning.Stop();
+                Data.CurrentlyRunning = null;
                 await Data.audioClient.StopAsync();
                 await Data.voiceChannel.DisconnectAsync();
             }

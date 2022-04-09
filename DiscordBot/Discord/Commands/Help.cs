@@ -52,7 +52,7 @@ namespace PluginManager.Commands
                     DMCommands += cmd.Command + " ";
                 if (cmd.requireAdmin)
                     adminCommands += cmd.Command + " ";
-                else normalCommands += cmd.Command + " ";
+                else if (cmd.canUseServer) normalCommands += cmd.Command + " ";
             }
 
             embedBuilder.AddField("Admin Commands", adminCommands);

@@ -3,6 +3,8 @@ using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
 
+using MusicCommands;
+
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
@@ -37,22 +39,20 @@ namespace CMD_Utils.Music
                 return;
             }
 
-            // Get the audio channel
 
             Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
             if (Data.voiceChannel == null) { await context.Channel.SendMessageAsync("User must be in a voice channel, or a voice channel must be passed as an argument."); return; }
 
-            // For the next step with transmitting audio, you would want to pass this Audio Client in to a service.
             Data.audioClient = await Data.voiceChannel.ConnectAsync();
 
-
-            // Create FFmpeg using the previous example
             using (var ffmpeg = CreateStream(path))
             using (var output = ffmpeg.StandardOutput.BaseStream)
             using (var discord = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
             {
-                try { await output.CopyToAsync(discord); }
-                finally { await discord.FlushAsync(); }
+                if (Data.CurrentlyRunning != null)
+                    Data.CurrentlyRunning.Stop();
+                Data.CurrentlyRunning = new MusicPlayer(output, discord);
+                await Data.CurrentlyRunning.StartSendAudio();
             }
         }
 

@@ -3,12 +3,6 @@ using Discord.WebSocket;
 
 using PluginManager.Interfaces;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace CMD_Utils.Music
 {
     class Pause : DBCommand
@@ -25,9 +19,9 @@ namespace CMD_Utils.Music
 
         public bool requireAdmin => false;
 
-        public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+        public void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
-            // to be implemented
+            Data.CurrentlyRunning.Paused = true;
         }
     }
 }
