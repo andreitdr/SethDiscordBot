@@ -93,16 +93,25 @@ namespace PluginManager.Online
                 {
                     string[] contents = lines[i].Split(',');
                     if (contents[0] == name)
-                        return new string[] { contents[2], contents[3] };
+                    {
+                        if (contents.Length == 6)
+                            return new string[] { contents[2], contents[3], contents[5] };
+                        else if (contents.Length == 5)
+                            return new string[] { contents[2], contents[3], string.Empty };
+                        else throw new Exception("Failed to download plugin. Invalid Argument Length");
+                    }
+
                 }
             }
             catch (Exception exception)
             {
-                Console.WriteLine("Failed to execute command: listlang\nReason: " + exception.Message);
+                Console.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
                 Others.Functions.WriteErrFile(exception.ToString());
             }
 
-            return new string[] { null!, null! };
+            return new string[] { null!, null!, null! };
         }
+
+
     }
 }

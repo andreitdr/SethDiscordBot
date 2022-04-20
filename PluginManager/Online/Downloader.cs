@@ -22,8 +22,11 @@ namespace PluginManager.Online
         }
 
 
-        public async Task DownloadFileAsync(string location = @"./Downloads/", string? pluginType = null)
+        public async Task DownloadFileAsync(string location = @"./Downloads/", string? pluginType = null, string customMessage = null)
         {
+            if (customMessage != null)
+                Console.WriteLine(customMessage);
+
             Directory.CreateDirectory(location);
             if (isWorking) return;
             isWorking = true;
@@ -73,9 +76,6 @@ namespace PluginManager.Online
                 Console.ForegroundColor = c;
                 Console.Write(" !\n");
             }
-
-
-
         }
 
     }

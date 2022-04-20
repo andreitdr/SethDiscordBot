@@ -10,6 +10,7 @@ using PluginManager.Loaders;
 using PluginManager.LanguageSystem;
 using PluginManager.Online;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace DiscordBot
 {
@@ -106,6 +107,9 @@ namespace DiscordBot
 
                     case "dwplug":
                         string name = data.MergeStrings(1);
+                        // info[0] = plugin type
+                        // info[1] = plugin link
+                        // info[2] = if others are required, or string.Empty if none
                         string[] info = await manager.GetPluginLinkByName(name);
                         if (info[1] == null) // link is null
                         {
@@ -120,6 +124,27 @@ namespace DiscordBot
                         }
                         Downloader dw = new Downloader(name + ".dll", info[1]);
                         await dw.DownloadFileAsync("./Data/Plugins/", info[0]);
+
+                        // check requirements if any
+
+                        if (info.Length == 3 && info[2] != string.Empty && info[2] != null)
+                        {
+                            Console.WriteLine($"Downloading requirements for plugin : {name}");
+                            //
+                            List<string> lines = await ServerCom.ReadTextFromFile(info[2]);
+                            int i = 1;
+                            foreach (var line in lines)
+                            {
+                                string[] split = line.Split(',');
+                                Console.WriteLine($"Downloading item: {split[1]}");
+                                await ServerCom.DownloadFileAsync(split[0], split[1], i, lines.Count);
+                                Functions.WriteColorText($"Downloaded item {split[1]}");
+                                i++;
+                            }
+                            Console.WriteLine();
+                            break;
+                        }
+
                         break;
                     case "setlang":
                         if (data.Length == 2)
