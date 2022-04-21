@@ -24,6 +24,7 @@ namespace PluginManager.Online
             return s;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public static async Task DownloadFileAsync(string url, string location, int downloadNumber, int totalToDownload)
         {
             WebClient client = new WebClient();

@@ -11,6 +11,7 @@ using PluginManager.Loaders;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord;
+using System;
 
 namespace PluginManager.Core
 {
@@ -21,7 +22,7 @@ namespace PluginManager.Core
         private readonly string botPrefix;
 
         internal static bool awaitRestartOnSetCommand = false;
-        internal static SocketUser? RestartOnSetCommandCaster = null;
+        internal static SocketUser RestartOnSetCommandCaster = null;
 
         public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
         {
@@ -72,6 +73,7 @@ namespace PluginManager.Core
                                 }
                                 var fileName = Assembly.GetExecutingAssembly().Location;
                                 System.Diagnostics.Process.Start(fileName);
+                                Environment.Exit(0);
                             }
                         }
                         return;
@@ -85,7 +87,7 @@ namespace PluginManager.Core
                     services: null
                 );
 
-                DBCommand? plugin = PluginLoader.Plugins!.Where(p => p.Command == (message.Content.Split(' ')[0]).Substring(botPrefix.Length)).FirstOrDefault();
+                DBCommand plugin = PluginLoader.Plugins!.Where(p => p.Command == (message.Content.Split(' ')[0]).Substring(botPrefix.Length)).FirstOrDefault();
 
 
                 if (plugin != null)

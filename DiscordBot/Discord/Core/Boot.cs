@@ -16,9 +16,9 @@ namespace PluginManager.Core
 
         private bool isReady = false;
 
-        public DiscordSocketClient? client;
-        private CommandHandler? commandServiceHandler;
-        private CommandService? service;
+        public DiscordSocketClient client;
+        private CommandHandler commandServiceHandler;
+        private CommandService service;
 
         public Boot(string botToken, string botPrefix)
         {
