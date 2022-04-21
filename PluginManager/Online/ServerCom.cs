@@ -33,7 +33,7 @@ namespace PluginManager.Online
             string oldTitle = Console.Title ?? "";
             client.DownloadProgressChanged += (sender, e) =>
             {
-                Console.Title = e.BytesReceived / 1024 + "/" + e.TotalBytesToReceive / 1024 + " (" + e.ProgressPercentage + "%) (" + downloadNumber + " / " + totalToDownload + ")";
+                Console.Title = e.BytesReceived + "/" + e.TotalBytesToReceive + " (" + e.ProgressPercentage + "%) (" + downloadNumber + " / " + totalToDownload + ")";
             };
             client.DownloadFileCompleted += (sender, e) =>
             {

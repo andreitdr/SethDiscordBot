@@ -174,14 +174,68 @@ namespace PluginManager.Others
             return command.Arguments;
         }
 
+
         /// <summary>
         /// A way to create a table based on input data
-        /// EpicWings (Pasca Robert) este cel mai bun
-        /// Special thanks to Kami-sama <3
         /// </summary>
         /// <param name="data">The List of arrays of strings that represent the rows.</param>
         public static void FormatAndAlignTable(List<string[]> data)
         {
+            char tableLine = '-';
+            char tableCross = '+';
+            char tableWall = '|';
+
+            int[] len = new int[data[0].Length];
+            foreach (var line in data)
+            {
+                for (int i = 0; i < line.Length; i++)
+                    if (line[i].Length > len[i])
+                        len[i] = line[i].Length;
+            }
+
+
+            foreach (string[] row in data)
+            {
+                //Console.Write("\t");
+                if (row[0][0] == tableLine) Console.Write(tableCross);
+                else Console.Write(tableWall);
+                for (int l = 0; l < row.Length; l++)
+                {
+                    if (row[l][0] == tableLine)
+                    {
+                        for (int i = 0; i < len[l] + 4; ++i)
+                            Console.Write(tableLine);
+                    }
+                    else if (row[l].Length == len[l])
+                    {
+                        Console.Write("  ");
+                        Console.Write(row[l]);
+                        Console.Write("  ");
+                    }
+                    else
+                    {
+
+                        int lenHalf = row[l].Length / 2;
+                        for (int i = 0; i < ((len[l] + 4) / 2 - lenHalf); ++i)
+                            Console.Write(" ");
+                        Console.Write(row[l]);
+                        for (int i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
+                            Console.Write(" ");
+                        if (row[l].Length % 2 == 0)
+                            Console.Write(" ");
+                    }
+
+                    if (row[l][0] == tableLine) Console.Write(tableCross);
+                    else Console.Write(tableWall);
+                }
+                Console.WriteLine(); //end line
+
+            }
+
+
+            //Obsolite
+            #region Old Code -> Spacing by the lomgest item in any cell
+            /*
             int maxLen = 0;
             foreach (string[] row in data)
                 foreach (string s in row)
@@ -192,7 +246,7 @@ namespace PluginManager.Others
 
             foreach (string[] row in data)
             {
-                Console.Write("\t");
+                //Console.Write("\t");
                 if (row[0] == "-") Console.Write("+");
                 else Console.Write("|");
 
@@ -225,7 +279,8 @@ namespace PluginManager.Others
                     else Console.Write("|");
                 }
                 Console.WriteLine(); //end line
-            }
+            }*/
+            #endregion
         }
 
         /// <summary>

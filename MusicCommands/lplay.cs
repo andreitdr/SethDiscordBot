@@ -7,13 +7,6 @@ using Discord;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace MusicCommands
 {
     class lplay : DBCommand
@@ -33,7 +26,6 @@ namespace MusicCommands
         public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
 
-
             Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
             if (Data.voiceChannel == null) { await context.Channel.SendMessageAsync("User must be in a voice channel, or a voice channel must be passed as an argument."); return; }
 
@@ -44,7 +36,7 @@ namespace MusicCommands
                 if (Data.CurrentlyRunning != null)
                     Data.CurrentlyRunning.Stop();
                 LinkMusic music = new LinkMusic(Functions.GetArguments(message)[0]);
-                Data.CurrentlyRunning = new MusicPlayer(await music.GetMusicStreamAsync(), discord);
+                Data.CurrentlyRunning = new MusicPlayer(await music.GetStream(), discord);
                 await Data.CurrentlyRunning.StartSendAudio();
             }
         }

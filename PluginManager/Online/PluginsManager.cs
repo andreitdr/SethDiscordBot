@@ -32,15 +32,15 @@ namespace PluginManager.Online
                 var op = Functions.GetOperatinSystem();
                 string[] lines = text.Split('\n');
                 int len = lines.Length;
-                string[] titles = { "Name", "Description", "Plugin Type" };
-                data.Add(new string[] { "-", "-", "-" });
+                string[] titles = { "Name", "Description", "Plugin Type", "Libraries" };
+                data.Add(new string[] { "-", "-", "-", "-" });
                 data.Add(titles);
-                data.Add(new string[] { "-", "-", "-" });
+                data.Add(new string[] { "-", "-", "-", "-" });
                 for (int i = 0; i < len; i++)
                 {
                     if (lines[i].Length <= 2) continue;
                     string[] content = lines[i].Split(',');
-                    string[] display = new string[3];
+                    string[] display = new string[4];
                     if (op == PluginManager.Others.OperatingSystem.WINDOWS)
                     {
                         if (content[4].Contains("Windows"))
@@ -48,6 +48,10 @@ namespace PluginManager.Online
                             display[0] = content[0];
                             display[1] = content[1];
                             display[2] = content[2];
+                            if (content.Length == 6 && (content[5] != null || content[5].Length > 2))
+                                display[3] = ((await ServerCom.ReadTextFromFile(content[5])).Count + 1).ToString();
+
+                            else display[3] = "1";
                             data.Add(display);
                             continue;
                         }
@@ -65,7 +69,7 @@ namespace PluginManager.Online
                     }
                 }
 
-                data.Add(new string[] { "-", "-", "-" });
+                data.Add(new string[] { "-", "-", "-", "-" });
 
                 Functions.FormatAndAlignTable(data);
             }

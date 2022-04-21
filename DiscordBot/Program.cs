@@ -137,7 +137,7 @@ namespace DiscordBot
                             {
                                 string[] split = line.Split(',');
                                 Console.WriteLine($"Downloading item: {split[1]}");
-                                await ServerCom.DownloadFileAsync(split[0], split[1], i, lines.Count);
+                                await ServerCom.DownloadFileAsync(split[0], "./" + split[1], i, lines.Count);
                                 Functions.WriteColorText($"Downloaded item {split[1]}");
                                 i++;
                             }
