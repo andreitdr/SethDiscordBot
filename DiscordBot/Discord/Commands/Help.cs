@@ -9,7 +9,7 @@ using PluginManager.Others;
 
 using System.Collections.Generic;
 
-namespace PluginManager.Commands
+namespace DiscordBot.Discord.Commands
 {
     internal class Help : DBCommand
     {

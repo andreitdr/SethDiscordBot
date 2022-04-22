@@ -21,9 +21,6 @@ namespace PluginManager.Core
         private readonly CommandService commandService;
         private readonly string botPrefix;
 
-        internal static bool awaitRestartOnSetCommand = false;
-        internal static SocketUser RestartOnSetCommandCaster = null;
-
         public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
         {
             this.client = client;
@@ -56,28 +53,7 @@ namespace PluginManager.Core
                     return;
                 }
 
-                if (!(message.HasStringPrefix(botPrefix, ref argPos) || message.Author.IsBot))
-                    if (message.Author.IsBot) return;
-                    else
-                    {
-                        if (awaitRestartOnSetCommand && RestartOnSetCommandCaster is not null)
-                        {
-                            if (message.Content.ToLower() == "yes")
-                            {
-                                if (!(((SocketGuildUser)message.Author).hasPermission(GuildPermission.Administrator)))
-                                {
-                                    await message.Channel.SendMessageAsync("You do not have permission to use this command !");
-                                    awaitRestartOnSetCommand = false;
-                                    RestartOnSetCommandCaster = null;
-                                    return;
-                                }
-                                var fileName = Assembly.GetExecutingAssembly().Location;
-                                System.Diagnostics.Process.Start(fileName);
-                                Environment.Exit(0);
-                            }
-                        }
-                        return;
-                    }
+                if (message.Author.IsBot) return;
 
                 var context = new SocketCommandContext(client, message);
 

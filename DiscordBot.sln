@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StartupEvents", "StartupEve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMD_Utils", "CMD_Utils\CMD_Utils.csproj", "{E26C87A4-3DD6-4B58-B14B-C8E086B852F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicCommands", "MusicCommands\MusicCommands.csproj", "{B1B4976E-5112-4217-B57B-3A03C5207B6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicCommands", "MusicCommands\MusicCommands.csproj", "{B1B4976E-5112-4217-B57B-3A03C5207B6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

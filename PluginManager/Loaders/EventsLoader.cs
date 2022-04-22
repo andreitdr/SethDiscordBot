@@ -61,7 +61,7 @@ namespace PluginManager.Loaders
                         events.Add(ev);
 
                         if (EventLoad != null)
-                            EventLoad.Invoke(type.FullName!, true, ev);
+                            EventLoad.Invoke(type.FullName!, true, ev, null);
                     }
                     catch (Exception e)
                     {

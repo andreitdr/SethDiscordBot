@@ -22,7 +22,7 @@ namespace PluginManager.Online
         }
 
 
-        public async Task DownloadFileAsync(string location = @"./Downloads/", string? pluginType = null, string customMessage = null)
+        public async Task DownloadFileAsync(string location = @"./Downloads/", string? pluginType = null, string? customMessage = null)
         {
             if (customMessage != null)
                 Console.WriteLine(customMessage);
