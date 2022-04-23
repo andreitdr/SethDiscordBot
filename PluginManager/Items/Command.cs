@@ -39,5 +39,6 @@ namespace PluginManager.Items
                 this.PrefixUsed = data[0][0];
             else this.PrefixUsed = '\0'; //null
         }
+
     }
 }

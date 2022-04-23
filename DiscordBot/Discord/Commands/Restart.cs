@@ -37,29 +37,52 @@ namespace DiscordBot.Discord.Commands
         {
             if (!DiscordPermissions.hasPermission(message.Author as SocketGuildUser, ds.GuildPermission.Administrator)) return;
             var args = Functions.GetArguments(message);
-            if (args.Count != 0)
+            var OS = Functions.GetOperatinSystem();
+            if (args.Count == 0)
             {
-                switch (args[0])
+                switch (OS)
                 {
-                    case "-p":
-                    case "-poweroff":
-                    case "-c":
-                    case "-close":
-                        Environment.Exit(0);
+                    case PluginManager.Others.OperatingSystem.WINDOWS:
+                        Process.Start("./DiscordBot.exe");
                         break;
-                    case "-cmd":
-                    case "-args":
-                        Process.Start("./DiscordBot.exe", Functions.MergeStrings(args.ToArray(), 1));
-                        Environment.Exit(0);
+                    case PluginManager.Others.OperatingSystem.LINUX:
+                    case PluginManager.Others.OperatingSystem.MAC_OS:
+                        Process.Start("./DiscordBot");
                         break;
+                    default:
+                        return;
                 }
-
-
                 return;
             }
+            switch (args[0])
+            {
+                case "-p":
+                case "-poweroff":
+                case "-c":
+                case "-close":
+                    Environment.Exit(0);
+                    break;
+                case "-cmd":
+                case "-args":
 
-            Process.Start("./DiscordBot.exe", "--execute:lp");
-            Environment.Exit(0);
+                    switch (OS)
+                    {
+                        case PluginManager.Others.OperatingSystem.WINDOWS:
+                            Process.Start("./DiscordBot.exe", Functions.MergeStrings(args.ToArray(), 1));
+                            break;
+                        case PluginManager.Others.OperatingSystem.LINUX:
+                        case PluginManager.Others.OperatingSystem.MAC_OS:
+                            Process.Start("./DiscordBot", Functions.MergeStrings(args.ToArray(), 1));
+                            break;
+                        default:
+                            return;
+                    }
+                    Environment.Exit(0);
+                    break;
+
+
+            }
+
         }
     }
 }

@@ -11,6 +11,7 @@ using PluginManager.LanguageSystem;
 using PluginManager.Online;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DiscordBot
 {
@@ -20,6 +21,8 @@ namespace DiscordBot
         private static LanguageManager languageManager = new LanguageManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Languages");
 
         private static bool loadPluginsOnStartup = false;
+        private static bool listPluginsAtStartup = false;
+        private static bool listLanguagAtStartup = false;
 
         /// <summary>
         ///     The main entry point for the application.
@@ -76,6 +79,10 @@ namespace DiscordBot
             LoadLanguage();
             if (loadPluginsOnStartup)
                 LoadPlugins(discordbooter);
+            if (listPluginsAtStartup)
+                await manager.ListAvailablePlugins();
+            if (listLanguagAtStartup)
+                await languageManager.ListAllLanguages();
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -97,9 +104,10 @@ namespace DiscordBot
                             Console.WriteLine("This command is for windows users ONLY");
                             break;
                         }
+                        Process.Start("./DiscordBot.exe", "--cmd lp");
                         if (discordbooter.client.ConnectionState == ConnectionState.Connected)
                             await discordbooter.ShutDown();
-                        Process.Start("./DiscordBot", "--execute:lp");
+                        else Environment.Exit(0);
                         break;
                     case "listplugs":
                         await manager.ListAvailablePlugins();
@@ -404,12 +412,17 @@ namespace DiscordBot
                 return;
             }
 
-            if (len == 1 && args[0] == "--execute:lp")
+            if (len > 0 && args.Contains("--cmd"))
             {
-                loadPluginsOnStartup = true;
+                if (args.Contains("lp") || args.Contains("loadplugins"))
+                    loadPluginsOnStartup = true;
+                if (args.Contains("listplugs"))
+                    listPluginsAtStartup = true;
+                if (args.Contains("listlang"))
+                    listLanguagAtStartup = true;
+
                 len = 0;
             }
-
 
 
 
