@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PluginManager.Others.Exceptions;
+
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -22,8 +24,8 @@ namespace MusicCommands
 
         private async Task<string> GetYoutubeVideoID()
         {
-            //https://www.youtube.com/watch?v=i-p--m7qaCM&ab_channel=Leviathan
-            return URL.Split("=")[1].Split('&')[0];
+            //https://www.youtube.com/watch?v=i-p--m7qaCM&ab_channel={channel}/
+            return URL.Split('=')[1].Split('&')[0];
         }
 
         public async Task<Stream> GetStream()
@@ -32,13 +34,18 @@ namespace MusicCommands
             if (type == LinkType.SPOTIFY) s = await GetSpotifyMusicStreamAsync();
             else if (type == LinkType.YOUTUBE) s = await GetYoutubeMusicStreamAsync();
             else s = await GetRAWMusicStreamAsync();
+            if (s == null)
+            {
+                Console.WriteLine("Failed to get the stream for url: " + this.URL);
+                throw new APIException("URL [" + this.URL + "] is invalid", "async Task <Stream> GetStream()", "Work in progress", PluginManager.Others.Error.STREAM_NOT_FOUND);
+            }
             return s;
         }
 
         private async Task<Stream> GetSpotifyMusicStreamAsync()
         {
-            Stream response = null;
-            return response;
+            throw new APIException("Not implemented", "async Task<Stream> GetSpotifyMusicStream()",
+                                   "Work in progress", PluginManager.Others.Error.STREAM_NOT_FOUND);
         }
 
         private async Task<Stream> GetYoutubeMusicStreamAsync()

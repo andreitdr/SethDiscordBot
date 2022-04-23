@@ -2,11 +2,19 @@ using System;
 
 namespace PluginManager.Others.Exceptions
 {
-    [System.Serializable]
+    [Serializable]
     public class APIException : Exception
     {
-        public string? Function { get; }
-        public Error? ErrorCode { get; }
+        public string? Function { get; } = "not specified";
+        public Error? ErrorCode { get; } = Error.UNKNOWN_ERROR;
+        public string? PossibleCause { get; } = "not specified";
+
+        public APIException(string message, string? function, string possible_cause, Error error) : base(message)
+        {
+            ErrorCode = error;
+            Function = function;
+            PossibleCause = possible_cause;
+        }
 
         public APIException(string message, string? function, Error? errorCode) : base(message)
         {
@@ -16,14 +24,12 @@ namespace PluginManager.Others.Exceptions
 
         public APIException(string message, string? function) : base(message)
         {
-            ErrorCode = Error.UNKNOWN_ERROR;
             Function = function;
         }
 
         public APIException(string message) : base(message)
         {
-            ErrorCode = Error.UNKNOWN_ERROR;
-            Function = "Unspecified_Function";
+
         }
 
         public void Print()
@@ -31,6 +37,9 @@ namespace PluginManager.Others.Exceptions
             Console.WriteLine("Message Content: " + Message);
             Console.WriteLine("Function: " + Function);
             Console.WriteLine("Error Code: " + ErrorCode.ToString());
+            Console.WriteLine("Possible cause: " + PossibleCause);
+            if (this.StackTrace != null)
+                Functions.WriteErrFile(this.StackTrace);
         }
     }
 
