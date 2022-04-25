@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Discord.WebSocket;
 using PluginManager.Items;
+using System.Threading;
 
 namespace PluginManager.Others
 {
@@ -176,146 +177,6 @@ namespace PluginManager.Others
 
 
         /// <summary>
-        /// A way to create a table based on input data
-        /// </summary>
-        /// <param name="data">The List of arrays of strings that represent the rows.</param>
-        public static void FormatAndAlignTable(List<string[]> data)
-        {
-            char tableLine = '-';
-            char tableCross = '+';
-            char tableWall = '|';
-
-            int[] len = new int[data[0].Length];
-            foreach (var line in data)
-            {
-                for (int i = 0; i < line.Length; i++)
-                    if (line[i].Length > len[i])
-                        len[i] = line[i].Length;
-            }
-
-
-            foreach (string[] row in data)
-            {
-                //Console.Write("\t");
-                if (row[0][0] == tableLine) Console.Write(tableCross);
-                else Console.Write(tableWall);
-                for (int l = 0; l < row.Length; l++)
-                {
-                    if (row[l][0] == tableLine)
-                    {
-                        for (int i = 0; i < len[l] + 4; ++i)
-                            Console.Write(tableLine);
-                    }
-                    else if (row[l].Length == len[l])
-                    {
-                        Console.Write("  ");
-                        Console.Write(row[l]);
-                        Console.Write("  ");
-                    }
-                    else
-                    {
-
-                        int lenHalf = row[l].Length / 2;
-                        for (int i = 0; i < ((len[l] + 4) / 2 - lenHalf); ++i)
-                            Console.Write(" ");
-                        Console.Write(row[l]);
-                        for (int i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
-                            Console.Write(" ");
-                        if (row[l].Length % 2 == 0)
-                            Console.Write(" ");
-                    }
-
-                    if (row[l][0] == tableLine) Console.Write(tableCross);
-                    else Console.Write(tableWall);
-                }
-                Console.WriteLine(); //end line
-
-            }
-
-
-            //Obsolite
-            #region Old Code -> Spacing by the lomgest item in any cell
-            /*
-            int maxLen = 0;
-            foreach (string[] row in data)
-                foreach (string s in row)
-                    if (s.Length > maxLen)
-                        maxLen = s.Length;
-
-            int div = (maxLen + 4) / 2;
-
-            foreach (string[] row in data)
-            {
-                //Console.Write("\t");
-                if (row[0] == "-") Console.Write("+");
-                else Console.Write("|");
-
-                foreach (string s in row)
-                {
-                    if (s == "-")
-                    {
-                        for (int i = 0; i < maxLen + 4; ++i)
-                            Console.Write("-");
-                    }
-                    else if (s.Length == maxLen)
-                    {
-                        Console.Write("  ");
-                        Console.Write(s);
-                        Console.Write("  ");
-                    }
-                    else
-                    {
-                        int lenHalf = s.Length / 2;
-                        for (int i = 0; i < div - lenHalf; ++i)
-                            Console.Write(" ");
-                        Console.Write(s);
-                        for (int i = div + lenHalf + 1; i < maxLen + 4; ++i)
-                            Console.Write(" ");
-                        if (s.Length % 2 == 0)
-                            Console.Write(" ");
-                    }
-
-                    if (s == "-") Console.Write("+");
-                    else Console.Write("|");
-                }
-                Console.WriteLine(); //end line
-            }*/
-            #endregion
-        }
-
-        /// <summary>
-        /// Write the text using color options( &g-green; &b-blue; &r-red; &c-clear; )
-        /// 
-        /// </summary>
-        /// <param name="text">The text</param>
-        public static void WriteColorText(string text, bool appendNewLine = true)
-        {
-            string[] words = text.Split(' ');
-            Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
-            {
-                {"&g", ConsoleColor.Green },
-                {"&b", ConsoleColor.Blue  },
-                {"&r", ConsoleColor.Red  },
-                {"&m", ConsoleColor.Magenta },
-                {"&c", Console.ForegroundColor }
-            };
-            foreach (string word in words)
-            {
-                if (word.Length >= 2)
-                {
-                    string prefix = word.Substring(0, 2);
-                    if (colors.ContainsKey(prefix))
-                        Console.ForegroundColor = colors[prefix];
-                }
-
-                string m = word.Replace("&g", "").Replace("&b", "").Replace("&r", "").Replace("&c", "").Replace("&m", "");
-                Console.Write(m + " ");
-            }
-            if (appendNewLine)
-                Console.Write('\n');
-        }
-
-        /// <summary>
         /// Write setting 
         /// </summary>
         /// <param name="SettingName">The full path to the setting</param>
@@ -360,6 +221,43 @@ namespace PluginManager.Others
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Copy one Stream to another <see langword="async"/>
+        /// </summary>
+        /// <param name="stream">The base stream</param>
+        /// <param name="destination">The destination stream</param>
+        /// <param name="bufferSize">The buffer to read</param>
+        /// <param name="progress">The progress</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <exception cref="ArgumentNullException">Triggered if any <see cref="Stream"/> is empty</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Triggered if <paramref name="bufferSize"/> is less then or equal to 0</exception>
+        /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream"/> is not readable</exception>
+        /// <exception cref="ArgumentException">Triggered in <paramref name="destination"/> is not writable</exception>
+        public static async Task CopyToOtherStreamAsync(this Stream stream, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+            if (bufferSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+            if (!stream.CanRead)
+                throw new InvalidOperationException("The stream is not readable.");
+            if (!destination.CanWrite)
+                throw new ArgumentException("Destination stream is not writable", nameof(destination));
+
+            byte[] buffer = new byte[bufferSize];
+            long totalBytesRead = 0;
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                totalBytesRead += bytesRead;
+                progress?.Report(totalBytesRead);
+            }
+
         }
     }
 }

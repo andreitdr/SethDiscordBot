@@ -21,16 +21,12 @@ namespace PluginManager.Online
         {
             try
             {
-#pragma warning disable SYSLIB0014
-                WebClient client = new WebClient();
-#pragma warning restore SYSLIB0014
-                Stream s = await client.OpenReadTaskAsync(PluginsLink);
-                string text = await new StreamReader(s).ReadToEndAsync();
-
+                List<string> list = await ServerCom.ReadTextFromFile(PluginsLink);
+                string[] lines = list.ToArray();
 
                 List<string[]> data = new List<string[]>();
                 var op = Functions.GetOperatinSystem();
-                string[] lines = text.Split('\n');
+
                 int len = lines.Length;
                 string[] titles = { "Name", "Description", "Plugin Type", "Libraries" };
                 data.Add(new string[] { "-", "-", "-", "-" });
@@ -41,7 +37,7 @@ namespace PluginManager.Online
                     if (lines[i].Length <= 2) continue;
                     string[] content = lines[i].Split(',');
                     string[] display = new string[4];
-                    if (op == PluginManager.Others.OperatingSystem.WINDOWS)
+                    if (op == Others.OperatingSystem.WINDOWS)
                     {
                         if (content[4].Contains("Windows"))
                         {
@@ -71,7 +67,7 @@ namespace PluginManager.Online
 
                 data.Add(new string[] { "-", "-", "-", "-" });
 
-                Functions.FormatAndAlignTable(data);
+                Console_Utilities.FormatAndAlignTable(data);
             }
             catch (Exception exception)
             {
@@ -85,13 +81,8 @@ namespace PluginManager.Online
         {
             try
             {
-#pragma warning disable SYSLIB0014
-                WebClient client = new WebClient();
-#pragma warning restore SYSLIB0014
-                Stream s = await client.OpenReadTaskAsync(PluginsLink);
-                string text = await new StreamReader(s).ReadToEndAsync();
-
-                string[] lines = text.Split('\n');
+                List<string> list = await ServerCom.ReadTextFromFile(PluginsLink);
+                string[] lines = list.ToArray();
                 int len = lines.Length;
                 for (int i = 0; i < len; i++)
                 {

@@ -86,7 +86,7 @@ namespace DiscordBot
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Functions.WriteColorText("&mConsole > &c", false);
+                Console_Utilities.WriteColorText("&mConsole > &c", false);
                 string[] data = Console.ReadLine().Split(' ');
 
                 if (data[0].Length < 2) continue;
@@ -123,15 +123,19 @@ namespace DiscordBot
                         {
                             if (name == "")
                             {
-                                Functions.WriteColorText($"Name is invalid");
+                                Console_Utilities.WriteColorText($"Name is invalid");
                                 break;
                             }
-                            Functions.WriteColorText($"Failed to find plugin &b{name} &c! Use &glistplugs &ccommand to display all available plugins !");
+                            Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c! Use &glistplugs &ccommand to display all available plugins !");
                             break;
 
                         }
-                        Downloader dw = new Downloader(name + ".dll", info[1]);
-                        await dw.DownloadFileAsync("./Data/Plugins/", info[0]);
+                        string path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
+                        IProgress<float> progress = new Progress<float>(percent =>
+                        {
+                            Console.Title = $"Downloading {info[0]}: {name} ({MathF.Round(percent, 2)}%)";
+                        });
+                        await ServerCom.DownloadFileAsync(info[1], path, progress);
 
                         // check requirements if any
 
@@ -146,7 +150,7 @@ namespace DiscordBot
                                 string[] split = line.Split(',');
                                 Console.WriteLine($"Downloading item: {split[1]}");
                                 await ServerCom.DownloadFileAsync(split[0], "./" + split[1], i, lines.Count);
-                                Functions.WriteColorText($"Downloaded item {split[1]}");
+                                Console_Utilities.WriteColorText($"Downloaded item {split[1]}");
                                 i++;
                             }
                             Console.WriteLine();
@@ -175,28 +179,33 @@ namespace DiscordBot
                             {
                                 if (Lname == "")
                                 {
-                                    Functions.WriteColorText($"Name is invalid");
+                                    Console_Utilities.WriteColorText($"Name is invalid");
                                     break;
                                 }
-                                Functions.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
+                                Console_Utilities.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
                                 break;
                             }
                             if (link[1].Contains("CrossPlatform") || link[1].Contains("cp"))
                             {
-                                Downloader dwn = new Downloader(Lname + ".lng", link[0]);
-                                await dwn.DownloadFileAsync(Functions.langFolder);
+
+                                string path2 = Functions.langFolder + Lname + ".lng";
+                                IProgress<float> progress1 = new Progress<float>(percent =>
+                                {
+                                    Console.Title = $"Downloading Language: {Lname} ({MathF.Round(percent, 2)}%)";
+                                });
+                                await ServerCom.DownloadFileAsync(link[0], path2, progress1);
                             }
-                            else Functions.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
+                            else Console_Utilities.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
                             break;
                         }
                         catch
                         {
                             if (Lname == "")
                             {
-                                Functions.WriteColorText($"Name is invalid");
+                                Console_Utilities.WriteColorText($"Name is invalid");
                                 break;
                             }
-                            Functions.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
+                            Console_Utilities.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
                             break;
                         }
 
@@ -301,7 +310,7 @@ namespace DiscordBot
             if (Language.ActiveLanguage == null)
             {
                 File.WriteAllText(langSettings, "Language=English");
-                Functions.WriteColorText($"Failed to find language &r{langname} &c! Check available languages using command: &glistlang");
+                Console_Utilities.WriteColorText($"Failed to find language &r{langname} &c! Check available languages using command: &glistlang");
 
                 return false;
             }
@@ -319,13 +328,13 @@ namespace DiscordBot
                 bool success = LoadLanguage();
                 if (success)
                 {
-                    Functions.WriteColorText($"Language has been setted to: &g{LanguageName}");
+                    Console_Utilities.WriteColorText($"Language has been setted to: &g{LanguageName}");
                     return;
                 }
             }
             catch (Exception ex)
             {
-                Functions.WriteColorText($"Could not find language &r{LanguageName}.");
+                Console_Utilities.WriteColorText($"Could not find language &r{LanguageName}.");
                 Functions.WriteErrFile(ex.ToString());
                 File.WriteAllText(langSettings, "Language=English");
                 LoadLanguage();

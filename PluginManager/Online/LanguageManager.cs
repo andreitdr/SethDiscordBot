@@ -15,13 +15,17 @@ namespace PluginManager.Online
 
         public async Task ListAllLanguages()
         {
+
             try
             {
-#pragma warning disable SYSLIB0014
-                WebClient client = new WebClient();
-#pragma warning restore SYSLIB0014
-                Stream data = await client.OpenReadTaskAsync(link);
-                string[] lines = (await new StreamReader(data).ReadToEndAsync()).Split('\n');
+                /*#pragma warning disable SYSLIB0014
+                                WebClient client = new WebClient();
+                #pragma warning restore SYSLIB0014
+                                Stream data = await client.OpenReadTaskAsync(link);
+                                string[] lines = (await new StreamReader(data).ReadToEndAsync()).Split('\n');*/
+                List<string> list = await ServerCom.ReadTextFromFile(link);
+                string[] lines = list.ToArray();
+
                 List<string[]> info = new List<string[]>();
                 info.Add(new string[] { "-", "-" });
                 info.Add(new string[] { "Language Name", "File Size" });
@@ -34,7 +38,7 @@ namespace PluginManager.Online
                         info.Add(new string[] { d[0], d[1] });
                 }
                 info.Add(new string[] { "-", "-" });
-                Functions.FormatAndAlignTable(info);
+                Console_Utilities.FormatAndAlignTable(info);
             }
 
             catch (Exception exception)
@@ -49,11 +53,9 @@ namespace PluginManager.Online
         {
             try
             {
-#pragma warning disable SYSLIB0014
-                WebClient client = new WebClient();
-#pragma warning restore SYSLIB0014
-                Stream data = await client.OpenReadTaskAsync(link);
-                string[] lines = (await new StreamReader(data).ReadToEndAsync()).Split('\n');
+                List<string> list = await ServerCom.ReadTextFromFile(link);
+                string[] lines = list.ToArray();
+
                 foreach (var line in lines)
                 {
                     if (line.Length <= 2) continue;

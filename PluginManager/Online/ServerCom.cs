@@ -1,4 +1,5 @@
 ﻿using PluginManager.Items;
+using PluginManager.Online.Helpers;
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,14 @@ namespace PluginManager.Online
     {
         public static async Task<List<string>> ReadTextFromFile(string link)
         {
+            string response = await OnlineFunctions.DownloadStringAsync(link);
+            string[] lines = response.Split('\n');
+            return lines.ToList();
+
+
+            //[Obsolete]
+            #region old code for reading text from link
+            /*
             List<string> s = new List<string>();
             WebClient webClient = new WebClient();
             var data = await webClient.OpenReadTaskAsync(link);
@@ -21,12 +30,38 @@ namespace PluginManager.Online
             s.AddRange(from a in response.Split('\n')
                        where !a.StartsWith("$")
                        select a);
-            return s;
+            return s;*/
+            #endregion
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
+        public static async Task DownloadFileAsync(string URL, string location, IProgress<float> progress)
+        {
+            using (var client = new System.Net.Http.HttpClient())
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+
+                using (var file = new FileStream(location, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await client.DownloadFileAsync(URL, file, progress);
+                }
+            }
+        }
+
         public static async Task DownloadFileAsync(string url, string location, int downloadNumber, int totalToDownload)
         {
+
+            IProgress<float> progress = new Progress<float>(bytes =>
+            {
+                Console.Title = $"Downloading {MathF.Round(bytes, 2)}% ({downloadNumber}/{totalToDownload})";
+            });
+
+            await DownloadFileAsync(url, location, progress);
+            Console.Title = "ONLINE";
+            return;
+
+            //[Obsolete]
+            #region old download code
+            /*
             WebClient client = new WebClient();
             Spinner spinner = new Spinner();
             Console.Write("Downloading ");
@@ -52,8 +87,9 @@ namespace PluginManager.Online
             finally
             {
                 Console.Title = oldTitle;
-            }
+            }*/
 
+            #endregion
         }
     }
 }

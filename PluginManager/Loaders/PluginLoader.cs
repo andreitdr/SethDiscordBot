@@ -40,7 +40,7 @@ namespace PluginManager.Loaders
 
             Functions.WriteLogFile("Starting plugin loader...");
             if (LanguageSystem.Language.ActiveLanguage != null)
-                Functions.WriteColorText(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["PLUGIN_LOADING_START"]));
+                Console_Utilities.WriteColorText(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["PLUGIN_LOADING_START"]));
 
             //Load commands
             CommandsLoader CMDLoader = new CommandsLoader(pluginCMDFolder, pluginCMDExtension);
