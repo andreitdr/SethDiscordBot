@@ -15,16 +15,22 @@ namespace MusicCommands
 
         public string Description => "Play music from a link";
 
-        public string Usage => "lplay [name]";
+        public string Usage => "lplay [url]";
 
         public bool canUseDM => false;
 
-        public bool canUseServer => false;
+        public bool canUseServer => true;
 
         public bool requireAdmin => false;
 
         public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
+            string URL = message.Content.Split(' ')[1];
+            if (!URL.EndsWith(".mp3") && !URL.EndsWith(".wav") && !URL.EndsWith(".flac") && !URL.EndsWith(".ogg"))
+            {
+                await message.Channel.SendMessageAsync("Invalid URL");
+                return;
+            }
 
             Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
             if (Data.voiceChannel == null) { await context.Channel.SendMessageAsync("User must be in a voice channel, or a voice channel must be passed as an argument."); return; }
@@ -33,11 +39,13 @@ namespace MusicCommands
 
             using (var discord = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
             {
-                if (Data.CurrentlyRunning != null)
-                    Data.CurrentlyRunning.Stop();
-                LinkMusic music = new LinkMusic(Functions.GetArguments(message)[0]);
-                Data.CurrentlyRunning = new MusicPlayer(await music.GetStream(), discord);
-                await Data.CurrentlyRunning.StartSendAudio();
+
+
+                await message.Channel.SendMessageAsync("Loading...");
+
+                Data.CurrentlyRunning = new MusicPlayer(discord);
+                await Data.CurrentlyRunning.StartSendAudioFromLink(URL);
+
             }
         }
 
