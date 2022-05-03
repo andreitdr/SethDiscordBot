@@ -83,6 +83,10 @@ namespace DiscordBot
                 await manager.ListAvailablePlugins();
             if (listLanguagAtStartup)
                 await languageManager.ListAllLanguages();
+
+            IProgress<float> progress = null;
+
+
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -131,7 +135,7 @@ namespace DiscordBot
 
                         }
                         string path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
-                        IProgress<float> progress = new Progress<float>(percent =>
+                        progress = new Progress<float>(percent =>
                         {
                             Console.Title = $"Downloading {info[0]}: {name} ({MathF.Round(percent, 2)}%)";
                         });
@@ -145,11 +149,16 @@ namespace DiscordBot
                             //
                             List<string> lines = await ServerCom.ReadTextFromFile(info[2]);
                             int i = 1;
+
                             foreach (var line in lines)
                             {
                                 string[] split = line.Split(',');
                                 Console.WriteLine($"Downloading item: {split[1]}");
-                                await ServerCom.DownloadFileAsync(split[0], "./" + split[1], i, lines.Count);
+                                progress = new Progress<float>(bytes =>
+                                {
+                                    Console.Title = $"Downloading {MathF.Round(bytes, 2)}% ({i}/{lines.Count})";
+                                });
+                                await ServerCom.DownloadFileAsync(split[0], "./" + split[1], progress);
                                 Console_Utilities.WriteColorText($"Downloaded item {split[1]}");
                                 i++;
                             }

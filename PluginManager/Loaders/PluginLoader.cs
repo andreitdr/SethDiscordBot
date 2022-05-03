@@ -10,6 +10,11 @@ namespace PluginManager.Loaders
     public class PluginLoader
     {
         private DiscordSocketClient client;
+
+        /// <summary>
+        /// The Plugin Loader constructor
+        /// </summary>
+        /// <param name="discordSocketClient">The discord bot client where the plugins will pe attached to</param>
         public PluginLoader(DiscordSocketClient discordSocketClient)
         {
             this.client = discordSocketClient;
@@ -21,17 +26,33 @@ namespace PluginManager.Loaders
         private const string pluginCMDExtension = ".dll";
         private const string pluginEVEExtension = ".dll";
 
-
+        /// <summary>
+        /// A list of <see cref="DBCommand"/> commands
+        /// </summary>
         public static List<DBCommand>? Plugins { get; set; }
+
+        /// <summary>
+        /// A list of <see cref="DBEvent"/> commands
+        /// </summary>
         public static List<DBEvent>? Events { get; set; }
 
-        public delegate void CMDLoaded(string name, string typeName, bool success, Exception? e = null);
 
+        public delegate void CMDLoaded(string name, string typeName, bool success, Exception? e = null);
         public delegate void EVELoaded(string name, string typeName, bool success, Exception? e = null);
 
+        /// <summary>
+        /// Event that is fired when a <see cref="DBCommand"/> is successfully loaded into commands list
+        /// </summary>
         public CMDLoaded? onCMDLoad;
+
+        /// <summary>
+        /// Event that is fired when a <see cref="DBEvent"/> is successfully loaded into events list
+        /// </summary>
         public EVELoaded? onEVELoad;
 
+        /// <summary>
+        /// The main mathod that is called to load all events
+        /// </summary>
         public void LoadPlugins()
         {
 

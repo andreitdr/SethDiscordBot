@@ -11,21 +11,53 @@ namespace PluginManager.Core
 {
     internal class Boot
     {
+        /// <summary>
+        /// The bot prefix
+        /// </summary>
         public readonly string botPrefix;
+
+        /// <summary>
+        /// The bot token
+        /// </summary>
         public readonly string botToken;
 
-        private bool isReady = false;
 
+        /// <summary>
+        /// Checks if the bot is ready
+        /// </summary>
+        /// <value> true if the bot is ready, othwerwise false </value>
+        public bool isReady { get; private set; } = false;
+
+        /// <summary>
+        /// The bot client
+        /// </summary>
         public DiscordSocketClient client;
+
+        /// <summary>
+        /// The bot command handler
+        /// </summary>
         private CommandHandler commandServiceHandler;
+
+        /// <summary>
+        /// The command service
+        /// </summary>
         private CommandService service;
 
+        /// <summary>
+        /// The main Boot constructor
+        /// </summary>
+        /// <param name="botToken">The bot token</param>
+        /// <param name="botPrefix">The bot prefix</param>
         public Boot(string botToken, string botPrefix)
         {
             this.botPrefix = botPrefix;
             this.botToken = botToken;
         }
 
+        /// <summary>
+        /// The start method for the bot. This method is used to load the bot
+        /// </summary>
+        /// <returns>Task</returns>
         public async Task Awake()
         {
             client = new DiscordSocketClient();
@@ -39,10 +71,15 @@ namespace PluginManager.Core
             commandServiceHandler = new CommandHandler(client, service, botPrefix);
             await commandServiceHandler.InstallCommandsAsync();
 
+            //wait for isReady to become true
             while (!isReady) ;
 
         }
 
+        /// <summary>
+        /// The method that stops the bot from running
+        /// </summary>
+        /// <returns></returns>
         public async Task ShutDown()
         {
             if (client == null) return;

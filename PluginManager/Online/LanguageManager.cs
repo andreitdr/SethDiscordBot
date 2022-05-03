@@ -11,8 +11,17 @@ namespace PluginManager.Online
     public class LanguageManager
     {
         private string link;
+
+        /// <summary>
+        /// The Language Manager constructor
+        /// </summary>
+        /// <param name="link">The link to where all the languages for the bot are stored</param>
         public LanguageManager(string link) => this.link = link;
 
+        /// <summary>
+        /// The method to list all languages
+        /// </summary>
+        /// <returns></returns>
         public async Task ListAllLanguages()
         {
 
@@ -49,6 +58,11 @@ namespace PluginManager.Online
 
         }
 
+        /// <summary>
+        /// A function that gets the download link for specified language
+        /// </summary>
+        /// <param name="langName">The name of the language</param>
+        /// <returns></returns>
         public async Task<string[]?> GetDownloadLink(string langName)
         {
             try

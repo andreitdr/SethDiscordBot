@@ -8,10 +8,34 @@ namespace PluginManager.LanguageSystem
 {
     public class Language
     {
+        /// <summary>
+        /// The active language
+        /// </summary>
         public static Language? ActiveLanguage = null;
 
         private static readonly string LanguageFileExtension = ".lng";
 
+        /// <summary>
+        /// The name of the language
+        /// </summary>
+        public string LanguageName { get; }
+
+        /// <summary>
+        /// The file where the language is imported from
+        /// </summary>
+        public string fileName { get; }
+
+        /// <summary>
+        /// The dictionary of the language
+        /// </summary>
+        public Dictionary<string, string> LanguageWords { get; }
+
+        /// <summary>
+        /// The Language constructor
+        /// </summary>
+        /// <param name="fileName">The file to import the language from</param>
+        /// <param name="words">The dictionary of the language</param>
+        /// <param name="LanguageName">The name of the language</param>
         private Language(string fileName, Dictionary<string, string> words, string LanguageName)
         {
             this.fileName = fileName;
@@ -19,12 +43,11 @@ namespace PluginManager.LanguageSystem
             LanguageWords = words;
         }
 
-        public string LanguageName { get; }
-
-        public string fileName { get; }
-
-        public Dictionary<string, string> LanguageWords { get; }
-
+        /// <summary>
+        /// Load language from file
+        /// </summary>
+        /// <param name="LanguageFileLocation">The file path</param>
+        /// <returns></returns>
         public static Language? CreateLanguageFromFile(string LanguageFileLocation)
         {
             if (!LanguageFileLocation.EndsWith(LanguageFileExtension))
@@ -58,6 +81,12 @@ namespace PluginManager.LanguageSystem
             return new Language(LanguageFileLocation, words, languageName);
         }
 
+        /// <summary>
+        /// Format text by inserting parameters
+        /// </summary>
+        /// <param name="text">The raw text</param>
+        /// <param name="args">The arguments</param>
+        /// <returns></returns>
         public string FormatText(string text, params string[] args)
         {
             if (ActiveLanguage == null) return text;

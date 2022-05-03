@@ -8,25 +8,41 @@ using PluginManager.Interfaces;
 
 namespace PluginManager.Loaders
 {
-    public class EventsLoader
+    internal class EventsLoader
     {
 
         private readonly string EVPath;
         private readonly string EVExtension;
 
-        public delegate void onEventLoad(string name, bool success, DBEvent? ev = null, Exception? e = null);
-        public delegate void onEventFileLoaded(string path);
+        internal delegate void onEventLoad(string name, bool success, DBEvent? ev = null, Exception? e = null);
+        internal delegate void onEventFileLoaded(string path);
 
-        public onEventLoad? EventLoad;
-        public onEventFileLoaded? EventFileLoaded;
+        /// <summary>
+        /// An event that is fired whenever a <see cref="DBEvent"/> event is loaded in memory
+        /// </summary>
+        internal onEventLoad? EventLoad;
 
-        public EventsLoader(string path, string ext)
+        /// <summary>
+        /// An event that is fired whenever a <see cref="DBEvent"/> event file is loaded
+        /// </summary>
+        internal onEventFileLoaded? EventFileLoaded;
+
+        /// <summary>
+        /// The Event Loader constructor
+        /// </summary>
+        /// <param name="path">The path to all events</param>
+        /// <param name="ext">The extension for events</param>
+        internal EventsLoader(string path, string ext)
         {
             EVPath = path;
             EVExtension = ext;
         }
 
-        public List<DBEvent>? LoadEvents()
+        /// <summary>
+        /// The method that loads all events
+        /// </summary>
+        /// <returns></returns>
+        internal List<DBEvent>? LoadEvents()
         {
 
             if (!Directory.Exists(EVPath))

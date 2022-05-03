@@ -199,30 +199,6 @@ namespace PluginManager.Others
 
         }
 
-        public static string FromHexToString(string hexString)
-        {
-            var bytes = new byte[hexString.Length / 2];
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                bytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
-            }
-
-            return System.Text.Encoding.Unicode.GetString(bytes);
-        }
-
-        public static string ToHexString(string str)
-        {
-            var sb = new System.Text.StringBuilder();
-
-            var bytes = System.Text.Encoding.Unicode.GetBytes(str);
-            foreach (var t in bytes)
-            {
-                sb.Append(t.ToString("X2"));
-            }
-
-            return sb.ToString();
-        }
-
         /// <summary>
         /// Copy one Stream to another <see langword="async"/>
         /// </summary>

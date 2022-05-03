@@ -14,26 +14,49 @@ using ds = Discord;
 
 using PluginManager.Interfaces;
 using PluginManager.Others.Permissions;
-using PluginManager.Online;
 using PluginManager.Others;
 
 namespace DiscordBot.Discord.Commands
 {
-    class Restart : DBCommand
+    internal class Restart : DBCommand
     {
-        string DBCommand.Command => "restart";
+        /// <summary>
+        /// Command name
+        /// </summary>
+        public string Command => "restart";
 
-        string DBCommand.Description => "Restart the bot";
+        /// <summary>
+        /// Command Description
+        /// </summary>
+        public string Description => "Restart the bot";
 
-        string DBCommand.Usage => "restart [-option]";
+        /// <summary>
+        /// Command usage
+        /// </summary>
+        public string Usage => "restart [-p | -c | -args | -cmd] <args>";
 
-        bool DBCommand.canUseDM => false;
+        /// <summary>
+        /// Check if the command can be used <inheritdoca DM <see cref="IChannel"/>/>
+        /// </summary>
+        public bool canUseDM => false;
 
-        bool DBCommand.canUseServer => true;
+        /// <summary>
+        /// Check if the command can be used in a server
+        /// </summary>
+        public bool canUseServer => true;
 
-        bool DBCommand.requireAdmin => true;
-
-        void DBCommand.Execute(dsc.SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+        /// <summary>
+        /// Check if the command require administrator to be executed
+        /// </summary>
+        public bool requireAdmin => false;
+        /// <summary>
+        /// The main body of the command
+        /// </summary>
+        /// <param name="context">The command context</param>
+        /// <param name="message">The command message</param>
+        /// <param name="client">The discord bot client</param>
+        /// <param name="isDM">True if the message was sent from a DM channel, false otherwise</param>
+        public async void Execute(dsc.SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
             if (!DiscordPermissions.hasPermission(message.Author as SocketGuildUser, ds.GuildPermission.Administrator)) return;
             var args = Functions.GetArguments(message);
@@ -78,6 +101,9 @@ namespace DiscordBot.Discord.Commands
                             return;
                     }
                     Environment.Exit(0);
+                    break;
+                default:
+                    await context.Channel.SendMessageAsync("Invalid argument. Use `help restart` to see the usage.");
                     break;
 
 

@@ -5,13 +5,22 @@ namespace PluginManager.Items
 {
     public class Spinner
     {
+        /// <summary>
+        /// True if active, false otherwise
+        /// </summary>
         public bool isSpinning;
 
+        /// <summary>
+        /// The Spinner constructor
+        /// </summary>
         public Spinner()
         {
             isSpinning = false;
         }
 
+        /// <summary>
+        /// The method that is called to start spinning the spinner
+        /// </summary>
         public async void Start()
         {
             isSpinning = true;
@@ -32,8 +41,13 @@ namespace PluginManager.Items
             }
         }
 
+        /// <summary>
+        /// The method that is called to stop the spinner from spinning
+        /// </summary>
         public void Stop()
         {
+            if (!isSpinning)
+                throw new Others.Exceptions.APIException("The spinner was not running", "Stop()");
             isSpinning = false;
         }
     }

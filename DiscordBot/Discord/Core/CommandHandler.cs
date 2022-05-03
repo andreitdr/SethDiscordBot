@@ -21,6 +21,12 @@ namespace PluginManager.Core
         private readonly CommandService commandService;
         private readonly string botPrefix;
 
+        /// <summary>
+        /// Command handler constructor
+        /// </summary>
+        /// <param name="client">The discord bot client</param>
+        /// <param name="commandService">The discord bot command service</param>
+        /// <param name="botPrefix">The prefix to watch for</param>
         public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
         {
             this.client = client;
@@ -28,12 +34,21 @@ namespace PluginManager.Core
             this.botPrefix = botPrefix;
         }
 
+        /// <summary>
+        /// The method to initialize all commands
+        /// </summary>
+        /// <returns></returns>
         public async Task InstallCommandsAsync()
         {
             client.MessageReceived += MessageHandler;
             await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
         }
 
+        /// <summary>
+        /// The message handler for the bot
+        /// </summary>
+        /// <param name="Message">The message got from the user in discord chat</param>
+        /// <returns></returns>
         private async Task MessageHandler(SocketMessage Message)
         {
             try
@@ -44,6 +59,8 @@ namespace PluginManager.Core
                 var message = Message as SocketUserMessage;
 
                 if (message == null) return;
+
+                if (!message.Content.StartsWith(botPrefix)) return;
 
                 int argPos = 0;
 

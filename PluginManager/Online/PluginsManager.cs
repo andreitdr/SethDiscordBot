@@ -10,13 +10,24 @@ namespace PluginManager.Online
 {
     public class PluginsManager
     {
+        /// <summary>
+        /// The URL of the server
+        /// </summary>
         public string PluginsLink { get; private set; }
 
+        /// <summary>
+        /// The Plugin Manager constructor
+        /// </summary>
+        /// <param name="link">The link to the file where all plugins are stored</param>
         public PluginsManager(string link)
         {
             PluginsLink = link;
         }
 
+        /// <summary>
+        /// The method to load all plugins
+        /// </summary>
+        /// <returns></returns>
         public async Task ListAvailablePlugins()
         {
             try
@@ -77,6 +88,11 @@ namespace PluginManager.Online
 
         }
 
+        /// <summary>
+        /// The method to get plugin information by its name
+        /// </summary>
+        /// <param name="name">The plugin name</param>
+        /// <returns></returns>
         public async Task<string[]> GetPluginLinkByName(string name)
         {
             try

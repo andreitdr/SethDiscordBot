@@ -13,10 +13,30 @@ namespace PluginManager.Items
 {
     internal class Command
     {
+        /// <summary>
+        /// The author of the command
+        /// </summary>
         public SocketUser Author;
+
+        /// <summary>
+        /// The list of arguments
+        /// </summary>
         public List<string> Arguments { get; private set; }
+
+        /// <summary>
+        /// The command that is executed
+        /// </summary>
         public string CommandName { get; private set; }
+
+        /// <summary>
+        /// The prefix that is used for the command
+        /// </summary>
         public char PrefixUsed { get; private set; }
+
+        /// <summary>
+        /// The Command class contructor
+        /// </summary>
+        /// <param name="message">The message that was sent</param>
         public Command(SocketMessage message)
         {
             this.Author = message.Author;
@@ -28,6 +48,11 @@ namespace PluginManager.Items
             this.PrefixUsed = data[0][0];
         }
 
+        /// <summary>
+        /// The Command class contructor
+        /// </summary>
+        /// <param name="message">The message string itself</param>
+        /// <param name="hasPrefix">True if the message has a prefix, false if not</param>
         public Command(string message, bool hasPrefix)
         {
             string[] data = message.Split(' ');

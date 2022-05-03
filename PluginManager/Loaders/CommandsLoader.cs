@@ -8,25 +8,41 @@ using PluginManager.Interfaces;
 
 namespace PluginManager.Loaders
 {
-    public class CommandsLoader
+    internal class CommandsLoader
     {
         private readonly string CMDPath;
         private readonly string CMDExtension;
 
-        public delegate void onCommandLoaded(string name, bool success, DBCommand? command = null, Exception? exception = null);
 
-        public delegate void onCommandFileLoaded(string path);
+        internal delegate void onCommandLoaded(string name, bool success, DBCommand? command = null, Exception? exception = null);
+        internal delegate void onCommandFileLoaded(string path);
 
-        public onCommandLoaded? OnCommandLoaded;
-        public onCommandFileLoaded? OnCommandFileLoaded;
+        /// <summary>
+        /// Event fired when a command is loaded
+        /// </summary>
+        internal onCommandLoaded? OnCommandLoaded;
 
-        public CommandsLoader(string CommandPath, string CommandExtension)
+        /// <summary>
+        /// Event fired when the file is loaded
+        /// </summary>
+        internal onCommandFileLoaded? OnCommandFileLoaded;
+
+        /// <summary>
+        /// Command Loader contructor
+        /// </summary>
+        /// <param name="CommandPath">The path to the commands</param>
+        /// <param name="CommandExtension">The extension to search for in the <paramref name="CommandPath"/></param>
+        internal CommandsLoader(string CommandPath, string CommandExtension)
         {
             CMDPath = CommandPath;
             CMDExtension = CommandExtension;
         }
 
-        public List<DBCommand>? LoadCommands()
+        /// <summary>
+        /// The method that loads all commands
+        /// </summary>
+        /// <returns></returns>
+        internal List<DBCommand>? LoadCommands()
         {
             if (!Directory.Exists(CMDPath))
             {
