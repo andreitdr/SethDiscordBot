@@ -48,7 +48,7 @@ namespace PluginManager.Others
         /// <param name="fileName">File name</param>
         /// <param name="Code">Setting name</param>
         /// <param name="separator">Separator between setting key code and its value</param>
-        /// <returns>The value of the specified setting key code in the specified file (STRING)</returns>
+        /// <returns>The value of the specified setting key code in the specified file (<see cref="string"/>)</returns>
         public static string? readCodeFromFile(string fileName, string Code, char separator)
           => File.ReadAllLines(fileName)
             .Where(p => p.StartsWith(Code) && !p.StartsWith(commentMark.ToString()))
@@ -65,9 +65,7 @@ namespace PluginManager.Others
             archFile = pakFolder + archFile;
             Directory.CreateDirectory(pakFolder);
             if (!File.Exists(archFile))
-            {
-                throw new Exception("Failed to load file !");
-            }
+                throw new FileNotFoundException("Failed to load file !");
 
             string? textValue = null;
             var fs = new FileStream(archFile, FileMode.Open);

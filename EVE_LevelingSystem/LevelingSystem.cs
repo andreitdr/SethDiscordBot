@@ -18,7 +18,17 @@ public class LevelingSystem : DBEvent
 
     private async Task Client_MessageReceived(SocketMessage arg)
     {
-        if (arg.Author.IsBot || arg.Attachments.Count > 0 || arg.Content.StartsWith(Functions.readCodeFromFile(System.IO.Path.Combine(Functions.dataFolder, "DiscordBotCore.data"), "BOT_PREFIX", '\t')))
+        if (arg.Author.IsBot || arg.Attachments.Count > 0 ||
+            arg.Content.StartsWith
+            (
+                Functions.readCodeFromFile
+                (
+                    fileName: System.IO.Path.Combine(Functions.dataFolder, "DiscordBotCore.data"),
+                    Code: "BOT_PREFIX",
+                    separator: '='
+                )
+            )
+        )
             return;
 
         if (Core.playerMessages.ContainsKey(arg.Author.Id))

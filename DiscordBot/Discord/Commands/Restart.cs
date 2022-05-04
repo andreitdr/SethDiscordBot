@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
 using System.Diagnostics;
 
-using System.Text;
-using System.Threading.Tasks;
-
 using Discord.WebSocket;
-using dsc = Discord.Commands;
-using ds = Discord;
+using DiscordLibCommands = Discord.Commands;
+using DiscordLib = Discord;
 
 using PluginManager.Interfaces;
 using PluginManager.Others.Permissions;
@@ -56,9 +49,9 @@ namespace DiscordBot.Discord.Commands
         /// <param name="message">The command message</param>
         /// <param name="client">The discord bot client</param>
         /// <param name="isDM">True if the message was sent from a DM channel, false otherwise</param>
-        public async void Execute(dsc.SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+        public async void Execute(DiscordLibCommands.SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
-            if (!DiscordPermissions.hasPermission(message.Author as SocketGuildUser, ds.GuildPermission.Administrator)) return;
+            if (!DiscordPermissions.hasPermission(message.Author as SocketGuildUser, DiscordLib.GuildPermission.Administrator)) return;
             var args = Functions.GetArguments(message);
             var OS = Functions.GetOperatinSystem();
             if (args.Count == 0)
@@ -87,15 +80,22 @@ namespace DiscordBot.Discord.Commands
                     break;
                 case "-cmd":
                 case "-args":
+                    string cmd = "--args";
+
+                    if (args.Count > 1)
+                        for (int i = 1; i < args.Count; i++)
+                            cmd += $" {args[i]}";
+
 
                     switch (OS)
                     {
                         case PluginManager.Others.OperatingSystem.WINDOWS:
-                            Process.Start("./DiscordBot.exe", Functions.MergeStrings(args.ToArray(), 1));
+                            Functions.WriteLogFile("Restarting the bot with the following arguments: \"" + cmd + "\"");
+                            Process.Start("./DiscordBot.exe", cmd);
                             break;
                         case PluginManager.Others.OperatingSystem.LINUX:
                         case PluginManager.Others.OperatingSystem.MAC_OS:
-                            Process.Start("./DiscordBot", Functions.MergeStrings(args.ToArray(), 1));
+                            Process.Start("./DiscordBot", cmd);
                             break;
                         default:
                             return;

@@ -36,9 +36,9 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '\t')!.Length != 59)
+            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=')!.Length != 59)
             {
-                File.WriteAllText("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN\ttoken\nBOT_PREFIX\t!\n");
+                File.WriteAllText("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN=token\nBOT_PREFIX=!\n");
                 while (true)
                 {
                     Console.WriteLine("Please insert your token: ");
@@ -46,11 +46,10 @@ namespace DiscordBot
                     string botToken = Console.ReadLine();
                     if (botToken.Length == 59)
                     {
-                        string prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX",
-                            '\t');
+                        string prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX", '=');
                         if (prefix == string.Empty || prefix == null)
                             prefix = "!";
-                        File.WriteAllText("./Data/Resources/DiscordBotCore.data", $"BOT_TOKEN\t{botToken}\nBOT_PREFIX\t{prefix}\n");
+                        File.WriteAllText("./Data/Resources/DiscordBotCore.data", $"BOT_TOKEN={botToken}\nBOT_PREFIX={prefix}\n");
                         break;
                     }
                     else Console.WriteLine("Invalid Token !");
@@ -239,7 +238,7 @@ namespace DiscordBot
                         break;
                     case "token":
                         if (File.Exists("./Data/Resources/DiscordBotCore.data"))
-                            Console.WriteLine("Token: " + Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '\t'));
+                            Console.WriteLine("Token: " + Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '='));
                         else Console.WriteLine("File could not be found. Please register token");
                         break;
                     default:
@@ -359,17 +358,12 @@ namespace DiscordBot
 
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("Discord BOT for Cross Platform\n\nCreated by: Wizzy\nDiscord: Wizzy#9181");
+            //Console.WriteLine("Discord BOT for Cross Platform\n\nCreated by: Wizzy\nDiscord: Wizzy#9181");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
-            string token =
-                Functions.readCodeFromFile((Functions.dataFolder + "DiscordBotCore.data"), "BOT_TOKEN",
-                                           '\t');
-            string prefix = Functions.readCodeFromFile((Functions.dataFolder + "DiscordBotCore.data"),
-                                                       "BOT_PREFIX",
-                                                       '\t');
+            string token = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", '=');
+            string prefix = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_PREFIX", '=');
 
-            Console.WriteLine("Detected prefix: " + prefix);
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
             return discordbooter;
@@ -430,7 +424,7 @@ namespace DiscordBot
                 return;
             }
 
-            if (len > 0 && args.Contains("--cmd"))
+            if (len > 0 && (args.Contains("--cmd") || args.Contains("--args")))
             {
                 if (args.Contains("lp") || args.Contains("loadplugins"))
                     loadPluginsOnStartup = true;
