@@ -12,6 +12,7 @@ using PluginManager.Online;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace DiscordBot
 {
@@ -83,7 +84,10 @@ namespace DiscordBot
             if (listLanguagAtStartup)
                 await languageManager.ListAllLanguages();
 
+            Console_Utilities.ProgressBar pbar;
             IProgress<float> progress = null;
+            Task t;
+            int prg = 0;
 
 
             while (true)
@@ -136,9 +140,28 @@ namespace DiscordBot
                         string path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
                         progress = new Progress<float>(percent =>
                         {
-                            Console.Title = $"Downloading {info[0]}: {name} ({MathF.Round(percent, 2)}%)";
+                            prg = (int)percent;
+                            /*Console.Title = $"Downloading: {Lname} ({MathF.Round(percent, 2)}%)";*/
                         });
+                        pbar = new Console_Utilities.ProgressBar(100, "Downloading Plugin");
+                        Console.WriteLine();
+                        t = new Task(async () =>
+                        {
+                            while (true)
+                            {
+                                if (prg == 100) break;
+                                pbar.Update(prg);
+
+                                Thread.Sleep(500);
+                            }
+
+                        });
+                        new Thread(t.Start).Start();
                         await ServerCom.DownloadFileAsync(info[1], path, progress);
+                        //Console.WriteLine();
+                        pbar.Update(100);
+                        prg = 100;
+                        Console.WriteLine("\n");
 
                         // check requirements if any
 
@@ -152,13 +175,33 @@ namespace DiscordBot
                             foreach (var line in lines)
                             {
                                 string[] split = line.Split(',');
-                                Console.WriteLine($"Downloading item: {split[1]}");
-                                progress = new Progress<float>(bytes =>
+                                Console.WriteLine($"\nDownloading item: {split[1]}");
+                                progress = new Progress<float>(percent =>
                                 {
-                                    Console.Title = $"Downloading {MathF.Round(bytes, 2)}% ({i}/{lines.Count})";
+                                    prg = (int)percent;
                                 });
+
+                                pbar = new Console_Utilities.ProgressBar(100, "Downloading Requirements");
+                                bool finish = false;
+                                t = new Task(async () =>
+                                {
+                                    while (!finish)
+                                    {
+                                        pbar.Update(prg);
+                                        //if (prg == 100) break;
+                                        Thread.Sleep(500);
+                                    }
+
+                                });
+                                new Thread(t.Start).Start();
                                 await ServerCom.DownloadFileAsync(split[0], "./" + split[1], progress);
-                                Console_Utilities.WriteColorText($"Downloaded item {split[1]}");
+                                // prg = 100;
+                                finish = true;
+                                pbar.Update(100);
+
+
+
+                                Console.WriteLine();
                                 i++;
                             }
                             Console.WriteLine();
@@ -197,11 +240,31 @@ namespace DiscordBot
                             {
 
                                 string path2 = Functions.langFolder + Lname + ".lng";
-                                IProgress<float> progress1 = new Progress<float>(percent =>
+
+                                progress = new Progress<float>(percent =>
                                 {
-                                    Console.Title = $"Downloading Language: {Lname} ({MathF.Round(percent, 2)}%)";
+                                    prg = (int)percent;
+                                    /*Console.Title = $"Downloading: {Lname} ({MathF.Round(percent, 2)}%)";*/
                                 });
-                                await ServerCom.DownloadFileAsync(link[0], path2, progress1);
+                                pbar = new Console_Utilities.ProgressBar(100, "Downloading Language");
+
+                                t = new Task(async () =>
+                                {
+                                    while (true)
+                                    {
+                                        if (prg == 100) break;
+                                        pbar.Update(prg);
+
+                                        Thread.Sleep(500);
+                                    }
+
+                                });
+                                new Thread(t.Start).Start();
+
+                                await ServerCom.DownloadFileAsync(link[0], path2, progress);
+                                pbar.Update(100);
+                                prg = 100;
+                                Console.WriteLine("\n");
                             }
                             else Console_Utilities.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
                             break;
@@ -392,6 +455,20 @@ namespace DiscordBot
         /// <param name="args">The arguments</param>
         private static async Task HandleInput(string[] args)
         {
+
+            if (args.Length > 0)
+                if (args[0] == "progress")
+                {
+                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(100, "Download");
+                    for (int i = 0; i <= 100; i++)
+                    {
+                        bar.Update(i);
+                        await Task.Delay(10);
+
+                    }
+                    return;
+                }
+
 
             if (args.Length == 0)
             {

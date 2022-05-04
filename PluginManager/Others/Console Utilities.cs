@@ -2,12 +2,71 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PluginManager.Others
 {
     public class Console_Utilities
     {
+        /// <summary>
+        /// Progress bar object
+        /// </summary>
+        public class ProgressBar
+        {
+            public int Progress { get; set; }
+            public int Max { get; set; }
+            public string Message { get; set; }
+
+            public ProgressBar(int max, string message)
+            {
+                Max = max;
+                Message = message;
+            }
+
+            public async void Update(int progress, bool r = false)
+            {
+
+                //progress bar
+                Console.CursorLeft = 0;
+                Console.Write("[");
+                Console.CursorLeft = 32;
+                Console.Write("]");
+                Console.CursorLeft = 1;
+                float onechunk = 30.0f / Max;
+
+                int position = 1;
+
+                for (int i = 0; i < onechunk * progress; i++)
+                {
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    Console.CursorLeft = position++;
+                    Console.Write(" ");
+                }
+
+                for (int i = position; i <= 31; i++)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.CursorLeft = position++;
+                    Console.Write(" ");
+                }
+
+                Console.CursorLeft = 35;
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Write(progress.ToString() + " of " + Max.ToString() + "    ");
+
+                if (r == false)
+                    Update(progress, true);
+
+            }
+
+            public void Finish()
+            {
+                Console.Write("\r{0} {1}%", Message, 100);
+                Console.WriteLine();
+            }
+        }
+
 
         /// <summary>
         /// A way to create a table based on input data
@@ -65,56 +124,6 @@ namespace PluginManager.Others
                 Console.WriteLine(); //end line
 
             }
-
-
-            //Obsolite
-            #region Old Code -> Spacing by the lomgest item in any cell
-            /*
-            int maxLen = 0;
-            foreach (string[] row in data)
-                foreach (string s in row)
-                    if (s.Length > maxLen)
-                        maxLen = s.Length;
-
-            int div = (maxLen + 4) / 2;
-
-            foreach (string[] row in data)
-            {
-                //Console.Write("\t");
-                if (row[0] == "-") Console.Write("+");
-                else Console.Write("|");
-
-                foreach (string s in row)
-                {
-                    if (s == "-")
-                    {
-                        for (int i = 0; i < maxLen + 4; ++i)
-                            Console.Write("-");
-                    }
-                    else if (s.Length == maxLen)
-                    {
-                        Console.Write("  ");
-                        Console.Write(s);
-                        Console.Write("  ");
-                    }
-                    else
-                    {
-                        int lenHalf = s.Length / 2;
-                        for (int i = 0; i < div - lenHalf; ++i)
-                            Console.Write(" ");
-                        Console.Write(s);
-                        for (int i = div + lenHalf + 1; i < maxLen + 4; ++i)
-                            Console.Write(" ");
-                        if (s.Length % 2 == 0)
-                            Console.Write(" ");
-                    }
-
-                    if (s == "-") Console.Write("+");
-                    else Console.Write("|");
-                }
-                Console.WriteLine(); //end line
-            }*/
-            #endregion
         }
 
         /// <summary>
