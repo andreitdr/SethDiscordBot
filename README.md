@@ -34,6 +34,7 @@ after one successfull build.
 ![Imgur Image](https://i.imgur.com/GEjShdl.png)
 
 1. Commands
+
 Commands are loaded when all plugins are loaded into memory. When an user executes the command, only then the Execute function is called.
 Commands are plugins that allow users to interact with them. 
 Here is an example of class that is a command class
