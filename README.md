@@ -18,10 +18,19 @@ Plugin Types:
 
 First of all, Create a new project (class library) in Visual Studio.
 ![Imgur Image](https://i.imgur.com/KUqzKsB.png)
+
 ![Imgur Image](https://i.imgur.com/JzpEViR.png)
+
 ![Imgur Image](https://i.imgur.com/vtoEepX.png)
+
 ![Imgur Image](https://i.imgur.com/ceaVR2R.png)
+
+Now, let's add the PluginManager reference. It can be found inside the bot's main folder under
+`DiscordBot/bin/Debug/net6.0/PluginManager.dll` or `PluginManager/bin/Debug/net6.0/PluginManager.dll`
+after one successfull build.
+
 ![Imgur Image](https://i.imgur.com/UMSitk4.png)
+
 ![Imgur Image](https://i.imgur.com/GEjShdl.png)
 
 1. Commands
