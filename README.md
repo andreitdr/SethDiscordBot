@@ -49,7 +49,7 @@ namespace CMD_Utils
 }
 
 ```
-####Definitions:
+#### Definitions:
 - Command - The keyword that triggers the execution for the command. This is what players must type in order to execute your command
 - Description - The description of your command. Can be anything you like
 - Usage - The usage of your command. This is what `help [Command]` command will display
