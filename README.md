@@ -8,6 +8,7 @@ This project is based on .NET 6 (C#) and [Discord.Net](https://github.com/discor
 #### Requirements:
 - [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
 - .NET 6 (downloaded with Visual Studio)
+
 Plugin Types:
 1. Commands
 2. Events
