@@ -24,7 +24,7 @@ namespace PluginManager.Others
                 Message = message;
             }
 
-            public async void Update(int progress, bool r = false)
+            public async void Update(int progress, double speed = -1, string unit = null)
             {
 
                 //progress bar
@@ -53,10 +53,17 @@ namespace PluginManager.Others
 
                 Console.CursorLeft = 35;
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write(progress.ToString() + " of " + Max.ToString() + "    ");
+                if (speed == -1 || unit == null)
+                {
+                    if (progress == Max)
+                        Console.Write(progress.ToString() + " %      ✓");
+                    else Console.Write(progress.ToString() + " %       ");
+                }
+                else
+                    Console.Write(progress.ToString() + $"{speed} {unit}/s        ");
 
-                if (r == false)
-                    Update(progress, true);
+                //if (r == false)
+                //Update(progress, true);
 
             }
 

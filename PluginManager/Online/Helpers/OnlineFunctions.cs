@@ -18,7 +18,8 @@ namespace PluginManager.Online.Helpers
         /// <param name="progress">The <see cref="IProgress{T}"/> that is used to track the download progress</param>
         /// <param name="cancellation">The cancellation token</param>
         /// <returns></returns>
-        internal static async Task DownloadFileAsync(this HttpClient client, string url, Stream destination, IProgress<float> progress = null, CancellationToken cancellation = default)
+        internal static async Task DownloadFileAsync(this HttpClient client, string url, Stream destination,
+            IProgress<float> progress = null, IProgress<long> downloadedBytes = null, CancellationToken cancellation = default)
         {
             using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
             {
@@ -36,7 +37,11 @@ namespace PluginManager.Online.Helpers
                     }
 
                     // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
-                    var relativeProgress = new Progress<long>(totalBytes => progress.Report((float)totalBytes / contentLength.Value * 100));
+                    var relativeProgress = new Progress<long>(totalBytes =>
+                    {
+                        progress.Report((float)totalBytes / contentLength.Value * 100);
+                        downloadedBytes.Report(totalBytes);
+                    });
                     // Use extension method to report progress while downloading
                     await download.CopyToOtherStreamAsync(destination, 81920, relativeProgress, cancellation);
                     progress.Report(1);
