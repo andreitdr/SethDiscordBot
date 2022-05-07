@@ -96,7 +96,6 @@ namespace PluginManager.Others
 
             foreach (string[] row in data)
             {
-                //Console.Write("\t");
                 if (row[0][0] == tableLine) Console.Write(tableCross);
                 else Console.Write(tableWall);
                 for (int l = 0; l < row.Length; l++)
@@ -135,7 +134,6 @@ namespace PluginManager.Others
 
         /// <summary>
         /// Write the text using color options( &g-green; &b-blue; &r-red; &c-clear; )
-        /// 
         /// </summary>
         /// <param name="text">The text</param>
         public static void WriteColorText(string text, bool appendNewLine = true)

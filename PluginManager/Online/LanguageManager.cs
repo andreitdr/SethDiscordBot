@@ -27,11 +27,6 @@ namespace PluginManager.Online
 
             try
             {
-                /*#pragma warning disable SYSLIB0014
-                                WebClient client = new WebClient();
-                #pragma warning restore SYSLIB0014
-                                Stream data = await client.OpenReadTaskAsync(link);
-                                string[] lines = (await new StreamReader(data).ReadToEndAsync()).Split('\n');*/
                 List<string> list = await ServerCom.ReadTextFromFile(link);
                 string[] lines = list.ToArray();
 

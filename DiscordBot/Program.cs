@@ -9,11 +9,10 @@ using PluginManager.Others;
 using PluginManager.Loaders;
 using PluginManager.LanguageSystem;
 using PluginManager.Online;
+
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-
 namespace DiscordBot
 {
     public class Program
@@ -37,7 +36,7 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=')!.Length != 59)
+            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || (Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=').Length != 59 && Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=').Length != 70))
             {
                 File.WriteAllText("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN=token\nBOT_PREFIX=!\n");
                 while (true)
@@ -45,7 +44,7 @@ namespace DiscordBot
                     Console.WriteLine("Please insert your token: ");
                     Console.Write("TOKEN: ");
                     string botToken = Console.ReadLine();
-                    if (botToken.Length == 59)
+                    if (botToken.Length == 59 || botToken.Length == 70)
                     {
                         string prefix = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX", '=');
                         if (prefix == string.Empty || prefix == null)
@@ -96,7 +95,9 @@ namespace DiscordBot
                 Console_Utilities.WriteColorText("&mConsole > &c", false);
                 string[] data = Console.ReadLine().Split(' ');
 
-                if (data[0].Length < 2) continue;
+                if (data[0].Length < 2)
+                    continue; // The input command is less then 2 characters long
+
                 switch (data[0])
                 {
                     case "shutdown":

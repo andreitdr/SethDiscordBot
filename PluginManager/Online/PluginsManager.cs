@@ -63,7 +63,7 @@ namespace PluginManager.Online
                             continue;
                         }
                     }
-                    else if (op == PluginManager.Others.OperatingSystem.LINUX)
+                    else if (op == Others.OperatingSystem.LINUX)
                     {
                         if (content[4].Contains("Linux"))
                         {
