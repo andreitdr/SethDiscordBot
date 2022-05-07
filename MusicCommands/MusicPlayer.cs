@@ -37,6 +37,15 @@ namespace MusicCommands
 
         public async Task StartSendAudioFromLink(string URL)
         {
+
+            /*            using (HttpClient client = new HttpClient())
+                        using (HttpResponseMessage response = await client.GetAsync(URL))
+                        using (var content = response.Content)
+                        {
+                            await (await content.ReadAsStreamAsync()).CopyToAsync(outputStream);
+                        }*/
+
+
             Stream ms = new MemoryStream();
             int bsize = 512;
             new Thread(async delegate (object o)

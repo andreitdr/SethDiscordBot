@@ -5,7 +5,6 @@ using Discord.WebSocket;
 using Discord;
 
 using PluginManager.Interfaces;
-using PluginManager.Others;
 
 namespace MusicCommands
 {
@@ -19,7 +18,7 @@ namespace MusicCommands
 
         public bool canUseDM => false;
 
-        public bool canUseServer => true;
+        public bool canUseServer => false;
 
         public bool requireAdmin => false;
 

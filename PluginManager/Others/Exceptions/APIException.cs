@@ -2,7 +2,11 @@ using System;
 
 namespace PluginManager.Others.Exceptions
 {
+    /// <summary>
+    /// Custom Exception for PluginManager
+    /// </summary>
     [Serializable]
+
     public class APIException : Exception
     {
         /// <summary>
