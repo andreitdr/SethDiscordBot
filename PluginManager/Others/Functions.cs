@@ -10,6 +10,9 @@ using System.Threading;
 
 namespace PluginManager.Others
 {
+    /// <summary>
+    /// A special class with functions
+    /// </summary>
     public static class Functions
     {
         /// <summary>
