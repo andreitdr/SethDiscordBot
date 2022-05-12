@@ -16,7 +16,7 @@ namespace PluginManager.Items
         /// <summary>
         /// The author of the command
         /// </summary>
-        public SocketUser Author;
+        public SocketUser? Author;
 
         /// <summary>
         /// The list of arguments
