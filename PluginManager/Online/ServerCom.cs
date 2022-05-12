@@ -1,12 +1,9 @@
-﻿using PluginManager.Items;
-using PluginManager.Online.Helpers;
+﻿using PluginManager.Online.Helpers;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PluginManager.Online
@@ -58,7 +55,7 @@ namespace PluginManager.Online
             int c_progress = 0;
 
             //long m_dwBytes = 0;
-            
+
             Others.Console_Utilities.ProgressBar pbar = new Others.Console_Utilities.ProgressBar(100, "");
 
             IProgress<float> progress = new Progress<float>(percent =>
@@ -81,7 +78,7 @@ namespace PluginManager.Online
                     System.Threading.Thread.Sleep(500);
                 }
             });
-            
+
             new System.Threading.Thread(updateProgressBarTask.Start).Start();
             await DownloadFileAsync(URL, location, progress, progress_downloaded);
 
