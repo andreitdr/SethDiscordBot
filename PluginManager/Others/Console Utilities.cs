@@ -24,7 +24,7 @@ namespace PluginManager.Others
                 Message = message;
             }
 
-            public async void Update(int progress, double speed = -1, string unit = null)
+            public async void Update(int progress, double speed = -1, string? unit = null)
             {
 
                 //progress bar

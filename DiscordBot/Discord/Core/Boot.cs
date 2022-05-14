@@ -72,6 +72,8 @@ namespace PluginManager.Core
             await commandServiceHandler.InstallCommandsAsync();
 
             //wait for isReady to become true
+
+            await Task.Delay(2000);
             while (!isReady) ;
 
         }

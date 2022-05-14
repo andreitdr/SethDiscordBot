@@ -44,7 +44,7 @@ public class OnUserJoin : DBEvent
 
     private async System.Threading.Tasks.Task Client_UserJoined(Discord.WebSocket.SocketGuildUser user)
     {
-        // Console_Utilities.WriteColorText("A new user joins: " + user.Username);
+        Console_Utilities.WriteColorText("A new user joins: " + user.Username);
         EmbedBuilder embed = new EmbedBuilder
         {
             Title = Functions.readCodeFromFile(ConfigFile, "MessageTitle", '='),
