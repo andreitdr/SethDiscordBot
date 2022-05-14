@@ -59,7 +59,7 @@ namespace PluginManager.Loaders
             Plugins = new List<DBCommand>();
             Events = new List<DBEvent>();
 
-            Functions.WriteLogFile("Starting plugin loader...");
+            Functions.WriteLogFile("Starting plugin loader ... Client: " + client.CurrentUser.Username);
             if (LanguageSystem.Language.ActiveLanguage != null)
                 Console_Utilities.WriteColorText(
                     LanguageSystem.Language.ActiveLanguage.FormatText(

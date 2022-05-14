@@ -24,6 +24,8 @@ namespace DiscordBot
         private static bool listPluginsAtStartup = false;
         private static bool listLanguagAtStartup = false;
 
+        private static bool PluginsLoaded = false;
+
         /// <summary>
         ///     The main entry point for the application.
         /// </summary>
@@ -218,7 +220,13 @@ namespace DiscordBot
 
                     case "loadplugins":
                     case "lp":
+                        if (PluginsLoaded)
+                        {
+                            Console_Utilities.WriteColorText("&rPlugins are already loaded");
+                            break;
+                        }
                         LoadPlugins(discordbooter);
+
                         break;
                     case "help":
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -284,6 +292,8 @@ namespace DiscordBot
                 Console.ForegroundColor = ConsoleColor.Red;
             };
             loader.LoadPlugins();
+
+            PluginsLoaded = true;
         }
 
         /// <summary>

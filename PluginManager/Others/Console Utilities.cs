@@ -133,19 +133,21 @@ namespace PluginManager.Others
         }
 
         /// <summary>
-        /// Write the text using color options( &g-green; &b-blue; &r-red; &c-clear; )
+        /// Write text using colors: &g - green, &r - red, &b - blue, &m - magenta, &c - Clear
         /// </summary>
-        /// <param name="text">The text</param>
+        /// <param name="text"></param>
+        /// <param name="appendNewLine"></param>
         public static void WriteColorText(string text, bool appendNewLine = true)
         {
             string[] words = text.Split(' ');
+            ConsoleColor fg = Console.ForegroundColor;
             Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
             {
                 {"&g", ConsoleColor.Green },
                 {"&b", ConsoleColor.Blue  },
                 {"&r", ConsoleColor.Red  },
                 {"&m", ConsoleColor.Magenta },
-                {"&c", Console.ForegroundColor }
+                {"&c", fg }
             };
             foreach (string word in words)
             {
@@ -161,6 +163,8 @@ namespace PluginManager.Others
             }
             if (appendNewLine)
                 Console.Write('\n');
+
+            Console.ForegroundColor = fg;
         }
 
     }

@@ -36,7 +36,11 @@ public class level : DBCommand
                 Title = "Leveling System",
                 Description = message.Author.Mention
             };
-            embed.WithColor(Color.Blue);
+            Random r = new Random();
+            int _r = r.Next(0, 256);
+            int _g = r.Next(0, 256);
+            int _b = r.Next(0, 256);
+            embed.WithColor(new Color(_r, _g, _b));
             embed.AddField("Level", cLv);
             embed.AddField("Current EXP", cEXP);
             embed.AddField("Required Exp to Level up", rEXP);

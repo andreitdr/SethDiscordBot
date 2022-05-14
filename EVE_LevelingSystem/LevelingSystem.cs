@@ -30,7 +30,7 @@ public class LevelingSystem : DBEvent
             )
         )
             return;
-
+        //Console_Utilities.WriteColorText("Message from : " + arg.Author.Username);
         if (Core.playerMessages.ContainsKey(arg.Author.Id))
             return;
 
