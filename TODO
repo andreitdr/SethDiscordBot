@@ -60,3 +60,11 @@ Plugins:
     Commands:
         ✔ Leveling system 
         ☐ Music Commands @started
+    
+    // Windows only version
+    // Download as a patch but replaces old DiscordBot executable with a new one
+    // Adds new dll to support windows forms
+    // Must act the same as the old version
+    ☐ Create version of discord bot with windows form 
+        ☐ Download system and patch will result in a windows only based version of bot
+        ☐ Possibility to reverse patch to get back to original version
