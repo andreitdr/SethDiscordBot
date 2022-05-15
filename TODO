@@ -4,7 +4,7 @@ Discord Bot:
     ✔ Create bot launcher
     ✔ Enable startup commands
     ✔ Enable console input
-    ☐ Create self update feature
+    ☐ Create self update feature 
 
 
 
@@ -32,9 +32,9 @@ Plugin Manager:
     Discord Plugins:
         ✔ Create loader for commands
         ✔ Create loader for events 
-        ☐ Improve memory efficiency
-        ☐ Improve performance
-        ☐ Improve stability
+        ☐ Improve memory efficiency 
+        ☐ Improve performance 
+        ☐ Improve stability 
     
     Language System:
         ✔ Create language system 
@@ -43,7 +43,7 @@ Plugin Manager:
     Server Communication:
         ✔ Plugin Download system 
         ✔ Language Download system
-        ☐ Move to a new server
+        ☐ Move to a new server 
             ☐ Create plugin versioning system
             ☐ Create plugin update system
         
