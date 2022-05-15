@@ -14,8 +14,6 @@ public class OnUserJoin : DBEvent
     public async void Start(Discord.WebSocket.DiscordSocketClient client)
     {
 
-
-
         System.IO.Directory.CreateDirectory(UtilsPath);
 
         if (!System.IO.File.Exists(ConfigFile))
@@ -36,7 +34,7 @@ public class OnUserJoin : DBEvent
         }
 
         if (Functions.readCodeFromFile(ConfigFile, "Enabled", '=') != "True") return;
-        System.Console.WriteLine("Awaiting user join event ...");
+        //System.Console.WriteLine("Awaiting user join event ...");
 
         client.UserJoined += Client_UserJoined;
 

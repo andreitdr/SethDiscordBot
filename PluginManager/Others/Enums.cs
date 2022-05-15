@@ -11,7 +11,7 @@
     /// A list with all errors
     /// </summary>
     public enum Error
-    { UNKNOWN_ERROR, GUILD_NOT_FOUND, STREAM_NOT_FOUND }
+    { UNKNOWN_ERROR, GUILD_NOT_FOUND, STREAM_NOT_FOUND, INVALID_USER, INVALID_CHANNEL, INVALID_PERMISSIONS }
 
     /// <summary>
     /// The output log type

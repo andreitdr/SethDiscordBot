@@ -62,15 +62,6 @@ namespace PluginManager.Others
                 else
                     Console.Write(progress.ToString() + $"{speed} {unit}/s        ");
 
-                //if (r == false)
-                //Update(progress, true);
-
-            }
-
-            public void Finish()
-            {
-                Console.Write("\r{0} {1}%", Message, 100);
-                Console.WriteLine();
             }
         }
 
@@ -132,13 +123,9 @@ namespace PluginManager.Others
             }
         }
 
-        /// <summary>
-        /// Write text using colors: &g - green, &r - red, &b - blue, &m - magenta, &c - Clear
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="appendNewLine"></param>
         public static void WriteColorText(string text, bool appendNewLine = true)
         {
+
             string[] words = text.Split(' ');
             ConsoleColor fg = Console.ForegroundColor;
             Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()

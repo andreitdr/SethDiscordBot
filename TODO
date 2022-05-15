@@ -1,0 +1,27 @@
+Discord Bot:
+    ✔ Create bootloader 
+    ✔ Create commands handler 
+
+Plugin Manager:
+    Define plugin interface:
+        ✔ DBCommand 
+        ✔ DBPlugin 
+    
+    Functions.cs:
+        ✔ Read from file 
+        ✔ Read from archive (PAK) 
+        ✔ Write Logs & Errors 
+        ✔ Manipulate settings (files) and strings 
+        ✔ Stream copy async 
+    
+    Console Utilities:
+        ✔ Progress bar 
+        ✔ Create table 
+        ✔ Write to console with colors 
+    
+    Discord Permissions:
+        ✔ Check if user has permission 
+        ✔ Check if user is owner
+    
+    
+    

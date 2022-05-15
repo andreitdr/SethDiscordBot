@@ -85,6 +85,7 @@ namespace DiscordBot
             if (listLanguagAtStartup)
                 await languageManager.ListAllLanguages();
 
+
             Console_Utilities.ProgressBar pbar;
             IProgress<float> progress = null;
             Task t;
@@ -94,7 +95,7 @@ namespace DiscordBot
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                Console_Utilities.WriteColorText("&mConsole > &c", false);
+                Console_Utilities.WriteColorText("&mConsole ", false);
                 string[] data = Console.ReadLine().Split(' ');
 
                 if (data[0].Length < 2)
@@ -150,7 +151,7 @@ namespace DiscordBot
                         if (info.Length == 3 && info[2] != string.Empty && info[2] != null)
                         {
                             Console.WriteLine($"Downloading requirements for plugin : {name}");
-                            //
+
                             List<string> lines = await ServerCom.ReadTextFromFile(info[2]);
                             int i = 1;
 
@@ -172,6 +173,7 @@ namespace DiscordBot
                     case "setlang":
                         if (data.Length == 2)
                             SetLanguage(data[1]);
+                        else Console.WriteLine("Invalid arguments");
                         break;
                     case "set-setting":
                         if (data.Length >= 3)
@@ -230,7 +232,8 @@ namespace DiscordBot
                         break;
                     case "help":
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.WriteLine(
+                        Console.WriteLine
+                        (
                             "lp | loadplugins -> load all plugins\n" +
                             "sd | shutdown->close connection to the server(stop bot)\n" +
                             "token -> display the current token\n" +
@@ -308,7 +311,7 @@ namespace DiscordBot
             //Load language from the specified file ...
             Language.ActiveLanguage = null;
 
-            string langname = File.ReadAllText(langSettings).Split('=')[1];
+            string langname = Functions.readCodeFromFile(langSettings, "Language", '=');
             if (langname == "English")
             {
                 Language.ActiveLanguage = null;

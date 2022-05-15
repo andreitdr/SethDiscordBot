@@ -36,7 +36,7 @@ namespace PluginManager.Online
                 string[] lines = list.ToArray();
 
                 List<string[]> data = new List<string[]>();
-                var op = Functions.GetOperatinSystem();
+                var op = Functions.GetOperatingSystem();
 
                 int len = lines.Length;
                 string[] titles = { "Name", "Description", "Plugin Type", "Libraries" };

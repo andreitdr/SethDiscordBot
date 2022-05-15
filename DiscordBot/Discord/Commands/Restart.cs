@@ -53,7 +53,7 @@ namespace DiscordBot.Discord.Commands
         {
             if (!DiscordPermissions.hasPermission(message.Author as SocketGuildUser, DiscordLib.GuildPermission.Administrator)) return;
             var args = Functions.GetArguments(message);
-            var OS = Functions.GetOperatinSystem();
+            var OS = Functions.GetOperatingSystem();
             if (args.Count == 0)
             {
                 switch (OS)
@@ -94,7 +94,7 @@ namespace DiscordBot.Discord.Commands
                             Process.Start("./DiscordBot.exe", cmd);
                             break;
                         case PluginManager.Others.OperatingSystem.LINUX:
-                        case PluginManager.Others.OperatingSystem.MAC_OS:
+                            //case PluginManager.Others.OperatingSystem.MAC_OS: ?? - not tested
                             Process.Start("./DiscordBot", cmd);
                             break;
                         default:

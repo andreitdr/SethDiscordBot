@@ -162,7 +162,7 @@ namespace PluginManager.Others
         /// Get the Operating system you are runnin on
         /// </summary>
         /// <returns>An Operating system</returns>
-        public static OperatingSystem GetOperatinSystem()
+        public static OperatingSystem GetOperatingSystem()
         {
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) return OperatingSystem.WINDOWS;
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux)) return OperatingSystem.LINUX;
