@@ -1,6 +1,9 @@
 Discord Bot:
     ✔ Create bootloader 
     ✔ Create commands handler 
+    ✔ Create bot launcher
+    ✔ Enable startup commands
+    ✔ Enable console input
 
 Plugin Manager:
     Define plugin interface:
@@ -23,5 +26,8 @@ Plugin Manager:
         ✔ Check if user has permission 
         ✔ Check if user is owner
     
+    Discord Plugins:
+        ✔ Create loader for commands
+        ✔ Create loader for events 
     
     
