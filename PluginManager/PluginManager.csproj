@@ -12,7 +12,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="BlankWindow1.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Discord.Net" Version="3.6.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Include="BlankWindow1.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 </Project>

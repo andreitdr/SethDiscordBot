@@ -37,7 +37,7 @@ namespace PluginManager.Items
                     case 3: Console.Write("|"); break;
                 }
                 Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                await Task.Delay(500);
+                await Task.Delay(250);
             }
         }
 
@@ -47,7 +47,7 @@ namespace PluginManager.Items
         public void Stop()
         {
             if (!isSpinning)
-                throw new Others.Exceptions.APIException("The spinner was not running", "Stop()");
+                throw new Others.Exceptions.APIException("Spinner was not spinning", GetType());
             isSpinning = false;
         }
     }

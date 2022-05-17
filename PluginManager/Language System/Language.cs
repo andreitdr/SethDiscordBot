@@ -53,7 +53,7 @@ namespace PluginManager.LanguageSystem
             if (!LanguageFileLocation.EndsWith(LanguageFileExtension))
             {
                 Console.WriteLine("Failed to load language from file: " + LanguageFileLocation +
-                                "\nFile extension is not .lng");
+                                "\nFile extension is not " + LanguageFileExtension);
                 return null;
             }
 

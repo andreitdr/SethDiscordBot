@@ -66,6 +66,17 @@ namespace PluginManager.Others.Exceptions
         {
 
         }
+
+        /// <summary>
+        /// The APIException constructor
+        /// </summary>
+        /// <param name="message">The error message</param>
+        /// <param name="errorLocation">The class where the error was thrown</param>
+        public APIException(string message, Type errorLocation) : base(message)
+        {
+            Function = errorLocation.FullName;
+        }
+
         /// <summary>
         /// Method to print the error to <see cref="Console"/>
         /// </summary>
