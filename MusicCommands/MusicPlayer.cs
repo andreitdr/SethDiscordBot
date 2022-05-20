@@ -83,13 +83,8 @@ namespace MusicCommands
                 byte[] buffer = new byte[bsize];
                 int read = await ms.ReadAsync(buffer, 0, buffer.Length);
                 if (read > 0)
-                {
                     await outputStream.WriteAsync(buffer, 0, read);
-                }
-                else
-                {
-                    break;
-                }
+                else break;
             }
 
 

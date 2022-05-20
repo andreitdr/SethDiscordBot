@@ -129,7 +129,8 @@ namespace PluginManager.Others
             foreach (var line in lines)
                 if (line.StartsWith(Code))
                 {
-                    File.AppendAllText(file, Code + separator + newValue + "\n"); ok = true;
+                    File.AppendAllText(file, Code + separator + newValue + "\n");
+                    ok = true;
                 }
                 else File.AppendAllText(file, line + "\n");
 
@@ -212,7 +213,7 @@ namespace PluginManager.Others
         /// <exception cref="ArgumentOutOfRangeException">Triggered if <paramref name="bufferSize"/> is less then or equal to 0</exception>
         /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream"/> is not readable</exception>
         /// <exception cref="ArgumentException">Triggered in <paramref name="destination"/> is not writable</exception>
-        public static async Task CopyToOtherStreamAsync(this Stream stream, Stream destination, int bufferSize, IProgress<long> progress = null, CancellationToken cancellationToken = default)
+        public static async Task CopyToOtherStreamAsync(this Stream stream, Stream destination, int bufferSize, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));

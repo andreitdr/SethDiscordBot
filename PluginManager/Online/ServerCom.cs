@@ -68,7 +68,7 @@ namespace PluginManager.Online
                 //m_dwBytes = downloadedBytes;
             });
 
-            Task updateProgressBarTask = new Task(async () =>
+            Task updateProgressBarTask = new Task(() =>
             {
                 while (isDownloading)
                 {

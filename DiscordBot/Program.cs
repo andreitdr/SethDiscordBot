@@ -86,12 +86,6 @@ namespace DiscordBot
                 await languageManager.ListAllLanguages();
 
 
-            Console_Utilities.ProgressBar pbar;
-            IProgress<float> progress = null;
-            Task t;
-            int prg = 0;
-
-
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -338,6 +332,7 @@ namespace DiscordBot
             return false;
         }
 
+
         public static void SetLanguage(string LanguageName)
         {
             string langSettings = Functions.dataFolder + "Language.txt";
@@ -415,6 +410,10 @@ namespace DiscordBot
                         await Task.Delay(10);
 
                     }
+                    return;
+                }
+                else if (args[0] == "test")
+                {
                     return;
                 }
 
