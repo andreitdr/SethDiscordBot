@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicCommands", "MusicComma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Games", "FreeGames\Games.csproj", "{7CC0819E-2BC0-44F0-8D92-EC442F36E1BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotGUI", "DiscordBotGUI\DiscordBotGUI.csproj", "{7B5899F0-0218-4537-8C74-6210ED2D3690}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{7CC0819E-2BC0-44F0-8D92-EC442F36E1BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CC0819E-2BC0-44F0-8D92-EC442F36E1BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CC0819E-2BC0-44F0-8D92-EC442F36E1BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

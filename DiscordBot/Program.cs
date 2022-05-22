@@ -13,6 +13,8 @@ using PluginManager.Online;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+
 namespace DiscordBot
 {
     public class Program
@@ -135,8 +137,10 @@ namespace DiscordBot
                             break;
 
                         }
-                        string path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
-
+                        string path;
+                        if (info[0] == "Command" || info[0] == "Event")
+                            path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
+                        else path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
                         await ServerCom.DownloadFileAsync(info[1], path);
                         Console.WriteLine("\n");
 
@@ -147,17 +151,48 @@ namespace DiscordBot
                             Console.WriteLine($"Downloading requirements for plugin : {name}");
 
                             List<string> lines = await ServerCom.ReadTextFromFile(info[2]);
-                            int i = 1;
 
                             foreach (var line in lines)
                             {
                                 string[] split = line.Split(',');
                                 Console.WriteLine($"\nDownloading item: {split[1]}");
-
-
                                 await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
                                 Console.WriteLine();
-                                i++;
+
+                                if (split[0].EndsWith(".zip"))
+                                {
+
+                                    Console.WriteLine($"Extracting {split[1]}");
+                                    double proc = 0d;
+                                    bool isExtracting = true;
+                                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(100, "");
+
+                                    IProgress<double> extractProgress = new Progress<double>(value =>
+                                    {
+                                        proc = value;
+                                    });
+                                    new Thread(new Task(() =>
+                                    {
+                                        while (isExtracting)
+                                        {
+                                            bar.Update((int)proc);
+                                            if (proc >= 99.9f)
+                                                break;
+                                            Thread.Sleep(500);
+                                        }
+                                    }).Start).Start();
+                                    await Functions.ExtractArchive("./" + split[1], "./", extractProgress);
+                                    bar.Update(100);
+                                    isExtracting = false;
+                                    await Task.Delay(1000);
+                                    bar.Update(100);
+                                    Console.WriteLine("\n");
+                                    File.Delete("./" + split[1]);
+
+
+
+                                }
+
                             }
                             Console.WriteLine();
                             break;
@@ -365,7 +400,8 @@ namespace DiscordBot
 
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            //Console.WriteLine("Discord BOT for Cross Platform\n\nCreated by: Wizzy\nDiscord: Wizzy#9181");
+            Console.WriteLine("Discord BOT for Cross Platform");
+            Console.WriteLine("Created by: Wizzy\nDiscord: Wizzy#9181");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
             string token = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", '=');

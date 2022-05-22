@@ -12,10 +12,12 @@ public class GameData
                         from s in lines
                         where s.Contains(GameName.Replace(" ", "_"), StringComparison.OrdinalIgnoreCase)
                         select s).FirstOrDefault();
-
-        if (gameData is null || gameData.Length < 3)
-            throw new Exception("Unknown GAME");
+        if (gameData is null) return null;
         string GameURL = gameData.Split('\"')[1].Split('?')[0];
+
+        if (GameURL == "menuitem")
+            return null;
+
         return GameURL;
 
     }

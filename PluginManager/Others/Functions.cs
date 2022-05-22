@@ -237,5 +237,42 @@ namespace PluginManager.Others
             }
 
         }
+
+        /// <summary>
+        /// Extract zip to location
+        /// </summary>
+        /// <param name="zip">The zip location</param>
+        /// <param name="folder">The target location</param>
+        /// <returns></returns>
+        public static async Task ExtractArchive(string zip, string folder, IProgress<double> progress)
+        {
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+
+
+
+            using (ZipArchive archive = ZipFile.OpenRead(zip))
+            {
+                int totalZIPFiles = archive.Entries.Count();
+                int currentZIPFile = 0;
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    if (entry.FullName.EndsWith("/"))
+                    {
+                        currentZIPFile++;
+                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                    }
+                    else
+                    {
+                        entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                        currentZIPFile++;
+                    }
+
+                    await Task.Delay(10);
+                    progress.Report((double)currentZIPFile / totalZIPFiles * 100);
+                }
+            }
+        }
     }
 }

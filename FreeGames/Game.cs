@@ -2,7 +2,7 @@ using PluginManager.Interfaces;
 using Games.Objects;
 namespace Games;
 
-public class Free : DBCommand
+public class Game : DBCommand
 {
     public string Command => "game";
     public string Description => "Display info about the specified game";
@@ -17,6 +17,11 @@ public class Free : DBCommand
     {
         string game_name = PluginManager.Others.Functions.MergeStrings(message.Content.Split(' '), 1);
         string game_url = await GameData.GetSteamLinkFromGame(game_name);
+        if (game_url is null || game_url == null)
+        {
+            await message.Channel.SendMessageAsync("Could not find the game. Try to be more specific or check for spelling errors.");
+            return;
+        }
         await context.Channel.SendMessageAsync(game_url);
     }
 

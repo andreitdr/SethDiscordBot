@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="DiscordBotGUI.MainWindow"
+        Title="DiscordBotGUI">
+	<StackPanel Margin="10">
+		<Label x:Class="DiscordBotGUI.MainWindow" x:Name="label1" Content="Discord Token" />
+		<TextBox x:Class="DiscordBotGUI.MainWindow" x:Name="textBox1" IsReadOnly="True" TextAlignment="Center" Text=""/>
+		<Label x:Class="DiscordBotGUI.MainWindow" x:Name="label2" Content="Bot Prefix" />
+		<TextBox x:Class="DiscordBotGUI.MainWindow" x:Name="textBox2" TextAlignment="Center" HorizontalAlignment="Left" IsReadOnly="True" Text=""/>
+		<Border Background="Black" Padding="0.5" Margin="25"/>
+		<Label x:Class="DiscordBotGUI.MainWindow" x:Name="label3" Content="Start Arguments: " />
+		<TextBox x:Class="DiscordBotGUI.MainWindow" x:Name="textBox3" Width="250" TextAlignment="Center" HorizontalAlignment="Left" IsReadOnly="False" Text=""/>
+		<Label x:Class="DiscordBotGUI.MainWindow" x:Name="label4" Content="" Foreground="Red" Margin="10"/>
+		<Button x:Class="DiscordBotGUI.MainWindow" x:Name="button1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="10" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="200" Content="Start Bot" Margin="0,75,0,0" />
+		<Button x:Class="DiscordBotGUI.MainWindow" x:Name="button2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="10" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="200" Content="Exit" Margin="0,15,0,0" />
+	</StackPanel>
+
+
+
+
+
+</Window>

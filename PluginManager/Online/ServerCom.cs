@@ -30,7 +30,7 @@ namespace PluginManager.Online
         /// <param name="location">The location where to store the downloaded data</param>
         /// <param name="progress">The <see cref="IProgress{T}"/> to track the download</param>
         /// <returns></returns>
-        public static async Task DownloadFileAsync(string URL, string location, IProgress<float> progress, IProgress<long> downloadedBytes)
+        public static async Task DownloadFileAsync(string URL, string location, IProgress<float> progress, IProgress<long>? downloadedBytes = null)
         {
             using (var client = new System.Net.Http.HttpClient())
             {
@@ -54,18 +54,11 @@ namespace PluginManager.Online
             bool isDownloading = true;
             int c_progress = 0;
 
-            //long m_dwBytes = 0;
-
             Others.Console_Utilities.ProgressBar pbar = new Others.Console_Utilities.ProgressBar(100, "");
 
             IProgress<float> progress = new Progress<float>(percent =>
             {
                 c_progress = (int)percent;
-            });
-
-            IProgress<long> progress_downloaded = new Progress<long>(downloadedBytes =>
-            {
-                //m_dwBytes = downloadedBytes;
             });
 
             Task updateProgressBarTask = new Task(() =>
@@ -80,11 +73,13 @@ namespace PluginManager.Online
             });
 
             new System.Threading.Thread(updateProgressBarTask.Start).Start();
-            await DownloadFileAsync(URL, location, progress, progress_downloaded);
+            await DownloadFileAsync(URL, location, progress);
 
-            isDownloading = false;
+
             c_progress = 100;
             pbar.Update(100);
+            isDownloading = false;
+
 
         }
     }
