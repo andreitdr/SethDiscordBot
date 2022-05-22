@@ -1,7 +1,11 @@
 # Seth Discord Bot
 
 This is a Discord Bot made with C# that accepts plugins as extensions for more commands and events. All basic commands are built in already in the PluginManager class library. 
-This project is based on .NET 6 (C#) and [Discord.Net](https://github.com/discord-net/Discord.Net)
+This project is based on:
+
+- [.NET 6 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [Discord.Net](https://github.com/discord-net/Discord.Net)
+- [Avalonia UI](https://avaloniaui.net/) for `DiscordBotUI` extension
 
 
 ## Plugins
