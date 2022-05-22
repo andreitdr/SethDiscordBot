@@ -167,7 +167,7 @@ namespace DiscordBot
                                     bool isExtracting = true;
                                     Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(100, "");
 
-                                    IProgress<double> extractProgress = new Progress<double>(value =>
+                                    IProgress<float> extractProgress = new Progress<float>(value =>
                                     {
                                         proc = value;
                                     });

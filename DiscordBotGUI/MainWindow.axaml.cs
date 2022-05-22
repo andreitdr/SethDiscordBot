@@ -6,6 +6,7 @@ using PluginManager.Others;
 using System.IO;
 using System;
 using System.Diagnostics;
+using DiscordBotGUI.Settings;
 
 namespace DiscordBotGUI
 {
@@ -20,6 +21,7 @@ namespace DiscordBotGUI
 
         private void LoadElements()
         {
+            textBox3.Watermark = "Insert start arguments";
             button1.Click += async (sender, e) =>
             {
 
@@ -41,10 +43,8 @@ namespace DiscordBotGUI
 
             };
 
-            button2.Click += (sender, e) =>
-            {
-                Close();
-            };
+            commandsSettingMenuItem.Click += (sender, e) => new Commands().ShowDialog(this);
+            eventsSettingMenuItem.Click += (sender, e) => new Events().ShowDialog(this);
 
             string folder = $"{Functions.dataFolder}DiscordBotCore.data";
             Directory.CreateDirectory(Functions.dataFolder);
@@ -56,6 +56,8 @@ namespace DiscordBotGUI
                 {
                     textBox1.IsReadOnly = false;
                     textBox2.IsReadOnly = false;
+                    textBox1.Watermark = "Insert Bot Token Here";
+                    textBox2.Watermark = "Insert Bot Prefix Here";
 
                 }
                 else
@@ -64,10 +66,12 @@ namespace DiscordBotGUI
                     textBox2.Text = botPrefix;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 textBox1.IsReadOnly = false;
                 textBox2.IsReadOnly = false;
+                textBox1.Watermark = "Insert Bot Token Here";
+                textBox2.Watermark = "Insert Bot Prefix Here";
             }
 
         }

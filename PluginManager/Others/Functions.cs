@@ -244,7 +244,7 @@ namespace PluginManager.Others
         /// <param name="zip">The zip location</param>
         /// <param name="folder">The target location</param>
         /// <returns></returns>
-        public static async Task ExtractArchive(string zip, string folder, IProgress<double> progress)
+        public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress)
         {
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
@@ -270,7 +270,7 @@ namespace PluginManager.Others
                     }
 
                     await Task.Delay(10);
-                    progress.Report((double)currentZIPFile / totalZIPFiles * 100);
+                    progress.Report((float)currentZIPFile / totalZIPFiles * 100);
                 }
             }
         }
