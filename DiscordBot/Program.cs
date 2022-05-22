@@ -402,6 +402,10 @@ namespace DiscordBot
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("Discord BOT for Cross Platform");
             Console.WriteLine("Created by: Wizzy\nDiscord: Wizzy#9181");
+
+            List<string> text = await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/StartupMessage");
+            foreach (var t in text) Console_Utilities.WriteColorText(t);
+
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
             string token = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", '=');
