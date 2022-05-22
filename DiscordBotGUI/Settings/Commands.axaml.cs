@@ -31,16 +31,18 @@ namespace DiscordBotGUI.Settings
         {
             try
             {
+                textbox1.Text = "";
                 var files = System.IO.Directory.EnumerateFiles("./Data/Plugins/Commands/");
                 if (files == null || files.Count() < 1) return;
                 foreach (var file in files)
-                    textbox1.Text += file + "\n";
+                    textbox1.Text += file.Split('/')[file.Split('/').Length - 1] + "\n";
             }
             catch { }
         }
 
         private async void LoadComboBox()
         {
+            comboBox1.Items = null;
             commands = await PluginManager.Online.ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
             if (commands == null) return;
             string[] plugins = commands.ToArray();
@@ -55,7 +57,11 @@ namespace DiscordBotGUI.Settings
                 if (!plugins[i].Contains(OS) || !plugins[i].Contains("Commands"))
                     continue;
 
+
+
                 string[] info = plugins[i].Split(',');
+                if (System.IO.Directory.EnumerateFiles("./Data/Plugins/Commands/").Any(x => x.EndsWith(info[0] + ".dll")))
+                    continue;
                 data.Add($"{info[0]} - {info[1]} - {info[2]}");
             }
 
@@ -77,11 +83,18 @@ namespace DiscordBotGUI.Settings
             if (URL == null) return;
 
 
-            IProgress<float> progress = new Progress<float>(value =>
+            IProgress<float> progress = new Progress<float>(async value =>
             {
                 label1.Content = $"Downloading {pluginName} {MathF.Round(value, 2)}%";
                 if (value == 1f)
+                {
                     label1.Content = "Successfully Downloaded " + pluginName;
+                    LoadData();
+                    LoadComboBox();
+
+                    await Task.Delay(5000);
+                    label1.Content = "";
+                }
                 progressBar1.Value = value;
             });
 
