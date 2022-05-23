@@ -57,11 +57,15 @@ namespace DiscordBotGUI.Settings
                 if (!plugins[i].Contains(OS) || !plugins[i].Contains("Commands"))
                     continue;
 
-
-
                 string[] info = plugins[i].Split(',');
-                if (System.IO.Directory.EnumerateFiles("./Data/Plugins/Commands/").Any(x => x.EndsWith(info[0] + ".dll")))
-                    continue;
+                try
+                {
+
+                    if (System.IO.Directory.EnumerateFiles("./Data/Plugins/Commands/").Any(x => x.EndsWith(info[0] + ".dll")))
+                        continue;
+                }
+                catch { }
+
                 data.Add($"{info[0]} - {info[1]} - {info[2]}");
             }
 

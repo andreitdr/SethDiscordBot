@@ -193,6 +193,15 @@ namespace DiscordBot
 
                                 }
 
+                                if (name == "DBUI")
+                                {
+                                    Console.WriteLine("Reload with GUI ?[y/n]");
+                                    if (Console.ReadKey().Key == ConsoleKey.Y)
+                                    {
+                                        Process.Start("./DiscordBotGUI.exe");
+                                        Environment.Exit(0);
+                                    }
+                                }
                             }
                             Console.WriteLine();
                             break;

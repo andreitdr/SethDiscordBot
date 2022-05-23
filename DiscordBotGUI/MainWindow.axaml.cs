@@ -17,10 +17,14 @@ namespace DiscordBotGUI
             InitializeComponent();
 
             LoadElements();
+
+
         }
 
         private void LoadElements()
         {
+
+
             textBox3.Watermark = "Insert start arguments";
             button1.Click += async (sender, e) =>
             {
@@ -73,6 +77,8 @@ namespace DiscordBotGUI
                 textBox1.Watermark = "Insert Bot Token Here";
                 textBox2.Watermark = "Insert Bot Prefix Here";
             }
+
+
 
         }
 

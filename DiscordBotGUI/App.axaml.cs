@@ -15,7 +15,10 @@ namespace DiscordBotGUI
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+
+
+                desktop.MainWindow = new AppUpdater() { Width = 250, Height = 50 };
+
             }
 
             base.OnFrameworkInitializationCompleted();
