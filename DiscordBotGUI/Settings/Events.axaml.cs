@@ -11,6 +11,7 @@ using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 using static PluginManager.Others.Console_Utilities;
+using System.IO;
 
 namespace DiscordBotGUI.Settings
 {
@@ -35,6 +36,7 @@ namespace DiscordBotGUI.Settings
             //textbox1 = new TextBox();
             try
             {
+                Directory.CreateDirectory("./Data/Plugins/Events/");
                 textbox1.IsReadOnly = false;
                 textbox1.Text = "";
                 var files = System.IO.Directory.EnumerateFiles("./Data/Plugins/Events/");

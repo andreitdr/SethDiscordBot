@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using System.IO;
 
 namespace DiscordBotGUI.Settings
 {
@@ -32,6 +33,7 @@ namespace DiscordBotGUI.Settings
             try
             {
                 textbox1.Text = "";
+                Directory.CreateDirectory("./Data/Plugins/Commands/");
                 var files = System.IO.Directory.EnumerateFiles("./Data/Plugins/Commands/");
                 if (files == null || files.Count() < 1) return;
                 foreach (var file in files)

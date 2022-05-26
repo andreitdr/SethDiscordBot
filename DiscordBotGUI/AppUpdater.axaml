@@ -4,10 +4,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="50"
         x:Class="DiscordBotGUI.AppUpdater"
-        Title="AppUpdater">
+        Title="AppUpdater"
+		Background="Transparent"
+		TransparencyLevelHint="AcrylicBlur"
+		HasSystemDecorations="False">
 
 	<StackPanel Margin="10">
 		<TextBlock x:Class="DiscordBotGUI.AppUpdater" x:Name="textBox1" Text="Checking for updates..." />
-		<ProgressBar IsIndeterminate="True" x:Class="DiscordBotGUI.AppUpdater" x:Name="progressBar1" Foreground="Purple" />
+		<ProgressBar IsIndeterminate="True" x:Class="DiscordBotGUI.AppUpdater" x:Name="progressBar1" Foreground="Yellow" />
 	</StackPanel>
 </Window>

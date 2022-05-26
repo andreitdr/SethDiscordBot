@@ -2,16 +2,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="200"
         x:Class="DiscordBotGUI.Settings.Events"
-        Title="Events">
+        Title="Events"
+		Background="Transparent"
+		TransparencyLevelHint="AcrylicBlur"
+		ExtendClientAreaToDecorationsHint="True">
 	<StackPanel Margin="10">
 		<Label Content="Installed Events" />
 		<TextBox x:Class="DiscordBotGUI.Settings.Events" x:Name="textbox1" TextAlignment="Left" IsReadOnly="True" />
 		<Label Content="Install another Events" />
 		<ComboBox x:Class="DiscordBotGUI.Settings.Events" x:Name="comboBox1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,10" Padding="200,0" />
 		<Button x:Class="DiscordBotGUI.Settings.Events" x:Name="button1" HorizontalAlignment="Left" Content="Install" />
-		<ProgressBar x:Class="DiscordBotGUI.Settings.Events" x:Name="progressBar1" HorizontalAlignment="Left" Margin="0,10" />
+		<ProgressBar x:Class="DiscordBotGUI.Settings.Events" x:Name="progressBar1" HorizontalAlignment="Left" Margin="0,10" Foreground="Yellow" />
 		<Label x:Class="DiscordBotGUI.Settings.Events" x:Name="label1" Content="" HorizontalAlignment="Left" Margin="0,10" />
 	</StackPanel>
 </Window>

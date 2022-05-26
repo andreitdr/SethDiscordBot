@@ -27,6 +27,7 @@ namespace DiscordBot
         private static bool listLanguagAtStartup = false;
 
         private static bool PluginsLoaded = false;
+        private static bool ShowStartupMessage = true;
 
         /// <summary>
         ///     The main entry point for the application.
@@ -411,10 +412,15 @@ namespace DiscordBot
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("Discord BOT for Cross Platform");
             Console.WriteLine("Created by: Wizzy\nDiscord: Wizzy#9181");
+            if (ShowStartupMessage)
+                try
+                {
+                    Console.WriteLine("Connecting to server ...");
+                    List<string> text = await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/StartupMessage");
+                    foreach (var t in text) Console_Utilities.WriteColorText(t);
 
-            List<string> text = await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/StartupMessage");
-            foreach (var t in text) Console_Utilities.WriteColorText(t);
-
+                }
+                catch { Console.WriteLine("Failed to connect to server."); }
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
             string token = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", '=');
@@ -449,23 +455,22 @@ namespace DiscordBot
         private static async Task HandleInput(string[] args)
         {
 
-            if (args.Length > 0)
-                if (args[0] == "progress")
-                {
-                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(100, "Download");
-                    for (int i = 0; i <= 100; i++)
-                    {
-                        bar.Update(i);
-                        await Task.Delay(10);
+            /*            if (args.Length > 0)
+                            if (args[0] == "progress")
+                            {
+                                Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(100, "Download");
+                                for (int i = 0; i <= 100; i++)
+                                {
+                                    bar.Update(i);
+                                    await Task.Delay(10);
 
-                    }
-                    return;
-                }
-                else if (args[0] == "test")
-                {
-                    return;
-                }
-
+                                }
+                                return;
+                            }
+                            else if (args[0] == "test")
+                            {
+                                return;
+                            }*/
 
             if (args.Length == 0)
             {
@@ -498,7 +503,7 @@ namespace DiscordBot
                 return;
             }
 
-            if (len > 0 && (args.Contains("--cmd") || args.Contains("--args")))
+            if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
             {
                 if (args.Contains("lp") || args.Contains("loadplugins"))
                     loadPluginsOnStartup = true;
@@ -506,9 +511,11 @@ namespace DiscordBot
                     listPluginsAtStartup = true;
                 if (args.Contains("listlang"))
                     listLanguagAtStartup = true;
-
+                if (args.Contains("--nomessage"))
+                    ShowStartupMessage = false;
                 len = 0;
             }
+
 
 
 

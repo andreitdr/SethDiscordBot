@@ -7,6 +7,7 @@ using System.IO;
 using System;
 using System.Diagnostics;
 using DiscordBotGUI.Settings;
+using Avalonia.Themes.Fluent;
 
 namespace DiscordBotGUI
 {
@@ -26,12 +27,14 @@ namespace DiscordBotGUI
 
 
             textBox3.Watermark = "Insert start arguments";
+            if (File.Exists("./Version.txt"))
+                label5.Content = Functions.readCodeFromFile("./Version.txt", "DiscordBotVersion", '=');
             button1.Click += async (sender, e) =>
             {
 
                 string token = textBox1.Text;
                 string prefix = textBox2.Text;
-                string args = textBox3.Text;
+                string args = "--nomessage " + textBox3.Text;
 
                 if (!((token.Length == 70 || token.Length == 59) && prefix.Length == 1))
                 {
@@ -47,8 +50,9 @@ namespace DiscordBotGUI
 
             };
 
-            commandsSettingMenuItem.Click += (sender, e) => new Commands().ShowDialog(this);
-            eventsSettingMenuItem.Click += (sender, e) => new Events().ShowDialog(this);
+            commandsSettingMenuItem.Click += (sender, e) => new Commands() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
+            eventsSettingMenuItem.Click += (sender, e) => new Events() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
+
 
             string folder = $"{Functions.dataFolder}DiscordBotCore.data";
             Directory.CreateDirectory(Functions.dataFolder);

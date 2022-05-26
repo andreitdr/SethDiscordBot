@@ -17,7 +17,7 @@ namespace DiscordBotGUI
             {
 
 
-                desktop.MainWindow = new AppUpdater() { Width = 250, Height = 50 };
+                desktop.MainWindow = new AppUpdater() { Width = 300, Height = 50, WindowStartupLocation = Avalonia.Controls.WindowStartupLocation.CenterScreen };
 
             }
 

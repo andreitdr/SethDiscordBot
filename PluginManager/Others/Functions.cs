@@ -274,5 +274,15 @@ namespace PluginManager.Others
                 }
             }
         }
+
+
+        public static (double, string) ConvertBytes(long bytes)
+        {
+            if (bytes < 1024) return (bytes, "B");
+            if (bytes < 1024 * 1024) return (bytes / 1024.0, "KB");
+            if (bytes < 1024 * 1024 * 1024) return (bytes / 1024.0 / 1024.0, "MB");
+            return (bytes / 1024.0 / 1024.0 / 1024.0, "GB");
+
+        }
     }
 }
