@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PluginManager.LanguageSystem
 {
@@ -94,5 +95,67 @@ namespace PluginManager.LanguageSystem
             for (var i = 0; i < l; i++) text = text.Replace($"{i}", args[i]);
             return text;
         }
+
+
+        public static bool LoadLanguage()
+        {
+            string folder = Functions.langFolder;
+            string langSettings = "./Data/Resources/Language.txt";
+            if (!File.Exists(langSettings))
+                File.WriteAllText(langSettings, "Language=English");
+            //Load language from the specified file ...
+            Language.ActiveLanguage = null;
+
+            string langname = Functions.readCodeFromFile(langSettings, "Language", '=');
+            if (langname == "English")
+            {
+                Language.ActiveLanguage = null;
+                return true;
+            }
+            foreach (var file in Directory.GetFiles(folder))
+            {
+                if (Functions.readCodeFromFile(file, "LANGUAGE_NAME", '=') == langname)
+                {
+                    Language.ActiveLanguage = Language.CreateLanguageFromFile(file);
+
+                    return true;
+                }
+            }
+
+            if (Language.ActiveLanguage == null)
+            {
+                File.WriteAllText(langSettings, "Language=English");
+                Console_Utilities.WriteColorText($"Failed to find language &r{langname} &c! Check available languages using command: &glistlang");
+
+                return false;
+            }
+
+            return false;
+        }
+
+        public static void SetLanguage(string LanguageName)
+        {
+            string langSettings = Functions.dataFolder + "Language.txt";
+            File.WriteAllText(langSettings, "Language=" + LanguageName);
+
+            try
+            {
+                bool success = LoadLanguage();
+                if (success)
+                {
+                    Console_Utilities.WriteColorText($"Language has been setted to: &g{LanguageName}");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console_Utilities.WriteColorText($"Could not find language &r{LanguageName}.");
+                Functions.WriteErrFile(ex.ToString());
+                File.WriteAllText(langSettings, "Language=English");
+                LoadLanguage();
+            }
+        }
+
+
     }
 }
