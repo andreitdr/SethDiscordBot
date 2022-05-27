@@ -11,6 +11,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
 using PluginManager.LanguageSystem;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace PluginManager.Items
 {
@@ -21,25 +23,25 @@ namespace PluginManager.Items
         private static LanguageManager languageManager = new LanguageManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Languages");
 
 
-        public static List<Tuple<string, string, Action<string[]>>> commandList = new List<Tuple<string, string, Action<string[]>>>();
+        public static List<Tuple<string, string, Action<string[]>>>? commandList = new List<Tuple<string, string, Action<string[]>>>();
         private DiscordSocketClient client;
 
         public ConsoleCommandsHandler(DiscordSocketClient client)
         {
             this.client = client;
-            //commandList = new List<Tuple<string, string, Action<string[]>>>();
             InitializeBasicCommands();
-            //Console.WriteLine("ConsoleCommandsHandler enabled");
+            Console.WriteLine("Initalized console command handeler !");
         }
 
         private void InitializeBasicCommands()
         {
 
             bool pluginsLoaded = false;
+            commandList.Clear();
 
             AddCommand("help", "Show help", (args) =>
             {
-                if (args.Length == 1)
+                if (args.Length <= 1)
                 {
                     Console.WriteLine("Available commands:");
                     foreach (var command in commandList)
@@ -51,7 +53,7 @@ namespace PluginManager.Items
                 {
                     foreach (var command in commandList)
                     {
-                        if (command.Item1 == args[0])
+                        if (command.Item1 == args[1])
                         {
                             Console.WriteLine(command.Item2);
                             return;
@@ -270,20 +272,20 @@ namespace PluginManager.Items
                 else Console.WriteLine("File could not be found. Please register token");
             });
 
+
+
         }
 
         public static void AddCommand(string command, string description, Action<string[]> action)
         {
             commandList.Add(new Tuple<string, string, Action<string[]>>(command, description, action));
+            Console.ForegroundColor = ConsoleColor.White;
             Console_Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
         }
 
         public static void AddCommand(string command, string description, Action action)
         {
-            AddCommand(command, description, (args) =>
-            {
-                action();
-            });
+            AddCommand(command, description, (args) => action());
 
             /* Console.WriteLine("Added command: " + command);*/
         }
@@ -293,15 +295,20 @@ namespace PluginManager.Items
             commandList.RemoveAll(x => x.Item1 == command);
         }
 
+        public static Tuple<string, string, Action<string[]>>? SearchCommand(string command)
+        {
+            return commandList.FirstOrDefault(t => t.Item1 == command);
+        }
+
         public void HandleCommand(string command)
         {
             string[] args = command.Split(' ');
-            foreach (var item in commandList)
+            foreach (var item in commandList.ToList())
             {
                 if (item.Item1 == args[0])
                 {
                     item.Item3(args);
-                    return;
+                    //Console.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
                 }
             }
         }

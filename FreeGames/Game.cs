@@ -1,5 +1,8 @@
 using PluginManager.Interfaces;
+using PluginManager.Items;
 using Games.Objects;
+using PluginManager.Others;
+
 namespace Games;
 
 public class Game : DBCommand
@@ -15,7 +18,8 @@ public class Game : DBCommand
     public async void Execute(Discord.Commands.SocketCommandContext context, Discord.WebSocket.SocketMessage message,
                          Discord.WebSocket.DiscordSocketClient client, bool isDM)
     {
-        string game_name = PluginManager.Others.Functions.MergeStrings(message.Content.Split(' '), 1);
+
+        string game_name = Functions.MergeStrings(message.Content.Split(' '), 1);
         string game_url = await GameData.GetSteamLinkFromGame(game_name);
         if (game_url is null || game_url == null)
         {

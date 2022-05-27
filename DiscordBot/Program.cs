@@ -87,7 +87,8 @@ namespace DiscordBot
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
-                consoleCommandsHandler.HandleCommand(Console.ReadLine());
+                string cmd = Console.ReadLine();
+                consoleCommandsHandler.HandleCommand(cmd);
             }
         }
 
