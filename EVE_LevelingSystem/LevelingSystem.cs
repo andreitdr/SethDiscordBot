@@ -17,7 +17,7 @@ public class LevelingSystem : DBEvent
     public void Start(DiscordSocketClient client)
     {
 
-        ConsoleCommandsHandler.AddCommand("lvl", "calos command extern", async (args) =>
+        ConsoleCommandsHandler.AddCommand("lvl", "Test command", async (args) =>
         {
             Console.WriteLine("Leveling system command");
 
