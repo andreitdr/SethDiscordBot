@@ -47,23 +47,5 @@ namespace PluginManager.Items
             this.CommandName = data[0].Substring(1);
             this.PrefixUsed = data[0][0];
         }
-
-        /// <summary>
-        /// The Command class contructor
-        /// </summary>
-        /// <param name="message">The message string itself</param>
-        /// <param name="hasPrefix">True if the message has a prefix, false if not</param>
-        public Command(string message, bool hasPrefix)
-        {
-            string[] data = message.Split(' ');
-
-            this.Author = null;
-            this.Arguments = new List<string>(data.MergeStrings(1).Split(' '));
-            this.CommandName = data[0].Substring(1);
-            if (hasPrefix)
-                this.PrefixUsed = data[0][0];
-            else this.PrefixUsed = '\0'; //null
-        }
-
     }
 }

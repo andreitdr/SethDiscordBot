@@ -5,6 +5,9 @@ using Discord.WebSocket;
 using PluginManager.Others;
 using PluginManager.Interfaces;
 using PluginManager.LanguageSystem;
+using PluginManager.Items;
+using System;
+
 public class LevelingSystem : DBEvent
 {
     public string name => "Leveling System";
@@ -13,6 +16,13 @@ public class LevelingSystem : DBEvent
 
     public void Start(DiscordSocketClient client)
     {
+
+        ConsoleCommandsHandler.AddCommand("lvl", "Test command", async (args) =>
+        {
+            Console.WriteLine("Leveling system command");
+
+        });
+
         client.MessageReceived += Client_MessageReceived;
     }
 
