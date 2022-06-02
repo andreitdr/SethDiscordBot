@@ -259,16 +259,13 @@ namespace PluginManager.Others
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
                     if (entry.FullName.EndsWith("/"))
-                    {
-                        currentZIPFile++;
                         Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
-                    }
-                    else
-                    {
-                        entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                        currentZIPFile++;
-                    }
 
+                    else
+                        try { entry.ExtractToFile(Path.Combine(folder, entry.FullName), true); }
+                        catch { }
+
+                    currentZIPFile++;
                     await Task.Delay(10);
                     progress.Report((float)currentZIPFile / totalZIPFiles * 100);
                 }

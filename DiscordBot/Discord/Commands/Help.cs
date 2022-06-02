@@ -75,12 +75,11 @@ namespace DiscordBot.Discord.Commands
             string normalCommands = "";
             string DMCommands = "";
 
-            foreach (var cmd in PluginLoader.Plugins!)
+            foreach (var cmd in PluginLoader.Commands!)
             {
-                if (cmd.canUseDM)
-                    DMCommands += cmd.Command + " ";
+                if (cmd.canUseDM) DMCommands += cmd.Command + " ";
                 if (cmd.requireAdmin)
-                    adminCommands += cmd.Command + " ";
+                    adminCommands                         += cmd.Command + " ";
                 else if (cmd.canUseServer) normalCommands += cmd.Command + " ";
             }
 
@@ -94,7 +93,7 @@ namespace DiscordBot.Discord.Commands
         private EmbedBuilder GenerateHelpCommand(string command)
         {
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            DBCommand cmd = PluginLoader.Plugins.Find(p => p.Command == command);
+            DBCommand    cmd          = PluginLoader.Commands.Find(p => p.Command == command);
             if (cmd == null)
                 return null;
 
