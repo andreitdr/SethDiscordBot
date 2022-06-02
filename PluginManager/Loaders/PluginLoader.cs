@@ -1,35 +1,32 @@
 ﻿using Discord.WebSocket;
-
 using PluginManager.Interfaces;
 using PluginManager.Others;
-
 using System;
 using System.Collections.Generic;
+
 namespace PluginManager.Loaders
 {
     public class PluginLoader
     {
-        private DiscordSocketClient client;
+        private readonly DiscordSocketClient _client;
 
         /// <summary>
         /// The Plugin Loader constructor
         /// </summary>
         /// <param name="discordSocketClient">The discord bot client where the plugins will pe attached to</param>
-        public PluginLoader(DiscordSocketClient discordSocketClient)
-        {
-            this.client = discordSocketClient;
-        }
+        public PluginLoader(DiscordSocketClient discordSocketClient) { this._client = discordSocketClient; }
 
         private const string pluginCMDFolder = @"./Data/Plugins/Commands/";
         private const string pluginEVEFolder = @"./Data/Plugins/Events/";
 
-        private const string pluginCMDExtension = ".dll";
-        private const string pluginEVEExtension = ".dll";
+        private const string pluginCMDExtension = "dll";
+        private const string pluginEVEExtension = "dll";
+
 
         /// <summary>
         /// A list of <see cref="DBCommand"/> commands
         /// </summary>
-        public static List<DBCommand>? Plugins { get; set; }
+        public static List<DBCommand>? Commands { get; set; }
 
         /// <summary>
         /// A list of <see cref="DBEvent"/> commands
@@ -38,6 +35,7 @@ namespace PluginManager.Loaders
 
 
         public delegate void CMDLoaded(string name, string typeName, bool success, Exception? e = null);
+
         public delegate void EVELoaded(string name, string typeName, bool success, Exception? e = null);
 
         /// <summary>
@@ -55,11 +53,10 @@ namespace PluginManager.Loaders
         /// </summary>
         public void LoadPlugins()
         {
+            Commands = new List<DBCommand>();
+            Events   = new List<DBEvent>();
 
-            Plugins = new List<DBCommand>();
-            Events = new List<DBEvent>();
-
-            Functions.WriteLogFile("Starting plugin loader ... Client: " + client.CurrentUser.Username);
+            Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
             if (LanguageSystem.Language.ActiveLanguage != null)
                 Console_Utilities.WriteColorText(
                     LanguageSystem.Language.ActiveLanguage.FormatText(
@@ -67,45 +64,40 @@ namespace PluginManager.Loaders
                     )
                 );
 
-            //Load commands
-            CommandsLoader CMDLoader = new CommandsLoader(pluginCMDFolder, pluginCMDExtension);
-            CMDLoader.OnCommandLoaded += OnCommandLoaded!;
-            CMDLoader.OnCommandFileLoaded += OnCommandFileLoaded;
-            Plugins = CMDLoader.LoadCommands();
 
+            Loader<DBCommand> commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
+            Loader<DBEvent>   eventsLoader   = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
 
-            //Load Events
-            EventsLoader EVLoader = new EventsLoader(pluginEVEFolder, pluginEVEExtension);
-            EVLoader.EventLoad += OnEventLoaded!;
-            EVLoader.EventFileLoaded += EventFileLoaded;
-            Events = EVLoader.LoadEvents();
+            commandsLoader.FileLoaded   += OnCommandFileLoaded;
+            commandsLoader.PluginLoaded += OnCommandLoaded;
 
+            eventsLoader.FileLoaded   += EventFileLoaded;
+            eventsLoader.PluginLoaded += OnEventLoaded;
+
+            Commands = commandsLoader.Load();
+            Events   = eventsLoader.Load();
         }
 
-        private void EventFileLoaded(string path)
+        private void EventFileLoaded(LoaderArgs e)
         {
-            if (path != null)
-                Functions.WriteLogFile($"[EVENT] Event from file [{path}] has been successfully created !");
+            if (e.IsLoaded) Functions.WriteLogFile($"[EVENT] Event from file [{e.PluginName}] has been successfully created !");
         }
 
-        private void OnCommandFileLoaded(string path)
+        private void OnCommandFileLoaded(LoaderArgs e)
         {
-            if (path != null)
-                Functions.WriteLogFile($"[CMD] Command from file [{path}] has been successfully loaded !");
+            if (e.IsLoaded) Functions.WriteLogFile($"[CMD] Command from file [{e.PluginName}] has been successfully loaded !");
         }
 
-        private void OnEventLoaded(string typename, bool success, DBEvent eve, Exception exception)
+        private void OnEventLoaded(LoaderArgs e)
         {
-            if (eve != null && success)
-                eve.Start(client);
-            if (onEVELoad != null)
-                onEVELoad.Invoke(eve!.name, typename, success, exception);
+            if (e.IsLoaded) { ((DBEvent)e.Plugin!).Start(_client); }
+
+            if (onEVELoad != null) onEVELoad.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
         }
 
-        private void OnCommandLoaded(string name, bool success, DBCommand command, Exception exception)
+        private void OnCommandLoaded(LoaderArgs e)
         {
-            if (onCMDLoad != null)
-                onCMDLoad.Invoke(command.Command, name, success, exception);
+            if (onCMDLoad != null) onCMDLoad.Invoke(((DBCommand)e.Plugin!).Command, e.TypeName!, e.IsLoaded, e.Exception);
         }
     }
 }
