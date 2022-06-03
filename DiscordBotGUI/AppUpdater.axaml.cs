@@ -21,48 +21,42 @@ namespace DiscordBotGUI
             InitializeComponent();
             if (!File.Exists("./Version.txt"))
             {
+                textBox1.Text = "Checking ...";
                 File.WriteAllText("./Version.txt", "DiscordBotVersion=0");
-                DownloadDiscordBotClientNoGUIAsDLL();
+                //DownloadDiscordBotClientNoGUIAsDLL();
             }
 
-            if (!File.Exists("./DiscordBot.exe")) DownloadDiscordBotClientNoGUIAsDLL();
             Updates();
 
         }
 
-        private async void DownloadDiscordBotClientNoGUIAsDLL()
-        {
-            //await Task.Delay(5000);
-            string url_bot_dll = "https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/DiscordBot.zip";
-            int    actiontype  = 0; //0 - downolad, 1- extract
-            IProgress<float> progress = new Progress<float>((percent) =>
-            {
-                if (actiontype == 0)
-                    textBox1.Text = "Downloading DiscordBot ... " + MathF.Round(percent, 2) + "%";
-                else
-                    textBox1.Text = "Extracting package ..." + MathF.Round(percent, 2) + "%";
-                this.progressBar1.Value = percent;
-            });
+        /*        private async void DownloadDiscordBotClientNoGUIAsDLL()
+                {
 
-            this.progressBar1.IsIndeterminate = false;
-            try
-            {
-                await ServerCom.DownloadFileAsync(url_bot_dll, "./DiscordBot.zip", progress);
+                    //await Task.Delay(5000);
+                    string url_bot_dll = "https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/DiscordBot.dll";
+                    IProgress<float> progress = new Progress<float>((percent) =>
+                    {
+                        textBox1.Text = "Downloading DiscordBot.dll ... " + (percent * 100).ToString() + "%";
+                        this.progressBar1.Value = percent * 100;
+                    });
 
-                actiontype++;
+                    this.progressBar1.IsIndeterminate = false;
+                    try
+                    {
+                        await ServerCom.DownloadFileAsync(url_bot_dll, "./DiscordBot.dll", progress);
+                    }
+                    catch
+                    {
+                        textBox1.Text = "Error downloading DiscordBot.dll. Server is not responding.";
 
-                await Functions.ExtractArchive("./DiscordBot.zip", "./", progress);
-            }
-            catch
-            {
-                textBox1.Text = "Error downloading DiscordBot.dll. Server is not responding.";
+                        await Task.Delay(1000);
+                        return;
+                    }
 
-                await Task.Delay(1000);
-
-                new MainWindow() { Height = 425, Width = 500 }.Show();
-                Close();
-            }
-        }
+                    //new MainWindow() { Height = 425, Width = 500 }.Show();
+                    //Close();
+                }*/
 
         private async void Updates()
         {

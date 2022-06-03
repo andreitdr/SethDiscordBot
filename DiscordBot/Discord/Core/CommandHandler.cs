@@ -80,7 +80,7 @@ namespace PluginManager.Core
                     services: null
                 );
 
-                DBCommand plugin = PluginLoader.Commands!.Where(p => p.Command == (message.Content.Split(' ')[0]).Substring(botPrefix.Length)).FirstOrDefault();
+                DBCommand plugin = PluginLoader.Plugins!.Where(p => p.Command == (message.Content.Split(' ')[0]).Substring(botPrefix.Length)).FirstOrDefault();
 
 
                 if (plugin != null)

@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PluginManager.Others
 {
@@ -10,20 +14,17 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
-            public int          Max     { get; set; }
-            public string       Message { get; set; }
-            public ConsoleColor Color   { get; init; }
-
+            public int Progress { get; set; }
+            public int Max { get; set; }
+            public string Message { get; set; }
 
             public ProgressBar(int max, string message)
             {
-                Max     = max;
+                Max = max;
                 Message = message;
-                var consoleColors = Enum.GetValues(typeof(ConsoleColor));
-                while ((Color = (ConsoleColor)consoleColors.GetValue(new Random().Next(consoleColors.Length))!) == ConsoleColor.White && Color != ConsoleColor.Black) ;
             }
 
-            public void Update(int progress, double speed = -1, string? unit = null)
+            public async void Update(int progress, double speed = -1, string? unit = null)
             {
 
                 //progress bar
@@ -38,8 +39,8 @@ namespace PluginManager.Others
 
                 for (int i = 0; i < onechunk * progress; i++)
                 {
-                    Console.BackgroundColor = this.Color;
-                    Console.CursorLeft      = position++;
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    Console.CursorLeft = position++;
                     Console.Write(" ");
                 }
 
@@ -129,12 +130,11 @@ namespace PluginManager.Others
             ConsoleColor fg = Console.ForegroundColor;
             Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
             {
-                { "&g", ConsoleColor.Green },
-                { "&b", ConsoleColor.Blue },
-                { "&r", ConsoleColor.Red },
-                { "&m", ConsoleColor.Magenta },
-                { "&y", ConsoleColor.Yellow },
-                { "&c", fg }
+                {"&g", ConsoleColor.Green },
+                {"&b", ConsoleColor.Blue  },
+                {"&r", ConsoleColor.Red  },
+                {"&m", ConsoleColor.Magenta },
+                {"&c", fg }
             };
             foreach (string word in words)
             {
@@ -145,9 +145,7 @@ namespace PluginManager.Others
                         Console.ForegroundColor = colors[prefix];
                 }
 
-                string m = word;
-                foreach (var key in colors.Keys) { m = m.Replace(key, ""); }
-
+                string m = word.Replace("&g", "").Replace("&b", "").Replace("&r", "").Replace("&c", "").Replace("&m", "");
                 Console.Write(m + " ");
             }
             if (appendNewLine)
