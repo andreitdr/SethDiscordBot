@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-
 using PluginManager.Online;
 using PluginManager.Others;
 using System.Threading.Tasks;
@@ -16,6 +15,7 @@ namespace DiscordBotGUI
     public partial class AppUpdater : Window
     {
         private string _version;
+
         public AppUpdater()
         {
             InitializeComponent();
@@ -27,7 +27,6 @@ namespace DiscordBotGUI
 
             if (!File.Exists("./DiscordBot.exe")) DownloadDiscordBotClientNoGUIAsDLL();
             Updates();
-
         }
 
         private async void DownloadDiscordBotClientNoGUIAsDLL()
@@ -88,31 +87,27 @@ namespace DiscordBotGUI
                 return;
             }
 
-            IProgress<float> progress = new Progress<float>((percent) =>
-            {
-                this.progressBar1.Value = percent;
-            });
+            IProgress<float> progress = new Progress<float>((percent) => { this.progressBar1.Value = percent; });
 
             textBox1.Text = "Extracting update files ...";
             await Functions.ExtractArchive(file, "./", progress);
             progressBar1.IsIndeterminate = true;
-            textBox1.Text = "Setting up the new version ...";
+            textBox1.Text                = "Setting up the new version ...";
             File.Delete(file);
             File.WriteAllText("./Version.txt", "DiscordBotVersion=" + _version);
             await Task.Delay(5000);
             new MainWindow() { Height = 425, Width = 650 }.Show();
             this.Close();
-
         }
 
         private async Task<string> DownloadNewUpdate()
         {
             string urlNewUpdateZip = (await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/Version"))[1];
-            int secondsPast = 0;
+            int    secondsPast     = 0;
 
             bool isDownloading = true;
             this.progressBar1.IsIndeterminate = true;
-            textBox1.Text = "Downloading update ...";
+            textBox1.Text                     = "Downloading update ...";
 
 
             IProgress<long> downloaded = new Progress<long>((bytes) =>
@@ -123,14 +118,13 @@ namespace DiscordBotGUI
             IProgress<float> progress = new Progress<float>((percent) =>
             {
                 progressBar1.IsIndeterminate = false;
-                this.progressBar1.Value = percent;
+                this.progressBar1.Value      = percent;
             });
 
 
             string FileName = $"{urlNewUpdateZip.Split('/')[urlNewUpdateZip.Split('/').Length - 1]}";
             try
             {
-
                 new Thread(new Task(() =>
                 {
                     while (isDownloading)
@@ -148,6 +142,7 @@ namespace DiscordBotGUI
                 await Task.Delay(1000);
                 return null;
             }
+
             isDownloading = false;
             return FileName;
         }
@@ -156,14 +151,10 @@ namespace DiscordBotGUI
         {
             try
             {
-
                 string current_version = Functions.readCodeFromFile("Version.txt", "DiscordBotVersion", '=') ?? "0";
-                string latest_version = (await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/Version"))[0];
+                string latest_version  = (await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/Version"))[0];
                 _version = latest_version;
-                if (current_version != latest_version)
-                {
-                    return true;
-                }
+                if (current_version != latest_version) { return true; }
 
                 return false;
             }
