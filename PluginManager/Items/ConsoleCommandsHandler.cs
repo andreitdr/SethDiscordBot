@@ -1,16 +1,12 @@
 ﻿using Discord.WebSocket;
-
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
-
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
-using PluginManager.LanguageSystem;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 
@@ -18,13 +14,10 @@ namespace PluginManager.Items
 {
     public class ConsoleCommandsHandler
     {
-
-        private static PluginsManager manager = new PluginsManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
-        private static LanguageManager languageManager = new LanguageManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Languages");
-
+        private static PluginsManager manager = new("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
 
         public static List<Tuple<string, string, Action<string[]>>>? commandList = new List<Tuple<string, string, Action<string[]>>>();
-        private DiscordSocketClient client;
+        private       DiscordSocketClient                            client;
 
         public ConsoleCommandsHandler(DiscordSocketClient client)
         {
@@ -73,14 +66,9 @@ namespace PluginManager.Items
                     if (name == null || name.Length < 2)
                         name = typeName;
                     if (success)
-                        if (LanguageSystem.Language.ActiveLanguage == null)
-                            Console.WriteLine("[CMD] Successfully loaded command : " + name);
-                        else Console.WriteLine(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["COMMAND_LOAD_SUCCESS"], name));
+                        Console.WriteLine("[CMD] Successfully loaded command : " + name);
                     else
-                        if (LanguageSystem.Language.ActiveLanguage == null)
                         Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception.Message);
-                    else
-                        Console.WriteLine(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["COMMAND_LOAD_FAIL"], name, exception.Message));
                     Console.ForegroundColor = ConsoleColor.Red;
                 };
                 loader.onEVELoad += (name, typeName, success, exception) =>
@@ -89,15 +77,9 @@ namespace PluginManager.Items
                         name = typeName;
                     Console.ForegroundColor = ConsoleColor.Green;
                     if (success)
-                        if (LanguageSystem.Language.ActiveLanguage == null)
-                            Console.WriteLine("[EVENT] Successfully loaded event : " + name);
-                        else
-                            Console.WriteLine(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["EVENT_LOAD_SUCCESS"], name));
+                        Console.WriteLine("[EVENT] Successfully loaded event : " + name);
                     else
-                        if (LanguageSystem.Language.ActiveLanguage == null)
                         Console.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception.Message);
-                    else
-                        Console.WriteLine(LanguageSystem.Language.ActiveLanguage.FormatText(LanguageSystem.Language.ActiveLanguage.LanguageWords["EVENT_LOAD_FAIL"], name, exception.Message));
                     Console.ForegroundColor = ConsoleColor.Red;
                 };
                 loader.LoadPlugins();
@@ -205,75 +187,47 @@ namespace PluginManager.Items
 
             });
 
-            AddCommand("setlang", "set language", (args) =>
-            {
-                if (args.Length == 1)
+
+            AddCommand("value", "read value from VariableStack", (args) =>
                 {
-                    Console.WriteLine("Please specify language");
-                    return;
+                    if (args.Length != 2) return;
+                    if (!Config.ContainsKey(args[1])) return;
+
+                    string data = Config.GetValue(args[1]);
+                    Console.WriteLine($"{args[1]} => {data}");
                 }
-                Language.SetLanguage(args[0]);
-            });
+            );
 
-            AddCommand("listlang", "List all available languages", async () =>
-            {
-                await languageManager.ListAllLanguages();
-            });
-
-            AddCommand("dwlang", "Download language", async (args) =>
-            {
-                if (args.Length == 1)
+            AddCommand("addv", "add variable to the system variables", async (args) =>
                 {
-                    Console.WriteLine("Please specify language");
-                    return;
+                    if (args.Length < 3) return;
+                    string in1 = args[1];
+                    if (!Config.ContainsKey(in1))
+                        Config.AddValueToVariables(in1, Functions.MergeStrings(args, 2));
+                    else
+                        Config.SetValue(in1, Functions.MergeStrings(args, 2));
+
+                    Console.WriteLine($"Updated config file with the following command: {in1} => {Config.GetValue(in1)}");
+                    Config.SaveDictionary();
                 }
-                string Lname = args.MergeStrings(1);
-                string[] link = await languageManager!.GetDownloadLink(Lname);
-                try
+            );
+
+            AddCommand("remv", "remove variable from system variables", (args) =>
                 {
-                    if (link[0] is null || link is null)
-                    {
-                        if (Lname == "")
-                        {
-                            Console_Utilities.WriteColorText($"Name is invalid");
-                            return;
-                        }
-                        Console_Utilities.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
-                        return;
-                    }
-                    if (link[1].Contains("CrossPlatform") || link[1].Contains("cp"))
-                    {
-
-                        string path2 = Functions.langFolder + Lname + ".lng";
-
-                        await ServerCom.DownloadFileAsync(link[0], path2);
-                        Console.WriteLine("\n");
-                    }
-                    else Console_Utilities.WriteColorText("The language you are trying to download (&b" + Lname + "&c) is not compatible with the version of this bot. User &glistlang &ccommand in order to see all available languages for your current version !\n" + link[1]);
-                    return;
+                    if (args.Length < 2) return;
+                    Config.RemoveKey(args[1]);
+                    Config.SaveDictionary();
                 }
-                catch
+            );
+
+            AddCommand("sd", "Shuts down the discord bot", async () =>
                 {
-                    if (Lname == "")
-                    {
-                        Console_Utilities.WriteColorText($"Name is invalid");
-                        return;
-                    }
-                    Console_Utilities.WriteColorText("Failed to find language &b" + Lname + " &c! Use &glistlang &ccommand to display all available languages !");
-                    return;
+                    await client.StopAsync();
+                    await client.DisposeAsync();
+                    Config.SaveDictionary();
+                    Environment.Exit(0);
                 }
-            });
-
-
-            AddCommand("token", "Display the token used by the bot", () =>
-            {
-                if (System.IO.File.Exists("./Data/Resources/DiscordBotCore.data"))
-                    Console.WriteLine("Token: " + Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '='));
-                else Console.WriteLine("File could not be found. Please register token");
-            });
-
-
-
+            );
         }
 
         public static void AddCommand(string command, string description, Action<string[]> action)
@@ -286,8 +240,6 @@ namespace PluginManager.Items
         public static void AddCommand(string command, string description, Action action)
         {
             AddCommand(command, description, (args) => action());
-
-            /* Console.WriteLine("Added command: " + command);*/
         }
 
         public static void RemoveCommand(string command)

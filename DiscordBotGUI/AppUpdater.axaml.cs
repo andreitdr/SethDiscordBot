@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 using System.Threading;
-using System.Drawing;
-using Avalonia.Media;
 
 namespace DiscordBotGUI
 {

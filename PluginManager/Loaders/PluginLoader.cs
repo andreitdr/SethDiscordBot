@@ -57,13 +57,7 @@ namespace PluginManager.Loaders
             Events   = new List<DBEvent>();
 
             Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
-            if (LanguageSystem.Language.ActiveLanguage != null)
-                Console_Utilities.WriteColorText(
-                    LanguageSystem.Language.ActiveLanguage.FormatText(
-                        LanguageSystem.Language.ActiveLanguage.LanguageWords["PLUGIN_LOADING_START"]
-                    )
-                );
-
+            Console.WriteLine("Loading plugins");
 
             Loader<DBCommand> commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
             Loader<DBEvent>   eventsLoader   = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);

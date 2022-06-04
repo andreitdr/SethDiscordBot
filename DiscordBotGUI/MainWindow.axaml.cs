@@ -1,13 +1,12 @@
 using Avalonia.Controls;
-
 using System.Threading.Tasks;
-
 using PluginManager.Others;
 using System.IO;
 using System;
 using System.Diagnostics;
 using DiscordBotGUI.Settings;
 using Avalonia.Themes.Fluent;
+using PluginManager;
 
 namespace DiscordBotGUI
 {
@@ -27,8 +26,7 @@ namespace DiscordBotGUI
 
 
             textBox3.Watermark = "Insert start arguments";
-            if (File.Exists("./Version.txt"))
-                label5.Content = Functions.readCodeFromFile("./Version.txt", "DiscordBotVersion", '=');
+            if (File.Exists("./Version.txt")) label5.Content = Config.ApplicationVariables["Version"] as string;
             button1.Click += async (sender, e) =>
             {
 
@@ -58,8 +56,8 @@ namespace DiscordBotGUI
             Directory.CreateDirectory(Functions.dataFolder);
             try
             {
-                string? botToken = Functions.readCodeFromFile(folder, "BOT_TOKEN", '=');
-                string? botPrefix = Functions.readCodeFromFile(folder, "BOT_PREFIX", '=');
+                string? botToken  = Config.ApplicationVariables["token"] as string;
+                string? botPrefix = Config.ApplicationVariables["prefix"] as string;
                 if (botToken == null || botPrefix == null)
                 {
                     textBox1.IsReadOnly = false;

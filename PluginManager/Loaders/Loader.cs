@@ -41,7 +41,7 @@ namespace PluginManager.Loaders
 
         internal List<T>? Load()
         {
-            List<T>  list  = new List<T>();
+            List<T> list = new List<T>();
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -54,7 +54,14 @@ namespace PluginManager.Loaders
                 Assembly.LoadFrom(file);
                 if (FileLoaded != null)
                 {
-                    LoaderArgs args = new LoaderArgs() { Exception = null, TypeName = nameof(T), IsLoaded = false, PluginName = file, Plugin = null };
+                    LoaderArgs args = new LoaderArgs()
+                    {
+                        Exception  = null,
+                        TypeName   = nameof(T),
+                        IsLoaded   = false,
+                        PluginName = file,
+                        Plugin     = null
+                    };
                     FileLoaded.Invoke(args);
                 }
             }
@@ -63,9 +70,9 @@ namespace PluginManager.Loaders
             {
                 Type interfaceType = typeof(T);
                 Type[] types = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(a => a.GetTypes())
-                    .Where(p => interfaceType.IsAssignableFrom(p) && p.IsClass)
-                    .ToArray();
+                                        .SelectMany(a => a.GetTypes())
+                                        .Where(p => interfaceType.IsAssignableFrom(p) && p.IsClass)
+                                        .ToArray();
 
 
                 list.Clear();
@@ -77,15 +84,32 @@ namespace PluginManager.Loaders
                         list.Add(plugin);
 
 
-                        if (PluginLoaded != null) { PluginLoaded.Invoke(new() { Exception = null, IsLoaded = true, PluginName = type.FullName, TypeName = nameof(T), Plugin = plugin }); }
+                        if (PluginLoaded != null)
+                        {
+                            PluginLoaded.Invoke(new()
+                                {
+                                    Exception  = null,
+                                    IsLoaded   = true,
+                                    PluginName = type.FullName,
+                                    TypeName   = nameof(T),
+                                    Plugin     = plugin
+                                }
+                            );
+                        }
                     }
                     catch (Exception ex)
                     {
-                        if (PluginLoaded != null) { PluginLoaded.Invoke(new() { Exception = ex, IsLoaded = false, PluginName = type.FullName, TypeName = nameof(T) }); }
+                        if (PluginLoaded != null)
+                        {
+                            PluginLoaded.Invoke(new() { Exception = ex, IsLoaded = false, PluginName = type.FullName, TypeName = nameof(T) });
+                        }
                     }
                 }
             }
-            catch (Exception ex) { Functions.WriteErrFile(ex.ToString()); }
+            catch (Exception ex)
+            {
+                Functions.WriteErrFile(ex.ToString());
+            }
 
 
             return list;

@@ -1,13 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-
+using PluginManager;
+using PluginManager.Others;
 using static PluginManager.Others.Functions;
 
-namespace PluginManager.Core
+namespace DiscordBot.Discord.Core
 {
     internal class Boot
     {
@@ -107,6 +108,17 @@ namespace PluginManager.Core
         {
             Console.Title = "ONLINE";
             isReady = true;
+
+            new Thread(async () =>
+                {
+                    while (true)
+                    {
+                        Config.SaveDictionary();
+                        Thread.Sleep(10000);
+                    }
+                }
+            ).Start();
+
             return Task.CompletedTask;
         }
 

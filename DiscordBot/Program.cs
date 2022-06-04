@@ -1,15 +1,12 @@
-﻿using Discord;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using PluginManager.Core;
-using PluginManager.Others;
-using PluginManager.LanguageSystem;
-using PluginManager.Online;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using DiscordBot.Discord.Core;
+using PluginManager;
 using PluginManager.Items;
+using PluginManager.Others;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DiscordBot
 {
@@ -17,8 +14,8 @@ namespace DiscordBot
     {
         private static bool loadPluginsOnStartup = false;
         private static bool listPluginsAtStartup = false;
+
         private static bool listLanguagAtStartup = false;
-        //private static bool ShowStartupMessage   = true;
 
         /// <summary>
         ///     The main entry point for the application.
@@ -31,28 +28,38 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            Directory.CreateDirectory("./Data/runtime");
-
-            AppDomain.CurrentDomain.AppendPrivatePath("./Data/runtime");
-
-            if (!File.Exists("./Data/Resources/DiscordBotCore.data") || (Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=').Length != 59 && Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", '=').Length != 70))
+            if (File.Exists(Functions.dataFolder + "var.dat"))
+                Config.LoadDictionary();
+            else if (Config.GetValue("token") == null || Config.GetValue("token")?.Length != 70)
             {
-                File.WriteAllText("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN=token\nBOT_PREFIX=!\n");
+                Dictionary<string, string> d = new Dictionary<string, string>();
                 while (true)
                 {
-                    Console.WriteLine("Please insert your token: ");
-                    Console.Write("TOKEN: ");
-                    string botToken = Console.ReadLine();
-                    if (botToken.Length == 59 || botToken.Length == 70)
-                    {
-                        string prefix                                        = Functions.readCodeFromFile("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX", '=');
-                        if (prefix == string.Empty || prefix == null) prefix = "!";
-                        File.WriteAllText("./Data/Resources/DiscordBotCore.data", $"BOT_TOKEN={botToken}\nBOT_PREFIX={prefix}\n");
-                        break;
-                    }
+                    Console.WriteLine("Please insert your token");
+                    Console.Write("Token = ");
+                    string token = Console.ReadLine();
+                    if (token?.Length == 59 || token?.Length == 70)
+                        d.Add("token", token);
                     else
-                        Console.WriteLine("Invalid Token !");
+                    {
+                        Console.WriteLine("Invalid token");
+                        continue;
+                    }
+
+                    Console.WriteLine("Please insert your prefix (max. 1 character long):");
+                    Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored. No spaces or numbers allowed");
+                    Console.Write("Prefix = ");
+                    char prefix = Console.ReadLine()[0];
+
+                    if (prefix == ' ' || char.IsDigit(prefix)) continue;
+
+                    d.Add("prefix", prefix.ToString());
+
+                    break;
                 }
+
+                Config.AppendToDictionary(d);
+                d.Clear();
             }
 
             HandleInput(args).Wait();
@@ -61,11 +68,10 @@ namespace DiscordBot
         /// <summary>
         /// Reset all settings for the bot
         /// </summary>
-        private static Task ResetSettings()
+        private static async Task ResetSettings()
         {
             string[] files = Directory.GetFiles(@"./Data/Resources");
             foreach (string file in files) File.Delete(file);
-            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -74,13 +80,11 @@ namespace DiscordBot
         /// <param name="discordbooter">The discord booter used to start the application</param>
         private static Task NoGUI(Boot discordbooter)
         {
-            Language.LoadLanguage();
-
             ConsoleCommandsHandler consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
             if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
             if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
             if (listLanguagAtStartup) consoleCommandsHandler.HandleCommand("listlang");
-
+            Config.SaveDictionary();
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -102,8 +106,8 @@ namespace DiscordBot
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
-            string token  = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", '=');
-            string prefix = Functions.readCodeFromFile(Functions.dataFolder + "DiscordBotCore.data", "BOT_PREFIX", '=');
+            string token  = Config.GetValue("token");
+            string prefix = Config.GetValue("prefix");
 
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
@@ -133,15 +137,6 @@ namespace DiscordBot
         /// <param name="args">The arguments</param>
         private static async Task HandleInput(string[] args)
         {
-            if (args.Length == 0)
-            {
-                if (File.Exists("./ref/startupArguments.txt"))
-                {
-                    var lines = await File.ReadAllLinesAsync("./ref/startupArguments.txt");
-                    args = lines;
-                }
-            }
-
             int len = args.Length;
             if (len == 1 && args[0] == "--help")
             {
@@ -151,12 +146,13 @@ namespace DiscordBot
 
             if (len == 1 && args[0] == "--logout")
             {
-                File.Delete(Functions.dataFolder + "DiscordBotCore.dat");
+                File.Delete(Functions.dataFolder + "var.dat");
                 await Task.Run(async () =>
-                {
-                    await Task.Delay(1000);
-                    Environment.Exit(0x08);
-                });
+                    {
+                        await Task.Delay(1000);
+                        Environment.Exit(0x08);
+                    }
+                );
                 return;
             }
 
@@ -226,7 +222,6 @@ namespace DiscordBot
                         await ClearFolder("./Output/Logs/");
                         await ClearFolder("./Output/Errors");
                         await ClearFolder("./Data/Languages/");
-                        await ClearFolder("./Data/Plugins/Addons");
                         await ClearFolder("./Data/Plugins/Commands");
                         await ClearFolder("./Data/Plugins/Events");
                         Console.WriteLine("Successfully cleared all folders");

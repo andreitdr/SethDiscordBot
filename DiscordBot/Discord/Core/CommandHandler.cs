@@ -13,7 +13,7 @@ using System.Linq;
 using Discord;
 using System;
 
-namespace PluginManager.Core
+namespace DiscordBot.Discord.Core
 {
     internal class CommandHandler
     {
