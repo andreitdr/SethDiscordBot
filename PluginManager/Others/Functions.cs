@@ -264,7 +264,7 @@ namespace PluginManager.Others
 
         public static async Task SaveToJsonFile<T>(string file, T Data)
         {
-            string jsonText = JsonSerializer.Serialize(Data, typeof(T));
+            string jsonText = JsonSerializer.Serialize(Data, typeof(T), new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(file, jsonText);
         }
 

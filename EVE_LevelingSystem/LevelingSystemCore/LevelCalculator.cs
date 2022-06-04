@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PluginManager;
 
 namespace EVE_LevelingSystem.LevelingSystemCore
 {
@@ -44,7 +45,7 @@ namespace EVE_LevelingSystem.LevelingSystemCore
 
             new Thread(() =>
                 {
-                    int minutesToWait = 0;
+                    int minutesToWait = Level.globalSettings.TimeToWaitBetweenMessages;
                     Thread.Sleep(60000 * minutesToWait);
                     OnWaitingList.Remove(user.userID);
                 }
