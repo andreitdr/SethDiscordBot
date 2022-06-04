@@ -26,7 +26,7 @@ namespace DiscordBotGUI
 
 
             textBox3.Watermark = "Insert start arguments";
-            if (File.Exists("./Version.txt")) label5.Content = Config.ApplicationVariables["Version"] as string;
+            if (File.Exists("./Version.txt")) label5.Content = Config.GetValue("Version");
             button1.Click += async (sender, e) =>
             {
 
@@ -56,8 +56,8 @@ namespace DiscordBotGUI
             Directory.CreateDirectory(Functions.dataFolder);
             try
             {
-                string? botToken  = Config.ApplicationVariables["token"] as string;
-                string? botPrefix = Config.ApplicationVariables["prefix"] as string;
+                string? botToken  = Config.GetValue("token") as string;
+                string? botPrefix = Config.GetValue("prefix") as string;
                 if (botToken == null || botPrefix == null)
                 {
                     textBox1.IsReadOnly = false;

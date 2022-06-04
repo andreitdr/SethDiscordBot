@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 using System.Threading;
+using PluginManager;
 
 namespace DiscordBotGUI
 {
@@ -149,7 +150,10 @@ namespace DiscordBotGUI
         {
             try
             {
-                string current_version = Functions.readCodeFromFile("Version.txt", "DiscordBotVersion", '=') ?? "0";
+                string current_version = Config.GetValue("Version");
+                if (current_version == null)
+                    if (!Config.SetValue("Version", "0"))
+                        Config.AddValueToVariables("Version", "0");
                 string latest_version  = (await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/Version"))[0];
                 _version = latest_version;
                 if (current_version != latest_version) { return true; }
@@ -159,6 +163,7 @@ namespace DiscordBotGUI
             catch (Exception ex)
             {
                 textBox1.Text = "Error while checking for updates. Server is not responding.";
+                Functions.WriteErrFile(ex.Message);
                 return false;
             }
         }

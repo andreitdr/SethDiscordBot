@@ -51,7 +51,6 @@ namespace PluginManager
         public static bool SetValue(string key, string value)
         {
             if (!ApplicationVariables.ContainsKey(key)) return false;
-
             if (ConstantTokens.Contains(key)) return false;
             ApplicationVariables[key] = value;
             return true;
