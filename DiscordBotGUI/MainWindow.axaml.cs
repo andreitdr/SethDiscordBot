@@ -42,8 +42,8 @@ namespace DiscordBotGUI
                     return;
                 }
 
-                Functions.WriteToSettings(Functions.dataFolder + "DiscordBotCore.data", "BOT_TOKEN", token, '=');
-                Functions.WriteToSettings(Functions.dataFolder + "DiscordBotCore.data", "BOT_PREFIX", prefix, '=');
+                Config.SetValue("token", token);
+                Config.SetValue("prefix", prefix);
                 RunDiscordBot(args);
 
             };

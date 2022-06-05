@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using PluginManager;
-using PluginManager.Others;
 using static PluginManager.Others.Functions;
 
 namespace DiscordBot.Discord.Core
@@ -75,17 +74,6 @@ namespace DiscordBot.Discord.Core
             await Task.Delay(2000);
             while (!isReady) ;
 
-        }
-
-        /// <summary>
-        /// The method that stops the bot from running
-        /// </summary>
-        /// <returns></returns>
-        public async Task ShutDown()
-        {
-            if (client == null) return;
-            await client.LogoutAsync();
-            await client.StopAsync();
         }
 
         private void CommonTasks()

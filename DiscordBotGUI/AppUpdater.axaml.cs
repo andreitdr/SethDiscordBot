@@ -153,7 +153,7 @@ namespace DiscordBotGUI
                 string current_version = Config.GetValue("Version");
                 if (current_version == null)
                     if (!Config.SetValue("Version", "0"))
-                        Config.AddValueToVariables("Version", "0");
+                        Config.AddValueToVariables("Version", "0", false);
                 string latest_version  = (await ServerCom.ReadTextFromFile("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Updates/Version"))[0];
                 _version = latest_version;
                 if (current_version != latest_version) { return true; }

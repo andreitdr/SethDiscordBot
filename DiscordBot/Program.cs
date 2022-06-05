@@ -50,9 +50,7 @@ namespace DiscordBot
                     char prefix = Console.ReadLine()[0];
 
                     if (prefix == ' ' || char.IsDigit(prefix)) continue;
-
                     Config.AddValueToVariables("prefix", prefix.ToString(), false);
-
                     break;
                 }
 

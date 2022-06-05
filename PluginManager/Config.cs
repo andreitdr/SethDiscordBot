@@ -17,11 +17,11 @@ namespace PluginManager
     {
         private static AppConfig appConfig = null;
 
-        public static bool AddValueToVariables(string key, string value, bool isReadOnly)
+        public static bool AddValueToVariables(string key, string value, bool isProtected)
         {
             if (appConfig.ApplicationVariables.ContainsKey(key)) return false;
             appConfig.ApplicationVariables.Add(key, value);
-            if (isReadOnly) appConfig.ProtectedKeyWords.Add(key);
+            if (isProtected) appConfig.ProtectedKeyWords.Add(key);
             SaveConfig();
             return true;
         }
@@ -61,7 +61,6 @@ namespace PluginManager
             {
                 appConfig = await Functions.ConvertFromJson<AppConfig>(path);
                 Functions.WriteLogFile($"Loaded {appConfig.ApplicationVariables.Keys.Count} application variables.\nLoaded {appConfig.ProtectedKeyWords.Count} readonly variables.");
-                //Console.WriteLine($"Loaded {appConfig.ApplicationVariables.Count} application variables !");
             }
             else
                 appConfig = new() { ApplicationVariables = new Dictionary<string, string>(), ProtectedKeyWords = new List<string>() };
