@@ -18,6 +18,7 @@ Plugin Types:
 2. Events
 
 Project Structure
+
 ![Image](../../blob/gh-pages/Pictures/architecture2.png)
 
 ### How to create a plugin
