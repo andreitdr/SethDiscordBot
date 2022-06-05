@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using PluginManager.Online;
 using PluginManager.Others;
 using System.Threading.Tasks;

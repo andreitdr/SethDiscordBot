@@ -17,6 +17,8 @@ Plugin Types:
 1. Commands
 2. Events
 
+Project Structure
+![Image](../../blob/gh-pages/Pictures/architecture.png)
 
 ### How to create a plugin
 
