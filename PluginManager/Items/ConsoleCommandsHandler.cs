@@ -203,12 +203,12 @@ namespace PluginManager.Items
                     if (args.Length < 3) return;
                     string in1 = args[1];
                     if (!Config.ContainsKey(in1))
-                        Config.AddValueToVariables(in1, Functions.MergeStrings(args, 2));
+                        Config.AddValueToVariables(in1, Functions.MergeStrings(args, 2), false);
                     else
                         Config.SetValue(in1, Functions.MergeStrings(args, 2));
 
                     Console.WriteLine($"Updated config file with the following command: {in1} => {Config.GetValue(in1)}");
-                    Config.SaveDictionary();
+                    Config.SaveConfig();
                 }
             );
 
@@ -216,7 +216,20 @@ namespace PluginManager.Items
                 {
                     if (args.Length < 2) return;
                     Config.RemoveKey(args[1]);
-                    Config.SaveDictionary();
+                    Config.SaveConfig();
+                }
+            );
+
+            AddCommand("vars", "Display all variables", () =>
+                {
+                    var            d    = Config.GetAllVariables();
+                    List<string[]> data = new List<string[]>();
+                    data.Add(new string[] { "-", "-" });
+                    data.Add(new string[] { "Key", "Value" });
+                    data.Add(new string[] { "-", "-" });
+                    foreach (var kvp in d) data.Add(new string[] { kvp.Key, kvp.Value });
+                    data.Add(new string[] { "-", "-" });
+                    Console_Utilities.FormatAndAlignTable(data);
                 }
             );
 
@@ -224,7 +237,7 @@ namespace PluginManager.Items
                 {
                     await client.StopAsync();
                     await client.DisposeAsync();
-                    Config.SaveDictionary();
+                    Config.SaveConfig();
                     Environment.Exit(0);
                 }
             );

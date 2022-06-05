@@ -1,86 +1,76 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using PluginManager.Others;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PluginManager
 {
+    internal class AppConfig
+    {
+        public Dictionary<string, string> ApplicationVariables { get; set; }
+        public List<string>               ProtectedKeyWords    { get; set; }
+    }
+
     public static class Config
     {
-        private static readonly Dictionary<string, string> ApplicationVariables = new();
-        private static readonly List<string>               ConstantTokens       = new() { "token" };
+        private static AppConfig appConfig = null;
 
-        public static void AppendToDictionary(Dictionary<string, string> dictionary)
+        public static bool AddValueToVariables(string key, string value, bool isReadOnly)
         {
-            foreach (var kvp in dictionary) ApplicationVariables.TryAdd(kvp.Key, kvp.Value);
-        }
-
-        public static bool AddValueToVariables(string key, string value, bool constant)
-        {
-            bool req = AddValueToVariables(key, value);
-            if (constant) ConstantTokens.Add(key);
-
-            return req;
-        }
-
-        public static bool AddValueToVariables(string key, string value)
-        {
-            if (ApplicationVariables.ContainsKey(key))
-            {
-                return false;
-            }
-
-            ApplicationVariables.Add(key, value);
+            if (appConfig.ApplicationVariables.ContainsKey(key)) return false;
+            appConfig.ApplicationVariables.Add(key, value);
+            if (isReadOnly) appConfig.ProtectedKeyWords.Add(key);
+            SaveConfig();
             return true;
         }
 
         public static string? GetValue(string key)
         {
-            if (!ApplicationVariables.ContainsKey(key))
-            {
-                if (key != "token") Console.WriteLine("The key is not present in the dictionary");
-                return null;
-            }
-
-            return ApplicationVariables[key];
+            if (!appConfig.ApplicationVariables.ContainsKey(key)) return null;
+            return appConfig.ApplicationVariables[key];
         }
 
         public static bool SetValue(string key, string value)
         {
-            if (!ApplicationVariables.ContainsKey(key)) return false;
-            if (ConstantTokens.Contains(key)) return false;
-            ApplicationVariables[key] = value;
+            if (!appConfig.ApplicationVariables.ContainsKey(key)) return false;
+            if (appConfig.ProtectedKeyWords.Contains(key)) return false;
+            appConfig.ApplicationVariables[key] = value;
+            SaveConfig();
             return true;
         }
 
         public static bool RemoveKey(string key)
         {
-            if (ConstantTokens.Contains(key)) return false;
-
-
-            ApplicationVariables.Remove(key);
+            appConfig.ApplicationVariables.Remove(key);
+            appConfig.ProtectedKeyWords.Remove(key);
             return true;
         }
 
-        public static async void SaveDictionary()
+        public static async void SaveConfig()
         {
             string path = Functions.dataFolder + "var.dat";
-            await Functions.SaveToJsonFile(path, ApplicationVariables);
+            await Functions.SaveToJsonFile<AppConfig>(path, appConfig);
         }
 
-        public static async void LoadDictionary()
+        public static async Task LoadConfig()
         {
             string path = Functions.dataFolder + "var.dat";
-            var    d    = await Functions.ConvertFromJson<Dictionary<string, string>>(path);
-            ApplicationVariables.Clear();
-            AppendToDictionary(d);
+            if (File.Exists(path))
+            {
+                appConfig = await Functions.ConvertFromJson<AppConfig>(path);
+                Functions.WriteLogFile($"Loaded {appConfig.ApplicationVariables.Keys.Count} application variables.\nLoaded {appConfig.ProtectedKeyWords.Count} readonly variables.");
+                //Console.WriteLine($"Loaded {appConfig.ApplicationVariables.Count} application variables !");
+            }
+            else
+                appConfig = new() { ApplicationVariables = new Dictionary<string, string>(), ProtectedKeyWords = new List<string>() };
         }
 
-        public static string GetKey(string        value) => ApplicationVariables.Keys.FirstOrDefault(x => ApplicationVariables[x] == value);
-        public static bool   ContainsValue(string value) => ApplicationVariables.ContainsValue(value);
-        public static bool   ContainsKey(string   key)   => ApplicationVariables.ContainsKey(key);
+        public static string? GetKey(string        value) => appConfig.ApplicationVariables.Keys.FirstOrDefault(x => appConfig.ApplicationVariables[x] == value);
+        public static bool    ContainsValue(string value) => appConfig.ApplicationVariables.ContainsValue(value);
+        public static bool    ContainsKey(string   key)   => appConfig.ApplicationVariables.ContainsKey(key);
+
+        public static Dictionary<string, string> GetAllVariables() => new Dictionary<string, string>(appConfig.ApplicationVariables);
     }
 }

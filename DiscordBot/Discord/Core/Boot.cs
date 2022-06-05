@@ -113,7 +113,7 @@ namespace DiscordBot.Discord.Core
                 {
                     while (true)
                     {
-                        Config.SaveDictionary();
+                        Config.SaveConfig();
                         Thread.Sleep(10000);
                     }
                 }

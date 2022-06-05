@@ -71,9 +71,9 @@ namespace PluginManager.Others
         /// <param name="data">The List of arrays of strings that represent the rows.</param>
         public static void FormatAndAlignTable(List<string[]> data)
         {
-            char tableLine = '-';
+            char tableLine  = '-';
             char tableCross = '+';
-            char tableWall = '|';
+            char tableWall  = '|';
 
             int[] len = new int[data[0].Length];
             foreach (var line in data)

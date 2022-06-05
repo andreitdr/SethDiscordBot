@@ -28,18 +28,16 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            if (File.Exists(Functions.dataFolder + "var.dat"))
-                Config.LoadDictionary();
-            else if (Config.GetValue("token") == null || Config.GetValue("token")?.Length != 70)
+            Config.LoadConfig().Wait();
+            if (!Config.ContainsKey("token") || Config.GetValue("token") == null || Config.GetValue("token")?.Length != 70)
             {
-                Dictionary<string, string> d = new Dictionary<string, string>();
                 while (true)
                 {
                     Console.WriteLine("Please insert your token");
                     Console.Write("Token = ");
                     string token = Console.ReadLine();
                     if (token?.Length == 59 || token?.Length == 70)
-                        d.Add("token", token);
+                        Config.AddValueToVariables("token", token, true);
                     else
                     {
                         Console.WriteLine("Invalid token");
@@ -53,13 +51,12 @@ namespace DiscordBot
 
                     if (prefix == ' ' || char.IsDigit(prefix)) continue;
 
-                    d.Add("prefix", prefix.ToString());
+                    Config.AddValueToVariables("prefix", prefix.ToString(), false);
 
                     break;
                 }
 
-                Config.AppendToDictionary(d);
-                d.Clear();
+                Config.SaveConfig();
             }
 
             HandleInput(args).Wait();
@@ -84,7 +81,7 @@ namespace DiscordBot
             if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
             if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
             if (listLanguagAtStartup) consoleCommandsHandler.HandleCommand("listlang");
-            Config.SaveDictionary();
+            Config.SaveConfig();
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.White;

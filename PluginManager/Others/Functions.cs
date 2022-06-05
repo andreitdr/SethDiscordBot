@@ -98,31 +98,6 @@ namespace PluginManager.Others
         }
 
         /// <summary>
-        /// Write to settings file
-        /// </summary>
-        /// <param name="file">The settings file path</param>
-        /// <param name="Code">The Key value of the setting</param>
-        /// <param name="newValue">The new value of the settings</param>
-        /// <param name="separator">The separator between the key and the value</param>
-        public static void WriteToSettings(string file, string Code, string newValue, char separator)
-        {
-
-            string[] lines = File.ReadAllLines(file);
-            File.Delete(file);
-            bool ok = false;
-            foreach (var line in lines)
-                if (line.StartsWith(Code))
-                {
-                    File.AppendAllText(file, Code + separator + newValue + "\n");
-                    ok = true;
-                }
-                else
-                    File.AppendAllText(file, line + "\n");
-
-            if (!ok) File.AppendAllText(file, Code + separator + newValue + "\n");
-        }
-
-        /// <summary>
         /// Merge one array of strings into one string
         /// </summary>
         /// <param name="s">The array of strings</param>
@@ -159,29 +134,6 @@ namespace PluginManager.Others
         {
             Command command = new Command(message);
             return command.Arguments;
-        }
-
-
-        /// <summary>
-        /// Write setting 
-        /// </summary>
-        /// <param name="SettingName">The full path to the setting</param>
-        /// <param name="NewValue">The new Value</param>
-        public static void WriteToSettingsFast(string SettingName, string NewValue)
-        {
-
-            string path = dataFolder; // Resources/
-
-            string[] args = SettingName.Split('.');
-
-            int len = args.Length;
-            if (len < 2) return;
-            for (int i = 0; i < len - 2; i++) path += args[i] + "/";
-            path += args[len - 2] + ".txt";
-
-
-            WriteToSettings(path, args[len - 1].Replace('_', ' '), NewValue, '=');
-
         }
 
         /// <summary>
@@ -253,6 +205,11 @@ namespace PluginManager.Others
         }
 
 
+        /// <summary>
+        /// Convert Bytes to highest measurement unit possible
+        /// </summary>
+        /// <param name="bytes">The amount of bytes</param>
+        /// <returns></returns>
         public static (double, string) ConvertBytes(long bytes)
         {
             if (bytes < 1024) return (bytes, "B");
@@ -262,12 +219,25 @@ namespace PluginManager.Others
 
         }
 
+        /// <summary>
+        /// Save to JSON file
+        /// </summary>
+        /// <typeparam name="T">The class type</typeparam>
+        /// <param name="file">The file path</param>
+        /// <param name="Data">The values</param>
+        /// <returns></returns>
         public static async Task SaveToJsonFile<T>(string file, T Data)
         {
-            string jsonText = JsonSerializer.Serialize(Data, typeof(T), new JsonSerializerOptions() { WriteIndented = true });
+            string jsonText = JsonSerializer.Serialize(Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
             await File.WriteAllTextAsync(file, jsonText);
         }
 
+        /// <summary>
+        /// Convert json text or file to some kind of data
+        /// </summary>
+        /// <typeparam name="T">The data type</typeparam>
+        /// <param name="input">The file or json text</param>
+        /// <returns></returns>
         public static async Task<T> ConvertFromJson<T>(string input)
         {
             Stream text;

@@ -7,6 +7,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Discord.Core;
+using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 using PluginManager.Others.Permissions;
@@ -58,10 +59,9 @@ namespace DiscordBot.Discord.Commands
             var channel = message.Channel;
             try
             {
-
-                string content = message.Content;
-                string[] data = content.Split(' ');
-                string keyword = data[1];
+                string   content = message.Content;
+                string[] data    = content.Split(' ');
+                string   keyword = data[1];
                 if (keyword.ToLower() == "help")
                 {
                     await channel.SendMessageAsync("set token [new value] -- set the value of the new token (require restart)");
@@ -78,7 +78,8 @@ namespace DiscordBot.Discord.Commands
                             await channel.SendMessageAsync("Invalid token !");
                             return;
                         }
-                        Functions.WriteToSettings("./Data/Resources/DiscordBotCore.data", "BOT_TOKEN", data[2], '\t');
+
+                        Config.SetValue("token", data[2]);
                         break;
                     case "prefix":
                         if (data.Length != 3)
@@ -86,7 +87,8 @@ namespace DiscordBot.Discord.Commands
                             await channel.SendMessageAsync("Invalid token !");
                             return;
                         }
-                        Functions.WriteToSettings("./Data/Resources/DiscordBotCore.data", "BOT_PREFIX", data[2], '\t');
+
+                        Config.SetValue("token", data[2]);
                         break;
                     default:
                         return;
@@ -94,8 +96,9 @@ namespace DiscordBot.Discord.Commands
 
                 await channel.SendMessageAsync("Restart required ...");
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 await channel.SendMessageAsync("Unknown usage to this command !\nUsage: " + Usage);
             }
 

@@ -16,8 +16,8 @@ namespace EVE_LevelingSystem
         public async void Start(DiscordSocketClient client)
         {
             Directory.CreateDirectory("./Data/Resources/LevelingSystem");
-            Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem");
-            Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt");
+            Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
+            Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
 
             if (!File.Exists(Config.GetValue("LevelingSystemSettingsFile")))
             {
