@@ -3,7 +3,6 @@ using PluginManager;
 using PluginManager.Items;
 using PluginManager.Others;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +28,14 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
             Config.LoadConfig().Wait();
-            if (!Config.ContainsKey("token") || Config.GetValue("token") == null || Config.GetValue("token")?.Length != 70)
+
+            if (Config.ContainsKey("DeleteLogsAtStartup"))
+                if (Config.GetValue<bool>("DeleteLogsAtStartup"))
+                    foreach (string file in Directory.GetFiles("./Output/Logs/"))
+                        File.Delete(file);
+
+
+            if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || Config.GetValue<string>("token")?.Length != 70)
             {
                 while (true)
                 {
@@ -101,8 +107,8 @@ namespace DiscordBot
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
-            string token  = Config.GetValue("token");
-            string prefix = Config.GetValue("prefix");
+            string token  = Config.GetValue<string>("token");
+            string prefix = Config.GetValue<string>("prefix");
 
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();

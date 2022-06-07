@@ -16,6 +16,7 @@ namespace DiscordBotGUI
         public AppUpdater()
         {
             InitializeComponent();
+            Config.LoadConfig().Wait();
             if (!File.Exists("./Version.txt"))
             {
                 File.WriteAllText("./Version.txt", "DiscordBotVersion=0");

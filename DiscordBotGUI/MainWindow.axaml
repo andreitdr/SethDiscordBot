@@ -14,7 +14,8 @@
 			<MenuItem Header="Plugins">
 				<MenuItem Header="Commands" x:Class="DiscordBotGUI.MainWindow" x:Name="commandsSettingMenuItem" />
 				<MenuItem Header="Events" x:Class="DiscordBotGUI.MainWindow" x:Name="eventsSettingMenuItem" />
-			</MenuItem>
+            </MenuItem>
+			<MenuItem Header="Application Variables" x:Class="DiscordBotGUI.MainWindow" x:Name="applicationVariablesMenuItem"/>
 		</Menu>
 		<Label x:Class="DiscordBotGUI.MainWindow" x:Name="label1" Content="Discord Token" />
 		<TextBox x:Class="DiscordBotGUI.MainWindow" x:Name="textBox1" IsReadOnly="True" TextAlignment="Center" Text=""/>

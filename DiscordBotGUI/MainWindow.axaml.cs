@@ -23,8 +23,6 @@ namespace DiscordBotGUI
 
         private void LoadElements()
         {
-
-
             textBox3.Watermark = "Insert start arguments";
             if (File.Exists("./Version.txt")) label5.Content = Config.GetValue("Version");
             button1.Click += async (sender, e) =>
@@ -48,9 +46,9 @@ namespace DiscordBotGUI
 
             };
 
-            commandsSettingMenuItem.Click += (sender, e) => new Commands() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
-            eventsSettingMenuItem.Click += (sender, e) => new Events() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
-
+            commandsSettingMenuItem.Click      += (sender, e) => new Commands() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
+            eventsSettingMenuItem.Click        += (sender, e) => new Events() /*{ Height = 200, Width = 550 }*/.ShowDialog(this);
+            applicationVariablesMenuItem.Click += (sender, e) => new ApplicationVariables().ShowDialog(this);
 
             string folder = $"{Functions.dataFolder}DiscordBotCore.data";
             Directory.CreateDirectory(Functions.dataFolder);

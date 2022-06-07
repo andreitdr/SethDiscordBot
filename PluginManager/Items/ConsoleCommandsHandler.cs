@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using Newtonsoft.Json.Converters;
 
 namespace PluginManager.Items
 {
@@ -193,22 +194,43 @@ namespace PluginManager.Items
                     if (args.Length != 2) return;
                     if (!Config.ContainsKey(args[1])) return;
 
-                    string data = Config.GetValue(args[1]);
+                    string data = Config.GetValue<string>(args[1]);
                     Console.WriteLine($"{args[1]} => {data}");
                 }
             );
 
-            AddCommand("addv", "add variable to the system variables", async (args) =>
+            AddCommand("add", "add variable to the system variables\nadd [key] [value] [isReadOnly=true/false]", async (args) =>
                 {
-                    if (args.Length < 3) return;
-                    string in1 = args[1];
-                    if (!Config.ContainsKey(in1))
-                        Config.AddValueToVariables(in1, Functions.MergeStrings(args, 2), false);
-                    else
-                        Config.SetValue(in1, Functions.MergeStrings(args, 2));
+                    if (args.Length < 4) return;
+                    string key        = args[1];
+                    string value      = args[2];
+                    bool   isReadOnly = args[3].Equals("true", StringComparison.CurrentCultureIgnoreCase);
 
-                    Console.WriteLine($"Updated config file with the following command: {in1} => {Config.GetValue(in1)}");
-                    Config.SaveConfig();
+                    try
+                    {
+                        if (Config.ContainsKey(key)) return;
+                        if (int.TryParse(value, out int intValue))
+                            Config.AddValueToVariables(key, intValue, isReadOnly);
+                        else if (bool.TryParse(value, out bool boolValue))
+                            Config.AddValueToVariables(key, boolValue, isReadOnly);
+                        else if (float.TryParse(value, out float floatValue))
+                            Config.AddValueToVariables(key, floatValue, isReadOnly);
+                        else if (double.TryParse(value, out double doubleValue))
+                            Config.AddValueToVariables(key, doubleValue, isReadOnly);
+                        else if (uint.TryParse(value, out uint uintValue))
+                            Config.AddValueToVariables(key, uintValue, isReadOnly);
+                        else if (long.TryParse(value, out long longValue))
+                            Config.AddValueToVariables(key, longValue, isReadOnly);
+                        else if (byte.TryParse(value, out byte byteValue))
+                            Config.AddValueToVariables(key, byteValue, isReadOnly);
+                        else
+                            Config.AddValueToVariables(key, value, isReadOnly);
+                        Console.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
                 }
             );
 
@@ -216,7 +238,6 @@ namespace PluginManager.Items
                 {
                     if (args.Length < 2) return;
                     Config.RemoveKey(args[1]);
-                    Config.SaveConfig();
                 }
             );
 
@@ -227,7 +248,7 @@ namespace PluginManager.Items
                     data.Add(new string[] { "-", "-" });
                     data.Add(new string[] { "Key", "Value" });
                     data.Add(new string[] { "-", "-" });
-                    foreach (var kvp in d) data.Add(new string[] { kvp.Key, kvp.Value });
+                    foreach (var kvp in d) data.Add(new string[] { kvp.Key, kvp.Value.ToString() });
                     data.Add(new string[] { "-", "-" });
                     Console_Utilities.FormatAndAlignTable(data);
                 }
