@@ -25,7 +25,7 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Resources");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            PreLoadComponents();
+            PreLoadComponents().Wait();
 
             if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || Config.GetValue<string>("token")?.Length != 70)
             {
@@ -45,7 +45,7 @@ namespace DiscordBot
                     Console.WriteLine("Please insert your prefix (max. 1 character long):");
                     Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored. No spaces or numbers allowed");
                     Console.Write("Prefix = ");
-                    char prefix = Console.ReadLine()[0];
+                    char prefix = Console.ReadLine()![0];
 
                     if (prefix == ' ' || char.IsDigit(prefix)) continue;
                     Config.AddValueToVariables("prefix", prefix.ToString(), false);
@@ -56,15 +56,6 @@ namespace DiscordBot
             }
 
             HandleInput(args).Wait();
-        }
-
-        /// <summary>
-        /// Reset all settings for the bot
-        /// </summary>
-        private static async Task ResetSettings()
-        {
-            string[] files = Directory.GetFiles(@"./Data/Resources");
-            foreach (string file in files) File.Delete(file);
         }
 
         /// <summary>
@@ -98,12 +89,21 @@ namespace DiscordBot
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
-            string token  = Config.GetValue<string>("token");
-            string prefix = Config.GetValue<string>("prefix");
 
-            var discordbooter = new Boot(token, prefix);
-            await discordbooter.Awake();
-            return discordbooter;
+            try
+            {
+                string token  = Config.GetValue<string>("token");
+                string prefix = Config.GetValue<string>("prefix");
+
+                var discordbooter = new Boot(token, prefix);
+                await discordbooter.Awake();
+                return discordbooter;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace DiscordBot
 
             if (len == 1 && args[0] == "--logout")
             {
-                File.Delete(Functions.dataFolder + "var.dat");
+                File.Delete(Functions.dataFolder + "config.json");
                 await Task.Run(async () =>
                     {
                         await Task.Delay(1000);
@@ -188,7 +188,6 @@ namespace DiscordBot
                 "\tCommand name\t\t\t\tDescription\n" +
                 "-- help | -help\t\t ------ \tDisplay the help message\n" +
                 "--reset-full\t\t ------ \tReset all files (clear files)\n" +
-                "--reset-settings\t ------ \tReset only bot settings\n" +
                 "--reset-logs\t\t ------ \tClear up the output folder\n" +
                 "--start\t\t ------ \tStart the bot\n" +
                 "exit\t\t\t ------ \tClose the application"
@@ -201,10 +200,6 @@ namespace DiscordBot
 
                 switch (message[0])
                 {
-                    case "--reset-settings":
-                        await ResetSettings();
-                        Console.WriteLine("Successfully reseted all settings !");
-                        break;
                     case "--help":
                     case "-help":
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -250,8 +245,7 @@ namespace DiscordBot
 
         private static async Task PreLoadComponents()
         {
-            Config.LoadConfig().Wait();
-
+            await Config.LoadConfig();
             if (Config.ContainsKey("DeleteLogsAtStartup"))
                 if (Config.GetValue<bool>("DeleteLogsAtStartup"))
                     foreach (string file in Directory.GetFiles("./Output/Logs/"))

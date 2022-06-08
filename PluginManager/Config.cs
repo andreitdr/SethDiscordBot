@@ -1,5 +1,4 @@
-﻿using System;
-using PluginManager.Others;
+﻿using PluginManager.Others;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,8 +30,15 @@ namespace PluginManager
         public static T? GetValue<T>(string key)
         {
             if (!appConfig.ApplicationVariables.ContainsKey(key)) return default;
-            JsonElement element = (JsonElement)appConfig.ApplicationVariables[key];
-            return element.Deserialize<T>();
+            try
+            {
+                JsonElement element = (JsonElement)appConfig.ApplicationVariables[key];
+                return element.Deserialize<T>();
+            }
+            catch
+            {
+                return (T)appConfig.ApplicationVariables[key];
+            }
         }
 
         public static bool SetValue<T>(string key, T value)
@@ -56,14 +62,14 @@ namespace PluginManager
 
         public static async void SaveConfig()
         {
-            string path = Functions.dataFolder + "var.dat";
+            string path = Functions.dataFolder + "config.json";
             await Functions.SaveToJsonFile<AppConfig>(path, appConfig);
         }
 
         public static async Task LoadConfig()
 
         {
-            string path = Functions.dataFolder + "var.dat";
+            string path = Functions.dataFolder + "config.json";
             if (File.Exists(path))
             {
                 appConfig = await Functions.ConvertFromJson<AppConfig>(path);
