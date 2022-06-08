@@ -19,13 +19,13 @@ namespace EVE_LevelingSystem
             Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
             Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
 
-            if (!File.Exists(Config.GetValue("LevelingSystemSettingsFile")))
+            if (!File.Exists(Config.GetValue<string>("LevelingSystemSettingsFile")))
             {
                 globalSettings = new Settings { TimeToWaitBetweenMessages = 5 };
-                await Functions.SaveToJsonFile<Settings>(Config.GetValue("LevelingSystemSettingsFile"), globalSettings);
+                await Functions.SaveToJsonFile<Settings>(Config.GetValue<string>("LevelingSystemSettingsFile"), globalSettings);
             }
             else
-                globalSettings = await Functions.ConvertFromJson<Settings>(Config.GetValue("LevelingSystemSettingsFile"));
+                globalSettings = await Functions.ConvertFromJson<Settings>(Config.GetValue<string>("LevelingSystemSettingsFile"));
 
             // Console.WriteLine(globalSettings.TimeToWaitBetweenMessages);
             client.MessageReceived += ClientOnMessageReceived;
@@ -33,21 +33,21 @@ namespace EVE_LevelingSystem
 
         private async Task ClientOnMessageReceived(SocketMessage arg)
         {
-            if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Config.GetValue("prefix"))) return;
+            if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Config.GetValue<string>("prefix"))) return;
             string userID = arg.Author.Id.ToString();
             User   user;
-            if (File.Exists($"{Config.GetValue("LevelingSystemPath")}/{userID}.dat"))
+            if (File.Exists($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat"))
             {
-                user = await Functions.ConvertFromJson<User>(Config.GetValue("LevelingSystemPath")! + $"/{userID}.dat");
+                user = await Functions.ConvertFromJson<User>(Config.GetValue<string>("LevelingSystemPath")! + $"/{userID}.dat");
                 // Console.WriteLine(Config.GetValue("LevelingSystemPath"));
                 if (user.AddEXP()) await arg.Channel.SendMessageAsync($"{arg.Author.Mention} is now level {user.CurrentLevel}");
-                await Functions.SaveToJsonFile(Config.GetValue("LevelingSystemPath") + $"/{userID}.dat", user);
+                await Functions.SaveToJsonFile(Config.GetValue<string>("LevelingSystemPath") + $"/{userID}.dat", user);
                 return;
             }
 
             user = new User() { CurrentEXP = 0, CurrentLevel = 1, RequiredEXPToLevelUp = LevelCalculator.GetNextLevelRequiredEXP(1), userID = userID };
             if (user.AddEXP()) await arg.Channel.SendMessageAsync($"{arg.Author.Mention} is now level {user.CurrentLevel}");
-            await Functions.SaveToJsonFile($"{Config.GetValue("LevelingSystemPath")}/{userID}.dat", user);
+            await Functions.SaveToJsonFile($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat", user);
         }
     }
 }

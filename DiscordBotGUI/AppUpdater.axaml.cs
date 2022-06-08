@@ -11,7 +11,7 @@ namespace DiscordBotGUI
 {
     public partial class AppUpdater : Window
     {
-        private string _version;
+        private string _version = "";
 
         public AppUpdater()
         {
@@ -149,7 +149,7 @@ namespace DiscordBotGUI
         {
             try
             {
-                string current_version = Config.GetValue("Version");
+                string current_version = Config.GetValue<string>("Version");
                 if (current_version == null)
                     if (!Config.SetValue("Version", "0"))
                         Config.AddValueToVariables("Version", "0", false);

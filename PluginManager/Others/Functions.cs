@@ -212,11 +212,22 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static (double, string) ConvertBytes(long bytes)
         {
-            if (bytes < 1024) return (bytes, "B");
-            if (bytes < 1024 * 1024) return (bytes / 1024.0, "KB");
-            if (bytes < 1024 * 1024 * 1024) return (bytes / 1024.0 / 1024.0, "MB");
-            return (bytes / 1024.0 / 1024.0 / 1024.0, "GB");
+            List<string> units = new List<string>()
+            {
+                "B",
+                "KB",
+                "MB",
+                "GB",
+                "TB"
+            };
+            int i = 0;
+            while (bytes >= 1024)
+            {
+                i++;
+                bytes /= 1024;
+            }
 
+            return (bytes, units[i]);
         }
 
         /// <summary>

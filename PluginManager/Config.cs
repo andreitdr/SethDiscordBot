@@ -16,7 +16,7 @@ namespace PluginManager
 
     public static class Config
     {
-        private static AppConfig appConfig = null;
+        private static AppConfig appConfig;
 
         public static bool AddValueToVariables<T>(string key, T value, bool isProtected)
         {

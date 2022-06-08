@@ -10,23 +10,13 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
-            public int          Max     { get; set; }
-            public string       Message { get; set; }
+            public int          Max     { get; init; }
             public ConsoleColor Color   { get; init; }
+            public bool         NoColor { get; init; }
 
-
-            public ProgressBar(int max, string message)
-            {
-                Max     = max;
-                Message = message;
-                var consoleColors = Enum.GetValues(typeof(ConsoleColor));
-                while ((Color = (ConsoleColor)consoleColors.GetValue(new Random().Next(consoleColors.Length))!) == ConsoleColor.White && Color != ConsoleColor.Black) ;
-            }
 
             public void Update(int progress, double speed = -1, string? unit = null)
             {
-
-                //progress bar
                 Console.CursorLeft = 0;
                 Console.Write("[");
                 Console.CursorLeft = 32;
@@ -38,15 +28,21 @@ namespace PluginManager.Others
 
                 for (int i = 0; i < onechunk * progress; i++)
                 {
-                    Console.BackgroundColor = this.Color;
+                    if (NoColor)
+                        Console.BackgroundColor = ConsoleColor.Black; //this.Color
+                    else
+                        Console.BackgroundColor = this.Color;
                     Console.CursorLeft      = position++;
-                    Console.Write(" ");
+                    Console.Write("#");
                 }
 
                 for (int i = position; i <= 31; i++)
                 {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.CursorLeft = position++;
+                    if (NoColor)
+                        Console.BackgroundColor = ConsoleColor.Black; // background of empty bar
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    Console.CursorLeft      = position++;
                     Console.Write(" ");
                 }
 

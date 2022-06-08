@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-
 using PluginManager.Interfaces;
 
 public class Random : DBCommand
@@ -11,7 +10,7 @@ public class Random : DBCommand
 
     public string Usage => "random [number1] [number2]";
 
-    public bool canUseDM => true;
+    public bool canUseDM     => true;
     public bool canUseServer => true;
     public bool requireAdmin => false;
 
@@ -19,19 +18,18 @@ public class Random : DBCommand
     {
         try
         {
-            string msg = message.Content;
-            int a = int.Parse(msg.Split(' ')[1]);
-            int b = int.Parse(msg.Split(' ')[2]);
+            var msg = message.Content;
+            var a   = int.Parse(msg.Split(' ')[1]);
+            var b   = int.Parse(msg.Split(' ')[2]);
 
             if (a > b)
             {
-                int x = a;
+                var x = a;
                 a = b;
                 b = x;
             }
 
             await message.Channel.SendMessageAsync("Your random generated number is " + new System.Random().Next(a, b));
-
         }
         catch
         {

@@ -5,19 +5,19 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="DiscordBotGUI.Settings.ApplicationVariables"
         Title="ApplicationVariables">
-  <StackPanel>
-      <Label Content="Available commands"/>
-      <TextBox x:Name="textBox1" x:Class="DiscordBotGUI.Settings.ApplicationVariables"/>
-      <Label Content="Insert a new variable"/>
-      <Border Background="White" BorderThickness="3" Margin="10"/>
-      <Label Content="New Variable Name"/>
-      <TextBox x:Name="textBox2" x:Class="DiscordBotGUI.Settings.ApplicationVariables"/>
-      <Label Content="New Variable Value"/>
-      <TextBox x:Name="textBox3" x:Class="DiscordBotGUI.Settings.ApplicationVariables"/>
-      <Label Content="New Variable IsReadOnly"/>
-      <CheckBox x:Class="DiscordBotGUI.Settings.ApplicationVariables" x:Name="checkBox1"/>
-      <Button Content="Add command" x:Class="DiscordBotGUI.Settings.ApplicationVariables" x:Name="button1"/>
-  </StackPanel>
+    <StackPanel>
+        <Label Content="Available commands" />
+        <TextBox x:Name="textBox1" x:Class="DiscordBotGUI.Settings.ApplicationVariables" />
+        <Label Content="Insert a new variable" />
+        <Border Background="White" BorderThickness="3" Margin="10" />
+        <Label Content="New Variable Name" />
+        <TextBox x:Name="textBox2" x:Class="DiscordBotGUI.Settings.ApplicationVariables" />
+        <Label Content="New Variable Value" />
+        <TextBox x:Name="textBox3" x:Class="DiscordBotGUI.Settings.ApplicationVariables" />
+        <Label Content="New Variable IsReadOnly" />
+        <CheckBox x:Class="DiscordBotGUI.Settings.ApplicationVariables" x:Name="checkBox1" />
+        <Button Content="Add command" x:Class="DiscordBotGUI.Settings.ApplicationVariables" x:Name="button1" />
+    </StackPanel>
 
 
 </Window>

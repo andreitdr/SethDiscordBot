@@ -6,15 +6,14 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using PluginManager.Online;
 
 namespace DiscordBot
 {
     public class Program
     {
-        private static bool loadPluginsOnStartup = false;
-        private static bool listPluginsAtStartup = false;
-
-        private static bool listLanguagAtStartup = false;
+        private static bool loadPluginsOnStartup  = false;
+        private static bool listPluginsAtStartup  = false;
 
         /// <summary>
         ///     The main entry point for the application.
@@ -27,13 +26,7 @@ namespace DiscordBot
             Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
-            Config.LoadConfig().Wait();
-
-            if (Config.ContainsKey("DeleteLogsAtStartup"))
-                if (Config.GetValue<bool>("DeleteLogsAtStartup"))
-                    foreach (string file in Directory.GetFiles("./Output/Logs/"))
-                        File.Delete(file);
-
+            PreLoadComponents();
 
             if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || Config.GetValue<string>("token")?.Length != 70)
             {
@@ -84,7 +77,6 @@ namespace DiscordBot
             ConsoleCommandsHandler consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
             if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
             if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
-            if (listLanguagAtStartup) consoleCommandsHandler.HandleCommand("listlang");
             Config.SaveConfig();
             while (true)
             {
@@ -165,12 +157,20 @@ namespace DiscordBot
                 return;
             }
 
+            if (len == 3 && args[0] == "/download")
+            {
+                string url      = args[1];
+                string location = args[2];
+
+                await ServerCom.DownloadFileAsync(url, location);
+
+                return;
+            }
+
             if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
             {
                 if (args.Contains("lp") || args.Contains("loadplugins")) loadPluginsOnStartup = true;
                 if (args.Contains("listplugs")) listPluginsAtStartup                          = true;
-                if (args.Contains("listlang")) listLanguagAtStartup                           = true;
-                //if (args.Contains("--nomessage")) ShowStartupMessage                          = false;
                 len = 0;
             }
 
@@ -181,6 +181,7 @@ namespace DiscordBot
                 await NoGUI(b);
                 return;
             }
+
 
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("Execute command interface noGUI\n\n");
@@ -240,11 +241,22 @@ namespace DiscordBot
                         Boot booter = await StartNoGUI();
                         await NoGUI(booter);
                         return;
+
                     default:
                         Console.WriteLine("Failed to execute command " + message[0]);
                         break;
                 }
             }
+        }
+
+        private static async Task PreLoadComponents()
+        {
+            Config.LoadConfig().Wait();
+
+            if (Config.ContainsKey("DeleteLogsAtStartup"))
+                if (Config.GetValue<bool>("DeleteLogsAtStartup"))
+                    foreach (string file in Directory.GetFiles("./Output/Logs/"))
+                        File.Delete(file);
         }
     }
 }
