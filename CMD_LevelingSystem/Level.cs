@@ -23,6 +23,12 @@ internal class Level : DBCommand
 
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {
+        if (!File.Exists(Config.GetValue<string>("LevelingSystemPath") + $"/{message.Author.Id}.dat"))
+        {
+            await context.Channel.SendMessageAsync("You are now unranked !");
+            return;
+        }
+
         var user = await Functions.ConvertFromJson<User>(Config.GetValue<string>("LevelingSystemPath") + $"/{message.Author.Id}.dat");
         if (user == null)
         {

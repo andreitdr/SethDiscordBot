@@ -23,7 +23,6 @@ namespace DiscordBot
         public static void Main(string[] args)
         {
             Directory.CreateDirectory("./Data/Resources");
-            Directory.CreateDirectory("./Data/Languages");
             Directory.CreateDirectory("./Data/Plugins/Commands");
             Directory.CreateDirectory("./Data/Plugins/Events");
             PreLoadComponents();

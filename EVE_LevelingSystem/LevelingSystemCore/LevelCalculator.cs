@@ -25,7 +25,7 @@ namespace EVE_LevelingSystem.LevelingSystemCore
 
         internal static bool AddEXP(this User user)
         {
-            if (OnWaitingList.Contains(user.userID)) return false;
+            if (OnWaitingList.Contains(user.user.userID.ToString())) return false;
             Random r      = new Random();
             int    exp    = r.Next(2, 12);
             Int64  userXP = user.CurrentEXP;
@@ -40,14 +40,14 @@ namespace EVE_LevelingSystem.LevelingSystemCore
 
             user.CurrentEXP += exp;
 
-            OnWaitingList.Add(user.userID);
+            OnWaitingList.Add(user.user.userID.ToString());
 
 
             new Thread(() =>
                 {
                     int minutesToWait = Level.globalSettings.TimeToWaitBetweenMessages;
                     Thread.Sleep(60000 * minutesToWait);
-                    OnWaitingList.Remove(user.userID);
+                    OnWaitingList.Remove(user.user.userID.ToString());
                 }
             );
 

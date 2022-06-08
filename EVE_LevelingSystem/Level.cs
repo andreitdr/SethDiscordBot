@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using EVE_LevelingSystem.LevelingSystemCore;
 using PluginManager;
 using PluginManager.Interfaces;
@@ -45,9 +46,9 @@ namespace EVE_LevelingSystem
                 return;
             }
 
-            user = new User() { CurrentEXP = 0, CurrentLevel = 1, RequiredEXPToLevelUp = LevelCalculator.GetNextLevelRequiredEXP(1), userID = userID };
+            user = new User { CurrentEXP = 0, CurrentLevel = 1, RequiredEXPToLevelUp = LevelCalculator.GetNextLevelRequiredEXP(1), user = new DiscordUser { DiscordTag = arg.Author.DiscriminatorValue, userID = arg.Author.Id, Username = arg.Author.Username } };
             if (user.AddEXP()) await arg.Channel.SendMessageAsync($"{arg.Author.Mention} is now level {user.CurrentLevel}");
-            await Functions.SaveToJsonFile($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat", user);
+            await Functions.SaveToJsonFile<User>($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat", user);
         }
     }
 }

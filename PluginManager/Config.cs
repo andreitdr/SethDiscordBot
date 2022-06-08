@@ -61,6 +61,7 @@ namespace PluginManager
         }
 
         public static async Task LoadConfig()
+
         {
             string path = Functions.dataFolder + "var.dat";
             if (File.Exists(path))
