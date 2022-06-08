@@ -1,9 +1,9 @@
 ﻿using PluginManager.Others;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace PluginManager
 {
@@ -67,7 +67,6 @@ namespace PluginManager
         }
 
         public static async Task LoadConfig()
-
         {
             string path = Functions.dataFolder + "config.json";
             if (File.Exists(path))

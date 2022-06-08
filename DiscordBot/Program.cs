@@ -43,7 +43,7 @@ namespace DiscordBot
                     }
 
                     Console.WriteLine("Please insert your prefix (max. 1 character long):");
-                    Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored. No spaces or numbers allowed");
+                    Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored.\n No spaces or numbers allowed");
                     Console.Write("Prefix = ");
                     char prefix = Console.ReadLine()![0];
 
@@ -51,8 +51,17 @@ namespace DiscordBot
                     Config.AddValueToVariables("prefix", prefix.ToString(), false);
                     break;
                 }
+            }
 
-                Config.SaveConfig();
+            if (!Config.ContainsKey("prefix"))
+            {
+                Console.WriteLine("Please insert your prefix (max. 1 character long):");
+                Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored.\n No spaces or numbers allowed");
+                Console.Write("Prefix = ");
+                char prefix = Console.ReadLine()![0];
+
+                if (prefix == ' ' || char.IsDigit(prefix)) return;
+                Config.AddValueToVariables("prefix", prefix.ToString(), false);
             }
 
             HandleInput(args).Wait();
