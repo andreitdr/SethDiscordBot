@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PluginManager.Others
 {
@@ -14,20 +10,13 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
-            public int Progress { get; set; }
-            public int Max { get; set; }
-            public string Message { get; set; }
+            public int          Max     { get; init; }
+            public ConsoleColor Color   { get; init; }
+            public bool         NoColor { get; init; }
 
-            public ProgressBar(int max, string message)
+
+            public void Update(int progress, double speed = -1, string? unit = null)
             {
-                Max = max;
-                Message = message;
-            }
-
-            public async void Update(int progress, double speed = -1, string? unit = null)
-            {
-
-                //progress bar
                 Console.CursorLeft = 0;
                 Console.Write("[");
                 Console.CursorLeft = 32;
@@ -39,15 +28,21 @@ namespace PluginManager.Others
 
                 for (int i = 0; i < onechunk * progress; i++)
                 {
-                    Console.BackgroundColor = ConsoleColor.Green;
-                    Console.CursorLeft = position++;
-                    Console.Write(" ");
+                    if (NoColor)
+                        Console.BackgroundColor = ConsoleColor.Black; //this.Color
+                    else
+                        Console.BackgroundColor = this.Color;
+                    Console.CursorLeft      = position++;
+                    Console.Write("#");
                 }
 
                 for (int i = position; i <= 31; i++)
                 {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.CursorLeft = position++;
+                    if (NoColor)
+                        Console.BackgroundColor = ConsoleColor.Black; // background of empty bar
+                    else
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    Console.CursorLeft      = position++;
                     Console.Write(" ");
                 }
 
@@ -72,9 +67,9 @@ namespace PluginManager.Others
         /// <param name="data">The List of arrays of strings that represent the rows.</param>
         public static void FormatAndAlignTable(List<string[]> data)
         {
-            char tableLine = '-';
+            char tableLine  = '-';
             char tableCross = '+';
-            char tableWall = '|';
+            char tableWall  = '|';
 
             int[] len = new int[data[0].Length];
             foreach (var line in data)
@@ -130,11 +125,12 @@ namespace PluginManager.Others
             ConsoleColor fg = Console.ForegroundColor;
             Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
             {
-                {"&g", ConsoleColor.Green },
-                {"&b", ConsoleColor.Blue  },
-                {"&r", ConsoleColor.Red  },
-                {"&m", ConsoleColor.Magenta },
-                {"&c", fg }
+                { "&g", ConsoleColor.Green },
+                { "&b", ConsoleColor.Blue },
+                { "&r", ConsoleColor.Red },
+                { "&m", ConsoleColor.Magenta },
+                { "&y", ConsoleColor.Yellow },
+                { "&c", fg }
             };
             foreach (string word in words)
             {
@@ -145,7 +141,9 @@ namespace PluginManager.Others
                         Console.ForegroundColor = colors[prefix];
                 }
 
-                string m = word.Replace("&g", "").Replace("&b", "").Replace("&r", "").Replace("&c", "").Replace("&m", "");
+                string m = word;
+                foreach (var key in colors.Keys) { m = m.Replace(key, ""); }
+
                 Console.Write(m + " ");
             }
             if (appendNewLine)

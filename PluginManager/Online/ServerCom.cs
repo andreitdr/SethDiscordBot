@@ -1,10 +1,11 @@
 ﻿using PluginManager.Online.Helpers;
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using PluginManager.Others;
 
 namespace PluginManager.Online
 {
@@ -51,37 +52,35 @@ namespace PluginManager.Online
         /// <returns></returns>
         public static async Task DownloadFileAsync(string URL, string location)
         {
-            bool isDownloading = true;
-            int c_progress = 0;
+            bool isDownloading   = true;
+            int  c_progress      = 0;
 
-            Others.Console_Utilities.ProgressBar pbar = new Others.Console_Utilities.ProgressBar(100, "");
+            Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar { Max = 100, NoColor = true };
 
             IProgress<float> progress = new Progress<float>(percent =>
             {
                 c_progress = (int)percent;
             });
 
-            Task updateProgressBarTask = new Task(() =>
-            {
-                while (isDownloading)
-                {
-                    pbar.Update(c_progress);
-                    if (c_progress == 100)
-                        break;
-                    System.Threading.Thread.Sleep(500);
-                }
-            });
 
-            new System.Threading.Thread(updateProgressBarTask.Start).Start();
+            Task updateProgressBarTask = new Task(() =>
+                {
+                    while (isDownloading)
+                    {
+                        pbar.Update(c_progress);
+                        if (c_progress == 100) break;
+                        Thread.Sleep(500);
+                    }
+                }
+            );
+
+            new Thread(updateProgressBarTask.Start).Start();
             await DownloadFileAsync(URL, location, progress);
 
 
             c_progress = 100;
             pbar.Update(100);
             isDownloading = false;
-
-
         }
-
     }
 }

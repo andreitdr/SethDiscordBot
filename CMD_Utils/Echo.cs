@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-
 using PluginManager.Interfaces;
 
 internal class Echo : DBCommand
@@ -11,14 +10,14 @@ internal class Echo : DBCommand
 
     public string Usage => "echo [message]";
 
-    public bool canUseDM => true;
+    public bool canUseDM     => true;
     public bool canUseServer => true;
 
     public bool requireAdmin => false;
 
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {
-        string m = message.Content.Substring(6);
+        var m = message.Content.Substring(6);
         await message.Channel.SendMessageAsync(m);
     }
 }
