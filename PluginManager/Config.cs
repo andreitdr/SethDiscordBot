@@ -78,9 +78,8 @@ namespace PluginManager
                 appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>() };
         }
 
-        public static string? GetKey(string        value) => appConfig.ApplicationVariables.Keys.FirstOrDefault(x => appConfig.ApplicationVariables[x] == value);
-        public static bool    ContainsValue(string value) => appConfig.ApplicationVariables.ContainsValue(value);
-        public static bool    ContainsKey(string   key)   => appConfig.ApplicationVariables.ContainsKey(key);
+        public static bool ContainsValue<T>(T value) => appConfig.ApplicationVariables.ContainsValue(value!);
+        public static bool ContainsKey(string key)   => appConfig.ApplicationVariables.ContainsKey(key);
 
         public static Dictionary<string, object> GetAllVariables() => new(appConfig.ApplicationVariables);
     }

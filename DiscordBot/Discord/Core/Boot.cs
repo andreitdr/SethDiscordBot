@@ -96,7 +96,7 @@ internal class Boot
         Console.Title = "ONLINE";
         isReady       = true;
 
-        new Thread(async () =>
+        new Thread(() =>
             {
                 while (true)
                 {

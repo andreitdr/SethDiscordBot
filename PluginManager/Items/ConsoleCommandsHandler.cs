@@ -188,7 +188,7 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("add", "add variable to the system variables\nadd [key] [value] [isReadOnly=true/false]", async args =>
+        AddCommand("add", "add variable to the system variables\nadd [key] [value] [isReadOnly=true/false]", args =>
             {
                 if (args.Length < 4) return;
                 var key        = args[1];
