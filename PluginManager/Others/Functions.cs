@@ -33,14 +33,9 @@ namespace PluginManager.Others
         public static readonly string errFolder = @"./Output/Errors/";
 
         /// <summary>
-        /// The location for all languages
-        /// </summary>
-        public static readonly string langFolder = @"./Data/Languages/";
-
-        /// <summary>
         /// Archives folder
         /// </summary>
-        public static readonly string pakFolder = @"./Data/Resources/PAKS/";
+        public static readonly string pakFolder = @"./Data/Resources/PAK/";
 
 
         /// <summary>
@@ -49,13 +44,13 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param> 
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static async Task<string?> ReadFromPakAsync(string FileName, string archFile)
+        public static async Task<Stream?> ReadFromPakAsync(string FileName, string archFile)
         {
             archFile = pakFolder + archFile;
             Directory.CreateDirectory(pakFolder);
             if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
 
-            string? textValue = null;
+            Stream? textValue = null;
             var     fs        = new FileStream(archFile, FileMode.Open);
             var     zip       = new ZipArchive(fs, ZipArchiveMode.Read);
             foreach (var entry in zip.Entries)
@@ -64,7 +59,8 @@ namespace PluginManager.Others
                 {
                     Stream       s      = entry.Open();
                     StreamReader reader = new StreamReader(s);
-                    textValue = await reader.ReadToEndAsync();
+                    textValue          = reader.BaseStream;
+                    textValue.Position = 0;
                     reader.Close();
                     s.Close();
                     fs.Close();
@@ -239,7 +235,9 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static async Task SaveToJsonFile<T>(string file, T Data)
         {
-            using (var s = File.OpenWrite(file)) await JsonSerializer.SerializeAsync(s, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
+            var s = File.OpenWrite(file);
+            await JsonSerializer.SerializeAsync(s, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
+            s.Close();
         }
 
         /// <summary>
@@ -259,7 +257,7 @@ namespace PluginManager.Others
             text.Position = 0;
             var obj = await JsonSerializer.DeserializeAsync<T>(text);
             text.Close();
-            return obj;
+            return (obj ?? default)!;
         }
 
         public static bool TryReadValueFromJson(string input, string codeName, out JsonElement element)

@@ -23,7 +23,7 @@ public class ConsoleCommandsHandler
     {
         this.client = client;
         InitializeBasicCommands();
-        Console.WriteLine("Initalized console command handeler !");
+        Console.WriteLine("Initialized console command handler !");
     }
 
     private void InitializeBasicCommands()
@@ -55,7 +55,7 @@ public class ConsoleCommandsHandler
         AddCommand("lp", "Load plugins", () =>
             {
                 if (pluginsLoaded) return;
-                var loader = new PluginLoader(client);
+                var loader = new PluginLoader(client!);
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
@@ -237,7 +237,7 @@ public class ConsoleCommandsHandler
                 data.Add(new[] { "-", "-" });
                 data.Add(new[] { "Key", "Value" });
                 data.Add(new[] { "-", "-" });
-                foreach (var kvp in d) data.Add(new[] { kvp.Key, kvp.Value.ToString() });
+                foreach (var kvp in d) data.Add(new string[] { kvp.Key, kvp.Value.ToString()! });
                 data.Add(new[] { "-", "-" });
                 Console_Utilities.FormatAndAlignTable(data);
             }
