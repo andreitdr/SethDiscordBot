@@ -1,5 +1,4 @@
-﻿using CMD_Utils.Music;
-using Discord;
+﻿using Discord;
 using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;

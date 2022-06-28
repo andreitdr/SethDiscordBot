@@ -1,5 +1,4 @@
-﻿using CMD_Utils.Music;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 

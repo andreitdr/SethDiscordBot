@@ -5,11 +5,10 @@ using Discord;
 using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
-using MusicCommands;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
-namespace CMD_Utils.Music;
+namespace MusicCommands;
 
 internal class Play : DBCommand
 {
@@ -29,7 +28,7 @@ internal class Play : DBCommand
     {
         var path     = "./Music";
         var FileName = Functions.GetArguments(message).ToArray().MergeStrings(0);
-        path += "/" + FileName + ".mp3";
+        path += "/" + FileName + ".ogg";
         if (!File.Exists(path))
         {
             Console.WriteLine("Unknown path " + path);
