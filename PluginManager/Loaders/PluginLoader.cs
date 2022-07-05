@@ -15,8 +15,8 @@ public class PluginLoader
     private const string pluginCMDFolder = @"./Data/Plugins/Commands/";
     private const string pluginEVEFolder = @"./Data/Plugins/Events/";
 
-    private const    string              pluginCMDExtension = "dll";
-    private const    string              pluginEVEExtension = "dll";
+    internal const   string              pluginCMDExtension = "dll";
+    internal const   string              pluginEVEExtension = "dll";
     private readonly DiscordSocketClient _client;
 
     /// <summary>

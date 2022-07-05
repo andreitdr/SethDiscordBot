@@ -32,6 +32,16 @@ public class ConsoleCommandsHandler
 
         AddCommand("help", "Show help", "help <command>", args =>
             {
+                if (args[1] == "lip")
+                {
+                    foreach (var tuple in Config.Plugins.InstalledPlugins)
+                    {
+                        Console.WriteLine(tuple.Item1);
+                    }
+
+                    return;
+                }
+
                 if (args.Length <= 1)
                 {
                     Console.WriteLine("Available commands:");
@@ -129,6 +139,12 @@ public class ConsoleCommandsHandler
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
                 await ServerCom.DownloadFileAsync(info[1], path);
+                if (info[0] == "Command" || info[0] == "Event")
+                    if (info[0] == "Event")
+                        Config.Plugins.InstalledPlugins.Add(new(name, PluginType.Event));
+                    else if (info[0] == "Command") Config.Plugins.InstalledPlugins.Add(new(name, PluginType.Command));
+
+
                 Console.WriteLine("\n");
 
                 // check requirements if any

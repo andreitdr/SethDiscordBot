@@ -227,5 +227,7 @@ public class Program
             if (Config.GetValue<bool>("DeleteLogsAtStartup"))
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
+
+        Config.Plugins.Load();
     }
 }

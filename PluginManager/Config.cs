@@ -1,8 +1,10 @@
-﻿using PluginManager.Others;
+﻿using System;
+using PluginManager.Others;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace PluginManager
 {
@@ -14,6 +16,64 @@ namespace PluginManager
 
     public static class Config
     {
+        public static class Plugins
+        {
+            public static List<Tuple<string, PluginType>> InstalledPlugins = new();
+
+            public static void Load()
+            {
+                new Thread(LoadCommands).Start();
+                new Thread(LoadEvents).Start();
+            }
+
+            private static void LoadCommands()
+            {
+                string   cmd_path = "./Data/Plugins/Commands/";
+                string[] files    = Directory.GetFiles(cmd_path, $"*.{Loaders.PluginLoader.pluginCMDExtension}", SearchOption.AllDirectories);
+                foreach (var file in files)
+                    if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        string PluginName = new FileInfo(file).Name;
+                        string name       = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginCMDExtension.Length);
+                        InstalledPlugins.Add(new(name, PluginType.Command));
+                    }
+            }
+
+            private static void LoadEvents()
+            {
+                string   eve_path = "./Data/Plugins/Events/";
+                string[] files    = Directory.GetFiles(eve_path, $"*.{Loaders.PluginLoader.pluginEVEExtension}", SearchOption.AllDirectories);
+                foreach (var file in files)
+                    if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
+                        if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            string PluginName = new FileInfo(file).Name;
+                            string name       = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginEVEExtension.Length);
+                            InstalledPlugins.Add(new(name, PluginType.Event));
+                        }
+            }
+
+            public static bool Contains(string pluginName)
+            {
+                foreach (var tuple in InstalledPlugins)
+                {
+                    if (tuple.Item1 == pluginName) return true;
+                }
+
+                return false;
+            }
+
+            public static PluginType GetPluginType(string pluginName)
+            {
+                foreach (var tuple in InstalledPlugins)
+                {
+                    if (tuple.Item1 == pluginName) return tuple.Item2;
+                }
+
+                return PluginType.Unknown;
+            }
+        }
+
         private static AppConfig? appConfig { get; set; }
 
         public static bool AddValueToVariables<T>(string key, T value, bool isProtected)
