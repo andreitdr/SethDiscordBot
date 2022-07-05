@@ -17,11 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMD_Utils", "CMD_Utils\CMD_
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicCommands", "MusicCommands\MusicCommands.csproj", "{B1B4976E-5112-4217-B57B-3A03C5207B6E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotGUI", "DiscordBotGUI\DiscordBotGUI.csproj", "{7B5899F0-0218-4537-8C74-6210ED2D3690}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EVE_LevelingSystem", "EVE_LevelingSystem\EVE_LevelingSystem.csproj", "{EEC445DC-0C4B-43EA-8694-606BA0390B77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EVE_LevelingSystem", "EVE_LevelingSystem\EVE_LevelingSystem.csproj", "{EEC445DC-0C4B-43EA-8694-606BA0390B77}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMD_LevelingSystem", "CMD_LevelingSystem\CMD_LevelingSystem.csproj", "{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMD_LevelingSystem", "CMD_LevelingSystem\CMD_LevelingSystem.csproj", "{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,10 +43,6 @@ Global
 		{B1B4976E-5112-4217-B57B-3A03C5207B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1B4976E-5112-4217-B57B-3A03C5207B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1B4976E-5112-4217-B57B-3A03C5207B6E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B5899F0-0218-4537-8C74-6210ED2D3690}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EEC445DC-0C4B-43EA-8694-606BA0390B77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EEC445DC-0C4B-43EA-8694-606BA0390B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEC445DC-0C4B-43EA-8694-606BA0390B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
