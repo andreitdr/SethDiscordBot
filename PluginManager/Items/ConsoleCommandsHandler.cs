@@ -14,8 +14,8 @@ namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
 {
-    private static readonly PluginsManager       manager     = new PluginsManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
-    public static           List<ConsoleCommand> commandList = new List<ConsoleCommand>();
+    private static readonly PluginsManager       manager     = new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
+    public static           List<ConsoleCommand> commandList = new();
     private readonly        DiscordSocketClient? client;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
@@ -141,6 +141,7 @@ public class ConsoleCommandsHandler
 
                     foreach (var line in lines)
                     {
+                        if (!(line.Length > 0 && line.Contains(","))) continue;
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
