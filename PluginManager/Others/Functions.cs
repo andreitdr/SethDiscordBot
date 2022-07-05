@@ -260,6 +260,35 @@ namespace PluginManager.Others
             return (obj ?? default)!;
         }
 
+        /// <summary>
+        /// Check if all words from <paramref name="str"/> are in <paramref name="baseString"/><br/>
+        /// This function returns true if<br/>
+        /// 1. The <paramref name="str"/> is part of <paramref name="baseString"/><br/>
+        /// 2. The words (split by a space) of <paramref name="str"/> are located (separately) in <paramref name="baseString"/> <br/>
+        /// <example>
+        /// The following example will return <see langword="TRUE"/><br/>
+        /// <c>STRContains("Hello World !", "I type word Hello and then i typed word World !")</c><br/>
+        /// The following example will return <see langword="TRUE"/><br/>
+        /// <c>STRContains("Hello World !", "I typed Hello World !" </c><br/>
+        /// The following example will return <see langword="TRUE"/><br/>
+        ///  <c>STRContains("Hello World", "I type World then Hello")</c><br/>
+        /// The following example will return <see langword="FALSE"/><br/>
+        /// <c>STRContains("Hello World !", "I typed Hello World")</c><br/>
+        /// </example>
+        /// </summary>
+        /// <param name="str">The string you are checking</param>
+        /// <param name="baseString">The main string that should contain <paramref name="str"/></param>
+        /// <returns></returns>
+        public static bool STRContains(this string str, string baseString)
+        {
+            if (baseString.Contains(str)) return true;
+            string[] array = str.Split(' ');
+            foreach (var s in array)
+                if (!baseString.Contains(s))
+                    return false;
+            return true;
+        }
+
         public static bool TryReadValueFromJson(string input, string codeName, out JsonElement element)
         {
             Stream text;

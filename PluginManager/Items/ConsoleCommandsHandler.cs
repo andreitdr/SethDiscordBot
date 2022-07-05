@@ -14,10 +14,9 @@ namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
 {
-    private static readonly PluginsManager manager = new("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
-
-    public static    List<Tuple<string, string, Action<string[]>>> commandList = new();
-    private readonly DiscordSocketClient?                          client;
+    private static readonly PluginsManager       manager     = new PluginsManager("https://sethdiscordbot.000webhostapp.com/Storage/Discord%20Bot/Plugins");
+    public static           List<ConsoleCommand> commandList = new List<ConsoleCommand>();
+    private readonly        DiscordSocketClient? client;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
@@ -31,19 +30,33 @@ public class ConsoleCommandsHandler
         var pluginsLoaded = false;
         commandList.Clear();
 
-        AddCommand("help", "Show help", args =>
+        AddCommand("help", "Show help", "help <command>", args =>
             {
                 if (args.Length <= 1)
                 {
                     Console.WriteLine("Available commands:");
-                    foreach (var command in commandList) Console.WriteLine("\t" + command.Item1 + " - " + command.Item2);
+                    List<string[]> items = new List<string[]>();
+                    items.Add(new [] {"-", "-", "-"});
+                    items.Add(new [] {"Command", "Description", "Usage"});
+                    items.Add(new[] {" ", " ", "Argument type: <optional> [required]"});
+                    items.Add(new [] {"-", "-", "-"});
+
+                    foreach (var command in commandList)
+                    {
+                        var pa = from p in command.Action.Method.GetParameters()
+                                where p.Name != null select p.ParameterType.FullName;
+                        items.Add(new[] { command.CommandName, command.Description, command.Usage });
+                    }
+                    items.Add(new [] {"-", "-", "-"});
+                    Console_Utilities.FormatAndAlignTable(items);
                 }
                 else
                 {
                     foreach (var command in commandList)
-                        if (command.Item1 == args[1])
+                        if (command.CommandName == args[1])
                         {
-                            Console.WriteLine(command.Item2);
+                            Console.WriteLine(command.Description);
+                            Console.WriteLine(command.Usage);
                             return;
                         }
 
@@ -83,7 +96,7 @@ public class ConsoleCommandsHandler
 
         AddCommand("listplugs", "list available plugins", async () => { await manager.ListAvailablePlugins(); });
 
-        AddCommand("dwplug", "download plugin", async args =>
+        AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
                 if (args.Length == 1)
                 {
@@ -178,7 +191,7 @@ public class ConsoleCommandsHandler
         );
 
 
-        AddCommand("value", "read value from VariableStack", args =>
+        AddCommand("value", "read value from VariableStack", "value [key]",args =>
             {
                 if (args.Length != 2) return;
                 if (!Config.ContainsKey(args[1])) return;
@@ -188,7 +201,7 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("add", "add variable to the system variables\nadd [key] [value] [isReadOnly=true/false]", args =>
+        AddCommand("add", "add variable to the system variables","add [key] [value] [isReadOnly=true/false]", args =>
             {
                 if (args.Length < 4) return;
                 var key        = args[1];
@@ -223,7 +236,7 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("remv", "remove variable from system variables", args =>
+        AddCommand("remv", "remove variable from system variables", "remv [key]", args =>
             {
                 if (args.Length < 2) return;
                 Config.RemoveKey(args[1]);
@@ -237,7 +250,7 @@ public class ConsoleCommandsHandler
                 data.Add(new[] { "-", "-" });
                 data.Add(new[] { "Key", "Value" });
                 data.Add(new[] { "-", "-" });
-                foreach (var kvp in d) data.Add(new string[] { kvp.Key, kvp.Value.ToString()! });
+                foreach (var kvp in d) data.Add(new[] { kvp.Key, kvp.Value.ToString()! });
                 data.Add(new[] { "-", "-" });
                 Console_Utilities.FormatAndAlignTable(data);
             }
@@ -252,23 +265,31 @@ public class ConsoleCommandsHandler
                 Environment.Exit(0);
             }
         );
+        //Sort the commands by name
+        commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
     }
 
-    public static void AddCommand(string command, string description, Action<string[]> action)
+    public static void AddCommand(string command, string description, string usage, Action<string[]> action)
     {
-        commandList.Add(new Tuple<string, string, Action<string[]>>(command, description, action));
+        commandList.Add(new ConsoleCommand
+        {
+            CommandName = command,
+            Description = description,
+            Action      = action,
+            Usage       = usage
+        });
         Console.ForegroundColor = ConsoleColor.White;
         Console_Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
     }
 
     public static void AddCommand(string command, string description, Action action)
     {
-        AddCommand(command, description, args => action());
+        AddCommand(command, description, command, args => action());
     }
 
     public static void RemoveCommand(string command)
     {
-        commandList.RemoveAll(x => x.Item1 == command);
+        commandList.RemoveAll(x => x.CommandName == command);
     }
 
     public static bool CommandExists(string command)
@@ -276,17 +297,17 @@ public class ConsoleCommandsHandler
         return !(GetCommand(command) is null);
     }
 
-    public static Tuple<string, string, Action<string[]>>? GetCommand(string command)
+    public static ConsoleCommand? GetCommand(string command)
     {
-        return commandList.FirstOrDefault(t => t.Item1 == command);
+        return commandList.FirstOrDefault(t => t.CommandName == command);
     }
 
     public void HandleCommand(string command)
     {
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
-            if (item.Item1 == args[0])
-                item.Item3(args);
-            //Console.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
+            if (item.CommandName == args[0])
+                item.Action(args);
+        //Console.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
     }
 }

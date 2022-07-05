@@ -24,9 +24,9 @@ public class Random : DBCommand
 
             if (a > b)
             {
-                var x = a;
-                a = b;
-                b = x;
+                var temp = a;
+                a        = b;
+                b        = temp;
             }
 
             await message.Channel.SendMessageAsync("Your random generated number is " + new System.Random().Next(a, b));

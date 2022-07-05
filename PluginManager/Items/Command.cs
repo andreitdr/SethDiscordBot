@@ -43,3 +43,11 @@ internal class Command
     /// </summary>
     public char PrefixUsed { get; }
 }
+
+public class ConsoleCommand
+{
+        public string CommandName { get; set; }
+        public string Description { get; set; }
+        public string Usage { get; set; }
+        public Action<string[]> Action { get; set; }
+}
