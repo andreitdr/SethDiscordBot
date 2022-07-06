@@ -99,6 +99,7 @@ public class Program
         Console.WriteLine($"Running on version: {Config.GetValue<string>("Version") ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
         Console.WriteLine($"Git URL: {Config.GetValue<string>("GitURL") ?? " Could not find Git URL"}");
 
+        Console_Utilities.WriteColorText("&rRemember to close the bot using the ShutDown command &y(sd) &ror some settings won't be saved");
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine($"============================ LOG ============================");
 

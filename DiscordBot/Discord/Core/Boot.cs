@@ -96,16 +96,6 @@ internal class Boot
         Console.Title = "ONLINE";
         isReady       = true;
 
-        new Thread(() =>
-            {
-                while (true)
-                {
-                    Config.SaveConfig();
-                    Thread.Sleep(10000);
-                }
-            }
-        ).Start();
-
         return Task.CompletedTask;
     }
 

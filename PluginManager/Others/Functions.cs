@@ -77,7 +77,7 @@ namespace PluginManager.Others
         /// <param name="LogMessage">The message to be wrote</param>
         public static void WriteLogFile(string LogMessage)
         {
-            string logsPath = logFolder + "Log.txt";
+            string logsPath = logFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Log.txt";
             if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
             File.AppendAllText(logsPath, LogMessage + " \n");
         }
@@ -88,7 +88,7 @@ namespace PluginManager.Others
         /// <param name="ErrMessage">The message to be wrote</param>
         public static void WriteErrFile(string ErrMessage)
         {
-            string errPath = errFolder + "Error.txt";
+            string errPath = errFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
             if (!Directory.Exists(errFolder)) Directory.CreateDirectory(errFolder);
             File.AppendAllText(errPath, ErrMessage + " \n");
         }

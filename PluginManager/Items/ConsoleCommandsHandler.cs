@@ -246,6 +246,8 @@ public class ConsoleCommandsHandler
                 await client.StopAsync();
                 await client.DisposeAsync();
                 Config.SaveConfig();
+                Console.WriteLine("Bot is closing in 2 seconds ! Please wait to save data !");
+                await Task.Delay(2000);
                 Environment.Exit(0);
             }
         );
