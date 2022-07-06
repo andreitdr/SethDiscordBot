@@ -253,7 +253,8 @@ public class Program
             string[] s = key.Split(' ');
             try
             {
-                Config.GetAndAddValueToVariable(s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
+                if (Config.ContainsKey(s[0])) Config.SetValue(s[0], s[1]);
+                else Config.GetAndAddValueToVariable(s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
             }
             catch (Exception ex)
             {
