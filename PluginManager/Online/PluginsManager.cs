@@ -58,7 +58,7 @@ public class PluginsManager
 
                         else
                             display[3] = "1";
-                        if (Config.Plugins.Contains(content[0]) || Config.Plugins.Contains(content[0]))
+                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else
                             display[4] = "X";
@@ -73,7 +73,7 @@ public class PluginsManager
                         display[1] = content[1];
                         display[2] = content[2];
                         if (content.Length == 6 && (content[5] != null || content[5].Length > 2)) display[3] = ((await ServerCom.ReadTextFromFile(content[5])).Count + 1).ToString();
-                        if (Config.Plugins.Contains(content[0]) || Config.Plugins.Contains(content[0]))
+                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else
                             display[4] = "X";

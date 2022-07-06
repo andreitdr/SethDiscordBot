@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace PluginManager
 {
@@ -16,7 +17,7 @@ namespace PluginManager
 
     public static class Config
     {
-        public static class Plugins
+        public static class PluginConfig
         {
             public static List<Tuple<string, PluginType>> InstalledPlugins = new();
 
@@ -81,9 +82,31 @@ namespace PluginManager
             if (appConfig!.ApplicationVariables!.ContainsKey(key)) return false;
             if (value == null) return false;
             appConfig.ApplicationVariables.Add(key, value);
-            if (isProtected) appConfig.ProtectedKeyWords!.Add(key);
+            if (isProtected && key != "Version") appConfig.ProtectedKeyWords!.Add(key);
+
             SaveConfig();
             return true;
+        }
+
+        public static void GetAndAddValueToVariable(string key, string value, bool isReadOnly)
+        {
+            if (Config.ContainsKey(key)) return;
+            if (int.TryParse(value, out var intValue))
+                Config.AddValueToVariables(key, intValue, isReadOnly);
+            else if (bool.TryParse(value, out var boolValue))
+                Config.AddValueToVariables(key, boolValue, isReadOnly);
+            else if (float.TryParse(value, out var floatValue))
+                Config.AddValueToVariables(key, floatValue, isReadOnly);
+            else if (double.TryParse(value, out var doubleValue))
+                Config.AddValueToVariables(key, doubleValue, isReadOnly);
+            else if (uint.TryParse(value, out var uintValue))
+                Config.AddValueToVariables(key, uintValue, isReadOnly);
+            else if (long.TryParse(value, out var longValue))
+                Config.AddValueToVariables(key, longValue, isReadOnly);
+            else if (byte.TryParse(value, out var byteValue))
+                Config.AddValueToVariables(key, byteValue, isReadOnly);
+            else
+                Config.AddValueToVariables(key, value, isReadOnly);
         }
 
         public static T? GetValue<T>(string key)

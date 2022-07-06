@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -69,7 +70,10 @@ public class Program
         var consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
+
         Config.SaveConfig();
+
+
         while (true)
         {
             Console.ForegroundColor = ConsoleColor.White;
@@ -86,11 +90,16 @@ public class Program
     {
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
-        Console.WriteLine("Discord BOT for Cross Platform");
-        Console.WriteLine("Created by: Wizzy\nDiscord: Wizzy#9181");
+
+        List<string> startupMessageList = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
+
+        foreach (var message in startupMessageList) Console.WriteLine(message);
+
+        Console.WriteLine($"Running on version: {Config.GetValue<string>("Version") ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
+        Console.WriteLine($"Git URL: {Config.GetValue<string>("GitURL") ?? " Could not find Git URL"}");
 
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("============================ Discord BOT - Cross Platform ============================");
+        Console.WriteLine($"============================ LOG ============================");
 
         try
         {
@@ -227,7 +236,76 @@ public class Program
             if (Config.GetValue<bool>("DeleteLogsAtStartup"))
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
+        List<string> OnlineDefaultKeys = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
 
-        Config.Plugins.Load();
+        Config.PluginConfig.Load();
+
+        if (!Config.ContainsKey("Version"))
+            Config.AddValueToVariables("Version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
+        else
+            Config.SetValue("Version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+
+        foreach (var key in OnlineDefaultKeys)
+        {
+            if (key.Length <= 3 || !key.Contains(' ')) continue;
+            string[] s = key.Split(' ');
+            try
+            {
+                Config.GetAndAddValueToVariable(s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                Functions.WriteErrFile(ex.Message);
+            }
+        }
+
+        List<string> onlineSettingsList = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
+        foreach (var key in onlineSettingsList)
+        {
+            if (key.Length <= 3 || !key.Contains(' ')) continue;
+
+            string[] s = key.Split(' ');
+            switch (s[0])
+            {
+                case "CurrentVersion":
+                    string newVersion = s[1];
+                    if (!newVersion.Equals(Config.GetValue<string>("Version")))
+                    {
+                        Console.WriteLine("A new version has been released on github page.");
+                        Console.WriteLine("Download the new version using the following link wrote in yellow");
+                        Console_Utilities.WriteColorText("&y" + Config.GetValue<string>("GitURL") + "&c");
+
+                        Console.WriteLine();
+                        Console.WriteLine("Your product will work just fine on this outdated version, but an update is recommended.\n" +
+                                          "From now on, this version is no longer supported"
+                        );
+                        Console_Utilities.WriteColorText("&rUse at your own risk&c");
+
+                        Console_Utilities.WriteColorText("&mCurrent Version: " + Config.GetValue<string>("Version") + "&c");
+                        Console_Utilities.WriteColorText("&gNew Version: " + newVersion + "&c");
+
+                        Console.WriteLine("\n\n");
+                        await Task.Delay(1000);
+
+                        int waitTime = 20; //wait time to proceed
+
+                        Console.Write($"The bot will start in {waitTime} seconds");
+                        while (waitTime > 0)
+                        {
+                            await Task.Delay(1000);
+                            waitTime--;
+                            Console.SetCursorPosition("The bot will start in ".Length, Console.CursorTop);
+                            Console.Write("                         ");
+                            Console.SetCursorPosition("The bot will start in ".Length, Console.CursorTop);
+                            Console.Write(waitTime + " seconds");
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+
+        Config.SaveConfig();
     }
 }

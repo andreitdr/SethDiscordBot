@@ -32,32 +32,24 @@ public class ConsoleCommandsHandler
 
         AddCommand("help", "Show help", "help <command>", args =>
             {
-                if (args[1] == "lip")
-                {
-                    foreach (var tuple in Config.Plugins.InstalledPlugins)
-                    {
-                        Console.WriteLine(tuple.Item1);
-                    }
-
-                    return;
-                }
-
                 if (args.Length <= 1)
                 {
                     Console.WriteLine("Available commands:");
                     List<string[]> items = new List<string[]>();
-                    items.Add(new [] {"-", "-", "-"});
-                    items.Add(new [] {"Command", "Description", "Usage"});
-                    items.Add(new[] {" ", " ", "Argument type: <optional> [required]"});
-                    items.Add(new [] {"-", "-", "-"});
+                    items.Add(new[] { "-", "-", "-" });
+                    items.Add(new[] { "Command", "Description", "Usage" });
+                    items.Add(new[] { " ", " ", "Argument type: <optional> [required]" });
+                    items.Add(new[] { "-", "-", "-" });
 
                     foreach (var command in commandList)
                     {
                         var pa = from p in command.Action.Method.GetParameters()
-                                where p.Name != null select p.ParameterType.FullName;
+                                 where p.Name != null
+                                 select p.ParameterType.FullName;
                         items.Add(new[] { command.CommandName, command.Description, command.Usage });
                     }
-                    items.Add(new [] {"-", "-", "-"});
+
+                    items.Add(new[] { "-", "-", "-" });
                     Console_Utilities.FormatAndAlignTable(items);
                 }
                 else
@@ -74,6 +66,7 @@ public class ConsoleCommandsHandler
                 }
             }
         );
+
 
         AddCommand("lp", "Load plugins", () =>
             {
@@ -141,8 +134,8 @@ public class ConsoleCommandsHandler
                 await ServerCom.DownloadFileAsync(info[1], path);
                 if (info[0] == "Command" || info[0] == "Event")
                     if (info[0] == "Event")
-                        Config.Plugins.InstalledPlugins.Add(new(name, PluginType.Event));
-                    else if (info[0] == "Command") Config.Plugins.InstalledPlugins.Add(new(name, PluginType.Command));
+                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
+                    else if (info[0] == "Command") Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -190,16 +183,6 @@ public class ConsoleCommandsHandler
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
-
-                        if (name == "DBUI")
-                        {
-                            Console.WriteLine("Reload with GUI ?[y/n]");
-                            if (Console.ReadKey().Key == ConsoleKey.Y)
-                            {
-                                Process.Start("./DiscordBotGUI.exe");
-                                Environment.Exit(0);
-                            }
-                        }
                     }
 
                     Console.WriteLine();
@@ -227,23 +210,7 @@ public class ConsoleCommandsHandler
 
                 try
                 {
-                    if (Config.ContainsKey(key)) return;
-                    if (int.TryParse(value, out var intValue))
-                        Config.AddValueToVariables(key, intValue, isReadOnly);
-                    else if (bool.TryParse(value, out var boolValue))
-                        Config.AddValueToVariables(key, boolValue, isReadOnly);
-                    else if (float.TryParse(value, out var floatValue))
-                        Config.AddValueToVariables(key, floatValue, isReadOnly);
-                    else if (double.TryParse(value, out var doubleValue))
-                        Config.AddValueToVariables(key, doubleValue, isReadOnly);
-                    else if (uint.TryParse(value, out var uintValue))
-                        Config.AddValueToVariables(key, uintValue, isReadOnly);
-                    else if (long.TryParse(value, out var longValue))
-                        Config.AddValueToVariables(key, longValue, isReadOnly);
-                    else if (byte.TryParse(value, out var byteValue))
-                        Config.AddValueToVariables(key, byteValue, isReadOnly);
-                    else
-                        Config.AddValueToVariables(key, value, isReadOnly);
+                    Config.GetAndAddValueToVariable(key, value, isReadOnly);
                     Console.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
                 }
                 catch (Exception ex)

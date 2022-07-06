@@ -8,6 +8,7 @@
 		<StartupObject />
 		<SignAssembly>False</SignAssembly>
 		<IsPublishable>True</IsPublishable>
+		<AssemblyVersion>1.0.0.1</AssemblyVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
