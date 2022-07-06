@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.Audio;
-using MusicCommands;
 
-namespace CMD_Utils.Music;
+namespace MusicCommands;
 
 internal static class Data
 {

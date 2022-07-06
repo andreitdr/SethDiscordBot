@@ -28,6 +28,11 @@ internal class Loader<T>
     private string path      { get; }
     private string extension { get; }
 
+
+    internal delegate void FileLoadedEventHandler(LoaderArgs args);
+
+    internal delegate void PluginLoadedEventHandler(LoaderArgs args);
+
     internal event FileLoadedEventHandler? FileLoaded;
 
     internal event PluginLoadedEventHandler? PluginLoaded;
@@ -100,8 +105,4 @@ internal class Loader<T>
 
         return list;
     }
-
-    internal delegate void FileLoadedEventHandler(LoaderArgs args);
-
-    internal delegate void PluginLoadedEventHandler(LoaderArgs args);
 }

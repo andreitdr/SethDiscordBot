@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PluginManager.Others;
@@ -37,15 +37,15 @@ public class PluginsManager
             var op   = Functions.GetOperatingSystem();
 
             var      len    = lines.Length;
-            string[] titles = { "Name", "Description", "Plugin Type", "Libraries" };
-            data.Add(new[] { "-", "-", "-", "-" });
+            string[] titles = { "Name", "Description", "Plugin Type", "Libraries", "Installed" };
+            data.Add(new[] { "-", "-", "-", "-", "-" });
             data.Add(titles);
-            data.Add(new[] { "-", "-", "-", "-" });
+            data.Add(new[] { "-", "-", "-", "-", "-" });
             for (var i = 0; i < len; i++)
             {
                 if (lines[i].Length <= 2) continue;
                 var content = lines[i].Split(',');
-                var display = new string[4];
+                var display = new string[titles.Length];
                 if (op == OperatingSystem.WINDOWS)
                 {
                     if (content[4].Contains("Windows"))
@@ -58,6 +58,10 @@ public class PluginsManager
 
                         else
                             display[3] = "1";
+                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
+                            display[4] = "✓";
+                        else
+                            display[4] = "X";
                         data.Add(display);
                     }
                 }
@@ -68,12 +72,17 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
+                        if (content.Length == 6 && (content[5] != null || content[5].Length > 2)) display[3] = ((await ServerCom.ReadTextFromFile(content[5])).Count + 1).ToString();
+                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
+                            display[4] = "✓";
+                        else
+                            display[4] = "X";
                         data.Add(display);
                     }
                 }
             }
 
-            data.Add(new[] { "-", "-", "-", "-" });
+            data.Add(new[] { "-", "-", "-", "-", "-" });
 
             Console_Utilities.FormatAndAlignTable(data);
         }

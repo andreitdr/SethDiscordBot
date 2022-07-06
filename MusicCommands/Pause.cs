@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 
-namespace CMD_Utils.Music;
+namespace MusicCommands;
 
 internal class Pause : DBCommand
 {

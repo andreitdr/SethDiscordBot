@@ -15,8 +15,8 @@ public class PluginLoader
     private const string pluginCMDFolder = @"./Data/Plugins/Commands/";
     private const string pluginEVEFolder = @"./Data/Plugins/Events/";
 
-    private const    string              pluginCMDExtension = "dll";
-    private const    string              pluginEVEExtension = "dll";
+    internal const   string              pluginCMDExtension = "dll";
+    internal const   string              pluginEVEExtension = "dll";
     private readonly DiscordSocketClient _client;
 
     /// <summary>
@@ -87,11 +87,11 @@ public class PluginLoader
     {
         if (e.IsLoaded) ((DBEvent)e.Plugin!).Start(_client);
 
-        if (onEVELoad != null) onEVELoad.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
+        onEVELoad?.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
     }
 
     private void OnCommandLoaded(LoaderArgs e)
     {
-        if (onCMDLoad != null) onCMDLoad.Invoke(((DBCommand)e.Plugin!).Command, e.TypeName!, e.IsLoaded, e.Exception);
+        onCMDLoad?.Invoke(((DBCommand)e.Plugin!).Command, e.TypeName!, e.IsLoaded, e.Exception);
     }
 }

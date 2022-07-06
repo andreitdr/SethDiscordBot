@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Discord.WebSocket;
 using PluginManager.Others;
 
@@ -41,4 +42,12 @@ internal class Command
     ///     The prefix that is used for the command
     /// </summary>
     public char PrefixUsed { get; }
+}
+
+public class ConsoleCommand
+{
+        public string CommandName { get; set; }
+        public string Description { get; set; }
+        public string Usage { get; set; }
+        public Action<string[]> Action { get; set; }
 }

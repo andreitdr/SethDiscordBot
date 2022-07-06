@@ -1,4 +1,6 @@
-﻿namespace PluginManager.Others;
+﻿using PluginManager.Interfaces;
+
+namespace PluginManager.Others;
 
 /// <summary>
 ///     A list of operating systems
@@ -20,3 +22,8 @@ public enum Error
 ///     The output log type
 /// </summary>
 public enum OutputLogLevel { NONE, INFO, WARNING, ERROR, CRITICAL }
+
+/// <summary>
+/// Plugin Type
+/// </summary>
+public enum PluginType { Command, Event, Unknown }

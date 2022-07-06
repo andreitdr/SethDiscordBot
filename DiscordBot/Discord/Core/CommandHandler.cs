@@ -121,7 +121,6 @@ internal class CommandHandler
 
                     plugin.Execute(context, message, client, false);
                     Functions.WriteLogFile($"[{message.Author.Id}] Executed command : " + plugin.Command);
-                    return;
                 }
             }
         }
