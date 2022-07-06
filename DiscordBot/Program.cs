@@ -78,7 +78,8 @@ public class Program
         {
             Console.ForegroundColor = ConsoleColor.White;
             var cmd = Console.ReadLine();
-            consoleCommandsHandler.HandleCommand(cmd);
+            if (!consoleCommandsHandler.HandleCommand(cmd))
+                Console.WriteLine("Failed to run command " + cmd);
         }
     }
 

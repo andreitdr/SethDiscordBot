@@ -57,8 +57,8 @@ public class ConsoleCommandsHandler
                     foreach (var command in commandList)
                         if (command.CommandName == args[1])
                         {
-                            Console.WriteLine(command.Description);
-                            Console.WriteLine(command.Usage);
+                            Console.WriteLine("Command description: " + command.Description);
+                            Console.WriteLine("Command execution format:" + command.Usage);
                             return;
                         }
 
@@ -286,12 +286,25 @@ public class ConsoleCommandsHandler
         return commandList.FirstOrDefault(t => t.CommandName == command);
     }
 
-    public void HandleCommand(string command)
+    public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
+            {
+                if (removeCommandExecution)
+                {
+                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                    for (int i = 0; i < command.Length; i++) Console.Write(" ");
+                    Console.SetCursorPosition(0, Console.CursorTop);
+                }
+
+                Console.WriteLine();
                 item.Action(args);
+                return true;
+            }
+
+        return false;
         //Console.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
     }
 }

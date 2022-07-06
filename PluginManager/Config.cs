@@ -136,6 +136,7 @@ namespace PluginManager
 
         public static bool RemoveKey(string key)
         {
+            if (key == "Version" || key == "token" || key == "prefix") return false;
             appConfig!.ApplicationVariables!.Remove(key);
             appConfig.ProtectedKeyWords!.Remove(key);
             SaveConfig();
