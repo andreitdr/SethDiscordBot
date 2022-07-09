@@ -10,12 +10,12 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
-            public int          Max     { get; init; }
+            public float        Max     { get; init; }
             public ConsoleColor Color   { get; init; }
             public bool         NoColor { get; init; }
 
 
-            public void Update(int progress, double speed = -1, string? unit = null)
+            public void Update(float progress, double speed = -1, string? unit = null)
             {
                 Console.CursorLeft = 0;
                 Console.Write("[");
@@ -146,6 +146,9 @@ namespace PluginManager.Others
 
                 Console.Write(m + " ");
             }
+
+            Console.CursorLeft--;
+
             if (appendNewLine)
                 Console.Write('\n');
 

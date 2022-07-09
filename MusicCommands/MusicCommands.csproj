@@ -17,4 +17,8 @@
     <ProjectReference Include="..\PluginManager\PluginManager.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="YoutubeExplode" Version="6.2.0" />
+  </ItemGroup>
+
 </Project>

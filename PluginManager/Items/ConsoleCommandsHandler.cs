@@ -22,7 +22,7 @@ public class ConsoleCommandsHandler
     {
         this.client = client;
         InitializeBasicCommands();
-        Console.WriteLine("Initialized console command handler !");
+        //Console.WriteLine("Initialized console command handler !");
     }
 
     private void InitializeBasicCommands()
@@ -128,9 +128,10 @@ public class ConsoleCommandsHandler
 
                 string path;
                 if (info[0] == "Command" || info[0] == "Event")
-                    path = "./Data/Plugins/" + info[0] + "s/" + name + ".dll";
+                    path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command" ? PluginLoader.pluginCMDExtension : PluginLoader.pluginEVEExtension);
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
+                //Console.WriteLine("Downloading: " + path + " [" + info[1] + "]");
                 await ServerCom.DownloadFileAsync(info[1], path);
                 if (info[0] == "Command" || info[0] == "Event")
                     if (info[0] == "Event")
@@ -156,27 +157,32 @@ public class ConsoleCommandsHandler
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
                         Console.WriteLine();
 
-                        if (split[0].EndsWith(".zip"))
+                        if (split[0].EndsWith(".zip") || split[0].EndsWith(".pak") || split[0].EndsWith(".pkg"))
                         {
                             Console.WriteLine($"Extracting {split[1]}");
-                            var proc         = 0d;
+                            var proc         = 0f;
                             var isExtracting = true;
-                            var bar          = new Console_Utilities.ProgressBar { Max = 100, Color = ConsoleColor.Green };
+                            var bar          = new Console_Utilities.ProgressBar { Max = 100f, Color = ConsoleColor.Green };
 
-                            IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
+                            IProgress<float> extractProgress = new Progress<float>(value =>
+                                {
+                                    proc = value;
+                                }
+                            );
                             new Thread(new Task(() =>
                                            {
                                                while (isExtracting)
                                                {
-                                                   bar.Update((int)proc);
-                                                   if (proc >= 99.9f) break;
+                                                   bar.Update(proc);
+                                                   if (proc >= 99.9f)
+                                                       isExtracting = false;
                                                    Thread.Sleep(500);
                                                }
                                            }
                                        ).Start
                             ).Start();
-                            await Functions.ExtractArchive("./" + split[1], "./", extractProgress);
-                            bar.Update(100);
+                            await Functions.ExtractArchive("./" + split[1], "./", extractProgress, UnzipProgressType.PercentageFromTotalSize);
+                            bar.Update(100f);
                             isExtracting = false;
                             await Task.Delay(1000);
                             bar.Update(100);

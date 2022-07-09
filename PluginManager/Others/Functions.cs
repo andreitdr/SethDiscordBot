@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Discord.WebSocket;
 using PluginManager.Items;
 using System.Threading;
@@ -169,33 +170,69 @@ namespace PluginManager.Others
         /// </summary>
         /// <param name="zip">The zip location</param>
         /// <param name="folder">The target location</param>
+        /// <param name="progress">The progress that is updated as a file is processed</param>
+        /// <param name="type">The type of progress</param>
         /// <returns></returns>
-        public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress)
+        public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress, UnzipProgressType type)
         {
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
 
             using (ZipArchive archive = ZipFile.OpenRead(zip))
             {
-                int totalZIPFiles  = archive.Entries.Count();
-                int currentZIPFile = 0;
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                if (type == UnzipProgressType.PercentageFromNumberOfFiles)
                 {
-                    if (entry.FullName.EndsWith("/"))
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                    int totalZIPFiles  = archive.Entries.Count();
+                    int currentZIPFile = 0;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/"))
+                            Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
 
-                    else
+                        else
+                            try
+                            {
+                                entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                            }
+
+                        currentZIPFile++;
+                        await Task.Delay(10);
+                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                    }
+                }
+                else if (type == UnzipProgressType.PercentageFromTotalSize)
+                {
+                    ulong zipSize = 0;
+
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                        zipSize += (ulong)entry.CompressedLength;
+
+                    ulong currentSize = 0;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/"))
+                        {
+                            Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                            continue;
+                        }
+
                         try
                         {
                             entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                            currentSize += (ulong)entry.CompressedLength;
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
                         }
 
-                    currentZIPFile++;
-                    await Task.Delay(10);
-                    progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                        await Task.Delay(10);
+                        progress.Report((float)currentSize / zipSize * 100);
+                    }
                 }
             }
         }
@@ -302,6 +339,16 @@ namespace PluginManager.Others
 
             var data = jsonObject.RootElement.TryGetProperty(codeName, out element);
             return data;
+        }
+
+        public static string CreateMD5(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes  = md5.ComputeHash(inputBytes);
+                return Convert.ToHexString(hashBytes);
+            }
         }
     }
 }
