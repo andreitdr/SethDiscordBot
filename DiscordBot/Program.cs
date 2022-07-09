@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Net.Queue;
 using DiscordBot.Discord.Core;
 using PluginManager;
 using PluginManager.Items;
@@ -72,7 +74,6 @@ public class Program
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 
         Config.SaveConfig();
-
 
         while (true)
         {

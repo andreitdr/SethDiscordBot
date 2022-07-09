@@ -64,15 +64,16 @@ internal class Play : DBCommand
         }
         while (false);
 
-
         Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
+
         if (Data.voiceChannel == null)
         {
             await context.Channel.SendMessageAsync("User must be in a voice channel, or a voice channel must be passed as an argument.");
             return;
         }
 
-        Data.audioClient = await Data.voiceChannel.ConnectAsync();
+        Data.audioClient = await Data.voiceChannel.ConnectAsync(true);
+
 
         using (var ffmpeg = CreateStream(path))
         using (var output = ffmpeg.StandardOutput.BaseStream)
