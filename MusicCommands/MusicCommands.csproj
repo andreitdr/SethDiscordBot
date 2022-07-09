@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>warnings</Nullable>
     <BaseOutputPath>bin\</BaseOutputPath>
+    <AssemblyName>Music Commands</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -22,8 +22,8 @@ internal class Leave : DBCommand
     {
         if (Data.audioClient is not null && Data.voiceChannel is not null)
         {
-            Data.CurrentlyRunning.Stop();
-            Data.CurrentlyRunning = null;
+            Data.Playlist.ClearQueue();
+            Data.MusicPlayer.isPlaying = false;
             await Data.audioClient.StopAsync();
             await Data.voiceChannel.DisconnectAsync();
         }

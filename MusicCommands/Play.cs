@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
@@ -42,27 +41,46 @@ internal class Play : DBCommand
                     return;
                 }
 
-                string url = splitted[1];
+                var url = splitted[1];
                 path += $"{Functions.CreateMD5(url)}";
                 if (File.Exists(path))
-                    break;
-                //await context.Channel.SendMessageAsync("Searching for " + url);
-                await GetMusicAudio(url, path);
-                //await context.Channel.SendMessageAsync("Playing: " + url);
+                {
+                    Data.Playlist.Enqueue(new AudioFile(path, null));
+                }
+                else
+                {
+                    var file = new AudioFile(path, url);
+                    await file.DownloadAudioFile();
+                    Data.Playlist.Enqueue(file);
+                }
             }
             else
             {
-                string searchString = Functions.MergeStrings(splitted, 1);
+                var searchString = splitted.MergeStrings(1);
                 path += $"{Functions.CreateMD5(searchString)}";
-
                 if (File.Exists(path))
-                    break;
-                await context.Channel.SendMessageAsync("Searching for " + searchString);
-                await GetMusicAudio(searchString, path);
-                await context.Channel.SendMessageAsync("Playing: " + searchString);
+                {
+                    Data.Playlist.Enqueue(new AudioFile(path, null));
+                }
+                else
+                {
+                    await context.Channel.SendMessageAsync("Searching for " + searchString);
+                    var file = new AudioFile(path, searchString);
+                    await file.DownloadAudioFile();
+                    Data.Playlist.Enqueue(file);
+                    if (Data.MusicPlayer is null)
+                        await context.Channel.SendMessageAsync("Playing: " + searchString);
+                }
+            }
+
+            if (Data.MusicPlayer is not null)
+            {
+                await context.Channel.SendMessageAsync("Enqueued your request");
+                return;
             }
         }
         while (false);
+
 
         Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
 
@@ -72,33 +90,34 @@ internal class Play : DBCommand
             return;
         }
 
-        Data.audioClient = await Data.voiceChannel.ConnectAsync(true);
-
-
-        using (var ffmpeg = CreateStream(path))
-        using (var output = ffmpeg.StandardOutput.BaseStream)
-        using (var discord = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
+        if (Data.audioClient is null)
         {
-            if (Data.CurrentlyRunning != null) Data.CurrentlyRunning.Stop();
-            Data.CurrentlyRunning = new MusicPlayer(output, discord);
-            await Data.CurrentlyRunning.StartSendAudio();
+            Data.audioClient = await Data.voiceChannel.ConnectAsync(true);
+            Data.MusicPlayer = null;
+        }
+
+
+        using (var discordChanneAudioOutStream = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
+        {
+            if (Data.MusicPlayer is null)
+                Data.MusicPlayer = new MusicPlayer(discordChanneAudioOutStream);
+            while (Data.Playlist.Count > 0)
+            {
+                var nowPlaying = Data.Playlist.GetNextSong;
+                using (var ffmpeg = CreateStream(nowPlaying.Name))
+                using (var ffmpegOutputBaseStream = ffmpeg.StandardOutput.BaseStream)
+                {
+                    await Data.MusicPlayer.Play(ffmpegOutputBaseStream, 1024);
+                    Console.WriteLine("Finished playing from" + nowPlaying.Name);
+                }
+            }
+
+            Data.MusicPlayer = null;
         }
     }
 
     private Process CreateStream(string path)
     {
         return Process.Start(new ProcessStartInfo { FileName = "ffmpeg", Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1", UseShellExecute = false, RedirectStandardOutput = true });
-    }
-
-    private async Task GetMusicAudio(string url, string location)
-    {
-        Process proc = new Process();
-        proc.StartInfo.FileName               = "MusicDownloader.exe";
-        proc.StartInfo.Arguments              = $"{url},{location}";
-        proc.StartInfo.UseShellExecute        = false;
-        proc.StartInfo.RedirectStandardOutput = true;
-
-        proc.Start();
-        await proc.WaitForExitAsync();
     }
 }

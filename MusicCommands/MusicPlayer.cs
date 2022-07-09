@@ -9,110 +9,93 @@ namespace MusicCommands;
 
 internal class MusicPlayer
 {
-    public MusicPlayer(Stream input, Stream output)
+    private Stream outputStream { get; }
+
+    internal bool isPlaying, isPaused;
+
+    public MusicPlayer(Stream outputChannel)
     {
-        inputStream  = input;
-        outputStream = output;
+        outputStream = outputChannel;
     }
 
-    public MusicPlayer(Stream output)
+    public async Task Play(Stream source, int byteSize)
     {
-        inputStream  = null;
-        outputStream = output;
-    }
-
-    public Stream inputStream  { get; } // from FFMPEG
-    public Stream outputStream { get; } // to Voice Channel 
-
-    public  bool Paused { get; set; }
-    private bool _stop  { get; set; }
-
-    public void Stop()
-    {
-        _stop = true;
-    }
-
-    public async Task StartSendAudioFromLink(string URL)
-    {
-        /*            using (HttpClient client = new HttpClient())
-                    using (HttpResponseMessage response = await client.GetAsync(URL))
-                    using (var content = response.Content)
-                    {
-                        await (await content.ReadAsStreamAsync()).CopyToAsync(outputStream);
-                    }*/
-
-
-        Stream ms    = new MemoryStream();
-        var    bsize = 512;
-        new Thread(async delegate(object o)
-            {
-                var response = await new HttpClient().GetAsync(URL);
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                {
-                    var buffer = new byte[bsize];
-                    int read;
-                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        var pos = ms.Position;
-                        ms.Position = ms.Length;
-                        ms.Write(buffer, 0, read);
-                        ms.Position = pos;
-                    }
-                }
-            }
-        ).Start();
-        Console.Write("Reading data: ");
-        while (ms.Length < bsize * 10)
+        isPlaying = true;
+        while (isPlaying)
         {
-            await Task.Delay(1000);
-            Console.Title = "Reading data: " + ms.Length + " bytes read of " + bsize * 10;
-            Console.Write(".");
-        }
+            if (isPaused)
+                continue;
 
-        Console.WriteLine("\nDone");
-        ms.Position = 0;
-
-        _stop  = false;
-        Paused = false;
-
-        while (!_stop)
-        {
-            if (Paused) continue;
-            var buffer = new byte[bsize];
-            var read   = await ms.ReadAsync(buffer, 0, buffer.Length);
-            if (read > 0)
-                await outputStream.WriteAsync(buffer, 0, read);
-            else
+            var bits = new byte[byteSize];
+            var read = await source.ReadAsync(bits, 0, byteSize);
+            if (read == 0)
                 break;
-        }
-    }
-
-    public async Task StartSendAudio()
-    {
-        Paused = false;
-        _stop  = false;
-        while (!_stop)
-        {
-            if (Paused) continue;
-            var bsize  = 512;
-            var buffer = new byte[bsize];
-            var bcount = await inputStream.ReadAsync(buffer, 0, bsize);
-            if (bcount <= 0)
-            {
-                Stop();
-                Data.CurrentlyRunning = null;
-                break;
-            }
-
             try
             {
-                await outputStream.WriteAsync(buffer, 0, bcount);
+                await outputStream.WriteAsync(bits, 0, read);
             }
-            catch (Exception ex)
+            catch
             {
-                await outputStream.FlushAsync();
-                Functions.WriteLogFile(ex.ToString());
+                break;
             }
         }
+
+
+        await source.FlushAsync();
+        await source.DisposeAsync();
+        source.Close();
+        await outputStream.FlushAsync();
+        isPlaying = false;
     }
+
+
+    /*
+        public MusicPlayer(Stream input, Stream output)
+        {
+            inputStream  = input;
+            outputStream = output;
+        }
+
+
+
+
+
+        public Stream inputStream  { get; } // from FFMPEG
+        public Stream outputStream { get; } // to Voice Channel 
+
+        public  bool Paused { get; set; }
+        private bool _stop  { get; set; }
+
+        public void Stop()
+        {
+            _stop = true;
+        }
+
+        public async Task StartSendAudio(int bsize)
+        {
+            Paused = false;
+            _stop  = false;
+            while (!_stop)
+            {
+                if (Paused) continue;
+                var buffer = new byte[bsize];
+                var bcount = await inputStream.ReadAsync(buffer, 0, bsize);
+                if (bcount <= 0)
+                {
+                    Stop();
+                    Data.CurrentlyRunning = null;
+                    break;
+                }
+
+                try
+                {
+                    await outputStream.WriteAsync(buffer, 0, bcount);
+                }
+                catch (Exception ex)
+                {
+                    await outputStream.FlushAsync();
+                    Functions.WriteLogFile(ex.ToString());
+                }
+            }
+        }*/
 }
