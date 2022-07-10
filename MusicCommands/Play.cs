@@ -16,7 +16,7 @@ internal class Play : DBCommand
 
     public string Description => "Play music from a file";
 
-    public string Usage => "fplay [name/url]";
+    public string Usage => "play [name/url]";
 
     public bool canUseDM => false;
 
@@ -33,14 +33,8 @@ internal class Play : DBCommand
             return;
         do
         {
-            if (splitted.Length == 2)
+            if (splitted.Length == 2 && splitted[1].Contains("youtube.com") || splitted[1].Contains("youtu.be"))
             {
-                if (!splitted[1].Contains("youtube.com"))
-                {
-                    await context.Channel.SendMessageAsync("Invalid link");
-                    return;
-                }
-
                 var url = splitted[1];
                 path += $"{Functions.CreateMD5(url)}";
                 if (File.Exists(path))
@@ -108,7 +102,7 @@ internal class Play : DBCommand
                 using (var ffmpegOutputBaseStream = ffmpeg.StandardOutput.BaseStream)
                 {
                     await Data.MusicPlayer.Play(ffmpegOutputBaseStream, 1024);
-                    Console.WriteLine("Finished playing from" + nowPlaying.Name);
+                    Console.WriteLine("Finished playing from " + nowPlaying.Url);
                 }
             }
 
