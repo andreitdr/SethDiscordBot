@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PluginManager.Others
 {
-    public class Console_Utilities
+    public static class Console_Utilities
     {
         /// <summary>
         /// Progress bar object
@@ -28,37 +29,34 @@ namespace PluginManager.Others
 
                 for (int i = 0; i < onechunk * progress; i++)
                 {
-                    if (NoColor)
-                        Console.BackgroundColor = ConsoleColor.Black; //this.Color
-                    else
-                        Console.BackgroundColor = this.Color;
+                    Console.BackgroundColor = NoColor ? ConsoleColor.Black : this.Color;
                     Console.CursorLeft      = position++;
                     Console.Write("#");
                 }
 
                 for (int i = position; i <= 31; i++)
                 {
-                    if (NoColor)
-                        Console.BackgroundColor = ConsoleColor.Black; // background of empty bar
-                    else
-                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
                     Console.CursorLeft      = position++;
                     Console.Write(" ");
                 }
 
                 Console.CursorLeft = 35;
                 Console.BackgroundColor = ConsoleColor.Black;
-                if (speed == -1 || unit == null)
+                if (speed is -1 || unit == null)
                 {
-                    if (progress == Max)
-                        Console.Write(progress.ToString() + " %      ✓");
-                    else Console.Write(progress.ToString() + " %       ");
+                    if (progress.CanAproximateTo(Max))
+                        Console.Write(progress + " %      ✓");
+                    else
+                        Console.Write(progress + " %       ");
                 }
                 else
-                    Console.Write(progress.ToString() + $"{speed} {unit}/s        ");
-
+                    Console.Write(progress + $"{speed} {unit}/s        ");
             }
         }
+
+
+        private static bool CanAproximateTo(this float f, float y) => (MathF.Abs(f - y) < 0.000001);
 
 
         /// <summary>
@@ -110,8 +108,7 @@ namespace PluginManager.Others
                             Console.Write(" ");
                     }
 
-                    if (row[l][0] == tableLine) Console.Write(tableCross);
-                    else Console.Write(tableWall);
+                    Console.Write(row[l][0] == tableLine ? tableCross : tableWall);
                 }
                 Console.WriteLine(); //end line
 
@@ -141,8 +138,7 @@ namespace PluginManager.Others
                         Console.ForegroundColor = colors[prefix];
                 }
 
-                string m = word;
-                foreach (var key in colors.Keys) { m = m.Replace(key, ""); }
+                string m = colors.Keys.Aggregate(word, (current, key) => current.Replace(key, ""));
 
                 Console.Write(m + " ");
             }

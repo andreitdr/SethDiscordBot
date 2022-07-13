@@ -4,14 +4,15 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 
 namespace PluginManager
 {
     internal class AppConfig
     {
-        public Dictionary<string, object>? ApplicationVariables { get; set; }
-        public List<string>?               ProtectedKeyWords    { get; set; }
+        public Dictionary<string, object>? ApplicationVariables { get; init; }
+        public List<string>?               ProtectedKeyWords    { get; init; }
     }
 
     public static class Config
@@ -76,20 +77,43 @@ namespace PluginManager
 
         private static AppConfig? appConfig { get; set; }
 
-        public static bool AddValueToVariables<T>(string key, T value, bool isProtected)
+        public static void AddValueToVariables<T>(string key, T value, bool isProtected)
         {
-            if (appConfig!.ApplicationVariables!.ContainsKey(key)) return false;
-            if (value == null) return false;
+            if (value == null)
+                throw new Exception("The value cannot be null");
+            if (appConfig!.ApplicationVariables!.ContainsKey(key))
+                throw new Exception($"The key ({key}) already exists in the variables. Value {GetValue<T>(key)}");
+
             appConfig.ApplicationVariables.Add(key, value);
-            if (isProtected && key != "Version") appConfig.ProtectedKeyWords!.Add(key);
+            if (isProtected && key != "Version")
+                appConfig.ProtectedKeyWords!.Add(key);
 
             SaveConfig();
-            return true;
+        }
+
+        public static Type GetVariableType(string value)
+        {
+            if (int.TryParse(value, out var intValue))
+                return typeof(int);
+            if (bool.TryParse(value, out var boolValue))
+                return typeof(bool);
+            if (float.TryParse(value, out var floatValue))
+                return typeof(float);
+            if (double.TryParse(value, out var doubleValue))
+                return typeof(double);
+            if (uint.TryParse(value, out var uintValue))
+                return typeof(uint);
+            if (long.TryParse(value, out var longValue))
+                return typeof(long);
+            if (byte.TryParse(value, out var byteValue))
+                return typeof(byte);
+            return typeof(string);
         }
 
         public static void GetAndAddValueToVariable(string key, string value, bool isReadOnly)
         {
-            if (Config.ContainsKey(key)) return;
+            if (Config.ContainsKey(key))
+                return;
             if (int.TryParse(value, out var intValue))
                 Config.AddValueToVariables(key, intValue, isReadOnly);
             else if (bool.TryParse(value, out var boolValue))
@@ -122,24 +146,26 @@ namespace PluginManager
             }
         }
 
-        public static bool SetValue<T>(string key, T value)
+        public static void SetValue<T>(string key, T value)
         {
-            if (!appConfig!.ApplicationVariables!.ContainsKey(key)) return false;
-            if (appConfig.ProtectedKeyWords!.Contains(key)) return false;
-            if (value == null) return false;
+            if (value == null)
+                throw new Exception("Value is null");
+            if (!appConfig!.ApplicationVariables!.ContainsKey(key))
+                throw new Exception("Key does not exist in the config file");
+            if (appConfig.ProtectedKeyWords!.Contains(key))
+                throw new Exception("Key is protected");
 
             appConfig.ApplicationVariables[key] = JsonSerializer.SerializeToElement(value);
             SaveConfig();
-            return true;
         }
 
-        public static bool RemoveKey(string key)
+        public static void RemoveKey(string key)
         {
-            if (key == "Version" || key == "token" || key == "prefix") return false;
+            if (key == "Version" || key == "token" || key == "prefix")
+                throw new Exception("Key is protected");
             appConfig!.ApplicationVariables!.Remove(key);
             appConfig.ProtectedKeyWords!.Remove(key);
             SaveConfig();
-            return true;
         }
 
         public static async void SaveConfig()
@@ -163,6 +189,6 @@ namespace PluginManager
         public static bool ContainsValue<T>(T value) => appConfig!.ApplicationVariables!.ContainsValue(value!);
         public static bool ContainsKey(string key)   => appConfig!.ApplicationVariables!.ContainsKey(key);
 
-        public static Dictionary<string, object> GetAllVariables() => new(appConfig!.ApplicationVariables!);
+        public static ReadOnlyDictionary<string, object> GetAllVariables() => new(appConfig!.ApplicationVariables!);
     }
 }

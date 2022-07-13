@@ -15,7 +15,7 @@ namespace PluginManager.Items;
 public class ConsoleCommandsHandler
 {
     private static readonly PluginsManager       manager     = new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
-    public static           List<ConsoleCommand> commandList = new();
+    private static readonly List<ConsoleCommand> commandList = new();
     private readonly        DiscordSocketClient? client;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
@@ -43,9 +43,7 @@ public class ConsoleCommandsHandler
 
                     foreach (var command in commandList)
                     {
-                        var pa = from p in command.Action.Method.GetParameters()
-                                 where p.Name != null
-                                 select p.ParameterType.FullName;
+                        var pa = from p in command.Action.Method.GetParameters() where p.Name != null select p.ParameterType.FullName;
                         items.Add(new[] { command.CommandName, command.Description, command.Usage });
                     }
 
@@ -70,12 +68,14 @@ public class ConsoleCommandsHandler
 
         AddCommand("lp", "Load plugins", () =>
             {
-                if (pluginsLoaded) return;
+                if (pluginsLoaded)
+                    return;
                 var loader = new PluginLoader(client!);
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    if (name == null || name.Length < 2) name = typeName;
+                    if (name == null || name.Length < 2)
+                        name = typeName;
                     if (success)
                         Console.WriteLine("[CMD] Successfully loaded command : " + name);
                     else
@@ -84,7 +84,8 @@ public class ConsoleCommandsHandler
                 };
                 loader.onEVELoad += (name, typeName, success, exception) =>
                 {
-                    if (name == null || name.Length < 2) name = typeName;
+                    if (name == null || name.Length < 2)
+                        name = typeName;
                     Console.ForegroundColor = ConsoleColor.Green;
                     if (success)
                         Console.WriteLine("[EVENT] Successfully loaded event : " + name);
@@ -120,9 +121,7 @@ public class ConsoleCommandsHandler
                         return;
                     }
 
-                    Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" +
-                                                     " Use &glistplugs &ccommand to display all available plugins !"
-                    );
+                    Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" + " Use &glistplugs &ccommand to display all available plugins !");
                     return;
                 }
 
@@ -136,7 +135,8 @@ public class ConsoleCommandsHandler
                 if (info[0] == "Command" || info[0] == "Event")
                     if (info[0] == "Event")
                         Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
-                    else if (info[0] == "Command") Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
+                    else if (info[0] == "Command")
+                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -151,7 +151,8 @@ public class ConsoleCommandsHandler
 
                     foreach (var line in lines)
                     {
-                        if (!(line.Length > 0 && line.Contains(","))) continue;
+                        if (!(line.Length > 0 && line.Contains(",")))
+                            continue;
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
@@ -164,11 +165,7 @@ public class ConsoleCommandsHandler
                             var isExtracting = true;
                             var bar          = new Console_Utilities.ProgressBar { Max = 100f, Color = ConsoleColor.Green };
 
-                            IProgress<float> extractProgress = new Progress<float>(value =>
-                                {
-                                    proc = value;
-                                }
-                            );
+                            IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
                             new Thread(new Task(() =>
                                            {
                                                while (isExtracting)
@@ -197,19 +194,22 @@ public class ConsoleCommandsHandler
         );
 
 
-        AddCommand("value", "read value from VariableStack", "value [key]",args =>
+        AddCommand("value", "read value from VariableStack", "value [key]", args =>
             {
-                if (args.Length != 2) return;
-                if (!Config.ContainsKey(args[1])) return;
+                if (args.Length != 2)
+                    return;
+                if (!Config.ContainsKey(args[1]))
+                    return;
 
                 var data = Config.GetValue<string>(args[1]);
                 Console.WriteLine($"{args[1]} => {data}");
             }
         );
 
-        AddCommand("add", "add variable to the system variables","add [key] [value] [isReadOnly=true/false]", args =>
+        AddCommand("add", "add variable to the system variables", "add [key] [value] [isReadOnly=true/false]", args =>
             {
-                if (args.Length < 4) return;
+                if (args.Length < 4)
+                    return;
                 var key        = args[1];
                 var value      = args[2];
                 var isReadOnly = args[3].Equals("true", StringComparison.CurrentCultureIgnoreCase);
@@ -228,7 +228,8 @@ public class ConsoleCommandsHandler
 
         AddCommand("remv", "remove variable from system variables", "remv [key]", args =>
             {
-                if (args.Length < 2) return;
+                if (args.Length < 2)
+                    return;
                 Config.RemoveKey(args[1]);
             }
         );
@@ -240,7 +241,8 @@ public class ConsoleCommandsHandler
                 data.Add(new[] { "-", "-" });
                 data.Add(new[] { "Key", "Value" });
                 data.Add(new[] { "-", "-" });
-                foreach (var kvp in d) data.Add(new[] { kvp.Key, kvp.Value.ToString()! });
+                foreach (var kvp in d)
+                    data.Add(new[] { kvp.Key, kvp.Value.ToString()! });
                 data.Add(new[] { "-", "-" });
                 Console_Utilities.FormatAndAlignTable(data);
             }
@@ -248,7 +250,8 @@ public class ConsoleCommandsHandler
 
         AddCommand("sd", "Shuts down the discord bot", async () =>
             {
-                if (client is null) return;
+                if (client is null)
+                    return;
                 await client.StopAsync();
                 await client.DisposeAsync();
                 Config.SaveConfig();
@@ -263,13 +266,7 @@ public class ConsoleCommandsHandler
 
     public static void AddCommand(string command, string description, string usage, Action<string[]> action)
     {
-        commandList.Add(new ConsoleCommand
-        {
-            CommandName = command,
-            Description = description,
-            Action      = action,
-            Usage       = usage
-        });
+        commandList.Add(new ConsoleCommand { CommandName = command, Description = description, Action = action, Usage = usage });
         Console.ForegroundColor = ConsoleColor.White;
         Console_Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
     }
@@ -303,7 +300,8 @@ public class ConsoleCommandsHandler
                 if (removeCommandExecution)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    for (int i = 0; i < command.Length; i++) Console.Write(" ");
+                    for (int i = 0; i < command.Length; i++)
+                        Console.Write(" ");
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }
 
