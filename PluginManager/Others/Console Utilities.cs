@@ -7,6 +7,26 @@ namespace PluginManager.Others
 {
     public static class Console_Utilities
     {
+        public static void Initialize()
+        {
+            if (!Config.ContainsKey("TableVariables"))
+                Config.AddValueToVariables("TableVariables", new Dictionary<string, string> { { "DefaultSpace", "3" } }, false);
+            if (!Config.ContainsKey("ColorDataBase"))
+                Config.AddValueToVariables("ColorDataBase", new Dictionary<char, ConsoleColor>()
+                    {
+                        { 'g', ConsoleColor.Green },
+                        { 'b', ConsoleColor.Blue },
+                        { 'r', ConsoleColor.Red },
+                        { 'm', ConsoleColor.Magenta },
+                        { 'y', ConsoleColor.Yellow },
+                    }, false
+                );
+
+            if (!Config.ContainsKey("ColorPrefix"))
+                Config.AddValueToVariables("ColorPrefix", '&', false);
+        }
+
+
         /// <summary>
         /// Progress bar object
         /// </summary>
@@ -177,7 +197,7 @@ namespace PluginManager.Others
             if (format == TableFormat.DEFAULT)
             {
                 int[] widths                = new int[data[0].Length];
-                int   space_between_columns = 5;
+                int   space_between_columns = int.Parse(Config.GetValue<Dictionary<string, string>>("TableVariables")?["DefaultSpace"]!);
                 for (int i = 0; i < data.Count; i++)
                 {
                     for (int j = 0; j < data[i].Length; j++)
@@ -210,26 +230,21 @@ namespace PluginManager.Others
         public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
         {
             ConsoleColor initialForeGround = Console.ForegroundColor;
-            Dictionary<char, ConsoleColor> colors = new()
-            {
-                { 'g', ConsoleColor.Green },
-                { 'b', ConsoleColor.Blue },
-                { 'r', ConsoleColor.Red },
-                { 'm', ConsoleColor.Magenta },
-                { 'y', ConsoleColor.Yellow },
-                { 'c', initialForeGround }
-            };
-
-            char[] input = text.ToCharArray();
+            char[]       input             = text.ToCharArray();
             for (int i = 0; i < input.Length; i++)
             {
-                if (input[i] == '&')
+                if (input[i] == Config.GetValue<char>("ColorPrefix"))
                 {
                     if (i + 1 < input.Length)
                     {
-                        if (colors.ContainsKey(input[i + 1]))
+                        if (Config.GetValue<Dictionary<char, ConsoleColor>>("ColorDataBase")!.ContainsKey(input[i + 1]))
                         {
-                            Console.ForegroundColor = colors[input[i + 1]];
+                            Console.ForegroundColor = Config.GetValue<Dictionary<char, ConsoleColor>>("ColorDataBase")![input[i + 1]];
+                            i++;
+                        }
+                        else if (input[i + 1] == 'c')
+                        {
+                            Console.ForegroundColor = initialForeGround;
                             i++;
                         }
                     }

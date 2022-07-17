@@ -97,7 +97,7 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("listplugs", "list available plugins", async () => { await manager.ListAvailablePlugins(); });
+        AddCommand("listplugs", "list available plugins", () => { manager.ListAvailablePlugins().Wait(); });
 
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
@@ -233,20 +233,6 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("vars", "Display all variables", () =>
-            {
-                var d    = Config.GetAllVariables();
-                var data = new List<string[]>();
-                data.Add(new[] { "-", "-" });
-                data.Add(new[] { "Key", "Value" });
-                data.Add(new[] { "-", "-" });
-                foreach (var kvp in d)
-                    data.Add(new[] { kvp.Key, kvp.Value.ToString()! });
-                data.Add(new[] { "-", "-" });
-                Console_Utilities.FormatAndAlignTable(data);
-            }
-        );
-
         AddCommand("sd", "Shuts down the discord bot", async () =>
             {
                 if (client is null)
@@ -299,7 +285,7 @@ public class ConsoleCommandsHandler
                 if (removeCommandExecution)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    for (int i = 0; i < command.Length; i++)
+                    for (int i = 0; i < command.Length + 30; i++)
                         Console.Write(" ");
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }

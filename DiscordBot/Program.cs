@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DiscordBot.Discord.Core;
 using PluginManager;
@@ -66,7 +67,7 @@ public class Program
     ///     The main loop for the discord bot
     /// </summary>
     /// <param name="discordbooter">The discord booter used to start the application</param>
-    private static Task NoGUI(Boot discordbooter)
+    private static void NoGUI(Boot discordbooter)
     {
         var consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
@@ -77,9 +78,18 @@ public class Program
         while (true)
         {
             Console.ForegroundColor = ConsoleColor.White;
+
+#if DEBUG
+            Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
             var cmd = Console.ReadLine();
-            if (!consoleCommandsHandler.HandleCommand(cmd))
+            if (!consoleCommandsHandler.HandleCommand(cmd!, false) && cmd.Length > 0)
                 Console.WriteLine("Failed to run command " + cmd);
+#else
+            Console_Utilities.WriteColorText("&rSethBot &c> ", false);
+            var cmd = Console.ReadLine();
+            if (!consoleCommandsHandler.HandleCommand(cmd!) && cmd.Length > 0)
+                Console.WriteLine("Failed to run command " + cmd);
+#endif
         }
     }
 
@@ -177,8 +187,9 @@ public class Program
 
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
-            var b = await StartNoGUI();
-            await NoGUI(b);
+            var    b          = await StartNoGUI();
+            Thread mainThread = new Thread(() => NoGUI(b));
+            mainThread.Start();
             return;
         }
 
@@ -204,15 +215,7 @@ public class Program
                 case "--help":
                 case "-help":
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine(
-                        "\tCommand name\t\t\t\tDescription\n" +
-                        "-- help | -help\t\t ------ \tDisplay the help message\n" +
-                        "--reset-full\t\t ------ \tReset all files (clear files)\n" +
-                        "--reset-settings\t ------ \tReset only bot settings\n" +
-                        "--reset-logs\t\t ------ \tClear up the output folder\n" +
-                        "--start\t\t ------ \tStart the bot\n" +
-                        "exit\t\t\t ------ \tClose the application"
-                    );
+                    Console.WriteLine("\tCommand name\t\t\t\tDescription\n" + "-- help | -help\t\t ------ \tDisplay the help message\n" + "--reset-full\t\t ------ \tReset all files (clear files)\n" + "--reset-settings\t ------ \tReset only bot settings\n" + "--reset-logs\t\t ------ \tClear up the output folder\n" + "--start\t\t ------ \tStart the bot\n" + "exit\t\t\t ------ \tClose the application");
                     break;
                 case "--reset-full":
                     await ClearFolder("./Data/Resources/");
@@ -232,10 +235,6 @@ public class Program
                 case "exit":
                     Environment.Exit(0);
                     break;
-                case "--start":
-                    var booter = await StartNoGUI();
-                    await NoGUI(booter);
-                    return;
 
                 default:
                     Console.WriteLine("Failed to execute command " + message[0]);
@@ -321,6 +320,7 @@ public class Program
             }
         }
 
+        Console_Utilities.Initialize();
 
         Config.SaveConfig();
     }

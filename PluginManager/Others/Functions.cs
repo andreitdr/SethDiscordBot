@@ -50,31 +50,15 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param> 
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static async Task<Stream?> ReadFromPakAsync(string FileName, string archFile)
+        public static Stream? ReadFromPakAsync(string FileName, string archFile)
         {
             archFile = pakFolder + archFile;
             Directory.CreateDirectory(pakFolder);
             if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
 
-            Stream? textValue = null;
-            var     fs        = new FileStream(archFile, FileMode.Open);
-            var     zip       = new ZipArchive(fs, ZipArchiveMode.Read);
-            foreach (var entry in zip.Entries)
-            {
-                if (entry.Name == FileName || entry.FullName == FileName)
-                {
-                    Stream       s      = entry.Open();
-                    StreamReader reader = new StreamReader(s);
-                    textValue          = reader.BaseStream;
-                    textValue.Position = 0;
-                    reader.Close();
-                    s.Close();
-                    fs.Close();
-                    break;
-                }
-            }
-
-            return textValue;
+            using ZipArchive archive = ZipFile.OpenRead(archFile);
+            ZipArchiveEntry? entry   = archive.GetEntry(FileName);
+            return entry?.Open();
         }
 
         /// <summary>

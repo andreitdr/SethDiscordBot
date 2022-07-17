@@ -11,15 +11,18 @@ namespace EVE_LevelingSystem
     {
         public          string   name        => "Leveling System Event Handler";
         public          string   description => "The Leveling System Event Handler";
+
         internal static Settings globalSettings = new();
 
 
         public async void Start(DiscordSocketClient client)
         {
             Directory.CreateDirectory("./Data/Resources/LevelingSystem");
-            Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
-            Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
-
+            if (!Config.ContainsKey("LevelingSystemPath"))
+                Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
+            if (!Config.ContainsKey("LevelingSystemSettingsFile"))
+                Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
+            //PluginManager.Config.AddValueToVariables
             if (!File.Exists(Config.GetValue<string>("LevelingSystemSettingsFile")))
             {
                 globalSettings = new Settings { TimeToWaitBetweenMessages = 5 };

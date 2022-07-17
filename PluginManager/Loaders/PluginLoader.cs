@@ -85,9 +85,20 @@ public class PluginLoader
 
     private void OnEventLoaded(LoaderArgs e)
     {
-        if (e.IsLoaded) ((DBEvent)e.Plugin!).Start(_client);
+        try
+        {
+            if (e.IsLoaded)
+                ((DBEvent)e.Plugin!).Start(_client);
 
-        onEVELoad?.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
+            onEVELoad?.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("Plugin: " + e.PluginName);
+            Console.WriteLine("Type: " + e.TypeName);
+            Console.WriteLine("IsLoaded: " + e.IsLoaded);
+        }
     }
 
     private void OnCommandLoaded(LoaderArgs e)
