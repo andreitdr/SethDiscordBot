@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using DiscordBot.Discord.Core;
 using PluginManager;
+using PluginManager.Interfaces;
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Others;
@@ -179,8 +184,11 @@ public class Program
 
         if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
         {
-            if (args.Contains("lp") || args.Contains("loadplugins")) loadPluginsOnStartup = true;
-            if (args.Contains("listplugs")) listPluginsAtStartup                          = true;
+            if (args.Contains("lp") || args.Contains("loadplugins"))
+                loadPluginsOnStartup = true;
+            if (args.Contains("listplugs"))
+                listPluginsAtStartup = true;
+
             len = 0;
         }
 
@@ -188,6 +196,7 @@ public class Program
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
             var    b          = await StartNoGUI();
+
             Thread mainThread = new Thread(() => NoGUI(b));
             mainThread.Start();
             return;
