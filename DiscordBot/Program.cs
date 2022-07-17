@@ -238,7 +238,7 @@ public class Program
                 case "--reset-logs":
                     await ClearFolder("./Output/Logs");
                     await ClearFolder("./Output/Errors");
-                    Console.WriteLine("Successfully cleard logs folder");
+                    Console.WriteLine("Successfully clear logs folder");
                     break;
                 case "--exit":
                 case "exit":
