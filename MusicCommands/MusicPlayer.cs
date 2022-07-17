@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
+﻿using System.IO;
 using System.Threading.Tasks;
-using PluginManager.Others;
 
 namespace MusicCommands;
 
@@ -48,54 +44,8 @@ internal class MusicPlayer
         isPlaying = false;
     }
 
-
-    /*
-        public MusicPlayer(Stream input, Stream output)
-        {
-            inputStream  = input;
-            outputStream = output;
-        }
-
-
-
-
-
-        public Stream inputStream  { get; } // from FFMPEG
-        public Stream outputStream { get; } // to Voice Channel 
-
-        public  bool Paused { get; set; }
-        private bool _stop  { get; set; }
-
-        public void Stop()
-        {
-            _stop = true;
-        }
-
-        public async Task StartSendAudio(int bsize)
-        {
-            Paused = false;
-            _stop  = false;
-            while (!_stop)
-            {
-                if (Paused) continue;
-                var buffer = new byte[bsize];
-                var bcount = await inputStream.ReadAsync(buffer, 0, bsize);
-                if (bcount <= 0)
-                {
-                    Stop();
-                    Data.CurrentlyRunning = null;
-                    break;
-                }
-
-                try
-                {
-                    await outputStream.WriteAsync(buffer, 0, bcount);
-                }
-                catch (Exception ex)
-                {
-                    await outputStream.FlushAsync();
-                    Functions.WriteLogFile(ex.ToString());
-                }
-            }
-        }*/
+    public void Stop()
+    {
+        isPlaying = false;
+    }
 }

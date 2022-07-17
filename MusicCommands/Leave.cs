@@ -22,10 +22,20 @@ internal class Leave : DBCommand
     {
         if (Data.audioClient is not null && Data.voiceChannel is not null)
         {
-            Data.Playlist.ClearQueue();
-            Data.MusicPlayer.isPlaying = false;
             await Data.audioClient.StopAsync();
             await Data.voiceChannel.DisconnectAsync();
+        }
+
+        if (Data.Playlist is not null)
+        {
+            Data.Playlist.ClearQueue();
+            Data.Playlist = new();
+        }
+
+        if (Data.MusicPlayer is not null)
+        {
+            Data.MusicPlayer.Stop();
+            Data.MusicPlayer = null;
         }
     }
 }

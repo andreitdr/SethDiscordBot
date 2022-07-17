@@ -30,7 +30,7 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromFile(PluginsLink);
+            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
 
             var data = new List<string[]>();
@@ -43,7 +43,8 @@ public class PluginsManager
             data.Add(new[] { "-", "-", "-", "-", "-" });
             for (var i = 0; i < len; i++)
             {
-                if (lines[i].Length <= 2) continue;
+                if (lines[i].Length <= 2)
+                    continue;
                 var content = lines[i].Split(',');
                 var display = new string[titles.Length];
                 if (op == OperatingSystem.WINDOWS)
@@ -54,7 +55,7 @@ public class PluginsManager
                         display[1] = content[1];
                         display[2] = content[2];
                         if (content.Length == 6 && (content[5] != null || content[5].Length > 2))
-                            display[3] = ((await ServerCom.ReadTextFromFile(content[5])).Count + 1).ToString();
+                            display[3] = ((await ServerCom.ReadTextFromURL(content[5])).Count + 1).ToString();
 
                         else
                             display[3] = "1";
@@ -72,7 +73,8 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
-                        if (content.Length == 6 && (content[5] != null || content[5].Length > 2)) display[3] = ((await ServerCom.ReadTextFromFile(content[5])).Count + 1).ToString();
+                        if (content.Length == 6 && (content[5] != null || content[5].Length > 2))
+                            display[3] = ((await ServerCom.ReadTextFromURL(content[5])).Count + 1).ToString();
                         if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else
@@ -88,7 +90,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Console.WriteLine("Failed to execute command: listlang\nReason: " + exception.Message);
+            Console.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Functions.WriteErrFile(exception.ToString());
         }
     }
@@ -102,7 +104,7 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromFile(PluginsLink);
+            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
             var len   = lines.Length;
             for (var i = 0; i < len; i++)
@@ -110,8 +112,10 @@ public class PluginsManager
                 var contents = lines[i].Split(',');
                 if (contents[0] == name)
                 {
-                    if (contents.Length == 6) return new[] { contents[2], contents[3], contents[5] };
-                    if (contents.Length == 5) return new[] { contents[2], contents[3], string.Empty };
+                    if (contents.Length == 6)
+                        return new[] { contents[2], contents[3], contents[5] };
+                    if (contents.Length == 5)
+                        return new[] { contents[2], contents[3], string.Empty };
                     throw new Exception("Failed to download plugin. Invalid Argument Length");
                 }
             }

@@ -5,7 +5,7 @@ using PluginManager.Others;
 
 namespace PluginManager.Items;
 
-internal class Command
+public class Command
 {
     /// <summary>
     ///     The author of the command
@@ -20,10 +20,7 @@ internal class Command
     {
         Author = message.Author;
         var data = message.Content.Split(' ');
-        if (data.Length > 1)
-            Arguments = new List<string>(data.MergeStrings(1).Split(' '));
-        else
-            Arguments = new List<string>();
+        Arguments   = data.Length > 1 ? new List<string>(data.MergeStrings(1).Split(' ')) : new List<string>();
         CommandName = data[0].Substring(1);
         PrefixUsed  = data[0][0];
     }

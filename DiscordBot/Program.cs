@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Net.Queue;
 using DiscordBot.Discord.Core;
 using PluginManager;
 using PluginManager.Items;
@@ -45,7 +43,8 @@ public class Program
             Console.Write("Prefix = ");
             var prefix = Console.ReadLine()![0];
 
-            if (prefix == ' ' || char.IsDigit(prefix)) return;
+            if (prefix == ' ' || char.IsDigit(prefix))
+                return;
             Config.AddValueToVariables("prefix", prefix.ToString(), false);
         }
 
@@ -93,20 +92,33 @@ public class Program
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
-        List<string> startupMessageList = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
+        List<string> startupMessageList = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
-        foreach (var message in startupMessageList) Console.WriteLine(message);
+        foreach (var message in startupMessageList)
+            Console.WriteLine(message);
 
         Console.WriteLine($"Running on version: {Config.GetValue<string>("Version") ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
         Console.WriteLine($"Git URL: {Config.GetValue<string>("GitURL") ?? " Could not find Git URL"}");
 
-        Console_Utilities.WriteColorText("&rRemember to close the bot using the ShutDown command &y(sd) &ror some settings won't be saved");
+        Console_Utilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine($"============================ LOG ============================");
 
         try
         {
-            var token  = Config.GetValue<string>("token");
+            var token = Config.GetValue<string>("token");
+#if DEBUG
+            Console.WriteLine("Starting in DEBUG MODE");
+            if (!Directory.Exists("./Data/BetaTest"))
+                Console.WriteLine("Failed to start in debug mode because the folder ./Data/BetaTest does not exist");
+            else
+            {
+                token = File.ReadAllText("./Data/BetaTest/token.txt");
+
+                //Debug mode code...
+            }
+#endif
+
             var prefix = Config.GetValue<string>("prefix");
 
             var discordbooter = new Boot(token, prefix);
@@ -239,7 +251,7 @@ public class Program
             if (Config.GetValue<bool>("DeleteLogsAtStartup"))
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
-        List<string> OnlineDefaultKeys = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
+        List<string> OnlineDefaultKeys = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
 
         Config.PluginConfig.Load();
 
@@ -263,7 +275,7 @@ public class Program
             }
         }
 
-        List<string> onlineSettingsList = await ServerCom.ReadTextFromFile("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
+        List<string> onlineSettingsList = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
         foreach (var key in onlineSettingsList)
         {
             if (key.Length <= 3 || !key.Contains(' ')) continue;

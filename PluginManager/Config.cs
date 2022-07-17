@@ -19,7 +19,7 @@ namespace PluginManager
     {
         public static class PluginConfig
         {
-            public static List<Tuple<string, PluginType>> InstalledPlugins = new();
+            public static readonly List<Tuple<string, PluginType>> InstalledPlugins = new();
 
             public static void Load()
             {

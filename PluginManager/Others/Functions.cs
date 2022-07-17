@@ -38,6 +38,11 @@ namespace PluginManager.Others
         /// </summary>
         public static readonly string pakFolder = @"./Data/Resources/PAK/";
 
+        /// <summary>
+        /// Beta testing folder
+        /// </summary>
+        public static readonly string betaFolder = @"./Data/BetaTest/";
+
 
         /// <summary>
         /// Read data from a file that is inside an archive (ZIP format)

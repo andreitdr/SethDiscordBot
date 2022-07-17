@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Discord;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -48,7 +49,7 @@ namespace PluginManager.Others
                     if (progress.CanAproximateTo(Max))
                         Console.Write(progress + " %      ✓");
                     else
-                        Console.Write(progress + " %       ");
+                        Console.Write(MathF.Round(progress, 2) + " %       ");
                 }
                 else
                     Console.Write(progress + $"{speed} {unit}/s        ");
@@ -63,93 +64,183 @@ namespace PluginManager.Others
         /// A way to create a table based on input data
         /// </summary>
         /// <param name="data">The List of arrays of strings that represent the rows.</param>
-        public static void FormatAndAlignTable(List<string[]> data)
+        public static void FormatAndAlignTable(List<string[]> data, TableFormat format = TableFormat.CENTER_EACH_COLUMN_BASED)
         {
-            char tableLine  = '-';
-            char tableCross = '+';
-            char tableWall  = '|';
-
-            int[] len = new int[data[0].Length];
-            foreach (var line in data)
+            if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
             {
-                for (int i = 0; i < line.Length; i++)
-                    if (line[i].Length > len[i])
-                        len[i] = line[i].Length;
-            }
+                char tableLine  = '-';
+                char tableCross = '+';
+                char tableWall  = '|';
+
+                int[] len = new int[data[0].Length];
+                foreach (var line in data)
+                    for (int i = 0; i < line.Length; i++)
+                        if (line[i].Length > len[i])
+                            len[i] = line[i].Length;
 
 
-            foreach (string[] row in data)
-            {
-                if (row[0][0] == tableLine) Console.Write(tableCross);
-                else Console.Write(tableWall);
-                for (int l = 0; l < row.Length; l++)
+                foreach (string[] row in data)
                 {
-                    if (row[l][0] == tableLine)
-                    {
-                        for (int i = 0; i < len[l] + 4; ++i)
-                            Console.Write(tableLine);
-                    }
-                    else if (row[l].Length == len[l])
-                    {
-                        Console.Write("  ");
-                        Console.Write(row[l]);
-                        Console.Write("  ");
-                    }
+                    if (row[0][0] == tableLine)
+                        Console.Write(tableCross);
                     else
+                        Console.Write(tableWall);
+                    for (int l = 0; l < row.Length; l++)
                     {
+                        if (row[l][0] == tableLine)
+                        {
+                            for (int i = 0; i < len[l] + 4; ++i)
+                                Console.Write(tableLine);
+                        }
+                        else if (row[l].Length == len[l])
+                        {
+                            Console.Write("  ");
+                            Console.Write(row[l]);
+                            Console.Write("  ");
+                        }
+                        else
+                        {
+                            int lenHalf = row[l].Length / 2;
+                            for (int i = 0; i < ((len[l] + 4) / 2 - lenHalf); ++i)
+                                Console.Write(" ");
+                            Console.Write(row[l]);
+                            for (int i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
+                                Console.Write(" ");
+                            if (row[l].Length % 2 == 0)
+                                Console.Write(" ");
+                        }
 
-                        int lenHalf = row[l].Length / 2;
-                        for (int i = 0; i < ((len[l] + 4) / 2 - lenHalf); ++i)
-                            Console.Write(" ");
-                        Console.Write(row[l]);
-                        for (int i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
-                            Console.Write(" ");
-                        if (row[l].Length % 2 == 0)
+                        Console.Write(row[l][0] == tableLine ? tableCross : tableWall);
+                    }
+
+                    Console.WriteLine(); //end line
+                }
+
+                return;
+            }
+
+            if (format == TableFormat.CENTER_OVERALL_LENGTH)
+            {
+                int maxLen = 0;
+                foreach (string[] row in data)
+                    foreach (string s in row)
+                        if (s.Length > maxLen)
+                            maxLen = s.Length;
+
+                int div = (maxLen + 4) / 2;
+
+                foreach (string[] row in data)
+                {
+                    Console.Write("\t");
+                    if (row[0] == "-")
+                        Console.Write("+");
+                    else
+                        Console.Write("|");
+
+                    foreach (string s in row)
+                    {
+                        if (s == "-")
+                        {
+                            for (int i = 0; i < maxLen + 4; ++i)
+                                Console.Write("-");
+                        }
+                        else if (s.Length == maxLen)
+                        {
+                            Console.Write("  ");
+                            Console.Write(s);
+                            Console.Write("  ");
+                        }
+                        else
+                        {
+                            int lenHalf = s.Length / 2;
+                            for (int i = 0; i < div - lenHalf; ++i)
+                                Console.Write(" ");
+                            Console.Write(s);
+                            for (int i = div + lenHalf + 1; i < maxLen + 4; ++i)
+                                Console.Write(" ");
+                            if (s.Length % 2 == 0)
+                                Console.Write(" ");
+                        }
+
+                        if (s == "-")
+                            Console.Write("+");
+                        else
+                            Console.Write("|");
+                    }
+
+                    Console.WriteLine(); //end line
+                }
+
+                return;
+            }
+
+            if (format == TableFormat.DEFAULT)
+            {
+                int[] widths                = new int[data[0].Length];
+                int   space_between_columns = 5;
+                for (int i = 0; i < data.Count; i++)
+                {
+                    for (int j = 0; j < data[i].Length; j++)
+                    {
+                        if (data[i][j].Length > widths[j])
+                            widths[j] = data[i][j].Length;
+                    }
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    for (int j = 0; j < data[i].Length; j++)
+                    {
+                        if (data[i][j] == "-")
+                            data[i][j] = " ";
+                        Console.Write(data[i][j]);
+                        for (int k = 0; k < widths[j] - data[i][j].Length + 1 + space_between_columns; k++)
                             Console.Write(" ");
                     }
 
-                    Console.Write(row[l][0] == tableLine ? tableCross : tableWall);
+                    Console.WriteLine();
                 }
-                Console.WriteLine(); //end line
 
+                return;
             }
+
+            throw new Exception("Unknown type of table");
         }
 
-        public static void WriteColorText(string text, bool appendNewLine = true)
+        public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
         {
-
-            string[] words = text.Split(' ');
-            ConsoleColor fg = Console.ForegroundColor;
-            Dictionary<string, ConsoleColor> colors = new Dictionary<string, ConsoleColor>()
+            ConsoleColor initialForeGround = Console.ForegroundColor;
+            Dictionary<char, ConsoleColor> colors = new()
             {
-                { "&g", ConsoleColor.Green },
-                { "&b", ConsoleColor.Blue },
-                { "&r", ConsoleColor.Red },
-                { "&m", ConsoleColor.Magenta },
-                { "&y", ConsoleColor.Yellow },
-                { "&c", fg }
+                { 'g', ConsoleColor.Green },
+                { 'b', ConsoleColor.Blue },
+                { 'r', ConsoleColor.Red },
+                { 'm', ConsoleColor.Magenta },
+                { 'y', ConsoleColor.Yellow },
+                { 'c', initialForeGround }
             };
-            foreach (string word in words)
+
+            char[] input = text.ToCharArray();
+            for (int i = 0; i < input.Length; i++)
             {
-                if (word.Length >= 2)
+                if (input[i] == '&')
                 {
-                    string prefix = word.Substring(0, 2);
-                    if (colors.ContainsKey(prefix))
-                        Console.ForegroundColor = colors[prefix];
+                    if (i + 1 < input.Length)
+                    {
+                        if (colors.ContainsKey(input[i + 1]))
+                        {
+                            Console.ForegroundColor = colors[input[i + 1]];
+                            i++;
+                        }
+                    }
                 }
-
-                string m = colors.Keys.Aggregate(word, (current, key) => current.Replace(key, ""));
-
-                Console.Write(m + " ");
+                else
+                    Console.Write(input[i]);
             }
 
-            Console.CursorLeft--;
-
-            if (appendNewLine)
-                Console.Write('\n');
-
-            Console.ForegroundColor = fg;
+            Console.ForegroundColor = initialForeGround;
+            if (appendNewLineAtEnd)
+                Console.WriteLine();
         }
-
     }
 }

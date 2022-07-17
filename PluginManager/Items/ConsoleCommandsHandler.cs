@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -48,7 +47,7 @@ public class ConsoleCommandsHandler
                     }
 
                     items.Add(new[] { "-", "-", "-" });
-                    Console_Utilities.FormatAndAlignTable(items);
+                    Console_Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
                 }
                 else
                 {
@@ -147,7 +146,7 @@ public class ConsoleCommandsHandler
                 {
                     Console.WriteLine($"Downloading requirements for plugin : {name}");
 
-                    var lines = await ServerCom.ReadTextFromFile(info[2]);
+                    var lines = await ServerCom.ReadTextFromURL(info[2]);
 
                     foreach (var line in lines)
                     {
