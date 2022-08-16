@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Discord;
@@ -13,6 +14,8 @@ namespace MusicCommands;
 internal class Play : DBCommand
 {
     public string Command => "play";
+
+    public List<string> Aliases => new() { "p" };
 
     public string Description => "Play music from a file";
 
@@ -69,11 +72,11 @@ internal class Play : DBCommand
 
             if (Data.MusicPlayer is not null)
             {
-                await context.Channel.SendMessageAsync("Enqueued your request");
+                await context.Channel.SendMessageAsync("Queued your request: " + splitted.MergeStrings(1));
                 return;
             }
         }
-        while (false);
+        while (false); // run only one time !
 
 
         Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
@@ -93,15 +96,14 @@ internal class Play : DBCommand
 
         using (var discordChanneAudioOutStream = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
         {
-            if (Data.MusicPlayer is null)
-                Data.MusicPlayer = new MusicPlayer(discordChanneAudioOutStream);
+            Data.MusicPlayer ??= new MusicPlayer(discordChanneAudioOutStream);
             while (Data.Playlist.Count > 0)
             {
                 var nowPlaying = Data.Playlist.GetNextSong;
                 using (var ffmpeg = CreateStream(nowPlaying.Name))
                 using (var ffmpegOutputBaseStream = ffmpeg.StandardOutput.BaseStream)
                 {
-                    await Data.MusicPlayer.Play(ffmpegOutputBaseStream, 1024);
+                    await Data.MusicPlayer.Play(ffmpegOutputBaseStream, 1024, nowPlaying);
                     Console.WriteLine("Finished playing from " + nowPlaying.Url);
                 }
             }
@@ -110,7 +112,7 @@ internal class Play : DBCommand
         }
     }
 
-    private Process CreateStream(string path)
+    private static Process CreateStream(string path)
     {
         return Process.Start(new ProcessStartInfo { FileName = "ffmpeg", Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1", UseShellExecute = false, RedirectStandardOutput = true });
     }

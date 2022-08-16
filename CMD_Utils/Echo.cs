@@ -1,10 +1,13 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
+using System.Collections.Generic;
 
 internal class Echo : DBCommand
 {
     public string Command => "echo";
+
+    public List<string> Aliases => null;
 
     public string Description => "Replay with the same message";
 

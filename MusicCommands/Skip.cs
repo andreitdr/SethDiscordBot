@@ -13,6 +13,8 @@ namespace MusicCommands
     {
         public string Command => "skip";
 
+        public List<string> Aliases => null;
+
         public string Description => "skip the music that is currently running";
 
         public string Usage => "skip";
@@ -25,7 +27,16 @@ namespace MusicCommands
 
         public void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
         {
+            var loadedSong = Data.MusicPlayer.NowPlaying;
+
+            if (loadedSong is null || Data.MusicPlayer.isPlaying == false)
+            {
+                message.Channel.SendMessageAsync("There is no music playing");
+                return;
+            }
+
             Data.MusicPlayer.isPlaying = false;
+            message.Channel.SendMessageAsync($"You have skipped {loadedSong.Name}");
         }
     }
 }

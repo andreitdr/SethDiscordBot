@@ -67,9 +67,9 @@ namespace PluginManager
             public static PluginType GetPluginType(string pluginName)
             {
                 foreach (var tuple in InstalledPlugins)
-                {
-                    if (tuple.Item1 == pluginName) return tuple.Item2;
-                }
+                    if (tuple.Item1 == pluginName)
+                        return tuple.Item2;
+
 
                 return PluginType.Unknown;
             }

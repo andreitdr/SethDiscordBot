@@ -57,7 +57,7 @@ namespace PluginManager.Others
             if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
 
             using ZipArchive archive = ZipFile.OpenRead(archFile);
-            ZipArchiveEntry? entry   = archive.GetEntry(FileName);
+            ZipArchiveEntry? entry = archive.GetEntry(FileName);
             return entry?.Open();
         }
 
@@ -91,8 +91,8 @@ namespace PluginManager.Others
         /// <returns>A string built based on the array</returns>
         public static string MergeStrings(this string[] s, int indexToStart)
         {
-            string r   = "";
-            int    len = s.Length;
+            string r = "";
+            int len = s.Length;
             if (len <= indexToStart) return "";
             for (int i = indexToStart; i < len - 1; ++i)
             {
@@ -142,9 +142,9 @@ namespace PluginManager.Others
             if (!stream.CanRead) throw new InvalidOperationException("The stream is not readable.");
             if (!destination.CanWrite) throw new ArgumentException("Destination stream is not writable", nameof(destination));
 
-            byte[] buffer         = new byte[bufferSize];
-            long   totalBytesRead = 0;
-            int    bytesRead;
+            byte[] buffer = new byte[bufferSize];
+            long totalBytesRead = 0;
+            int bytesRead;
             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
                 await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
@@ -171,11 +171,11 @@ namespace PluginManager.Others
             {
                 if (type == UnzipProgressType.PercentageFromNumberOfFiles)
                 {
-                    int totalZIPFiles  = archive.Entries.Count();
+                    int totalZIPFiles = archive.Entries.Count();
                     int currentZIPFile = 0;
                     foreach (ZipArchiveEntry entry in archive.Entries)
                     {
-                        if (entry.FullName.EndsWith("/"))
+                        if (entry.FullName.EndsWith("/")) // it is a folder
                             Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
 
                         else
@@ -335,7 +335,7 @@ namespace PluginManager.Others
             using (MD5 md5 = MD5.Create())
             {
                 byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-                byte[] hashBytes  = md5.ComputeHash(inputBytes);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
                 return Convert.ToHexString(hashBytes);
             }
         }

@@ -11,7 +11,8 @@ namespace MusicCommands
 {
     public class queue : DBCommand
     {
-        public string Command => "queue";
+        public string       Command => "queue";
+        public List<string> Aliases => new() { "q" };
 
         public string Description => "check queue";
 

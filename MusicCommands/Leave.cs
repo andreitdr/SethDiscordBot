@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using System.Collections.Generic;
+using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 
@@ -7,6 +8,8 @@ namespace MusicCommands;
 internal class Leave : DBCommand
 {
     public string Command => "leave";
+
+    public List<string> Aliases => null;
 
     public string Description => "Leave the voice channel";
 

@@ -233,15 +233,15 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("sd", "Shuts down the discord bot", async () =>
+        AddCommand("sd", "Shuts down the discord bot", () =>
             {
                 if (client is null)
                     return;
-                await client.StopAsync();
-                await client.DisposeAsync();
+                client.StopAsync();
+                client.DisposeAsync();
                 Config.SaveConfig();
                 Console.WriteLine("Bot is closing in 2 seconds ! Please wait to save data !");
-                await Task.Delay(2000);
+                Thread.Sleep(2000);
                 Environment.Exit(0);
             }
         );
@@ -268,7 +268,7 @@ public class ConsoleCommandsHandler
 
     public static bool CommandExists(string command)
     {
-        return !(GetCommand(command) is null);
+        return GetCommand(command) is not null;
     }
 
     public static ConsoleCommand? GetCommand(string command)

@@ -1,10 +1,13 @@
-﻿using Discord.Commands;
+﻿using System.Collections.Generic;
+using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 
 public class Random : DBCommand
 {
     public string Command => "random";
+
+    public List<string> Aliases => new() { "rnd" };
 
     public string Description => "random number between number1 and number2";
 

@@ -11,6 +11,8 @@ internal class Level : DBCommand
 {
     public string Command => "level";
 
+    public List<string> Aliases => new() { "lvl" };
+
     public string Description => "Display tour current level";
 
     public string Usage => "level";

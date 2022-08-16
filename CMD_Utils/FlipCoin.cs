@@ -1,12 +1,15 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
+using System.Collections.Generic;
 
 namespace CMD_Utils;
 
 internal class FlipCoin : DBCommand
 {
     public string Command => "flip";
+
+    public List<string> Aliases => null;
 
     public string Description => "Flip a coin";
 

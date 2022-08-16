@@ -5,7 +5,8 @@ namespace MusicCommands;
 
 internal class MusicPlayer
 {
-    private Stream outputStream { get; }
+    private  Stream    outputStream { get; }
+    internal AudioFile NowPlaying = null;
 
     internal bool isPlaying, isPaused;
 
@@ -14,9 +15,10 @@ internal class MusicPlayer
         outputStream = outputChannel;
     }
 
-    public async Task Play(Stream source, int byteSize)
+    public async Task Play(Stream source, int byteSize, AudioFile songPlaying)
     {
-        isPlaying = true;
+        isPlaying  = true;
+        NowPlaying = songPlaying;
         while (isPlaying)
         {
             if (isPaused)

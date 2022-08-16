@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EVE_LevelingSystem", "EVE_L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMD_LevelingSystem", "CMD_LevelingSystem\CMD_LevelingSystem.csproj", "{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roles", "Roles\Roles.csproj", "{954F2AA9-6624-4554-946D-0F17B84487C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{954F2AA9-6624-4554-946D-0F17B84487C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{954F2AA9-6624-4554-946D-0F17B84487C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{954F2AA9-6624-4554-946D-0F17B84487C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{954F2AA9-6624-4554-946D-0F17B84487C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{B1B4976E-5112-4217-B57B-3A03C5207B6E} = {449FA364-0B72-43FF-B3A3-806E2916200E}
 		{EEC445DC-0C4B-43EA-8694-606BA0390B77} = {A290C028-77C4-4D1D-AB43-DDFE6ABD9012}
 		{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9} = {449FA364-0B72-43FF-B3A3-806E2916200E}
+		{954F2AA9-6624-4554-946D-0F17B84487C3} = {449FA364-0B72-43FF-B3A3-806E2916200E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}

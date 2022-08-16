@@ -34,6 +34,38 @@ public class Program
         Directory.CreateDirectory("./Data/Plugins/Events");
         PreLoadComponents().Wait();
 
+        if (!Config.ContainsKey("ServerID"))
+        {
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Please enter the server ID: ");
+                Console_Utilities.WriteColorText("You can find it in the Server Settings at &r\"Widget\"&c section");
+                Console.WriteLine("Example: 1234567890123456789");
+            
+                Console.WriteLine("This is not required, but is recommended. If you refuse to provide the ID, just press enter.\nThe server id is required to make easier for the bot to interact with the server.\nRemember: this bot is for one server ONLY.");
+                Console.Write("User Input > ");
+                ConsoleKeyInfo key = Console.ReadKey();
+                if (key.Key == ConsoleKey.Enter)
+                    Config.AddValueToVariables("ServerID", "null", false);
+                else
+                {
+                    string SID = key.KeyChar + Console.ReadLine();
+                    if (SID.Length != 18)
+                    {
+                        Console.WriteLine("Your server ID is not 18 characters long. Please try again.");
+                        continue;
+                    }
+
+                    
+                    Config.AddValueToVariables("ServerID", SID, false);
+                    
+                }
+                break;
+            } while (true);
+
+        }
+        
         if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || Config.GetValue<string>("token")?.Length != 70)
         {
             Console.WriteLine("Please insert your token");
@@ -75,9 +107,13 @@ public class Program
     private static void NoGUI(Boot discordbooter)
     {
         var consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
+#if DEBUG
+        Console.WriteLine();
+        consoleCommandsHandler.HandleCommand("lp");
+#else
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
-
+#endif
         Config.SaveConfig();
 
         while (true)
@@ -264,9 +300,9 @@ public class Program
         Config.PluginConfig.Load();
 
         if (!Config.ContainsKey("Version"))
-            Config.AddValueToVariables("Version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
+            Config.AddValueToVariables("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
         else
-            Config.SetValue("Version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Config.SetValue("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
         foreach (var key in OnlineDefaultKeys)
         {
@@ -311,7 +347,7 @@ public class Program
                         Console.WriteLine("\n\n");
                         await Task.Delay(1000);
 
-                        int waitTime = 20; //wait time to proceed
+                        int waitTime = 10; //wait time to proceed
 
                         Console.Write($"The bot will start in {waitTime} seconds");
                         while (waitTime > 0)

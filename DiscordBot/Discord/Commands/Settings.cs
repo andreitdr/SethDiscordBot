@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -13,6 +14,8 @@ internal class Settings : DBCommand
     ///     Command name
     /// </summary>
     public string Command => "set";
+
+    public List<string> Aliases => null;
 
     /// <summary>
     ///     Command Description

@@ -60,7 +60,9 @@ internal class Boot
     /// <returns>Task</returns>
     public async Task Awake()
     {
-        client  = new DiscordSocketClient();
+        DiscordSocketConfig config = new DiscordSocketConfig { AlwaysDownloadUsers = true };
+
+        client  = new DiscordSocketClient(config);
         service = new CommandService();
 
         CommonTasks();

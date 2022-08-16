@@ -44,8 +44,8 @@ public class Command
 
 public class ConsoleCommand
 {
-        public string CommandName { get; set; }
-        public string Description { get; set; }
-        public string Usage { get; set; }
-        public Action<string[]> Action { get; set; }
+    public string           CommandName { get; init; }
+    public string           Description { get; init; }
+    public string           Usage       { get; init; }
+    public Action<string[]> Action      { get; init; }
 }
