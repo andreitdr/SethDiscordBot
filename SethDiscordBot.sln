@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EVE_LevelingSystem", "EVE_L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMD_LevelingSystem", "CMD_LevelingSystem\CMD_LevelingSystem.csproj", "{1A4E49FF-9A0A-4C54-AF35-CFFBA64353D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roles", "Roles\Roles.csproj", "{954F2AA9-6624-4554-946D-0F17B84487C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Roles", "Roles\Roles.csproj", "{954F2AA9-6624-4554-946D-0F17B84487C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

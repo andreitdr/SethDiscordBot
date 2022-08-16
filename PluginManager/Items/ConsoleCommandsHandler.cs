@@ -4,18 +4,26 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Discord.WebSocket;
+
 using PluginManager.Loaders;
 using PluginManager.Online;
+using PluginManager.Online.Helpers;
+using PluginManager.Online.Updates;
 using PluginManager.Others;
 
 namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
 {
-    private static readonly PluginsManager       manager     = new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
+    private static readonly PluginsManager manager = new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
     private static readonly List<ConsoleCommand> commandList = new();
-    private readonly        DiscordSocketClient? client;
+    private readonly DiscordSocketClient? client;
+
+
+    private static bool isDownloading = false;
+    private static bool pluginsLoaded = false;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
@@ -26,7 +34,7 @@ public class ConsoleCommandsHandler
 
     private void InitializeBasicCommands()
     {
-        var pluginsLoaded = false;
+
         commandList.Clear();
 
         AddCommand("help", "Show help", "help <command>", args =>
@@ -101,8 +109,10 @@ public class ConsoleCommandsHandler
 
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
+                isDownloading = true;
                 if (args.Length == 1)
                 {
+                    isDownloading = false;
                     Console.WriteLine("Please specify plugin name");
                     return;
                 }
@@ -116,10 +126,11 @@ public class ConsoleCommandsHandler
                 {
                     if (name == "")
                     {
+                        isDownloading = false;
                         Console_Utilities.WriteColorText("Name is invalid");
                         return;
                     }
-
+                    isDownloading = false;
                     Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" + " Use &glistplugs &ccommand to display all available plugins !");
                     return;
                 }
@@ -160,9 +171,9 @@ public class ConsoleCommandsHandler
                         if (split[0].EndsWith(".zip") || split[0].EndsWith(".pak") || split[0].EndsWith(".pkg"))
                         {
                             Console.WriteLine($"Extracting {split[1]}");
-                            var proc         = 0f;
+                            var proc = 0f;
                             var isExtracting = true;
-                            var bar          = new Console_Utilities.ProgressBar { Max = 100f, Color = ConsoleColor.Green };
+                            var bar = new Console_Utilities.ProgressBar { Max = 100f, Color = ConsoleColor.Green };
 
                             IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
                             new Thread(new Task(() =>
@@ -189,6 +200,12 @@ public class ConsoleCommandsHandler
 
                     Console.WriteLine();
                 }
+                VersionString? ver = await VersionString.GetVersionOfPackageFromWeb(name);
+                if (ver is null) throw new Exception("Incorrect version");
+                Config.SetPluginVersion(name, $"{ver.PackageID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
+                // Console.WriteLine();
+
+                isDownloading = false;
             }
         );
 
@@ -209,8 +226,8 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length < 4)
                     return;
-                var key        = args[1];
-                var value      = args[2];
+                var key = args[1];
+                var value = args[2];
                 var isReadOnly = args[3].Equals("true", StringComparison.CurrentCultureIgnoreCase);
 
                 try
@@ -276,6 +293,20 @@ public class ConsoleCommandsHandler
         return commandList.FirstOrDefault(t => t.CommandName == command);
     }
 
+    internal static async Task ExecuteCommad(string command)
+    {
+        var args = command.Split(' ');
+        foreach (var item in commandList.ToList())
+            if (item.CommandName == args[0])
+            {
+                item.Action.Invoke(args);
+                Console.WriteLine();
+
+                while (isDownloading) await Task.Delay(1000);
+
+            }
+    }
+
     public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
         var args = command.Split(' ');
@@ -292,6 +323,7 @@ public class ConsoleCommandsHandler
 
                 Console.WriteLine();
                 item.Action(args);
+
                 return true;
             }
 

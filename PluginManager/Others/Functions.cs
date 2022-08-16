@@ -68,7 +68,7 @@ namespace PluginManager.Others
         public static void WriteLogFile(string LogMessage)
         {
             string logsPath = logFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Log.txt";
-            if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
+            Directory.CreateDirectory(logFolder);
             File.AppendAllText(logsPath, LogMessage + " \n");
         }
 
@@ -79,7 +79,7 @@ namespace PluginManager.Others
         public static void WriteErrFile(string ErrMessage)
         {
             string errPath = errFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
-            if (!Directory.Exists(errFolder)) Directory.CreateDirectory(errFolder);
+            Directory.CreateDirectory(errFolder);
             File.AppendAllText(errPath, ErrMessage + " \n");
         }
 

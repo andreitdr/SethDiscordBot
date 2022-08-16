@@ -7,8 +7,11 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Discord.WebSocket;
+
 using DiscordBot.Discord.Core;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Items;
@@ -29,6 +32,7 @@ public class Program
     [Obsolete]
     public static void Main(string[] args)
     {
+
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins/Commands");
         Directory.CreateDirectory("./Data/Plugins/Events");
@@ -42,7 +46,7 @@ public class Program
                 Console.WriteLine("Please enter the server ID: ");
                 Console_Utilities.WriteColorText("You can find it in the Server Settings at &r\"Widget\"&c section");
                 Console.WriteLine("Example: 1234567890123456789");
-            
+
                 Console.WriteLine("This is not required, but is recommended. If you refuse to provide the ID, just press enter.\nThe server id is required to make easier for the bot to interact with the server.\nRemember: this bot is for one server ONLY.");
                 Console.Write("User Input > ");
                 ConsoleKeyInfo key = Console.ReadKey();
@@ -57,15 +61,15 @@ public class Program
                         continue;
                     }
 
-                    
+
                     Config.AddValueToVariables("ServerID", SID, false);
-                    
+
                 }
                 break;
             } while (true);
 
         }
-        
+
         if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || Config.GetValue<string>("token")?.Length != 70)
         {
             Console.WriteLine("Please insert your token");
@@ -121,12 +125,12 @@ public class Program
             Console.ForegroundColor = ConsoleColor.White;
 
 #if DEBUG
-            Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
+            //Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
             var cmd = Console.ReadLine();
             if (!consoleCommandsHandler.HandleCommand(cmd!, false) && cmd.Length > 0)
                 Console.WriteLine("Failed to run command " + cmd);
 #else
-            Console_Utilities.WriteColorText("&rSethBot &c> ", false);
+            //Console_Utilities.WriteColorText("&rSethBot &c> ", false);
             var cmd = Console.ReadLine();
             if (!consoleCommandsHandler.HandleCommand(cmd!) && cmd.Length > 0)
                 Console.WriteLine("Failed to run command " + cmd);
@@ -189,7 +193,7 @@ public class Program
     /// <param name="d">Directory path</param>
     private static Task ClearFolder(string d)
     {
-        var files    = Directory.GetFiles(d);
+        var files = Directory.GetFiles(d);
         var fileNumb = files.Length;
         for (var i = 0; i < fileNumb; i++)
         {
@@ -210,7 +214,7 @@ public class Program
 
         if (len == 3 && args[0] == "/download")
         {
-            var url      = args[1];
+            var url = args[1];
             var location = args[2];
 
             await ServerCom.DownloadFileAsync(url, location);
@@ -231,7 +235,7 @@ public class Program
 
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
-            var    b          = await StartNoGUI();
+            var b = await StartNoGUI();
 
             Thread mainThread = new Thread(() => NoGUI(b));
             mainThread.Start();

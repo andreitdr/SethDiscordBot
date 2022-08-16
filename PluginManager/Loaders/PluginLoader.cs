@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
+using PluginManager.Online.Updates;
 using PluginManager.Others;
 
 namespace PluginManager.Loaders;
@@ -15,8 +22,8 @@ public class PluginLoader
     private const string pluginCMDFolder = @"./Data/Plugins/Commands/";
     private const string pluginEVEFolder = @"./Data/Plugins/Events/";
 
-    internal const   string              pluginCMDExtension = "dll";
-    internal const   string              pluginEVEExtension = "dll";
+    internal const string pluginCMDExtension = "dll";
+    internal const string pluginEVEExtension = "dll";
     private readonly DiscordSocketClient _client;
 
     /// <summary>
@@ -52,35 +59,58 @@ public class PluginLoader
     /// <summary>
     ///     The main mathod that is called to load all events
     /// </summary>
-    public void LoadPlugins()
+    public async void LoadPlugins()
     {
+
+        foreach (var file in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
+        {
+            await Task.Run(async () =>
+            {
+                string name = new FileInfo(file).Name.Split('.')[0];
+                if (!Config.PluginVersionsContainsKey(name))
+                    Config.SetPluginVersion(name, "0.0.0");
+
+                if (await PluginUpdater.CheckForUpdates(name))
+                    await PluginUpdater.Download(name);
+            });
+
+        }
+
         Commands = new List<DBCommand>();
-        Events   = new List<DBEvent>();
+        Events = new List<DBEvent>();
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
         Console.WriteLine("Loading plugins");
 
         var commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
-        var eventsLoader   = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
+        var eventsLoader = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
 
-        commandsLoader.FileLoaded   += OnCommandFileLoaded;
+        commandsLoader.FileLoaded += OnCommandFileLoaded;
         commandsLoader.PluginLoaded += OnCommandLoaded;
 
-        eventsLoader.FileLoaded   += EventFileLoaded;
+        eventsLoader.FileLoaded += EventFileLoaded;
         eventsLoader.PluginLoaded += OnEventLoaded;
 
         Commands = commandsLoader.Load();
-        Events   = eventsLoader.Load();
+        Events = eventsLoader.Load();
+
+        // Console.WriteLine("Press Enter to enable console commands");
     }
 
     private void EventFileLoaded(LoaderArgs e)
     {
-        if (e.IsLoaded) Functions.WriteLogFile($"[EVENT] Event from file [{e.PluginName}] has been successfully created !");
+        if (!e.IsLoaded)
+        {
+            Functions.WriteLogFile($"[EVENT] Event from file [{e.PluginName}] has been successfully created !");
+        }
     }
 
     private void OnCommandFileLoaded(LoaderArgs e)
     {
-        if (e.IsLoaded) Functions.WriteLogFile($"[CMD] Command from file [{e.PluginName}] has been successfully loaded !");
+        if (!e.IsLoaded)
+        {
+            Functions.WriteLogFile($"[CMD] Command from file [{e.PluginName}] has been successfully loaded !");
+        }
     }
 
     private void OnEventLoaded(LoaderArgs e)
