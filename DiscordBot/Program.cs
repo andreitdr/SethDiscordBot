@@ -19,6 +19,7 @@ public class Program
 {
     private static bool loadPluginsOnStartup;
     private static bool listPluginsAtStartup;
+    private static ConsoleCommandsHandler consoleCommandsHandler;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -32,6 +33,7 @@ public class Program
         Directory.CreateDirectory("./Data/Plugins/Commands");
         Directory.CreateDirectory("./Data/Plugins/Events");
         PreLoadComponents().Wait();
+
 
         if (!Config.ContainsKey("ServerID"))
         {
@@ -105,7 +107,7 @@ public class Program
     /// <param name="discordbooter">The discord booter used to start the application</param>
     private static void NoGUI(Boot discordbooter)
     {
-        var consoleCommandsHandler = new ConsoleCommandsHandler(discordbooter.client);
+
 #if DEBUG
         Console.WriteLine();
         consoleCommandsHandler.HandleCommand("lp");
@@ -118,10 +120,11 @@ public class Program
         {
             //Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
             var cmd = Console.ReadLine();
-            if (!consoleCommandsHandler.HandleCommand(cmd!,
+            if (!consoleCommandsHandler.HandleCommand(cmd!
 #if DEBUG 
-                false
+               , false
 #endif
+
              ) && cmd.Length > 0)
                 Console.WriteLine("Failed to run command " + cmd);
         }
@@ -199,7 +202,10 @@ public class Program
     /// <param name="args">The arguments</param>
     private static async Task HandleInput(string[] args)
     {
+        var b = await StartNoGUI();
+        consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
         var len = args.Length;
+
 
         if (len == 3 && args[0] == "/download")
         {
@@ -210,6 +216,17 @@ public class Program
 
             return;
         }
+
+        if (len > 0 && args[0] == "/remplug")
+        {
+
+            string plugName = Functions.MergeStrings(args, 1);
+            Console.WriteLine("Starting to remove " + plugName);
+            await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
+            loadPluginsOnStartup = true;
+            len = 0;
+        }
+
 
         if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
         {
@@ -222,10 +239,10 @@ public class Program
         }
 
 
+
+
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
-            var b = await StartNoGUI();
-
             Thread mainThread = new Thread(() => NoGUI(b));
             mainThread.Start();
             return;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -168,6 +169,7 @@ public class ConsoleCommandsHandler
                             continue;
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
+                        if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
                         Console.WriteLine();
 
@@ -294,6 +296,80 @@ public class ConsoleCommandsHandler
             }
         });
 
+        AddCommand("remplug", "Remove a plugin", "remplug [plugName]", async args =>
+        {
+            isDownloading = true;
+            if (args.Length <= 1) return;
+            string plugName = Functions.MergeStrings(args, 1);
+            if (pluginsLoaded)
+            {
+                if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
+                {
+                    Process.Start("DiscordBot.exe ", $"/remplug {plugName}");
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Process.Start("./DiscordBot", $"/remplug {plugName}");
+                    Environment.Exit(0);
+                }
+                isDownloading = false;
+                return;
+            }
+
+
+            string location = "./Data/Plugins/";
+
+            location = Config.PluginConfig.GetPluginType(plugName) switch
+            {
+                PluginType.Command => location + "Commands/" + plugName + "." + PluginLoader.pluginCMDExtension,
+                PluginType.Event => location + "Events/" + plugName + "." + PluginLoader.pluginEVEExtension,
+                PluginType.Unknown => "./",
+                _ => throw new NotImplementedException("Plugin type incorrect")
+            };
+
+            if (!File.Exists(location))
+            {
+                Console.WriteLine("The plugig does not exist");
+                return;
+            }
+
+            File.Delete(location);
+            if (Config.PluginConfig.Contains(plugName))
+            {
+                var tuple = Config.PluginConfig.InstalledPlugins.Where(t => t.Item1 == plugName).FirstOrDefault();
+                Console.WriteLine("Found: " + tuple.ToString());
+                Config.PluginConfig.InstalledPlugins.Remove(tuple);
+                Config.RemovePluginVersion(plugName);
+                Config.SaveConfig();
+            }
+            Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
+
+            var info = await manager.GetPluginLinkByName(plugName);
+            if (info[2] != string.Empty)
+            {
+                var lines = await ServerCom.ReadTextFromURL(info[2]);
+                foreach (var line in lines)
+                {
+                    if (!(line.Length > 0 && line.Contains(",")))
+                        continue;
+                    var split = line.Split(',');
+                    if (File.Exists("./" + split[1]))
+                        File.Delete("./" + split[1]);
+
+
+                    Console.WriteLine("Removed: " + split[1]);
+                }
+
+
+                if (Directory.Exists(plugName))
+                    Directory.Delete(plugName, true);
+            }
+            isDownloading = false;
+            Console.WriteLine(plugName + " has been successfully deleted !");
+
+        });
+
         //Sort the commands by name
         commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
     }
@@ -325,9 +401,10 @@ public class ConsoleCommandsHandler
         return commandList.FirstOrDefault(t => t.CommandName == command);
     }
 
-    internal static async Task ExecuteCommad(string command)
+    public static async Task ExecuteCommad(string command)
     {
         var args = command.Split(' ');
+        // Console.WriteLine(command);
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
             {

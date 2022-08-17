@@ -26,12 +26,12 @@ namespace PluginManager.Others
         /// <summary>
         /// The location for all logs
         /// </summary>
-        public static readonly string logFolder = @"./Output/Logs/";
+        public static readonly string logFolder = @"./Data/Output/Logs/";
 
         /// <summary>
         /// The location for all errors
         /// </summary>
-        public static readonly string errFolder = @"./Output/Errors/";
+        public static readonly string errFolder = @"./Data/Output/Errors/";
 
         /// <summary>
         /// Archives folder
