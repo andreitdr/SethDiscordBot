@@ -62,8 +62,8 @@ public class PluginLoader
     /// </summary>
     public async void LoadPlugins()
     {
-
-        foreach (var file in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
+        //Check for updates in commands
+        foreach (var file in Directory.GetFiles("./Data/Plugins/Commands", $"*.{pluginCMDExtension}", SearchOption.AllDirectories))
         {
             await Task.Run(async () =>
             {
@@ -77,7 +77,27 @@ public class PluginLoader
 
         }
 
+        //Check for updates in events
+        foreach (var file in Directory.GetFiles("./Data/Plugins/Events", $"*.{pluginEVEExtension}", SearchOption.AllDirectories))
+        {
+            await Task.Run(async () =>
+            {
+                string name = new FileInfo(file).Name.Split('.')[0];
+                if (!Config.PluginVersionsContainsKey(name))
+                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageID + ".0.0");
+
+                if (await PluginUpdater.CheckForUpdates(name))
+                    await PluginUpdater.Download(name);
+            });
+
+        }
+
+
+        //Save the new config file (after the updates)
         Config.SaveConfig();
+
+
+        //Load all plugins
 
         Commands = new List<DBCommand>();
         Events = new List<DBEvent>();
@@ -97,7 +117,6 @@ public class PluginLoader
         Commands = commandsLoader.Load();
         Events = eventsLoader.Load();
 
-        // Console.WriteLine("Press Enter to enable console commands");
     }
 
     private void EventFileLoaded(LoaderArgs e)
