@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 
 using PluginManager.Interfaces;
+using PluginManager.Online.Helpers;
 using PluginManager.Online.Updates;
 using PluginManager.Others;
 
@@ -68,13 +69,15 @@ public class PluginLoader
             {
                 string name = new FileInfo(file).Name.Split('.')[0];
                 if (!Config.PluginVersionsContainsKey(name))
-                    Config.SetPluginVersion(name, "0.0.0");
+                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageID + ".0.0");
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
             });
 
         }
+
+        Config.SaveConfig();
 
         Commands = new List<DBCommand>();
         Events = new List<DBEvent>();

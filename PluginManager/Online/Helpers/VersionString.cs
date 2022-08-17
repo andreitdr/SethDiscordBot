@@ -55,6 +55,11 @@ namespace PluginManager.Online.Helpers
             return "{PackageID: " + PackageID + ", PackageVersion: " + PackageMainVersion + ", PackageCheckVersion: " + PackageCheckVersion + "}";
         }
 
+        public string ToShortString()
+        {
+            return $"{PackageID}.{PackageMainVersion}.{PackageCheckVersion}";
+        }
+
         public static VersionString? GetVersionOfPackage(string pakName)
         {
             if (!Config.PluginVersionsContainsKey(pakName))

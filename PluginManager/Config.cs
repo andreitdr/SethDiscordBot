@@ -86,7 +86,7 @@ namespace PluginManager
                 appConfig.PluginVersions[pluginName] = newVersion;
             else appConfig.PluginVersions.Add(pluginName, newVersion);
 
-            SaveConfig();
+            // SaveConfig();
         }
 
         public static void RemovePluginVersion(string pluginName) => appConfig.PluginVersions.Remove(pluginName);

@@ -1,5 +1,6 @@
 ﻿using PluginManager.Items;
 using PluginManager.Online.Helpers;
+using PluginManager.Others;
 
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace PluginManager.Online.Updates
 
         public static async Task Download(string pakName)
         {
-            Console.WriteLine("An update was found for " + pakName);
+            Console_Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" + (await VersionString.GetVersionOfPackageFromWeb(pakName))?.ToShortString() + "&c. Current Version: &y" + VersionString.GetVersionOfPackage(pakName)?.ToShortString());
             await ConsoleCommandsHandler.ExecuteCommad("dwplug " + pakName);
         }
 
