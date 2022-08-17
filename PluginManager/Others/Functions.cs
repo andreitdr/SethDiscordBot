@@ -261,7 +261,8 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static async Task SaveToJsonFile<T>(string file, T Data)
         {
-            var s = File.OpenWrite(file);
+            File.Delete(file);
+            var s = File.Open(file, FileMode.OpenOrCreate);
             await JsonSerializer.SerializeAsync(s, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
             s.Close();
         }
@@ -276,7 +277,7 @@ namespace PluginManager.Others
         {
             Stream text;
             if (File.Exists(input))
-                text = File.Open(input, FileMode.OpenOrCreate);
+                text = File.OpenRead(input);
 
             else
                 text = new MemoryStream(Encoding.ASCII.GetBytes(input));

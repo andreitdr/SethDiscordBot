@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using PluginManager;
 
 namespace EVE_LevelingSystem.LevelingSystemCore
@@ -18,7 +19,7 @@ namespace EVE_LevelingSystem.LevelingSystemCore
 
         internal static void LevelUp(this User user)
         {
-            user.CurrentEXP           = 0;
+            user.CurrentEXP = 0;
             user.RequiredEXPToLevelUp = GetNextLevelRequiredEXP(user.CurrentLevel);
             user.CurrentLevel++;
         }
@@ -26,15 +27,15 @@ namespace EVE_LevelingSystem.LevelingSystemCore
         internal static bool AddEXP(this User user)
         {
             if (OnWaitingList.Contains(user.user.userID.ToString())) return false;
-            Random r      = new Random();
-            int    exp    = r.Next(2, 12);
-            Int64  userXP = user.CurrentEXP;
-            Int64  reqEXP = user.RequiredEXPToLevelUp;
+            Random r = new Random();
+            int exp = r.Next(Level.globalSettings.MinEXP, Level.globalSettings.MaxEXP + 1);
+            Int64 userXP = user.CurrentEXP;
+            Int64 reqEXP = user.RequiredEXPToLevelUp;
             if (userXP + exp >= reqEXP)
             {
                 user.LevelUp();
                 user.CurrentEXP = exp - (reqEXP - userXP);
-                Console.WriteLine("Level up");
+                //Console.WriteLine("Level up");
                 return true;
             }
 
@@ -49,7 +50,7 @@ namespace EVE_LevelingSystem.LevelingSystemCore
                     Thread.Sleep(60000 * minutesToWait);
                     OnWaitingList.Remove(user.user.userID.ToString());
                 }
-            );
+            ).Start();
 
             return false;
         }

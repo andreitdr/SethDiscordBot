@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+
 using EVE_LevelingSystem.LevelingSystemCore;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
@@ -9,8 +11,8 @@ namespace EVE_LevelingSystem
 {
     internal class Level : DBEvent
     {
-        public          string   name        => "Leveling System Event Handler";
-        public          string   description => "The Leveling System Event Handler";
+        public string name => "Leveling System Event Handler";
+        public string description => "The Leveling System Event Handler";
 
         internal static Settings globalSettings = new();
 
@@ -39,7 +41,7 @@ namespace EVE_LevelingSystem
         {
             if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Config.GetValue<string>("prefix"))) return;
             string userID = arg.Author.Id.ToString();
-            User   user;
+            User user;
             if (File.Exists($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat"))
             {
                 user = await Functions.ConvertFromJson<User>(Config.GetValue<string>("LevelingSystemPath")! + $"/{userID}.dat");

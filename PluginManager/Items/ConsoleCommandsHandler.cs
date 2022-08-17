@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Discord.WebSocket;
 
+using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
@@ -262,6 +265,35 @@ public class ConsoleCommandsHandler
                 Environment.Exit(0);
             }
         );
+
+        AddCommand("extern", "Load an external command", "extern [pluginName]", async (args) =>
+        {
+            if (args.Length <= 1) return;
+            string pName = Functions.MergeStrings(args, 1);
+            HttpClient client = new HttpClient();
+            string url = (await manager.GetPluginLinkByName(pName))[1];
+            Stream s = await client.GetStreamAsync(url);
+            MemoryStream str = new MemoryStream();
+            await s.CopyToAsync(str);
+            var asmb = Assembly.Load(str.ToArray());
+
+            var types = asmb.GetTypes();
+            foreach (var type in types)
+            {
+                if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+                {
+                    DBEvent instance = (DBEvent)Activator.CreateInstance(type);
+                    instance.Start(this.client);
+                    Console.WriteLine($"Loaded external {type.FullName}!");
+                }
+                else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
+                {
+                    Console.WriteLine("Only events can be loaded from external sources !");
+                    return;
+                }
+            }
+        });
+
         //Sort the commands by name
         commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
     }
@@ -309,6 +341,7 @@ public class ConsoleCommandsHandler
 
     public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
+        Console.ForegroundColor = ConsoleColor.White;
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])

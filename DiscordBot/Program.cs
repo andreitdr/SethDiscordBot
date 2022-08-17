@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Discord.WebSocket;
 
 using DiscordBot.Discord.Core;
 
 using PluginManager;
-using PluginManager.Interfaces;
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Others;
@@ -119,22 +114,16 @@ public class Program
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 #endif
         Config.SaveConfig();
-
         while (true)
         {
-            Console.ForegroundColor = ConsoleColor.White;
-
-#if DEBUG
             //Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
             var cmd = Console.ReadLine();
-            if (!consoleCommandsHandler.HandleCommand(cmd!, false) && cmd.Length > 0)
-                Console.WriteLine("Failed to run command " + cmd);
-#else
-            //Console_Utilities.WriteColorText("&rSethBot &c> ", false);
-            var cmd = Console.ReadLine();
-            if (!consoleCommandsHandler.HandleCommand(cmd!) && cmd.Length > 0)
-                Console.WriteLine("Failed to run command " + cmd);
+            if (!consoleCommandsHandler.HandleCommand(cmd!,
+#if DEBUG 
+                false
 #endif
+             ) && cmd.Length > 0)
+                Console.WriteLine("Failed to run command " + cmd);
         }
     }
 
