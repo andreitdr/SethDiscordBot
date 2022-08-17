@@ -298,19 +298,23 @@ public class ConsoleCommandsHandler
 
         AddCommand("remplug", "Remove a plugin", "remplug [plugName]", async args =>
         {
-            isDownloading = true;
+
             if (args.Length <= 1) return;
+
+            isDownloading = true;
             string plugName = Functions.MergeStrings(args, 1);
             if (pluginsLoaded)
             {
                 if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
                 {
                     Process.Start("DiscordBot.exe ", $"/remplug {plugName}");
+                    await Task.Delay(100);
                     Environment.Exit(0);
                 }
                 else
                 {
                     Process.Start("./DiscordBot", $"/remplug {plugName}");
+                    await Task.Delay(100);
                     Environment.Exit(0);
                 }
                 isDownloading = false;
@@ -330,7 +334,7 @@ public class ConsoleCommandsHandler
 
             if (!File.Exists(location))
             {
-                Console.WriteLine("The plugig does not exist");
+                Console.WriteLine("The plugin does not exist");
                 return;
             }
 
