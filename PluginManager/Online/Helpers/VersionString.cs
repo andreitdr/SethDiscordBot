@@ -37,6 +37,7 @@ namespace PluginManager.Online.Helpers
             return false;
         }
 
+        #region operators
         public static bool operator <(VersionString s1, VersionString s2) => !(s1 > s2) && s1 != s2;
 
         public static bool operator ==(VersionString s1, VersionString s2)
@@ -49,6 +50,8 @@ namespace PluginManager.Online.Helpers
 
         public static bool operator <=(VersionString s1, VersionString s2) => (s1 < s2 || s1 == s2);
         public static bool operator >=(VersionString s1, VersionString s2) => (s1 > s2 || s1 == s2);
+
+        #endregion
 
         public override string ToString()
         {

@@ -94,7 +94,7 @@ public class PluginLoader
 
 
         //Save the new config file (after the updates)
-        Config.SaveConfig();
+        Config.SaveConfig(SaveType.NORMAL);
 
 
         //Load all plugins

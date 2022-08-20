@@ -261,7 +261,8 @@ public class ConsoleCommandsHandler
                     return;
                 client.StopAsync();
                 client.DisposeAsync();
-                Config.SaveConfig();
+                Config.SaveConfig(SaveType.NORMAL);
+                Config.SaveConfig(SaveType.BACKUP);
                 Console.WriteLine("Bot is closing in 2 seconds ! Please wait to save data !");
                 Thread.Sleep(2000);
                 Environment.Exit(0);
@@ -307,7 +308,7 @@ public class ConsoleCommandsHandler
             {
                 if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
                 {
-                    Process.Start("DiscordBot.exe ", $"/remplug {plugName}");
+                    Process.Start("DiscordBot.exe", $"/remplug {plugName}");
                     await Task.Delay(100);
                     Environment.Exit(0);
                 }
@@ -345,7 +346,7 @@ public class ConsoleCommandsHandler
                 Console.WriteLine("Found: " + tuple.ToString());
                 Config.PluginConfig.InstalledPlugins.Remove(tuple);
                 Config.RemovePluginVersion(plugName);
-                Config.SaveConfig();
+                Config.SaveConfig(SaveType.NORMAL);
             }
             Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
 
@@ -372,6 +373,21 @@ public class ConsoleCommandsHandler
             isDownloading = false;
             Console.WriteLine(plugName + " has been successfully deleted !");
 
+        });
+
+        AddCommand("reload", "Reload the bot with all plugins", () =>
+        {
+            if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
+            {
+                Process.Start("DiscordBot.exe", $"lp");
+                HandleCommand("sd");
+            }
+            else
+            {
+
+                Process.Start("./DiscordBot", $"lp");
+                HandleCommand("sd");
+            }
         });
 
         //Sort the commands by name

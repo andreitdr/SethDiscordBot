@@ -115,10 +115,10 @@ public class Program
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 #endif
-        Config.SaveConfig();
+        Config.SaveConfig(SaveType.NORMAL);
         while (true)
         {
-            //Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
+            // Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
             var cmd = Console.ReadLine();
             if (!consoleCommandsHandler.HandleCommand(cmd!
 #if DEBUG 
@@ -149,6 +149,14 @@ public class Program
 
         Console_Utilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
+
+        if (Config.ContainsKey("LaunchMessage"))
+        {
+            Console_Utilities.WriteColorText(Config.GetValue<string>("LaunchMessage"));
+            Config.RemoveKey("LaunchMessage");
+        }
+
+        Console_Utilities.WriteColorText("Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
         Console.WriteLine($"============================ LOG ============================");
 
         try
@@ -243,7 +251,26 @@ public class Program
 
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
-            Thread mainThread = new Thread(() => NoGUI(b));
+
+            Thread mainThread = new Thread(() =>
+            {
+                try
+                {
+                    NoGUI(b);
+                }
+                catch (IOException ex)
+                {
+                    if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
+                    {
+                        if (!Config.ContainsKey("LaunchMessage"))
+                            Config.AddValueToVariables("LaunchMessage", "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", false);
+                        Functions.WriteErrFile(ex.ToString());
+                    }
+                }
+
+
+
+            });
             mainThread.Start();
             return;
         }
@@ -377,6 +404,6 @@ public class Program
 
         Console_Utilities.Initialize();
 
-        Config.SaveConfig();
+        Config.SaveConfig(SaveType.NORMAL);
     }
 }
