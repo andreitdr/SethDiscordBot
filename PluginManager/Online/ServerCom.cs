@@ -51,8 +51,8 @@ namespace PluginManager.Online
         /// <returns></returns>
         public static async Task DownloadFileAsync(string URL, string location)
         {
-            bool  isDownloading = true;
-            float c_progress    = 0;
+            bool isDownloading = true;
+            float c_progress = 0;
 
             Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar { Max = 100f, NoColor = true };
 
@@ -63,7 +63,7 @@ namespace PluginManager.Online
                 {
                     while (isDownloading)
                     {
-                        pbar.Update(c_progress);
+                        pbar.Update(ProgressBarType.NORMAL, c_progress);
                         if (c_progress == 100f)
                             break;
                         Thread.Sleep(500);
@@ -76,7 +76,7 @@ namespace PluginManager.Online
 
 
             c_progress = pbar.Max;
-            pbar.Update(100f);
+            pbar.Update(ProgressBarType.NORMAL, 100f);
             isDownloading = false;
         }
     }

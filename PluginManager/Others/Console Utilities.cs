@@ -1,4 +1,5 @@
 ﻿using Discord;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,47 +33,74 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
-            public float        Max     { get; init; }
-            public ConsoleColor Color   { get; init; }
-            public bool         NoColor { get; init; }
+            public float Max { get; init; }
+            public ConsoleColor Color { get; init; }
+            public bool NoColor { get; init; }
 
+            private int BarLength = 32;
+            private int position = 1;
+            private bool positive = true;
 
-            public void Update(float progress, double speed = -1, string? unit = null)
+            public void Update(ProgressBarType type, float progress)
+            {
+                switch (type)
+                {
+                    case ProgressBarType.NORMAL:
+                        UpdateNormal(progress);
+                        return;
+                    case ProgressBarType.NO_END:
+                        if (progress <= 99.9f)
+                            UpdateNoEnd();
+                        return;
+                }
+            }
+
+            private void UpdateNoEnd()
             {
                 Console.CursorLeft = 0;
                 Console.Write("[");
-                Console.CursorLeft = 32;
+                for (int i = 1; i <= position; i++)
+                    Console.Write(" ");
+                Console.Write("<==()==>");
+                position += positive ? 1 : -1;
+                for (int i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
+                    Console.Write(" ");
+                Console.Write("]");
+
+
+                if (position == BarLength - 1 || position == 1)
+                    positive = !positive;
+            }
+
+            private void UpdateNormal(float progress)
+            {
+                Console.CursorLeft = 0;
+                Console.Write("[");
+                Console.CursorLeft = BarLength;
                 Console.Write("]");
                 Console.CursorLeft = 1;
                 float onechunk = 30.0f / Max;
 
-                int position = 1;
-
                 for (int i = 0; i < onechunk * progress; i++)
                 {
                     Console.BackgroundColor = NoColor ? ConsoleColor.Black : this.Color;
-                    Console.CursorLeft      = position++;
+                    Console.CursorLeft = position++;
                     Console.Write("#");
                 }
 
-                for (int i = position; i <= 31; i++)
+                for (int i = position; i <= BarLength - 1; i++)
                 {
                     Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
-                    Console.CursorLeft      = position++;
+                    Console.CursorLeft = position++;
                     Console.Write(" ");
                 }
 
                 Console.CursorLeft = 35;
                 Console.BackgroundColor = ConsoleColor.Black;
-                if (speed is -1 || unit == null)
-                {
-                    if (progress.CanAproximateTo(Max))
-                        Console.Write(progress + " %      ✓");
-                    else
-                        Console.Write(MathF.Round(progress, 2) + " %       ");
-                }
+                if (progress.CanAproximateTo(Max))
+                    Console.Write(progress + " %      ✓");
                 else
-                    Console.Write(progress + $"{speed} {unit}/s        ");
+                    Console.Write(MathF.Round(progress, 2) + " %       ");
             }
         }
 
@@ -84,13 +112,13 @@ namespace PluginManager.Others
         /// A way to create a table based on input data
         /// </summary>
         /// <param name="data">The List of arrays of strings that represent the rows.</param>
-        public static void FormatAndAlignTable(List<string[]> data, TableFormat format = TableFormat.CENTER_EACH_COLUMN_BASED)
+        public static void FormatAndAlignTable(List<string[]> data, TableFormat format)
         {
             if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
             {
-                char tableLine  = '-';
+                char tableLine = '-';
                 char tableCross = '+';
-                char tableWall  = '|';
+                char tableWall = '|';
 
                 int[] len = new int[data[0].Length];
                 foreach (var line in data)
@@ -196,8 +224,8 @@ namespace PluginManager.Others
 
             if (format == TableFormat.DEFAULT)
             {
-                int[] widths                = new int[data[0].Length];
-                int   space_between_columns = int.Parse(Config.GetValue<Dictionary<string, string>>("TableVariables")?["DefaultSpace"]!);
+                int[] widths = new int[data[0].Length];
+                int space_between_columns = int.Parse(Config.GetValue<Dictionary<string, string>>("TableVariables")?["DefaultSpace"]!);
                 for (int i = 0; i < data.Count; i++)
                 {
                     for (int j = 0; j < data[i].Length; j++)
@@ -230,7 +258,7 @@ namespace PluginManager.Others
         public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
         {
             ConsoleColor initialForeGround = Console.ForegroundColor;
-            char[]       input             = text.ToCharArray();
+            char[] input = text.ToCharArray();
             for (int i = 0; i < input.Length; i++)
             {
                 if (input[i] == Config.GetValue<char>("ColorPrefix"))

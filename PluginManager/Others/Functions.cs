@@ -36,7 +36,7 @@ namespace PluginManager.Others
         /// <summary>
         /// Archives folder
         /// </summary>
-        public static readonly string pakFolder = @"./Data/Resources/PAK/";
+        public static readonly string pakFolder = @"./Data/PAKS/";
 
         /// <summary>
         /// Beta testing folder
@@ -50,7 +50,7 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param> 
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static Stream? ReadFromPakAsync(string FileName, string archFile)
+        public static async Task<Stream?> ReadFromPakAsync(string FileName, string archFile)
         {
             archFile = pakFolder + archFile;
             Directory.CreateDirectory(pakFolder);
@@ -58,7 +58,11 @@ namespace PluginManager.Others
 
             using ZipArchive archive = ZipFile.OpenRead(archFile);
             ZipArchiveEntry? entry = archive.GetEntry(FileName);
-            return entry?.Open();
+            if (entry is null) return Stream.Null;
+            MemoryStream stream = new MemoryStream();
+            await (entry?.Open()!).CopyToAsync(stream);
+
+            return stream;
         }
 
         /// <summary>

@@ -185,7 +185,7 @@ public class ConsoleCommandsHandler
                                            {
                                                while (isExtracting)
                                                {
-                                                   bar.Update(proc);
+                                                   bar.Update(ProgressBarType.NORMAL, proc);
                                                    if (proc >= 99.9f)
                                                        isExtracting = false;
                                                    Thread.Sleep(500);
@@ -194,10 +194,10 @@ public class ConsoleCommandsHandler
                                        ).Start
                             ).Start();
                             await Functions.ExtractArchive("./" + split[1], "./", extractProgress, UnzipProgressType.PercentageFromTotalSize);
-                            bar.Update(100f);
+                            bar.Update(ProgressBarType.NORMAL, 100f);
                             isExtracting = false;
                             await Task.Delay(1000);
-                            bar.Update(100);
+                            bar.Update(ProgressBarType.NORMAL, 100);
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }

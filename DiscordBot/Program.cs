@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Discord;
+
 using DiscordBot.Discord.Core;
 
 using PluginManager;
@@ -210,10 +212,8 @@ public class Program
     /// <param name="args">The arguments</param>
     private static async Task HandleInput(string[] args)
     {
-        var b = await StartNoGUI();
-        consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
-        var len = args.Length;
 
+        var len = args.Length;
 
         if (len == 3 && args[0] == "/download")
         {
@@ -225,16 +225,22 @@ public class Program
             return;
         }
 
-        if (len > 0 && args[0] == "/remplug")
+        if (len > 0 && args[0] == "/test")
         {
+            int p = 1;
+            bool allowed = true;
+            Console.CancelKeyPress += (sender, e) => allowed = false;
+            Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar();
+            Console.WriteLine("Press Ctrl + C to stop.");
+            while (p <= int.MaxValue - 1 && allowed)
+            {
+                bar.Update(ProgressBarType.NO_END, 100 / p);
+                await Task.Delay(100);
+                p++;
+            }
 
-            string plugName = Functions.MergeStrings(args, 1);
-            Console.WriteLine("Starting to remove " + plugName);
-            await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
-            loadPluginsOnStartup = true;
-            len = 0;
+            return;
         }
-
 
         if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
         {
@@ -247,6 +253,19 @@ public class Program
         }
 
 
+
+        var b = await StartNoGUI();
+        consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
+
+        if (len > 0 && args[0] == "/remplug")
+        {
+
+            string plugName = Functions.MergeStrings(args, 1);
+            Console.WriteLine("Starting to remove " + plugName);
+            await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
+            loadPluginsOnStartup = true;
+            len = 0;
+        }
 
 
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))

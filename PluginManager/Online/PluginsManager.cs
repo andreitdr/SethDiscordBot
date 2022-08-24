@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using PluginManager.Others;
+
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace PluginManager.Online;
@@ -30,13 +32,13 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
 
             var data = new List<string[]>();
-            var op   = Functions.GetOperatingSystem();
+            var op = Functions.GetOperatingSystem();
 
-            var      len    = lines.Length;
+            var len = lines.Length;
             string[] titles = { "Name", "Description", "Plugin Type", "Libraries", "Installed" };
             data.Add(new[] { "-", "-", "-", "-", "-" });
             data.Add(titles);
@@ -86,7 +88,7 @@ public class PluginsManager
 
             data.Add(new[] { "-", "-", "-", "-", "-" });
 
-            Console_Utilities.FormatAndAlignTable(data);
+            Console_Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
         }
         catch (Exception exception)
         {
@@ -104,9 +106,9 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
-            var len   = lines.Length;
+            var len = lines.Length;
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');
