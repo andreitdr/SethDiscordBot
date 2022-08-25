@@ -54,7 +54,7 @@ namespace PluginManager.Online
             bool isDownloading = true;
             float c_progress = 0;
 
-            Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar { Max = 100f, NoColor = true };
+            Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, NoColor = true };
 
             IProgress<float> progress = new Progress<float>(percent => { c_progress = percent; });
 
@@ -63,7 +63,7 @@ namespace PluginManager.Online
                 {
                     while (isDownloading)
                     {
-                        pbar.Update(ProgressBarType.NORMAL, c_progress);
+                        pbar.Update(c_progress);
                         if (c_progress == 100f)
                             break;
                         Thread.Sleep(500);
@@ -76,7 +76,7 @@ namespace PluginManager.Online
 
 
             c_progress = pbar.Max;
-            pbar.Update(ProgressBarType.NORMAL, 100f);
+            pbar.Update(100f);
             isDownloading = false;
         }
     }

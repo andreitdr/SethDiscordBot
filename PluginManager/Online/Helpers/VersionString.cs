@@ -9,7 +9,7 @@ namespace PluginManager.Online.Helpers
 {
     public class VersionString
     {
-        public int PackageID;
+        public int PackageVersionID;
         public int PackageMainVersion;
         public int PackageCheckVersion;
 
@@ -18,7 +18,7 @@ namespace PluginManager.Online.Helpers
             string[] data = version.Split('.');
             try
             {
-                PackageID = int.Parse(data[0]);
+                PackageVersionID = int.Parse(data[0]);
                 PackageMainVersion = int.Parse(data[1]);
                 PackageCheckVersion = int.Parse(data[2]);
             }
@@ -28,21 +28,25 @@ namespace PluginManager.Online.Helpers
             }
         }
 
-        public static bool operator >(VersionString s1, VersionString s2)
-        {
-            if (s1.PackageID != s2.PackageID) throw new Exception("Can not compare two different paks");
-            if (s1.PackageMainVersion > s2.PackageMainVersion) return true;
-            if (s1.PackageMainVersion == s2.PackageMainVersion && s1.PackageCheckVersion > s2.PackageCheckVersion) return true;
 
-            return false;
-        }
 
         #region operators
+        public static bool operator >(VersionString s1, VersionString s2)
+        {
+            if (s1.PackageVersionID > s2.PackageVersionID) return true;
+            if (s1.PackageVersionID == s2.PackageVersionID)
+            {
+                if (s1.PackageMainVersion > s2.PackageMainVersion) return true;
+                if (s1.PackageMainVersion == s2.PackageMainVersion && s1.PackageCheckVersion > s2.PackageCheckVersion) return true;
+
+            }
+            return false;
+        }
         public static bool operator <(VersionString s1, VersionString s2) => !(s1 > s2) && s1 != s2;
 
         public static bool operator ==(VersionString s1, VersionString s2)
         {
-            if (s1.PackageID == s2.PackageID && s1.PackageMainVersion == s2.PackageMainVersion && s1.PackageCheckVersion == s2.PackageCheckVersion) return true;
+            if (s1.PackageVersionID == s2.PackageVersionID && s1.PackageMainVersion == s2.PackageMainVersion && s1.PackageCheckVersion == s2.PackageCheckVersion) return true;
             return false;
         }
 
@@ -55,12 +59,14 @@ namespace PluginManager.Online.Helpers
 
         public override string ToString()
         {
-            return "{PackageID: " + PackageID + ", PackageVersion: " + PackageMainVersion + ", PackageCheckVersion: " + PackageCheckVersion + "}";
+            return "{PackageID: " + PackageVersionID + ", PackageVersion: " + PackageMainVersion + ", PackageCheckVersion: " + PackageCheckVersion + "}";
         }
 
         public string ToShortString()
         {
-            return $"{PackageID}.{PackageMainVersion}.{PackageCheckVersion}";
+            if (PackageVersionID == 0 && PackageCheckVersion == 0 && PackageMainVersion == 0)
+                return "Unknown";
+            return $"{PackageVersionID}.{PackageMainVersion}.{PackageCheckVersion}";
         }
 
         public static VersionString? GetVersionOfPackage(string pakName)

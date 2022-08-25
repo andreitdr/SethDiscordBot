@@ -69,7 +69,7 @@ public class PluginLoader
             {
                 string name = new FileInfo(file).Name.Split('.')[0];
                 if (!Config.PluginVersionsContainsKey(name))
-                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageID + ".0.0");
+                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageVersionID + ".0.0");
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
@@ -84,7 +84,7 @@ public class PluginLoader
             {
                 string name = new FileInfo(file).Name.Split('.')[0];
                 if (!Config.PluginVersionsContainsKey(name))
-                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageID + ".0.0");
+                    Config.SetPluginVersion(name, (await VersionString.GetVersionOfPackageFromWeb(name))?.PackageVersionID + ".0.0");
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
@@ -94,7 +94,7 @@ public class PluginLoader
 
 
         //Save the new config file (after the updates)
-        Config.SaveConfig(SaveType.NORMAL);
+        await Config.SaveConfig(SaveType.NORMAL);
 
 
         //Load all plugins

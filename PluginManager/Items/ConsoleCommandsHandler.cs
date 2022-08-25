@@ -82,30 +82,48 @@ public class ConsoleCommandsHandler
                 if (pluginsLoaded)
                     return;
                 var loader = new PluginLoader(client!);
+                ConsoleColor cc = Console.ForegroundColor;
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
+
                     if (name == null || name.Length < 2)
                         name = typeName;
                     if (success)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("[CMD] Successfully loaded command : " + name);
+                    }
+
                     else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+
                         Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    }
+                    Console.ForegroundColor = cc;
                 };
                 loader.onEVELoad += (name, typeName, success, exception) =>
                 {
                     if (name == null || name.Length < 2)
                         name = typeName;
-                    Console.ForegroundColor = ConsoleColor.Green;
+
                     if (success)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("[EVENT] Successfully loaded event : " + name);
+                    }
                     else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    }
+                    Console.ForegroundColor = cc;
                 };
+
                 loader.LoadPlugins();
+                Console.ForegroundColor = cc;
                 pluginsLoaded = true;
+
             }
         );
 
@@ -178,14 +196,14 @@ public class ConsoleCommandsHandler
                             Console.WriteLine($"Extracting {split[1]}");
                             var proc = 0f;
                             var isExtracting = true;
-                            var bar = new Console_Utilities.ProgressBar { Max = 100f, Color = ConsoleColor.Green };
+                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, Color = ConsoleColor.Green };
 
                             IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
                             new Thread(new Task(() =>
                                            {
                                                while (isExtracting)
                                                {
-                                                   bar.Update(ProgressBarType.NORMAL, proc);
+                                                   bar.Update(proc);
                                                    if (proc >= 99.9f)
                                                        isExtracting = false;
                                                    Thread.Sleep(500);
@@ -194,10 +212,10 @@ public class ConsoleCommandsHandler
                                        ).Start
                             ).Start();
                             await Functions.ExtractArchive("./" + split[1], "./", extractProgress, UnzipProgressType.PercentageFromTotalSize);
-                            bar.Update(ProgressBarType.NORMAL, 100f);
+                            bar.Update(100f);
                             isExtracting = false;
                             await Task.Delay(1000);
-                            bar.Update(ProgressBarType.NORMAL, 100);
+                            bar.Update(100);
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -207,7 +225,7 @@ public class ConsoleCommandsHandler
                 }
                 VersionString? ver = await VersionString.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
-                Config.SetPluginVersion(name, $"{ver.PackageID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
+                Config.SetPluginVersion(name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
                 // Console.WriteLine();
 
                 isDownloading = false;
@@ -255,17 +273,30 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("sd", "Shuts down the discord bot", () =>
+        AddCommand("sd", "Shuts down the discord bot", async () =>
             {
                 if (client is null)
                     return;
-                client.StopAsync();
-                client.DisposeAsync();
-                Config.SaveConfig(SaveType.NORMAL);
-                Config.SaveConfig(SaveType.BACKUP);
-                Console.WriteLine("Bot is closing in 2 seconds ! Please wait to save data !");
-                Thread.Sleep(2000);
+                bool run = true;
+                var t = new Thread(() =>
+                {
+                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                    while (run)
+                    {
+                        bar.Update(1);
+                        Thread.Sleep(50);
+                    }
+                });
+                t.Start();
+                await Config.SaveConfig(SaveType.NORMAL);
+                await Config.SaveConfig(SaveType.BACKUP);
+                await Task.Delay(4000);
+                run = false;
+                Console.WriteLine();
+                await client.StopAsync();
+                await client.DisposeAsync();
                 Environment.Exit(0);
+
             }
         );
 
@@ -346,7 +377,7 @@ public class ConsoleCommandsHandler
                 Console.WriteLine("Found: " + tuple.ToString());
                 Config.PluginConfig.InstalledPlugins.Remove(tuple);
                 Config.RemovePluginVersion(plugName);
-                Config.SaveConfig(SaveType.NORMAL);
+                await Config.SaveConfig(SaveType.NORMAL);
             }
             Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
 

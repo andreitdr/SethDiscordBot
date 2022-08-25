@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using PluginManager.Online.Helpers;
 using PluginManager.Others;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
@@ -39,7 +40,7 @@ public class PluginsManager
             var op = Functions.GetOperatingSystem();
 
             var len = lines.Length;
-            string[] titles = { "Name", "Description", "Plugin Type", "Libraries", "Installed" };
+            string[] titles = { "Name", "Description", "Type", "Version", "Installed" };
             data.Add(new[] { "-", "-", "-", "-", "-" });
             data.Add(titles);
             data.Add(new[] { "-", "-", "-", "-", "-" });
@@ -56,11 +57,7 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
-                        if (content.Length == 6 && (content[5] != null || content[5].Length > 2))
-                            display[3] = ((await ServerCom.ReadTextFromURL(content[5])).Count + 1).ToString();
-
-                        else
-                            display[3] = "1";
+                        display[3] = (await VersionString.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
                         if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else
@@ -75,8 +72,7 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
-                        if (content.Length == 6 && (content[5] != null || content[5].Length > 2))
-                            display[3] = ((await ServerCom.ReadTextFromURL(content[5])).Count + 1).ToString();
+                        display[3] = (await VersionString.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
                         if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else

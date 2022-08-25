@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace PluginManager.Others
 {
@@ -33,15 +32,21 @@ namespace PluginManager.Others
         /// </summary>
         public class ProgressBar
         {
+            public ProgressBar(ProgressBarType type)
+            {
+                this.type = type;
+            }
+
             public float Max { get; init; }
             public ConsoleColor Color { get; init; }
             public bool NoColor { get; init; }
+            public ProgressBarType type { get; set; }
 
             private int BarLength = 32;
             private int position = 1;
             private bool positive = true;
 
-            public void Update(ProgressBarType type, float progress)
+            public void Update(float progress)
             {
                 switch (type)
                 {
@@ -51,6 +56,8 @@ namespace PluginManager.Others
                     case ProgressBarType.NO_END:
                         if (progress <= 99.9f)
                             UpdateNoEnd();
+                        return;
+                    default:
                         return;
                 }
             }
@@ -81,6 +88,8 @@ namespace PluginManager.Others
                 Console.CursorLeft = 1;
                 float onechunk = 30.0f / Max;
 
+                int position = 1;
+
                 for (int i = 0; i < onechunk * progress; i++)
                 {
                     Console.BackgroundColor = NoColor ? ConsoleColor.Black : this.Color;
@@ -88,14 +97,14 @@ namespace PluginManager.Others
                     Console.Write("#");
                 }
 
-                for (int i = position; i <= BarLength - 1; i++)
+                for (int i = position; i < BarLength; i++)
                 {
                     Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
                     Console.CursorLeft = position++;
                     Console.Write(" ");
                 }
 
-                Console.CursorLeft = 35;
+                Console.CursorLeft = BarLength + 4;
                 Console.BackgroundColor = ConsoleColor.Black;
                 if (progress.CanAproximateTo(Max))
                     Console.Write(progress + " %      ✓");

@@ -112,18 +112,19 @@ public class Program
 
 #if DEBUG
         Console.WriteLine();
-        consoleCommandsHandler.HandleCommand("lp");
+        ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
 #else
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 #endif
-        Config.SaveConfig(SaveType.NORMAL);
+        Config.SaveConfig(SaveType.NORMAL).Wait();
+
         while (true)
         {
-            // Console_Utilities.WriteColorText("&rSethBot (&yDEBUG&r) &c> ", false);
+
             var cmd = Console.ReadLine();
             if (!consoleCommandsHandler.HandleCommand(cmd!
-#if DEBUG 
+#if DEBUG
                , false
 #endif
 
@@ -177,7 +178,6 @@ public class Program
 #endif
 
             var prefix = Config.GetValue<string>("prefix");
-
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
             return discordbooter;
@@ -230,11 +230,11 @@ public class Program
             int p = 1;
             bool allowed = true;
             Console.CancelKeyPress += (sender, e) => allowed = false;
-            Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar();
+            Console_Utilities.ProgressBar bar = new(ProgressBarType.NO_END);// { NoColor = false, Color = ConsoleColor.DarkRed };
             Console.WriteLine("Press Ctrl + C to stop.");
             while (p <= int.MaxValue - 1 && allowed)
             {
-                bar.Update(ProgressBarType.NO_END, 100 / p);
+                bar.Update(100 / p);
                 await Task.Delay(100);
                 p++;
             }

@@ -181,7 +181,7 @@ namespace PluginManager
             SaveConfig(SaveType.NORMAL);
         }
 
-        public static async void SaveConfig(SaveType type)
+        public static async Task SaveConfig(SaveType type)
         {
             if (type == SaveType.NORMAL)
             {
