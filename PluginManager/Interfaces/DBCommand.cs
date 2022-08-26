@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using System.Collections.Generic;
+using Discord.Commands;
 using Discord.WebSocket;
 
 namespace PluginManager.Interfaces;
@@ -10,6 +11,11 @@ public interface DBCommand
     ///     It's CaSe SeNsItIvE
     /// </summary>
     string Command { get; }
+
+    /// <summary>
+    ///     Command aliases. Users may use this to execute the command
+    /// </summary>
+    List<string>? Aliases { get; }
 
     /// <summary>
     ///     Command description
@@ -44,8 +50,5 @@ public interface DBCommand
     /// <param name="message">The message that the user types</param>
     /// <param name="client">The discord client of the bot</param>
     /// <param name="isDM">true if the message was sent from DM, otherwise false. It is always false if canUseDM is false</param>
-    void Execute(SocketCommandContext context,
-                 SocketMessage        message,
-                 DiscordSocketClient  client,
-                 bool                 isDM);
+    void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM);
 }

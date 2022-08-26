@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
@@ -16,6 +17,8 @@ internal class Restart : DBCommand
     ///     Command name
     /// </summary>
     public string Command => "restart";
+
+    public List<string> Aliases => null;
 
     /// <summary>
     ///     Command Description

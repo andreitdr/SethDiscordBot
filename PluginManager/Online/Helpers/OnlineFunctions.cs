@@ -18,32 +18,32 @@ namespace PluginManager.Online.Helpers
         /// <param name="progress">The <see cref="IProgress{T}"/> that is used to track the download progress</param>
         /// <param name="cancellation">The cancellation token</param>
         /// <returns></returns>
-        internal static async Task DownloadFileAsync(this HttpClient client, string url, Stream destination,
-            IProgress<float>? progress = null, IProgress<long>? downloadedBytes = null, CancellationToken cancellation = default)
+        internal static async Task DownloadFileAsync(this HttpClient client, string url, Stream destination, IProgress<float>? progress = null, IProgress<long>? downloadedBytes = null, int bufferSize = 81920, CancellationToken cancellation = default)
         {
-            using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+            using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellation))
             {
                 var contentLength = response.Content.Headers.ContentLength;
 
-                using (var download = await response.Content.ReadAsStreamAsync())
+                using (var download = await response.Content.ReadAsStreamAsync(cancellation))
                 {
-
                     // Ignore progress reporting when no progress reporter was 
                     // passed or when the content length is unknown
                     if (progress == null || !contentLength.HasValue)
                     {
-                        await download.CopyToAsync(destination);
+                        await download.CopyToAsync(destination, cancellation);
                         return;
                     }
 
                     // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
                     var relativeProgress = new Progress<long>(totalBytes =>
-                    {
-                        progress.Report((float)totalBytes / contentLength.Value * 100);
-                        downloadedBytes?.Report(totalBytes);
-                    });
+                        {
+                            progress.Report((float)totalBytes / contentLength.Value * 100);
+                            downloadedBytes?.Report(totalBytes);
+                        }
+                    );
+
                     // Use extension method to report progress while downloading
-                    await download.CopyToOtherStreamAsync(destination, 81920, relativeProgress, cancellation);
+                    await download.CopyToOtherStreamAsync(destination, bufferSize, relativeProgress, cancellation);
                     progress.Report(1);
                 }
             }
@@ -57,10 +57,8 @@ namespace PluginManager.Online.Helpers
         /// <returns></returns>
         internal static async Task<string> DownloadStringAsync(string url, CancellationToken cancellation = default)
         {
-            using (var client = new HttpClient())
-            {
-                return await client.GetStringAsync(url);
-            }
+            using var client = new HttpClient();
+            return await client.GetStringAsync(url, cancellation);
         }
 
 

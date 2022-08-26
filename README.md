@@ -5,7 +5,6 @@ This project is based on:
 
 - [.NET 6 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
-- [Avalonia UI](https://avaloniaui.net/) for `DiscordBotUI` extension
 
 
 ## Plugins
@@ -17,9 +16,10 @@ Plugin Types:
 1. Commands
 2. Events
 
+<!--
 Project Structure
 
-![Image](../../blob/gh-pages/Pictures/architecture2.png)
+![Image](../../blob/gh-pages/Pictures/architecture2.png)-->
 
 ### How to create a plugin
 

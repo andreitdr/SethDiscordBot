@@ -9,15 +9,14 @@ using PluginManager.Others;
 
 namespace PluginManager.Online
 {
-    public class ServerCom
+    public static class ServerCom
     {
-
         /// <summary>
         /// Read all lines from a file async
         /// </summary>
         /// <param name="link">The link of the file</param>
         /// <returns></returns>
-        public static async Task<List<string>> ReadTextFromFile(string link)
+        public static async Task<List<string>> ReadTextFromURL(string link)
         {
             string response = await OnlineFunctions.DownloadStringAsync(link);
             string[] lines = response.Split('\n');
@@ -52,15 +51,12 @@ namespace PluginManager.Online
         /// <returns></returns>
         public static async Task DownloadFileAsync(string URL, string location)
         {
-            bool isDownloading   = true;
-            int  c_progress      = 0;
+            bool isDownloading = true;
+            float c_progress = 0;
 
-            Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar { Max = 100, NoColor = true };
+            Console_Utilities.ProgressBar pbar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, NoColor = true };
 
-            IProgress<float> progress = new Progress<float>(percent =>
-            {
-                c_progress = (int)percent;
-            });
+            IProgress<float> progress = new Progress<float>(percent => { c_progress = percent; });
 
 
             Task updateProgressBarTask = new Task(() =>
@@ -68,7 +64,8 @@ namespace PluginManager.Online
                     while (isDownloading)
                     {
                         pbar.Update(c_progress);
-                        if (c_progress == 100) break;
+                        if (c_progress == 100f)
+                            break;
                         Thread.Sleep(500);
                     }
                 }
@@ -78,8 +75,8 @@ namespace PluginManager.Online
             await DownloadFileAsync(URL, location, progress);
 
 
-            c_progress = 100;
-            pbar.Update(100);
+            c_progress = pbar.Max;
+            pbar.Update(100f);
             isDownloading = false;
         }
     }

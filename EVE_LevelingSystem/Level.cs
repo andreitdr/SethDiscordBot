@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+
 using EVE_LevelingSystem.LevelingSystemCore;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
@@ -9,17 +11,20 @@ namespace EVE_LevelingSystem
 {
     internal class Level : DBEvent
     {
-        public          string   name        => "Leveling System Event Handler";
-        public          string   description => "The Leveling System Event Handler";
+        public string name => "Leveling System Event Handler";
+        public string description => "The Leveling System Event Handler";
+
         internal static Settings globalSettings = new();
 
 
         public async void Start(DiscordSocketClient client)
         {
             Directory.CreateDirectory("./Data/Resources/LevelingSystem");
-            Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
-            Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
-
+            if (!Config.ContainsKey("LevelingSystemPath"))
+                Config.AddValueToVariables("LevelingSystemPath", "./Data/Resources/LevelingSystem", true);
+            if (!Config.ContainsKey("LevelingSystemSettingsFile"))
+                Config.AddValueToVariables("LevelingSystemSettingsFile", "./Data/Resources/LevelingSystemSettings.txt", true);
+            //PluginManager.Config.AddValueToVariables
             if (!File.Exists(Config.GetValue<string>("LevelingSystemSettingsFile")))
             {
                 globalSettings = new Settings { TimeToWaitBetweenMessages = 5 };
@@ -36,7 +41,7 @@ namespace EVE_LevelingSystem
         {
             if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Config.GetValue<string>("prefix"))) return;
             string userID = arg.Author.Id.ToString();
-            User   user;
+            User user;
             if (File.Exists($"{Config.GetValue<string>("LevelingSystemPath")}/{userID}.dat"))
             {
                 user = await Functions.ConvertFromJson<User>(Config.GetValue<string>("LevelingSystemPath")! + $"/{userID}.dat");

@@ -4,22 +4,23 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
-using Newtonsoft.Json.Linq;
 
 namespace PluginManager
 {
     internal class AppConfig
     {
-        public Dictionary<string, object>? ApplicationVariables { get; set; }
-        public List<string>?               ProtectedKeyWords    { get; set; }
+        public Dictionary<string, object>? ApplicationVariables { get; init; }
+        public List<string>? ProtectedKeyWords { get; init; }
+        public Dictionary<string, string>? PluginVersions { get; init; }
     }
 
     public static class Config
     {
         public static class PluginConfig
         {
-            public static List<Tuple<string, PluginType>> InstalledPlugins = new();
+            public static readonly List<Tuple<string, PluginType>> InstalledPlugins = new();
 
             public static void Load()
             {
@@ -29,27 +30,27 @@ namespace PluginManager
 
             private static void LoadCommands()
             {
-                string   cmd_path = "./Data/Plugins/Commands/";
-                string[] files    = Directory.GetFiles(cmd_path, $"*.{Loaders.PluginLoader.pluginCMDExtension}", SearchOption.AllDirectories);
+                string cmd_path = "./Data/Plugins/Commands/";
+                string[] files = Directory.GetFiles(cmd_path, $"*.{Loaders.PluginLoader.pluginCMDExtension}", SearchOption.AllDirectories);
                 foreach (var file in files)
                     if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
                     {
                         string PluginName = new FileInfo(file).Name;
-                        string name       = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginCMDExtension.Length);
+                        string name = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginCMDExtension.Length);
                         InstalledPlugins.Add(new(name, PluginType.Command));
                     }
             }
 
             private static void LoadEvents()
             {
-                string   eve_path = "./Data/Plugins/Events/";
-                string[] files    = Directory.GetFiles(eve_path, $"*.{Loaders.PluginLoader.pluginEVEExtension}", SearchOption.AllDirectories);
+                string eve_path = "./Data/Plugins/Events/";
+                string[] files = Directory.GetFiles(eve_path, $"*.{Loaders.PluginLoader.pluginEVEExtension}", SearchOption.AllDirectories);
                 foreach (var file in files)
                     if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
                         if (!file.Contains("PluginManager", StringComparison.InvariantCultureIgnoreCase))
                         {
                             string PluginName = new FileInfo(file).Name;
-                            string name       = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginEVEExtension.Length);
+                            string name = PluginName.Substring(0, PluginName.Length - 1 - PluginManager.Loaders.PluginLoader.pluginEVEExtension.Length);
                             InstalledPlugins.Add(new(name, PluginType.Event));
                         }
             }
@@ -57,9 +58,8 @@ namespace PluginManager
             public static bool Contains(string pluginName)
             {
                 foreach (var tuple in InstalledPlugins)
-                {
-                    if (tuple.Item1 == pluginName) return true;
-                }
+                    if (tuple.Item1 == pluginName)
+                        return true;
 
                 return false;
             }
@@ -67,9 +67,9 @@ namespace PluginManager
             public static PluginType GetPluginType(string pluginName)
             {
                 foreach (var tuple in InstalledPlugins)
-                {
-                    if (tuple.Item1 == pluginName) return tuple.Item2;
-                }
+                    if (tuple.Item1 == pluginName)
+                        return tuple.Item2;
+
 
                 return PluginType.Unknown;
             }
@@ -77,20 +77,56 @@ namespace PluginManager
 
         private static AppConfig? appConfig { get; set; }
 
-        public static bool AddValueToVariables<T>(string key, T value, bool isProtected)
+        public static string GetPluginVersion(string pluginName) => appConfig!.PluginVersions![pluginName];
+        public static void SetPluginVersion(string pluginName, string newVersion)
         {
-            if (appConfig!.ApplicationVariables!.ContainsKey(key)) return false;
-            if (value == null) return false;
-            appConfig.ApplicationVariables.Add(key, value);
-            if (isProtected && key != "Version") appConfig.ProtectedKeyWords!.Add(key);
+            if (appConfig!.PluginVersions!.ContainsKey(pluginName))
+                appConfig.PluginVersions[pluginName] = newVersion;
+            else appConfig.PluginVersions.Add(pluginName, newVersion);
 
-            SaveConfig();
-            return true;
+            // SaveConfig();
+        }
+
+        public static void RemovePluginVersion(string pluginName) => appConfig!.PluginVersions!.Remove(pluginName);
+        public static bool PluginVersionsContainsKey(string pluginName) => appConfig!.PluginVersions!.ContainsKey(pluginName);
+
+        public static void AddValueToVariables<T>(string key, T value, bool isProtected)
+        {
+            if (value == null)
+                throw new Exception("The value cannot be null");
+            if (appConfig!.ApplicationVariables!.ContainsKey(key))
+                throw new Exception($"The key ({key}) already exists in the variables. Value {GetValue<T>(key)}");
+
+            appConfig.ApplicationVariables.Add(key, value);
+            if (isProtected && key != "Version")
+                appConfig.ProtectedKeyWords!.Add(key);
+
+            SaveConfig(SaveType.NORMAL);
+        }
+
+        public static Type GetVariableType(string value)
+        {
+            if (int.TryParse(value, out var intValue))
+                return typeof(int);
+            if (bool.TryParse(value, out var boolValue))
+                return typeof(bool);
+            if (float.TryParse(value, out var floatValue))
+                return typeof(float);
+            if (double.TryParse(value, out var doubleValue))
+                return typeof(double);
+            if (uint.TryParse(value, out var uintValue))
+                return typeof(uint);
+            if (long.TryParse(value, out var longValue))
+                return typeof(long);
+            if (byte.TryParse(value, out var byteValue))
+                return typeof(byte);
+            return typeof(string);
         }
 
         public static void GetAndAddValueToVariable(string key, string value, bool isReadOnly)
         {
-            if (Config.ContainsKey(key)) return;
+            if (Config.ContainsKey(key))
+                return;
             if (int.TryParse(value, out var intValue))
                 Config.AddValueToVariables(key, intValue, isReadOnly);
             else if (bool.TryParse(value, out var boolValue))
@@ -123,30 +159,43 @@ namespace PluginManager
             }
         }
 
-        public static bool SetValue<T>(string key, T value)
+        public static void SetValue<T>(string key, T value)
         {
-            if (!appConfig!.ApplicationVariables!.ContainsKey(key)) return false;
-            if (appConfig.ProtectedKeyWords!.Contains(key)) return false;
-            if (value == null) return false;
+            if (value == null)
+                throw new Exception("Value is null");
+            if (!appConfig!.ApplicationVariables!.ContainsKey(key))
+                throw new Exception("Key does not exist in the config file");
+            if (appConfig.ProtectedKeyWords!.Contains(key))
+                throw new Exception("Key is protected");
 
             appConfig.ApplicationVariables[key] = JsonSerializer.SerializeToElement(value);
-            SaveConfig();
-            return true;
+            SaveConfig(SaveType.NORMAL);
         }
 
-        public static bool RemoveKey(string key)
+        public static void RemoveKey(string key)
         {
-            if (key == "Version" || key == "token" || key == "prefix") return false;
+            if (key == "Version" || key == "token" || key == "prefix")
+                throw new Exception("Key is protected");
             appConfig!.ApplicationVariables!.Remove(key);
             appConfig.ProtectedKeyWords!.Remove(key);
-            SaveConfig();
-            return true;
+            SaveConfig(SaveType.NORMAL);
         }
 
-        public static async void SaveConfig()
+        public static async Task SaveConfig(SaveType type)
         {
-            string path = Functions.dataFolder + "config.json";
-            await Functions.SaveToJsonFile<AppConfig>(path, appConfig!);
+            if (type == SaveType.NORMAL)
+            {
+                string path = Functions.dataFolder + "config.json";
+                await Functions.SaveToJsonFile<AppConfig>(path, appConfig!);
+                return;
+            }
+            if (type == SaveType.BACKUP)
+            {
+                string path = Functions.dataFolder + "config.json.bak";
+                await Functions.SaveToJsonFile<AppConfig>(path, appConfig!);
+                return;
+            }
+
         }
 
         public static async Task LoadConfig()
@@ -154,16 +203,29 @@ namespace PluginManager
             string path = Functions.dataFolder + "config.json";
             if (File.Exists(path))
             {
-                appConfig = await Functions.ConvertFromJson<AppConfig>(path);
+                try
+                {
+                    appConfig = await Functions.ConvertFromJson<AppConfig>(path);
+                }
+                catch (Exception ex)
+                {
+                    File.Delete(path);
+                    Console.WriteLine("An error occured while loading the settings. Importing from backup file...");
+                    path = Functions.dataFolder + "config.json.bak";
+                    appConfig = await Functions.ConvertFromJson<AppConfig>(path);
+                    Functions.WriteErrFile(ex.Message);
+                }
+
+
                 Functions.WriteLogFile($"Loaded {appConfig.ApplicationVariables!.Keys.Count} application variables.\nLoaded {appConfig.ProtectedKeyWords!.Count} readonly variables.");
+                return;
             }
-            else
-                appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>() };
+            appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>(), PluginVersions = new Dictionary<string, string>() };
         }
 
         public static bool ContainsValue<T>(T value) => appConfig!.ApplicationVariables!.ContainsValue(value!);
-        public static bool ContainsKey(string key)   => appConfig!.ApplicationVariables!.ContainsKey(key);
+        public static bool ContainsKey(string key) => appConfig!.ApplicationVariables!.ContainsKey(key);
 
-        public static Dictionary<string, object> GetAllVariables() => new(appConfig!.ApplicationVariables!);
+        public static ReadOnlyDictionary<string, object> GetAllVariables() => new(appConfig!.ApplicationVariables!);
     }
 }

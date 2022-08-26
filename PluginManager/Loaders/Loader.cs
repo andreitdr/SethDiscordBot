@@ -3,29 +3,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+
+using PluginManager.Online.Updates;
 using PluginManager.Others;
 
 namespace PluginManager.Loaders;
 
 internal class LoaderArgs : EventArgs
 {
-    internal string?    PluginName { get; init; }
-    internal string?    TypeName   { get; init; }
-    internal bool       IsLoaded   { get; init; }
-    internal Exception? Exception  { get; init; }
-    internal object?    Plugin     { get; init; }
+    internal string? PluginName { get; init; }
+    internal string? TypeName { get; init; }
+    internal bool IsLoaded { get; init; }
+    internal Exception? Exception { get; init; }
+    internal object? Plugin { get; init; }
 }
 
 internal class Loader<T>
 {
     internal Loader(string path, string extension)
     {
-        this.path      = path;
+        this.path = path;
         this.extension = extension;
     }
 
 
-    private string path      { get; }
+    private string path { get; }
     private string extension { get; }
 
 
@@ -49,16 +52,17 @@ internal class Loader<T>
         var files = Directory.GetFiles(path, $"*.{extension}", SearchOption.AllDirectories);
         foreach (var file in files)
         {
+
             Assembly.LoadFrom(file);
             if (FileLoaded != null)
             {
                 var args = new LoaderArgs
                 {
-                    Exception  = null,
-                    TypeName   = nameof(T),
-                    IsLoaded   = false,
-                    PluginName = file,
-                    Plugin     = null
+                    Exception = null,
+                    TypeName = nameof(T),
+                    IsLoaded = false,
+                    PluginName = new FileInfo(file).Name.Split('.')[0],
+                    Plugin = null
                 };
                 FileLoaded.Invoke(args);
             }
@@ -83,13 +87,13 @@ internal class Loader<T>
 
                     if (PluginLoaded != null)
                         PluginLoaded.Invoke(new LoaderArgs
-                            {
-                                Exception  = null,
-                                IsLoaded   = true,
-                                PluginName = type.FullName,
-                                TypeName   = nameof(T),
-                                Plugin     = plugin
-                            }
+                        {
+                            Exception = null,
+                            IsLoaded = true,
+                            PluginName = type.FullName,
+                            TypeName = nameof(T),
+                            Plugin = plugin
+                        }
                         );
                 }
                 catch (Exception ex)

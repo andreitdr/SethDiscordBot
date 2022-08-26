@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord.WebSocket;
 using PluginManager.Others;
 
 namespace PluginManager.Items;
 
-internal class Command
+public class Command
 {
     /// <summary>
     ///     The author of the command
@@ -20,10 +21,7 @@ internal class Command
     {
         Author = message.Author;
         var data = message.Content.Split(' ');
-        if (data.Length > 1)
-            Arguments = new List<string>(data.MergeStrings(1).Split(' '));
-        else
-            Arguments = new List<string>();
+        Arguments   = data.Length > 1 ? new List<string>(data.MergeStrings(1).Split(' ')) : new List<string>();
         CommandName = data[0].Substring(1);
         PrefixUsed  = data[0][0];
     }
@@ -46,8 +44,8 @@ internal class Command
 
 public class ConsoleCommand
 {
-        public string CommandName { get; set; }
-        public string Description { get; set; }
-        public string Usage { get; set; }
-        public Action<string[]> Action { get; set; }
+    public string           CommandName { get; init; }
+    public string           Description { get; init; }
+    public string           Usage       { get; init; }
+    public Action<string[]> Action      { get; init; }
 }

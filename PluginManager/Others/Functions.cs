@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Discord.WebSocket;
 using PluginManager.Items;
 using System.Threading;
@@ -25,17 +26,22 @@ namespace PluginManager.Others
         /// <summary>
         /// The location for all logs
         /// </summary>
-        public static readonly string logFolder = @"./Output/Logs/";
+        public static readonly string logFolder = @"./Data/Output/Logs/";
 
         /// <summary>
         /// The location for all errors
         /// </summary>
-        public static readonly string errFolder = @"./Output/Errors/";
+        public static readonly string errFolder = @"./Data/Output/Errors/";
 
         /// <summary>
         /// Archives folder
         /// </summary>
-        public static readonly string pakFolder = @"./Data/Resources/PAK/";
+        public static readonly string pakFolder = @"./Data/PAKS/";
+
+        /// <summary>
+        /// Beta testing folder
+        /// </summary>
+        public static readonly string betaFolder = @"./Data/BetaTest/";
 
 
         /// <summary>
@@ -50,25 +56,13 @@ namespace PluginManager.Others
             Directory.CreateDirectory(pakFolder);
             if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
 
-            Stream? textValue = null;
-            var     fs        = new FileStream(archFile, FileMode.Open);
-            var     zip       = new ZipArchive(fs, ZipArchiveMode.Read);
-            foreach (var entry in zip.Entries)
-            {
-                if (entry.Name == FileName || entry.FullName == FileName)
-                {
-                    Stream       s      = entry.Open();
-                    StreamReader reader = new StreamReader(s);
-                    textValue          = reader.BaseStream;
-                    textValue.Position = 0;
-                    reader.Close();
-                    s.Close();
-                    fs.Close();
-                    break;
-                }
-            }
+            using ZipArchive archive = ZipFile.OpenRead(archFile);
+            ZipArchiveEntry? entry = archive.GetEntry(FileName);
+            if (entry is null) return Stream.Null;
+            MemoryStream stream = new MemoryStream();
+            await (entry?.Open()!).CopyToAsync(stream);
 
-            return textValue;
+            return stream;
         }
 
         /// <summary>
@@ -77,8 +71,8 @@ namespace PluginManager.Others
         /// <param name="LogMessage">The message to be wrote</param>
         public static void WriteLogFile(string LogMessage)
         {
-            string logsPath = logFolder + "Log.txt";
-            if (!Directory.Exists(logFolder)) Directory.CreateDirectory(logFolder);
+            string logsPath = logFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Log.txt";
+            Directory.CreateDirectory(logFolder);
             File.AppendAllText(logsPath, LogMessage + " \n");
         }
 
@@ -88,8 +82,8 @@ namespace PluginManager.Others
         /// <param name="ErrMessage">The message to be wrote</param>
         public static void WriteErrFile(string ErrMessage)
         {
-            string errPath = errFolder + "Error.txt";
-            if (!Directory.Exists(errFolder)) Directory.CreateDirectory(errFolder);
+            string errPath = errFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
+            Directory.CreateDirectory(errFolder);
             File.AppendAllText(errPath, ErrMessage + " \n");
         }
 
@@ -101,8 +95,8 @@ namespace PluginManager.Others
         /// <returns>A string built based on the array</returns>
         public static string MergeStrings(this string[] s, int indexToStart)
         {
-            string r   = "";
-            int    len = s.Length;
+            string r = "";
+            int len = s.Length;
             if (len <= indexToStart) return "";
             for (int i = indexToStart; i < len - 1; ++i)
             {
@@ -152,9 +146,9 @@ namespace PluginManager.Others
             if (!stream.CanRead) throw new InvalidOperationException("The stream is not readable.");
             if (!destination.CanWrite) throw new ArgumentException("Destination stream is not writable", nameof(destination));
 
-            byte[] buffer         = new byte[bufferSize];
-            long   totalBytesRead = 0;
-            int    bytesRead;
+            byte[] buffer = new byte[bufferSize];
+            long totalBytesRead = 0;
+            int bytesRead;
             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {
                 await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
@@ -169,33 +163,69 @@ namespace PluginManager.Others
         /// </summary>
         /// <param name="zip">The zip location</param>
         /// <param name="folder">The target location</param>
+        /// <param name="progress">The progress that is updated as a file is processed</param>
+        /// <param name="type">The type of progress</param>
         /// <returns></returns>
-        public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress)
+        public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress, UnzipProgressType type)
         {
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
 
             using (ZipArchive archive = ZipFile.OpenRead(zip))
             {
-                int totalZIPFiles  = archive.Entries.Count();
-                int currentZIPFile = 0;
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                if (type == UnzipProgressType.PercentageFromNumberOfFiles)
                 {
-                    if (entry.FullName.EndsWith("/"))
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                    int totalZIPFiles = archive.Entries.Count();
+                    int currentZIPFile = 0;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/")) // it is a folder
+                            Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
 
-                    else
+                        else
+                            try
+                            {
+                                entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                            }
+
+                        currentZIPFile++;
+                        await Task.Delay(10);
+                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                    }
+                }
+                else if (type == UnzipProgressType.PercentageFromTotalSize)
+                {
+                    ulong zipSize = 0;
+
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                        zipSize += (ulong)entry.CompressedLength;
+
+                    ulong currentSize = 0;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/"))
+                        {
+                            Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                            continue;
+                        }
+
                         try
                         {
                             entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                            currentSize += (ulong)entry.CompressedLength;
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
                         }
 
-                    currentZIPFile++;
-                    await Task.Delay(10);
-                    progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                        await Task.Delay(10);
+                        progress.Report((float)currentSize / zipSize * 100);
+                    }
                 }
             }
         }
@@ -235,9 +265,9 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static async Task SaveToJsonFile<T>(string file, T Data)
         {
-            var s = File.OpenWrite(file);
-            await JsonSerializer.SerializeAsync(s, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
-            s.Close();
+            MemoryStream str = new MemoryStream();
+            await JsonSerializer.SerializeAsync(str, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllBytesAsync(file, str.ToArray());
         }
 
         /// <summary>
@@ -250,8 +280,7 @@ namespace PluginManager.Others
         {
             Stream text;
             if (File.Exists(input))
-                text = File.Open(input, FileMode.OpenOrCreate);
-
+                text = new MemoryStream(await File.ReadAllBytesAsync(input));
             else
                 text = new MemoryStream(Encoding.ASCII.GetBytes(input));
             text.Position = 0;
@@ -302,6 +331,16 @@ namespace PluginManager.Others
 
             var data = jsonObject.RootElement.TryGetProperty(codeName, out element);
             return data;
+        }
+
+        public static string CreateMD5(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+                return Convert.ToHexString(hashBytes);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Discord;
@@ -12,11 +13,13 @@ namespace MusicCommands;
 
 internal class Play : DBCommand
 {
-    public string Command => "fplay";
+    public string Command => "play";
+
+    public List<string> Aliases => new() { "p" };
 
     public string Description => "Play music from a file";
 
-    public string Usage => "fplay [name]";
+    public string Usage => "play [name/url]";
 
     public bool canUseDM => false;
 
@@ -26,36 +29,90 @@ internal class Play : DBCommand
 
     public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
     {
-        var path     = "./Music";
-        var FileName = Functions.GetArguments(message).ToArray().MergeStrings(0);
-        path += "/" + FileName + ".ogg";
-        if (!File.Exists(path))
-        {
-            Console.WriteLine("Unknown path " + path);
+        Directory.CreateDirectory("Music");
+        var      path     = "./Music/";
+        string[] splitted = message.Content.Split(' ');
+        if (splitted.Length < 2)
             return;
+        do
+        {
+            if (splitted.Length == 2 && splitted[1].Contains("youtube.com") || splitted[1].Contains("youtu.be"))
+            {
+                var url = splitted[1];
+                path += $"{Functions.CreateMD5(url)}";
+                if (File.Exists(path))
+                {
+                    Data.Playlist.Enqueue(new AudioFile(path, null));
+                }
+                else
+                {
+                    var file = new AudioFile(path, url);
+                    await file.DownloadAudioFile();
+                    Data.Playlist.Enqueue(file);
+                }
+            }
+            else
+            {
+                var searchString = splitted.MergeStrings(1);
+                path += $"{Functions.CreateMD5(searchString)}";
+                if (File.Exists(path))
+                {
+                    Data.Playlist.Enqueue(new AudioFile(path, null));
+                }
+                else
+                {
+                    await context.Channel.SendMessageAsync("Searching for " + searchString);
+                    var file = new AudioFile(path, searchString);
+                    await file.DownloadAudioFile();
+                    Data.Playlist.Enqueue(file);
+                    if (Data.MusicPlayer is null)
+                        await context.Channel.SendMessageAsync("Playing: " + searchString);
+                }
+            }
+
+            if (Data.MusicPlayer is not null)
+            {
+                await context.Channel.SendMessageAsync("Queued your request: " + splitted.MergeStrings(1));
+                return;
+            }
         }
+        while (false); // run only one time !
 
 
         Data.voiceChannel = (context.User as IGuildUser)?.VoiceChannel;
+
         if (Data.voiceChannel == null)
         {
             await context.Channel.SendMessageAsync("User must be in a voice channel, or a voice channel must be passed as an argument.");
             return;
         }
 
-        Data.audioClient = await Data.voiceChannel.ConnectAsync();
-
-        using (var ffmpeg = CreateStream(path))
-        using (var output = ffmpeg.StandardOutput.BaseStream)
-        using (var discord = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
+        if (Data.audioClient is null)
         {
-            if (Data.CurrentlyRunning != null) Data.CurrentlyRunning.Stop();
-            Data.CurrentlyRunning = new MusicPlayer(output, discord);
-            await Data.CurrentlyRunning.StartSendAudio();
+            Data.audioClient = await Data.voiceChannel.ConnectAsync(true);
+            Data.MusicPlayer = null;
+        }
+
+
+        using (var discordChanneAudioOutStream = Data.audioClient.CreatePCMStream(AudioApplication.Mixed))
+        {
+            Data.MusicPlayer ??= new MusicPlayer(discordChanneAudioOutStream);
+            while (Data.Playlist.Count > 0)
+            {
+                var nowPlaying = Data.Playlist.GetNextSong;
+                using (var ffmpeg = CreateStream(nowPlaying.Name))
+                using (var ffmpegOutputBaseStream = ffmpeg.StandardOutput.BaseStream)
+                {
+                    await Data.MusicPlayer.Play(ffmpegOutputBaseStream, 1024, nowPlaying);
+                    Console.WriteLine("Finished playing from " + nowPlaying.Url);
+                }
+            }
+
+            Data.MusicPlayer = null;
         }
     }
 
-    private Process CreateStream(string path)
+    private static Process CreateStream(string path)
     {
         return Process.Start(new ProcessStartInfo { FileName = "ffmpeg", Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1", UseShellExecute = false, RedirectStandardOutput = true });
     }

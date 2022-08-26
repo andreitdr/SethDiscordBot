@@ -27,3 +27,10 @@ public enum OutputLogLevel { NONE, INFO, WARNING, ERROR, CRITICAL }
 /// Plugin Type
 /// </summary>
 public enum PluginType { Command, Event, Unknown }
+
+public enum UnzipProgressType { PercentageFromNumberOfFiles, PercentageFromTotalSize }
+
+public enum TableFormat { CENTER_EACH_COLUMN_BASED, CENTER_OVERALL_LENGTH, DEFAULT }
+
+public enum SaveType { NORMAL, BACKUP }
+public enum ProgressBarType { NORMAL, NO_END }

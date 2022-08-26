@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
@@ -17,15 +19,17 @@ internal class Help : DBCommand
     /// </summary>
     public string Command => "help";
 
+    public List<string> Aliases => null;
+
     /// <summary>
     ///     Command Description
     /// </summary>
-    public string Description => "This command allows you to check all loadded commands";
+    public string Description => "This command allows you to check all loaded commands";
 
     /// <summary>
     ///     Command usage
     /// </summary>
-    public string Usage => "help";
+    public string Usage => "help <command>";
 
     /// <summary>
     ///     Check if the command can be used <inheritdoca DM <see cref="IChannel" />/>
@@ -57,10 +61,10 @@ internal class Help : DBCommand
             foreach (var item in args)
             {
                 var e = GenerateHelpCommand(item);
-                if (e != null)
-                    context.Channel.SendMessageAsync(embed: e.Build());
-                else
+                if (e is null)
                     context.Channel.SendMessageAsync("Unknown Command " + item);
+                else
+                    context.Channel.SendMessageAsync(embed: e.Build());
             }
 
             return;
@@ -74,10 +78,12 @@ internal class Help : DBCommand
 
         foreach (var cmd in PluginLoader.Commands!)
         {
-            if (cmd.canUseDM) DMCommands += cmd.Command + " ";
+            if (cmd.canUseDM)
+                DMCommands += cmd.Command + " ";
             if (cmd.requireAdmin)
-                adminCommands                         += cmd.Command + " ";
-            else if (cmd.canUseServer) normalCommands += cmd.Command + " ";
+                adminCommands += cmd.Command + " ";
+            if (cmd.canUseServer)
+                normalCommands += cmd.Command + " ";
         }
 
         embedBuilder.AddField("Admin Commands", adminCommands);
@@ -89,11 +95,14 @@ internal class Help : DBCommand
     private EmbedBuilder GenerateHelpCommand(string command)
     {
         var embedBuilder = new EmbedBuilder();
-        var cmd          = PluginLoader.Commands.Find(p => p.Command == command);
+        var cmd          = PluginLoader.Commands!.Find(p => p.Command == command || (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
         embedBuilder.AddField("Usage", cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
+        if (cmd.Aliases is null)
+            return embedBuilder;
+        embedBuilder.AddField("Alias", cmd.Aliases.Count == 0 ? "-" : string.Join(", ", cmd.Aliases));
 
         return embedBuilder;
     }

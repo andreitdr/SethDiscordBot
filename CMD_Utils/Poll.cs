@@ -11,6 +11,8 @@ public class Poll : DBCommand
 {
     public string Command => "poll";
 
+    public List<string> Aliases => null;
+
     public string Description => "Create a poll with options";
 
     public string Usage => "poll [This-is-question] [This-is-answer-1] [This-is-answer-2] ... ";

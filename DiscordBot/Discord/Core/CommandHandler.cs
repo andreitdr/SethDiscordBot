@@ -47,13 +47,16 @@ internal class CommandHandler
     {
         try
         {
-            if (Message as SocketUserMessage == null) return;
+            if (Message as SocketUserMessage == null)
+                return;
 
             var message = Message as SocketUserMessage;
 
-            if (message == null) return;
+            if (message == null)
+                return;
 
-            if (!message.Content.StartsWith(botPrefix)) return;
+            if (!message.Content.StartsWith(botPrefix))
+                return;
 
             var argPos = 0;
 
@@ -63,17 +66,14 @@ internal class CommandHandler
                 return;
             }
 
-            if (message.Author.IsBot) return;
+            if (message.Author.IsBot)
+                return;
 
             var context = new SocketCommandContext(client, message);
 
-            await commandService.ExecuteAsync(
-                context,
-                argPos,
-                null
-            );
+            await commandService.ExecuteAsync(context, argPos, null);
 
-            var plugin = PluginLoader.Commands!.Where(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length)).FirstOrDefault();
+            var plugin = PluginLoader.Commands!.Where(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) || (p.Aliases is not null && p.Aliases.Contains(message.Content.Split(' ')[0].Substring(botPrefix.Length)))).FirstOrDefault();
 
 
             if (plugin != null)
