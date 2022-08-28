@@ -168,9 +168,7 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress, UnzipProgressType type)
         {
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-
+            Directory.CreateDirectory(folder);
             using (ZipArchive archive = ZipFile.OpenRead(zip))
             {
                 if (type == UnzipProgressType.PercentageFromNumberOfFiles)
@@ -194,7 +192,8 @@ namespace PluginManager.Others
 
                         currentZIPFile++;
                         await Task.Delay(10);
-                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                        if (progress != null)
+                            progress.Report((float)currentZIPFile / totalZIPFiles * 100);
                     }
                 }
                 else if (type == UnzipProgressType.PercentageFromTotalSize)
@@ -224,7 +223,8 @@ namespace PluginManager.Others
                         }
 
                         await Task.Delay(10);
-                        progress.Report((float)currentSize / zipSize * 100);
+                        if (progress != null)
+                            progress.Report((float)currentSize / zipSize * 100);
                     }
                 }
             }

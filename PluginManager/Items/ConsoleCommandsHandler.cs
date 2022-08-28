@@ -193,29 +193,11 @@ public class ConsoleCommandsHandler
 
                         if (split[0].EndsWith(".zip") || split[0].EndsWith(".pak") || split[0].EndsWith(".pkg"))
                         {
-                            Console.WriteLine($"Extracting {split[1]}");
-                            var proc = 0f;
-                            var isExtracting = true;
-                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, Color = ConsoleColor.Green };
-
-                            IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
-                            new Thread(new Task(() =>
-                                           {
-                                               while (isExtracting)
-                                               {
-                                                   bar.Update(proc);
-                                                   if (proc >= 99.9f)
-                                                       isExtracting = false;
-                                                   Thread.Sleep(500);
-                                               }
-                                           }
-                                       ).Start
-                            ).Start();
-                            await Functions.ExtractArchive("./" + split[1], "./", extractProgress, UnzipProgressType.PercentageFromTotalSize);
-                            bar.Update(100f);
-                            isExtracting = false;
-                            await Task.Delay(1000);
-                            bar.Update(100);
+                            Console.WriteLine($"Extracting {split[1]} ...");
+                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END) { Max = 100f, Color = ConsoleColor.Green };
+                            bar.Start();
+                            await Functions.ExtractArchive("./" + split[1], "./", null, UnzipProgressType.PercentageFromTotalSize);
+                            bar.Stop();
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -277,21 +259,13 @@ public class ConsoleCommandsHandler
             {
                 if (client is null)
                     return;
-                bool run = true;
-                var t = new Thread(() =>
-                {
-                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
-                    while (run)
-                    {
-                        bar.Update(1);
-                        Thread.Sleep(50);
-                    }
-                });
-                t.Start();
+                Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+
+                bar.Start();
                 await Config.SaveConfig(SaveType.NORMAL);
                 await Config.SaveConfig(SaveType.BACKUP);
                 await Task.Delay(4000);
-                run = false;
+                bar.Stop();
                 Console.WriteLine();
                 await client.StopAsync();
                 await client.DisposeAsync();

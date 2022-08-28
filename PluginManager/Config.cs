@@ -11,6 +11,7 @@ namespace PluginManager
 {
     internal class AppConfig
     {
+        public string UpdaterVersion { get; set; }
         public Dictionary<string, object>? ApplicationVariables { get; init; }
         public List<string>? ProtectedKeyWords { get; init; }
         public Dictionary<string, string>? PluginVersions { get; init; }
@@ -76,6 +77,8 @@ namespace PluginManager
         }
 
         private static AppConfig? appConfig { get; set; }
+
+        public static string UpdaterVersion { get => appConfig.UpdaterVersion; set => appConfig.UpdaterVersion = value; }
 
         public static string GetPluginVersion(string pluginName) => appConfig!.PluginVersions![pluginName];
         public static void SetPluginVersion(string pluginName, string newVersion)
@@ -220,7 +223,7 @@ namespace PluginManager
                 Functions.WriteLogFile($"Loaded {appConfig.ApplicationVariables!.Keys.Count} application variables.\nLoaded {appConfig.ProtectedKeyWords!.Count} readonly variables.");
                 return;
             }
-            appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>(), PluginVersions = new Dictionary<string, string>() };
+            appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>(), PluginVersions = new Dictionary<string, string>(), UpdaterVersion = "-1" };
         }
 
         public static bool ContainsValue<T>(T value) => appConfig!.ApplicationVariables!.ContainsValue(value!);

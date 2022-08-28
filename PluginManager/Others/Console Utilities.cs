@@ -46,6 +46,32 @@ namespace PluginManager.Others
             private int position = 1;
             private bool positive = true;
 
+            private bool isRunning;
+
+            public async void Start()
+            {
+                if (type != ProgressBarType.NO_END)
+                    throw new Exception("Only NO_END progress bar can use this method");
+                if (isRunning)
+                    throw new Exception("This progress bar is already running");
+
+                isRunning = true;
+                while (isRunning)
+                {
+                    UpdateNoEnd();
+                    await System.Threading.Tasks.Task.Delay(100);
+                }
+            }
+
+            public void Stop()
+            {
+                if (type != ProgressBarType.NO_END)
+                    throw new Exception("Only NO_END progress bar can use this method");
+                if (!isRunning)
+                    throw new Exception("Can not stop a progressbar that did not start");
+                isRunning = false;
+            }
+
             public void Update(float progress)
             {
                 switch (type)
