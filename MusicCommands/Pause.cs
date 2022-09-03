@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
 
 namespace MusicCommands;
@@ -15,13 +17,9 @@ internal class Pause : DBCommand
 
     public string Usage => "pause";
 
-    public bool canUseDM => false;
-
-    public bool canUseServer => true;
-
     public bool requireAdmin => false;
 
-    public void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public void ExecuteServer(SocketCommandContext context)
     {
         Data.MusicPlayer.isPaused = !Data.MusicPlayer.isPaused;
     }

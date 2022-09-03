@@ -31,32 +31,18 @@ internal class Restart : DBCommand
     public string Usage => "restart [-p | -c | -args | -cmd] <args>";
 
     /// <summary>
-    ///     Check if the command can be used <inheritdoca DM <see cref="IChannel" />/>
-    /// </summary>
-    public bool canUseDM => false;
-
-    /// <summary>
-    ///     Check if the command can be used in a server
-    /// </summary>
-    public bool canUseServer => true;
-
-    /// <summary>
     ///     Check if the command require administrator to be executed
     /// </summary>
-    public bool requireAdmin => false;
+    public bool requireAdmin => true;
 
     /// <summary>
     ///     The main body of the command
     /// </summary>
     /// <param name="context">The command context</param>
-    /// <param name="message">The command message</param>
-    /// <param name="client">The discord bot client</param>
-    /// <param name="isDM">True if the message was sent from a DM channel, false otherwise</param>
-    public async void Execute(DiscordLibCommands.SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public async void ExecuteServer(DiscordLibCommands.SocketCommandContext context)
     {
-        if (!(message.Author as SocketGuildUser).hasPermission(DiscordLib.GuildPermission.Administrator)) return;
-        var args = Functions.GetArguments(message);
-        var OS   = Functions.GetOperatingSystem();
+        var args = Functions.GetArguments(context.Message);
+        var OS = Functions.GetOperatingSystem();
         if (args.Count == 0)
         {
             switch (OS)

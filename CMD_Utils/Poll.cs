@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
@@ -17,17 +19,12 @@ public class Poll : DBCommand
 
     public string Usage => "poll [This-is-question] [This-is-answer-1] [This-is-answer-2] ... ";
 
-    public bool canUseDM => false;
-
-    public bool canUseServer => true;
-
     public bool requireAdmin => true;
 
-    public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public async void ExecuteServer(SocketCommandContext context)
     {
-        if (isDM) return;
-        var question     = message.Content.Split(' ')[1].Replace('-', ' ');
-        var answers      = Functions.MergeStrings(message.Content.Split(' '), 2).Split(' ');
+        var question = context.Message.Content.Split(' ')[1].Replace('-', ' ');
+        var answers = Functions.MergeStrings(context.Message.Content.Split(' '), 2).Split(' ');
         var embedBuilder = new EmbedBuilder();
         embedBuilder.Title = question;
         var len = answers.Length;

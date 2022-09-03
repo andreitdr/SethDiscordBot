@@ -1,6 +1,8 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
+
 using System.Collections.Generic;
 
 namespace CMD_Utils;
@@ -15,19 +17,16 @@ internal class FlipCoin : DBCommand
 
     public string Usage => "flip";
 
-    public bool canUseDM => true;
-
-    public bool canUseServer => true;
-
     public bool requireAdmin => false;
 
-    public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public async void ExecuteDM(SocketCommandContext context) => ExecuteServer(context);
+    public async void ExecuteServer(SocketCommandContext context)
     {
         var random = new System.Random();
-        var r      = random.Next(1, 3);
+        var r = random.Next(1, 3);
         if (r == 1)
-            await message.Channel.SendMessageAsync("Heads");
+            await context.Message.Channel.SendMessageAsync("Heads");
         else
-            await message.Channel.SendMessageAsync("Tails");
+            await context.Message.Channel.SendMessageAsync("Tails");
     }
 }

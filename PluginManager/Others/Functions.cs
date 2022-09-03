@@ -87,6 +87,11 @@ namespace PluginManager.Others
             File.AppendAllText(errPath, ErrMessage + " \n");
         }
 
+        public static void WriteErrFile(this Exception ex)
+        {
+            WriteErrFile(ex.ToString());
+        }
+
         /// <summary>
         /// Merge one array of strings into one string
         /// </summary>

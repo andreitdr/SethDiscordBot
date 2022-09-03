@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
 
 namespace MusicCommands
@@ -19,24 +21,20 @@ namespace MusicCommands
 
         public string Usage => "skip";
 
-        public bool canUseDM => false;
-
-        public bool canUseServer => true;
-
         public bool requireAdmin => false;
 
-        public void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+        public async void ExecuteServer(SocketCommandContext context)
         {
             var loadedSong = Data.MusicPlayer.NowPlaying;
 
             if (loadedSong is null || Data.MusicPlayer.isPlaying == false)
             {
-                message.Channel.SendMessageAsync("There is no music playing");
+                await context.Message.Channel.SendMessageAsync("There is no music playing");
                 return;
             }
 
             Data.MusicPlayer.isPlaying = false;
-            message.Channel.SendMessageAsync($"You have skipped {loadedSong.Name}");
+            await context.Message.Channel.SendMessageAsync($"You have skipped {loadedSong.Name}");
         }
     }
 }

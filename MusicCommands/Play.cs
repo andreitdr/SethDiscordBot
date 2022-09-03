@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+
 using Discord;
 using Discord.Audio;
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
@@ -21,17 +23,13 @@ internal class Play : DBCommand
 
     public string Usage => "play [name/url]";
 
-    public bool canUseDM => false;
-
-    public bool canUseServer => true;
-
     public bool requireAdmin => false;
 
-    public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public async void ExecuteServer(SocketCommandContext context)
     {
         Directory.CreateDirectory("Music");
-        var      path     = "./Music/";
-        string[] splitted = message.Content.Split(' ');
+        var path = "./Music/";
+        string[] splitted = context.Message.Content.Split(' ');
         if (splitted.Length < 2)
             return;
         do
