@@ -12,7 +12,7 @@ namespace FreeGamesModule
 
         public string Description => "Check out any free game";
 
-        public string Usage => "free";
+        public string Usage => "free [platform]";
 
         public bool requireAdmin => false;
 

@@ -32,10 +32,6 @@ public class Program
     public static void Main(string[] args)
     {
         Console.WriteLine("Loading resources ...");
-
-        Directory.CreateDirectory("./Data/Resources");
-        Directory.CreateDirectory("./Data/Plugins/Commands");
-        Directory.CreateDirectory("./Data/Plugins/Events");
         PreLoadComponents().Wait();
         do
         {
@@ -225,23 +221,6 @@ public class Program
             return;
         }
 
-        if (len > 0 && args[0] == "/test")
-        {
-            int p = 1;
-            bool allowed = true;
-            Console.CancelKeyPress += (sender, e) => allowed = false;
-            Console_Utilities.ProgressBar bar = new(ProgressBarType.NO_END);// { NoColor = false, Color = ConsoleColor.DarkRed };
-            Console.WriteLine("Press Ctrl + C to stop.");
-            while (p <= int.MaxValue - 1 && allowed)
-            {
-                bar.Update(100 / p);
-                await Task.Delay(100);
-                p++;
-            }
-
-            return;
-        }
-
         if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
         {
             if (args.Contains("lp") || args.Contains("loadplugins"))
@@ -267,6 +246,13 @@ public class Program
             len = 0;
         }
 
+        if (len > 0 && args[0] == "/updateplug")
+        {
+            string plugName = args.MergeStrings(1);
+            Console.WriteLine("Updating " + plugName);
+            await ConsoleCommandsHandler.ExecuteCommad("dwplug" + plugName);
+            return;
+        }
 
         if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
         {
@@ -348,6 +334,10 @@ public class Program
     {
         Console_Utilities.ProgressBar main = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
+        Directory.CreateDirectory("./Data/Resources");
+        Directory.CreateDirectory("./Data/Plugins/Commands");
+        Directory.CreateDirectory("./Data/Plugins/Events");
+        Directory.CreateDirectory("./Data/PAKS");
         await Config.LoadConfig();
         if (Config.ContainsKey("DeleteLogsAtStartup"))
             if (Config.GetValue<bool>("DeleteLogsAtStartup"))

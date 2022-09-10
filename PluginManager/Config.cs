@@ -184,6 +184,11 @@ namespace PluginManager
             SaveConfig(SaveType.NORMAL);
         }
 
+        public static bool IsReadOnly(string key)
+        {
+            return appConfig.ProtectedKeyWords.Contains(key);
+        }
+
         public static async Task SaveConfig(SaveType type)
         {
             if (type == SaveType.NORMAL)
@@ -229,6 +234,6 @@ namespace PluginManager
         public static bool ContainsValue<T>(T value) => appConfig!.ApplicationVariables!.ContainsValue(value!);
         public static bool ContainsKey(string key) => appConfig!.ApplicationVariables!.ContainsKey(key);
 
-        public static ReadOnlyDictionary<string, object> GetAllVariables() => new(appConfig!.ApplicationVariables!);
+        public static IDictionary<string, object> GetAllVariables() => appConfig.ApplicationVariables;
     }
 }

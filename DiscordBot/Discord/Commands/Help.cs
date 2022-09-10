@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
+using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Others;
@@ -42,9 +43,6 @@ internal class Help : DBCommand
     ///     The main body of the command
     /// </summary>
     /// <param name="context">The command context</param>
-    /// <param name="message">The command message</param>
-    /// <param name="client">The discord bot client</param>
-    /// <param name="isDM">True if the message was sent from a DM channel, false otherwise</param>
     public void ExecuteServer(SocketCommandContext context)
     {
         var args = Functions.GetArguments(context.Message);
@@ -86,7 +84,7 @@ internal class Help : DBCommand
         var cmd = PluginLoader.Commands!.Find(p => p.Command == command || (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", cmd.Usage);
+        embedBuilder.AddField("Usage", Config.GetValue<string>("prefix") + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

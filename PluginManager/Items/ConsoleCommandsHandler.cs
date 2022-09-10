@@ -164,11 +164,10 @@ public class ConsoleCommandsHandler
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
                 //Console.WriteLine("Downloading: " + path + " [" + info[1] + "]");
                 await ServerCom.DownloadFileAsync(info[1], path);
-                if (info[0] == "Command" || info[0] == "Event")
-                    if (info[0] == "Event")
-                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
-                    else if (info[0] == "Command")
-                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
+                if (info[0] == "Event")
+                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
+                else if (info[0] == "Command")
+                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -190,11 +189,12 @@ public class ConsoleCommandsHandler
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
                         Console.WriteLine();
-
-                        if (split[0].EndsWith(".zip") || split[0].EndsWith(".pak") || split[0].EndsWith(".pkg"))
+                        if (split[0].EndsWith(".pak"))
+                            File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
+                        else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
                         {
                             Console.WriteLine($"Extracting {split[1]} ...");
-                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END) { Max = 100f, Color = ConsoleColor.Green };
+                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);// { Max = 100f, Color = ConsoleColor.Green };
                             bar.Start();
                             await Functions.ExtractArchive("./" + split[1], "./", null, UnzipProgressType.PercentageFromTotalSize);
                             bar.Stop();

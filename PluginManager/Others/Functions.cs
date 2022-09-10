@@ -50,20 +50,41 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param> 
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static async Task<Stream?> ReadFromPakAsync(string FileName, string archFile)
+        public static async Task<string> ReadFromPakAsync(string FileName, string archFile)
         {
             archFile = pakFolder + archFile;
-            Directory.CreateDirectory(pakFolder);
-            if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
+            if (!File.Exists(archFile))
+                throw new Exception("Failed to load file !");
 
-            using ZipArchive archive = ZipFile.OpenRead(archFile);
-            ZipArchiveEntry? entry = archive.GetEntry(FileName);
-            if (entry is null) return Stream.Null;
-            MemoryStream stream = new MemoryStream();
-            await (entry?.Open()!).CopyToAsync(stream);
+            try
+            {
+                string textValue = null;
+                using (var fs = new FileStream(archFile, FileMode.Open))
+                using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (entry.Name == FileName || entry.FullName == FileName)
+                        {
+                            using (Stream s = entry.Open())
+                            using (StreamReader reader = new StreamReader(s))
+                            {
+                                textValue = await reader.ReadToEndAsync();
+                                reader.Close();
+                                s.Close();
+                                fs.Close();
+                            }
+                        }
+                    }
+                return textValue;
+            }
+            catch
+            {
+                await Task.Delay(100);
+                return await ReadFromPakAsync(FileName, archFile);
+            }
 
-            return stream;
         }
+
 
         /// <summary>
         /// Write logs to file
