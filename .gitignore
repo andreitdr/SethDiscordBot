@@ -366,7 +366,5 @@ FodyWeavers.xsd
 *.txt
 
 #folders
-/DiscordBotWindowsUI/
-/WindowsUI/
-/BUILDS/
+/Plugins/
 /DiscordBot.rar
