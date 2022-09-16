@@ -105,7 +105,7 @@ public class Program
     /// <param name="discordbooter">The discord booter used to start the application</param>
     private static void NoGUI(Boot discordbooter)
     {
-
+        
 #if DEBUG
         Console.WriteLine();
         ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
