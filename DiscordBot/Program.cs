@@ -388,14 +388,16 @@ public class Program
 
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
                             //string url2 = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}-preview/net6.0.zip";
-                            Process.Start("./Updater/Updater.exe", $"/update {url} ./DiscordBot.exe ./");
+                            
+                            Process.Start(".\\Updater\\Updater.exe", $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
+                            
                         }
                         else
                         {
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
                             Process.Start("./Updater/Updater", $"/update {url} ./DiscordBot ./");
                         }
-                        Environment.Exit(0);
+                        //Environment.Exit(0);
                     }
 
                     break;
