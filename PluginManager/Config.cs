@@ -11,7 +11,7 @@ namespace PluginManager
 {
     internal class AppConfig
     {
-        public string UpdaterVersion { get; set; }
+        public string? UpdaterVersion { get; set; }
         public Dictionary<string, object>? ApplicationVariables { get; init; }
         public List<string>? ProtectedKeyWords { get; init; }
         public Dictionary<string, string>? PluginVersions { get; init; }

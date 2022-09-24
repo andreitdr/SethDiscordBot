@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Discord;
 
 using DiscordBot.Discord.Core;
-
 using PluginManager;
 using PluginManager.Items;
 using PluginManager.Online;
@@ -105,7 +104,7 @@ public class Program
     /// <param name="discordbooter">The discord booter used to start the application</param>
     private static void NoGUI(Boot discordbooter)
     {
-        
+
 #if DEBUG
         Console.WriteLine();
         ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
@@ -388,9 +387,9 @@ public class Program
 
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
                             //string url2 = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}-preview/net6.0.zip";
-                            
+
                             Process.Start(".\\Updater\\Updater.exe", $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
-                            
+
                         }
                         else
                         {
