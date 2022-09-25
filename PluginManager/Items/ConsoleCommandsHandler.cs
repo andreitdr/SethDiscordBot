@@ -274,7 +274,7 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("extern", "Load an external command", "extern [pluginName]", async (args) =>
+        AddCommand("import", "Load an external command", "import [pluginName]", async (args) =>
         {
             if (args.Length <= 1) return;
             string pName = Functions.MergeStrings(args, 1);
