@@ -14,9 +14,7 @@ using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
-using PluginManager.Online.Updates;
 using PluginManager.Others;
-
 namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
@@ -162,8 +160,18 @@ public class ConsoleCommandsHandler
                     path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command" ? PluginLoader.pluginCMDExtension : PluginLoader.pluginEVEExtension);
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
-                //Console.WriteLine("Downloading: " + path + " [" + info[1] + "]");
-                await ServerCom.DownloadFileAsync(info[1], path);
+                if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                {
+                    await ServerCom.DownloadFileAsync(info[1], path);
+                }
+                else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                {
+                    Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                    bar.Start();
+                    await ServerCom.DownloadFileNoProgressAsync(info[1], path);
+                    bar.Stop("Plugin Downloaded !");
+                }
+
                 if (info[0] == "Event")
                     Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
                 else if (info[0] == "Command")
@@ -187,7 +195,16 @@ public class ConsoleCommandsHandler
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
-                        await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
+                        if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
+                        else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                        {
+                            Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                            bar.Start();
+                            await ServerCom.DownloadFileNoProgressAsync(split[0], "./" + split[1]);
+                            bar.Stop("Item downloaded !");
+
+                        }
                         Console.WriteLine();
                         if (split[0].EndsWith(".pak"))
                             File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
@@ -197,7 +214,7 @@ public class ConsoleCommandsHandler
                             var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);// { Max = 100f, Color = ConsoleColor.Green };
                             bar.Start();
                             await Functions.ExtractArchive("./" + split[1], "./", null, UnzipProgressType.PercentageFromTotalSize);
-                            bar.Stop();
+                            bar.Stop("Extracted");
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -208,10 +225,12 @@ public class ConsoleCommandsHandler
                 VersionString? ver = await VersionString.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
                 Config.SetPluginVersion(name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
-                // Console.WriteLine();
 
                 isDownloading = false;
+
+
             }
+
         );
 
 
@@ -264,11 +283,12 @@ public class ConsoleCommandsHandler
                 bar.Start();
                 await Config.SaveConfig(SaveType.NORMAL);
                 await Config.SaveConfig(SaveType.BACKUP);
-                await Task.Delay(4000);
-                bar.Stop();
+                bar.Stop("Saved config !");
                 Console.WriteLine();
                 await client.StopAsync();
                 await client.DisposeAsync();
+
+                await Task.Delay(1000);
                 Environment.Exit(0);
 
             }

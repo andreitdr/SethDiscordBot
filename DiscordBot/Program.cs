@@ -4,12 +4,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Discord;
 
 using DiscordBot.Discord.Core;
+
 using PluginManager;
 using PluginManager.Items;
 using PluginManager.Online;
@@ -230,6 +232,11 @@ public class Program
             len = 0;
         }
 
+        if (len == 2 && args[0] == "/procKill")
+        {
+            Process.GetProcessById(int.Parse(args[1])).Kill();
+            len = 0;
+        }
 
 
         var b = await StartNoGUI();
@@ -370,7 +377,7 @@ public class Program
 
 
         List<string> onlineSettingsList = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
-        main.Stop();
+        main.Stop("Loaded online settings. Loading updates ...");
         foreach (var key in onlineSettingsList)
         {
             if (key.Length <= 3 || !key.Contains(' ')) continue;
@@ -394,7 +401,14 @@ public class Program
                         else
                         {
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                            Process.Start("./Updater/Updater", $"/update {url} ./DiscordBot ./");
+                            Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                            bar.Start();
+                            await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
+                            await Functions.ExtractArchive("./update.zip", "./", null, UnzipProgressType.PercentageFromNumberOfFiles);
+                            bar.Stop("Console is now Updated");
+
+                            Process.Start("./DiscordBot /procKill " + Process.GetCurrentProcess().Id);
+
                         }
                         //Environment.Exit(0);
                     }
@@ -402,7 +416,7 @@ public class Program
                     break;
                 case "UpdaterVersion":
                     string updaternewversion = s[1];
-                    if (Config.UpdaterVersion != updaternewversion)
+                    if (Config.UpdaterVersion != updaternewversion && Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS)
                     {
                         Console.Clear();
                         Console.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
@@ -413,7 +427,7 @@ public class Program
                         Config.UpdaterVersion = updaternewversion;
                         File.Delete("Updater.zip");
                         await Config.SaveConfig(SaveType.NORMAL);
-                        bar.Stop();
+                        bar.Stop("Updater has been updated !");
                         Console.Clear();
                     }
                     break;
