@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager;
 using PluginManager.Interfaces;
 
@@ -28,16 +30,6 @@ internal class Settings : DBCommand
     public string Usage => "set [keyword] [new Value]";
 
     /// <summary>
-    ///     Check if the command can be used <inheritdoca DM <see cref="IChannel" />/>
-    /// </summary>
-    public bool canUseDM => true;
-
-    /// <summary>
-    ///     Check if the command can be used in a server
-    /// </summary>
-    public bool canUseServer => true;
-
-    /// <summary>
     ///     Check if the command require administrator to be executed
     /// </summary>
     public bool requireAdmin => true;
@@ -46,16 +38,13 @@ internal class Settings : DBCommand
     ///     The main body of the command
     /// </summary>
     /// <param name="context">The command context</param>
-    /// <param name="message">The command message</param>
-    /// <param name="client">The discord bot client</param>
-    /// <param name="isDM">True if the message was sent from a DM channel, false otherwise</param>
-    public async void Execute(SocketCommandContext context, SocketMessage message, DiscordSocketClient client, bool isDM)
+    public async void Execute(SocketCommandContext context)
     {
-        var channel = message.Channel;
+        var channel = context.Message.Channel;
         try
         {
-            var content = message.Content;
-            var data    = content.Split(' ');
+            var content = context.Message.Content;
+            var data = content.Split(' ');
             var keyword = data[1];
             if (keyword.ToLower() == "help")
             {

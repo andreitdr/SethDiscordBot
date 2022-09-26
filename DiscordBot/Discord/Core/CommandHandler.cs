@@ -1,8 +1,10 @@
 ﻿using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Discord.Commands;
 using Discord.WebSocket;
+
 using PluginManager.Loaders;
 using PluginManager.Others;
 using PluginManager.Others.Permissions;
@@ -11,9 +13,9 @@ namespace DiscordBot.Discord.Core;
 
 internal class CommandHandler
 {
-    private readonly string              botPrefix;
+    private readonly string botPrefix;
     private readonly DiscordSocketClient client;
-    private readonly CommandService      commandService;
+    private readonly CommandService commandService;
 
     /// <summary>
     ///     Command handler constructor
@@ -23,9 +25,9 @@ internal class CommandHandler
     /// <param name="botPrefix">The prefix to watch for</param>
     public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
     {
-        this.client         = client;
+        this.client = client;
         this.commandService = commandService;
-        this.botPrefix      = botPrefix;
+        this.botPrefix = botPrefix;
     }
 
     /// <summary>
@@ -75,57 +77,19 @@ internal class CommandHandler
 
             var plugin = PluginLoader.Commands!.Where(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) || (p.Aliases is not null && p.Aliases.Contains(message.Content.Split(' ')[0].Substring(botPrefix.Length)))).FirstOrDefault();
 
+            if (plugin is null) throw new System.Exception("Failed to run command. !");
 
-            if (plugin != null)
-            {
-                if (message.Channel == await message.Author.CreateDMChannelAsync())
-                {
-                    if (plugin.canUseDM)
-                    {
-                        if (plugin.requireAdmin)
-                        {
-                            if (message.Author.isAdmin())
-                            {
-                                plugin.Execute(context, message, client, true);
-                                Functions.WriteLogFile($"[{message.Author.Id}] Executed command (DM) : " + plugin.Command);
-                                return;
-                            }
+            if (plugin.requireAdmin && !context.Message.Author.isAdmin())
+                return;
 
-                            await message.Channel.SendMessageAsync("This command is for administrators only !");
-                            return;
-                        }
+            if (context.Channel is SocketDMChannel)
+                plugin.ExecuteDM(context);
+            else plugin.ExecuteServer(context);
 
-                        plugin.Execute(context, message, client, true);
-                        Functions.WriteLogFile($"[{message.Author.Id}] Executed command (DM) : " + plugin.Command);
-                        return;
-                    }
-
-                    await message.Channel.SendMessageAsync("This command is not for DMs");
-                    return;
-                }
-
-                if (plugin.canUseServer)
-                {
-                    if (plugin.requireAdmin)
-                    {
-                        if (message.Author.isAdmin())
-                        {
-                            plugin.Execute(context, message, client, false);
-                            Functions.WriteLogFile($"[{message.Author.Id}] Executed command : " + plugin.Command);
-                            return;
-                        }
-
-                        await message.Channel.SendMessageAsync("This command is for administrators only !");
-                        return;
-                    }
-
-                    plugin.Execute(context, message, client, false);
-                    Functions.WriteLogFile($"[{message.Author.Id}] Executed command : " + plugin.Command);
-                }
-            }
         }
-        catch
+        catch (System.Exception ex)
         {
+            ex.WriteErrFile();
         }
     }
 }

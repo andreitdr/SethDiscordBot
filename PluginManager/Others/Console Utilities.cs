@@ -42,24 +42,95 @@ namespace PluginManager.Others
             public bool NoColor { get; init; }
             public ProgressBarType type { get; set; }
 
+            public int TotalLength { get; private set; }
+
             private int BarLength = 32;
             private int position = 1;
             private bool positive = true;
 
+            private bool isRunning;
+
+
+            public async void Start()
+            {
+                if (type != ProgressBarType.NO_END)
+                    throw new Exception("Only NO_END progress bar can use this method");
+                if (isRunning)
+                    throw new Exception("This progress bar is already running");
+
+                isRunning = true;
+                while (isRunning)
+                {
+                    UpdateNoEnd();
+                    await System.Threading.Tasks.Task.Delay(100);
+                }
+            }
+
+            public async void Start(string message)
+            {
+                if (type != ProgressBarType.NO_END)
+                    throw new Exception("Only NO_END progress bar can use this method");
+                if (isRunning)
+                    throw new Exception("This progress bar is already running");
+
+                isRunning = true;
+
+                TotalLength = message.Length + BarLength + 5;
+                while (isRunning)
+                {
+                    UpdateNoEnd(message);
+                    await System.Threading.Tasks.Task.Delay(100);
+                }
+            }
+
+            public void Stop()
+            {
+                if (type != ProgressBarType.NO_END)
+                    throw new Exception("Only NO_END progress bar can use this method");
+                if (!isRunning)
+                    throw new Exception("Can not stop a progressbar that did not start");
+                isRunning = false;
+            }
+
+            public void Stop(string message)
+            {
+                Stop();
+
+                if (message is not null)
+                {
+                    Console.CursorLeft = 0;
+                    for (int i = 0; i < BarLength + message.Length + 1; i++)
+                        Console.Write(" ");
+                    Console.CursorLeft = 0;
+                    Console.WriteLine(message);
+                }
+            }
+
             public void Update(float progress)
             {
-                switch (type)
-                {
-                    case ProgressBarType.NORMAL:
-                        UpdateNormal(progress);
-                        return;
-                    case ProgressBarType.NO_END:
-                        if (progress <= 99.9f)
-                            UpdateNoEnd();
-                        return;
-                    default:
-                        return;
-                }
+                if (type == ProgressBarType.NO_END)
+                    throw new Exception("This function is for progress bars with end");
+
+                UpdateNormal(progress);
+            }
+
+            private void UpdateNoEnd(string message)
+            {
+                Console.CursorLeft = 0;
+                Console.Write("[");
+                for (int i = 1; i <= position; i++)
+                    Console.Write(" ");
+                Console.Write("<==()==>");
+                position += positive ? 1 : -1;
+                for (int i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
+                    Console.Write(" ");
+                Console.Write("] " + message);
+
+
+
+
+                if (position == BarLength - 1 || position == 1)
+                    positive = !positive;
             }
 
             private void UpdateNoEnd()
@@ -73,6 +144,8 @@ namespace PluginManager.Others
                 for (int i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
                     Console.Write(" ");
                 Console.Write("]");
+
+
 
 
                 if (position == BarLength - 1 || position == 1)

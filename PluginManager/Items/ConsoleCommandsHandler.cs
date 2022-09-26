@@ -14,9 +14,7 @@ using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
-using PluginManager.Online.Updates;
 using PluginManager.Others;
-
 namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
@@ -162,13 +160,22 @@ public class ConsoleCommandsHandler
                     path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command" ? PluginLoader.pluginCMDExtension : PluginLoader.pluginEVEExtension);
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
-                //Console.WriteLine("Downloading: " + path + " [" + info[1] + "]");
-                await ServerCom.DownloadFileAsync(info[1], path);
-                if (info[0] == "Command" || info[0] == "Event")
-                    if (info[0] == "Event")
-                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
-                    else if (info[0] == "Command")
-                        Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
+                if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                {
+                    await ServerCom.DownloadFileAsync(info[1], path);
+                }
+                else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                {
+                    Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                    bar.Start();
+                    await ServerCom.DownloadFileNoProgressAsync(info[1], path);
+                    bar.Stop("Plugin Downloaded !");
+                }
+
+                if (info[0] == "Event")
+                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
+                else if (info[0] == "Command")
+                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -188,34 +195,26 @@ public class ConsoleCommandsHandler
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
-                        await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
-                        Console.WriteLine();
-
-                        if (split[0].EndsWith(".zip") || split[0].EndsWith(".pak") || split[0].EndsWith(".pkg"))
+                        if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
+                        else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
                         {
-                            Console.WriteLine($"Extracting {split[1]}");
-                            var proc = 0f;
-                            var isExtracting = true;
-                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, Color = ConsoleColor.Green };
+                            Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                            bar.Start();
+                            await ServerCom.DownloadFileNoProgressAsync(split[0], "./" + split[1]);
+                            bar.Stop("Item downloaded !");
 
-                            IProgress<float> extractProgress = new Progress<float>(value => { proc = value; });
-                            new Thread(new Task(() =>
-                                           {
-                                               while (isExtracting)
-                                               {
-                                                   bar.Update(proc);
-                                                   if (proc >= 99.9f)
-                                                       isExtracting = false;
-                                                   Thread.Sleep(500);
-                                               }
-                                           }
-                                       ).Start
-                            ).Start();
-                            await Functions.ExtractArchive("./" + split[1], "./", extractProgress, UnzipProgressType.PercentageFromTotalSize);
-                            bar.Update(100f);
-                            isExtracting = false;
-                            await Task.Delay(1000);
-                            bar.Update(100);
+                        }
+                        Console.WriteLine();
+                        if (split[0].EndsWith(".pak"))
+                            File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
+                        else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
+                        {
+                            Console.WriteLine($"Extracting {split[1]} ...");
+                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);// { Max = 100f, Color = ConsoleColor.Green };
+                            bar.Start();
+                            await Functions.ExtractArchive("./" + split[1], "./", null, UnzipProgressType.PercentageFromTotalSize);
+                            bar.Stop("Extracted");
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -226,10 +225,12 @@ public class ConsoleCommandsHandler
                 VersionString? ver = await VersionString.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
                 Config.SetPluginVersion(name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
-                // Console.WriteLine();
 
                 isDownloading = false;
+
+
             }
+
         );
 
 
@@ -277,30 +278,23 @@ public class ConsoleCommandsHandler
             {
                 if (client is null)
                     return;
-                bool run = true;
-                var t = new Thread(() =>
-                {
-                    Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
-                    while (run)
-                    {
-                        bar.Update(1);
-                        Thread.Sleep(50);
-                    }
-                });
-                t.Start();
+                Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+
+                bar.Start();
                 await Config.SaveConfig(SaveType.NORMAL);
                 await Config.SaveConfig(SaveType.BACKUP);
-                await Task.Delay(4000);
-                run = false;
+                bar.Stop("Saved config !");
                 Console.WriteLine();
                 await client.StopAsync();
                 await client.DisposeAsync();
+
+                await Task.Delay(1000);
                 Environment.Exit(0);
 
             }
         );
 
-        AddCommand("extern", "Load an external command", "extern [pluginName]", async (args) =>
+        AddCommand("import", "Load an external command", "import [pluginName]", async (args) =>
         {
             if (args.Length <= 1) return;
             string pName = Functions.MergeStrings(args, 1);

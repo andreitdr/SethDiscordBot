@@ -79,5 +79,11 @@ namespace PluginManager.Online
             pbar.Update(100f);
             isDownloading = false;
         }
+        public static async Task DownloadFileNoProgressAsync(string URL, string location)
+        {
+            IProgress<float> progress = new Progress<float>();
+            await DownloadFileAsync(URL, location, progress);
+        }
+
     }
 }

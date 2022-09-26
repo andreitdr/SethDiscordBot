@@ -50,20 +50,41 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param> 
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static async Task<Stream?> ReadFromPakAsync(string FileName, string archFile)
+        public static async Task<string> ReadFromPakAsync(string FileName, string archFile)
         {
             archFile = pakFolder + archFile;
-            Directory.CreateDirectory(pakFolder);
-            if (!File.Exists(archFile)) throw new FileNotFoundException("Failed to load file !");
+            if (!File.Exists(archFile))
+                throw new Exception("Failed to load file !");
 
-            using ZipArchive archive = ZipFile.OpenRead(archFile);
-            ZipArchiveEntry? entry = archive.GetEntry(FileName);
-            if (entry is null) return Stream.Null;
-            MemoryStream stream = new MemoryStream();
-            await (entry?.Open()!).CopyToAsync(stream);
+            try
+            {
+                string textValue = null;
+                using (var fs = new FileStream(archFile, FileMode.Open))
+                using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (entry.Name == FileName || entry.FullName == FileName)
+                        {
+                            using (Stream s = entry.Open())
+                            using (StreamReader reader = new StreamReader(s))
+                            {
+                                textValue = await reader.ReadToEndAsync();
+                                reader.Close();
+                                s.Close();
+                                fs.Close();
+                            }
+                        }
+                    }
+                return textValue;
+            }
+            catch
+            {
+                await Task.Delay(100);
+                return await ReadFromPakAsync(FileName, archFile);
+            }
 
-            return stream;
         }
+
 
         /// <summary>
         /// Write logs to file
@@ -85,6 +106,11 @@ namespace PluginManager.Others
             string errPath = errFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
             Directory.CreateDirectory(errFolder);
             File.AppendAllText(errPath, ErrMessage + " \n");
+        }
+
+        public static void WriteErrFile(this Exception ex)
+        {
+            WriteErrFile(ex.ToString());
         }
 
         /// <summary>
@@ -168,9 +194,7 @@ namespace PluginManager.Others
         /// <returns></returns>
         public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress, UnzipProgressType type)
         {
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-
+            Directory.CreateDirectory(folder);
             using (ZipArchive archive = ZipFile.OpenRead(zip))
             {
                 if (type == UnzipProgressType.PercentageFromNumberOfFiles)
@@ -194,7 +218,8 @@ namespace PluginManager.Others
 
                         currentZIPFile++;
                         await Task.Delay(10);
-                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
+                        if (progress != null)
+                            progress.Report((float)currentZIPFile / totalZIPFiles * 100);
                     }
                 }
                 else if (type == UnzipProgressType.PercentageFromTotalSize)
@@ -224,7 +249,8 @@ namespace PluginManager.Others
                         }
 
                         await Task.Delay(10);
-                        progress.Report((float)currentSize / zipSize * 100);
+                        if (progress != null)
+                            progress.Report((float)currentSize / zipSize * 100);
                     }
                 }
             }
