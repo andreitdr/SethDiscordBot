@@ -4,18 +4,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Discord;
 
 using DiscordBot.Discord.Core;
 
 using PluginManager;
+
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Others;
+
+using Terminal.Gui;
 
 namespace DiscordBot;
 
@@ -32,70 +33,112 @@ public class Program
     [Obsolete]
     public static void Main(string[] args)
     {
+
         Console.WriteLine("Loading resources ...");
         PreLoadComponents().Wait();
-        do
+
+
+        if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1))
         {
-            if (!Config.ContainsKey("ServerID"))
+            Application.Init();
+            var top = Application.Top;
+
+            Application.IsMouseDisabled = true;
+            var win = new Window("Discord Bot Config")
             {
+                X = 0,
+                Y = 1,
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 1
 
+            };
 
-                Console.WriteLine("Please enter the server ID: ");
-                Console_Utilities.WriteColorText("You can find it in the Server Settings at &r\"Widget\"&c section");
-                Console.WriteLine("Example: 1234567890123456789");
+            top.Add(win);
 
-                Console.WriteLine("This is not required, but is recommended. If you refuse to provide the ID, just press enter.\nThe server id is required to make easier for the bot to interact with the server.\nRemember: this bot is for one server ONLY.");
-                Console.Write("User Input > ");
-                ConsoleKeyInfo key = Console.ReadKey();
-                if (key.Key == ConsoleKey.Enter)
-                    Config.AddValueToVariables("ServerID", "null", false);
-                else
-                {
-                    string SID = key.KeyChar + Console.ReadLine();
-                    if (SID.Length != 18)
-                    {
-                        Console.Clear();
-                        Console_Utilities.WriteColorText("&rYour server ID is not 18 characters long. Please try again. \n");
-
-                        continue;
-                    }
-                    Config.AddValueToVariables("ServerID", SID, false);
-                }
-            }
-
-            if (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59))
+            var labelInfo = new Label("Some config information are missing. Please fill them in again")
             {
-                Console.WriteLine("Please insert your token");
-                Console.Write("Token = ");
-                var token = Console.ReadLine();
-                if (token?.Length == 59 || token?.Length == 70)
-                    Config.AddValueToVariables("token", token, true);
-                else
-                {
-                    Console.Clear();
-                    Console_Utilities.WriteColorText("&rThe token length is invalid !");
-                    continue;
-                }
-            }
+                X = Pos.Center(),
+                Y = 2
+            };
 
-            if (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1)
+            var labelToken = new Label("Please insert your token here: ")
             {
-                Console.WriteLine("Please insert your prefix (max. 1 character long):");
-                Console.WriteLine("For a prefix longer then one character, the first character will be saved and the others will be ignored.\n No spaces, numbers, '/' or '\\' allowed");
-                Console.Write("Prefix = ");
-                var prefix = Console.ReadLine()![0];
+                X = 5,
+                Y = 5
+            };
 
-                if (prefix == ' ' || char.IsDigit(prefix) || prefix == '/' || prefix == '\\')
+            var textFiledToken = new TextField("")
+            {
+                X = Pos.Left(labelToken) + labelToken.Text.Length + 2,
+                Y = labelToken.Y,
+                Width = 70
+            };
+
+            var labelPrefix = new Label("Please insert your prefix here: ")
+            {
+                X = 5,
+                Y = 8
+            };
+            var textFiledPrefix = new TextField("")
+            {
+                X = Pos.Left(labelPrefix) + labelPrefix.Text.Length + 2,
+                Y = labelPrefix.Y,
+                Width = 1
+            };
+
+            var labelServerid = new Label("Please insert your server id here (optional): ")
+            {
+                X = 5,
+                Y = 11,
+
+            };
+            var textFiledServerID = new TextField("null")
+            {
+                X = Pos.Left(labelServerid) + labelServerid.Text.Length + 2,
+                Y = labelServerid.Y,
+                Width = 18
+            };
+
+            var button = new Button("Submit")
+            {
+                X = Pos.Center(),
+                Y = 16,
+                IsDefault = true
+            };
+
+            button.Clicked += () =>
+            {
+                string passMessage = "";
+                if (textFiledToken.Text.Length != 70 && textFiledToken.Text.Length != 59)
+                    passMessage += "Invalid token, ";
+                if (textFiledPrefix.Text.ContainsAny("0123456789/\\ ") || textFiledPrefix.Text.Length != 1)
+                    passMessage += "Invalid prefix, ";
+                if (textFiledServerID.Text.Length != 18 && textFiledServerID.Text.Length > 0)
+                    passMessage += "Invalid serverID";
+
+                if (passMessage != "")
                 {
-                    Console.Clear();
-                    Console_Utilities.WriteColorText("&rThe prefix is invalid");
-                    continue;
+                    MessageBox.ErrorQuery("Discord Bot Settings", "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
+                    return;
                 }
-                Config.AddValueToVariables("prefix", prefix.ToString(), false);
-            }
 
-            break;
-        } while (true);
+
+                Config.AddValueToVariables<string>("ServerID", ((string)textFiledServerID.Text), true);
+                Config.AddValueToVariables<string>("token", ((string)textFiledToken.Text), true);
+                Config.AddValueToVariables<string>("prefix", ((string)textFiledPrefix.Text), true);
+
+                MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D", "Start :D");
+                top.Running = false;
+
+
+            };
+
+            win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
+            win.Add(textFiledToken, textFiledPrefix, textFiledServerID);
+            win.Add(button);
+            Application.Run();
+            Application.Shutdown();
+        }
 
         HandleInput(args).Wait();
     }
