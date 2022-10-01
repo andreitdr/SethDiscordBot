@@ -401,16 +401,13 @@ public class Program
                         else
                         {
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                            Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
-                            bar.Start();
+                            Console.WriteLine("Downloading update ...");
                             await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
-                            await Functions.ExtractArchive("./update.zip", "./", null, UnzipProgressType.PercentageFromNumberOfFiles);
-                            bar.Stop("Console is now Updated");
-
-                            Process.Start("./DiscordBot /procKill " + Process.GetCurrentProcess().Id);
+                            await File.WriteAllTextAsync("Install.sh", "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
+                            Process.Start("Install.sh").WaitForExit();
+                            Environment.Exit(0);
 
                         }
-                        //Environment.Exit(0);
                     }
 
                     break;
