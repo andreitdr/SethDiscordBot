@@ -37,28 +37,28 @@ public class Program
         PreLoadComponents().Wait();
 
 
-        if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1))
+        if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1) || (args.Length > 0 && args[0] == "/newconfig"))
         {
             Application.Init();
             var top = Application.Top;
 
             Application.IsMouseDisabled = true;
-            var win = new Window("Discord Bot Config")
+            var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
             {
                 X = 0,
                 Y = 1,
                 Width = Dim.Fill(),
-                Height = Dim.Fill() - 1
-
+                Height = Dim.Fill()
             };
 
             top.Add(win);
 
-            var labelInfo = new Label("Some config information are missing. Please fill them in again")
+            var labelInfo = new Label("Configuration file not found or invalid. Please fill the following fields to create a new configuration file.")
             {
                 X = Pos.Center(),
                 Y = 2
             };
+
 
             var labelToken = new Label("Please insert your token here: ")
             {
@@ -100,9 +100,20 @@ public class Program
 
             var button = new Button("Submit")
             {
-                X = Pos.Center(),
-                Y = 16,
-                IsDefault = true
+                X = Pos.Center() - 10,
+                Y = 16
+            };
+
+            var button2 = new Button("License")
+            {
+                X = Pos.Center() + 10,
+                Y = 16
+            };
+
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                top.Running = false;
+
             };
 
             button.Clicked += () =>
@@ -132,9 +143,28 @@ public class Program
 
             };
 
+            button2.Clicked += async () =>
+            {
+                string[] license = await File.ReadAllLinesAsync("LICENSE.txt");
+                string ProductLicense = "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
+                int r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
+                if (r == 1)
+                {
+                    int i = 0;
+                    while (i < license.Length)
+                    {
+                        string print_message = license[i++] + "\n";
+                        for (; i < license.Length && !license[i].StartsWith("-----------"); i++)
+                            print_message += license[i] + "\n";
+                        if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
+                    }
+
+                }
+            };
+
             win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
             win.Add(textFiledToken, textFiledPrefix, textFiledServerID);
-            win.Add(button);
+            win.Add(button, button2);
             Application.Run();
             Application.Shutdown();
         }
