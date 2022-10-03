@@ -42,7 +42,7 @@ public class Program
             Application.Init();
             var top = Application.Top;
 
-            Application.IsMouseDisabled = true;
+            //Application.IsMouseDisabled = true;
             var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
             {
                 X = 0,
@@ -91,7 +91,7 @@ public class Program
                 Y = 11,
 
             };
-            var textFiledServerID = new TextField("null")
+            var textFiledServerID = new TextField("")
             {
                 X = Pos.Left(labelServerid) + labelServerid.Text.Length + 2,
                 Y = labelServerid.Y,
@@ -145,16 +145,16 @@ public class Program
 
             button2.Clicked += async () =>
             {
-                string[] license = await File.ReadAllLinesAsync("LICENSE.txt");
+                List<string> license = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
                 string ProductLicense = "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
                 int r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
                 if (r == 1)
                 {
                     int i = 0;
-                    while (i < license.Length)
+                    while (i < license.Count)
                     {
                         string print_message = license[i++] + "\n";
-                        for (; i < license.Length && !license[i].StartsWith("-----------"); i++)
+                        for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
                             print_message += license[i] + "\n";
                         if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
                     }
