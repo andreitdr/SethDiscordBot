@@ -368,3 +368,5 @@ FodyWeavers.xsd
 #folders
 /Plugins/
 /DiscordBot.rar
+/DiscordBot/Data/
+/DiscordBot/Updater/

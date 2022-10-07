@@ -121,17 +121,21 @@ namespace PluginManager.Others
         /// <returns>A string built based on the array</returns>
         public static string MergeStrings(this string[] s, int indexToStart)
         {
-            string r = "";
-            int len = s.Length;
-            if (len <= indexToStart) return "";
-            for (int i = indexToStart; i < len - 1; ++i)
-            {
-                r += s[i] + " ";
-            }
+            return string.Join(' ', s, indexToStart, s.Length - 1);
 
-            r += s[len - 1];
+            /*            string r = "";
 
-            return r;
+                        int len = s.Length;
+                        if (len <= indexToStart) return "";
+                        for (int i = indexToStart; i < len - 1; ++i)
+                        {
+                            r += s[i] + " ";
+                        }
+
+                        r += s[len - 1];
+
+                        return r;
+            */
         }
 
         /// <summary>

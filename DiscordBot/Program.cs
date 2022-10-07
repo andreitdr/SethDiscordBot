@@ -37,6 +37,7 @@ public class Program
         PreLoadComponents().Wait();
 
 
+
         if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1) || (args.Length > 0 && args[0] == "/newconfig"))
         {
             Application.Init();
