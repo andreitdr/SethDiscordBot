@@ -1,10 +1,11 @@
-﻿using System;
-using PluginManager.Others;
+﻿using PluginManager.Others;
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PluginManager
 {
@@ -226,6 +227,23 @@ namespace PluginManager
 
                 Functions.WriteLogFile($"Loaded {appConfig.ApplicationVariables!.Keys.Count} application variables.\nLoaded {appConfig.ProtectedKeyWords!.Count} readonly variables.");
                 return;
+            }
+            else if (File.Exists(Functions.dataFolder + "config.json.bak"))
+            {
+                try
+                {
+
+
+                    Console.WriteLine("An error occured while loading the settings. Importing from backup file...");
+                    path = Functions.dataFolder + "config.json.bak";
+                    appConfig = await Functions.ConvertFromJson<AppConfig>(path);
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
             appConfig = new() { ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>(), PluginVersions = new Dictionary<string, string>(), UpdaterVersion = "-1" };
         }

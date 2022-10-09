@@ -1,19 +1,18 @@
-﻿using System;
+﻿using DiscordBot.Discord.Core;
+
+using PluginManager;
+using PluginManager.Items;
+using PluginManager.Online;
+using PluginManager.Online.Helpers;
+using PluginManager.Others;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-
-using DiscordBot.Discord.Core;
-
-using PluginManager;
-
-using PluginManager.Items;
-using PluginManager.Online;
-using PluginManager.Others;
 
 using Terminal.Gui;
 
@@ -36,14 +35,10 @@ public class Program
         Console.WriteLine("Loading resources ...");
         PreLoadComponents().Wait();
 
-
-
         if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1) || (args.Length > 0 && args[0] == "/newconfig"))
         {
             Application.Init();
             var top = Application.Top;
-
-            //Application.IsMouseDisabled = true;
             var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
             {
                 X = 0,
@@ -282,35 +277,7 @@ public class Program
     /// <param name="args">The arguments</param>
     private static async Task HandleInput(string[] args)
     {
-
         var len = args.Length;
-
-        if (len == 3 && args[0] == "/download")
-        {
-            var url = args[1];
-            var location = args[2];
-
-            await ServerCom.DownloadFileAsync(url, location);
-
-            return;
-        }
-
-        if (len > 0 && (args.Contains("--cmd") || args.Contains("--args") || args.Contains("--nomessage")))
-        {
-            if (args.Contains("lp") || args.Contains("loadplugins"))
-                loadPluginsOnStartup = true;
-            if (args.Contains("listplugs"))
-                listPluginsAtStartup = true;
-
-            len = 0;
-        }
-
-        if (len == 2 && args[0] == "/procKill")
-        {
-            Process.GetProcessById(int.Parse(args[1])).Kill();
-            len = 0;
-        }
-
 
         var b = await StartNoGUI();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
@@ -322,91 +289,28 @@ public class Program
             Console.WriteLine("Starting to remove " + plugName);
             await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
             loadPluginsOnStartup = true;
-            len = 0;
         }
 
-        if (len > 0 && args[0] == "/updateplug")
+        Thread mainThread = new Thread(() =>
         {
-            string plugName = args.MergeStrings(1);
-            Console.WriteLine("Updating " + plugName);
-            await ConsoleCommandsHandler.ExecuteCommad("dwplug" + plugName);
-            return;
-        }
-
-        if (len == 0 || (args[0] != "--exec" && args[0] != "--execute"))
-        {
-
-            Thread mainThread = new Thread(() =>
+            try
             {
-                try
-                {
-                    NoGUI(b);
-                }
-                catch (IOException ex)
-                {
-                    if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
-                    {
-                        if (!Config.ContainsKey("LaunchMessage"))
-                            Config.AddValueToVariables("LaunchMessage", "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", false);
-                        Functions.WriteErrFile(ex.ToString());
-                    }
-                }
-
-
-
-            });
-            mainThread.Start();
-            return;
-        }
-
-
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
-        Console.WriteLine("Execute command interface noGUI\n\n");
-        Console.WriteLine(
-            "\tCommand name\t\t\t\tDescription\n" +
-            "-- help | -help\t\t ------ \tDisplay the help message\n" +
-            "--reset-full\t\t ------ \tReset all files (clear files)\n" +
-            "--reset-logs\t\t ------ \tClear up the output folder\n" +
-            "--start\t\t ------ \tStart the bot\n" +
-            "exit\t\t\t ------ \tClose the application"
-        );
-        while (true)
-        {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("> ");
-            var message = Console.ReadLine().Split(' ');
-
-            switch (message[0])
-            {
-                case "--help":
-                case "-help":
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("\tCommand name\t\t\t\tDescription\n" + "-- help | -help\t\t ------ \tDisplay the help message\n" + "--reset-full\t\t ------ \tReset all files (clear files)\n" + "--reset-settings\t ------ \tReset only bot settings\n" + "--reset-logs\t\t ------ \tClear up the output folder\n" + "--start\t\t ------ \tStart the bot\n" + "exit\t\t\t ------ \tClose the application");
-                    break;
-                case "--reset-full":
-                    await ClearFolder("./Data/Resources/");
-                    await ClearFolder("./Output/Logs/");
-                    await ClearFolder("./Output/Errors");
-                    await ClearFolder("./Data/Languages/");
-                    await ClearFolder("./Data/Plugins/Commands");
-                    await ClearFolder("./Data/Plugins/Events");
-                    Console.WriteLine("Successfully cleared all folders");
-                    break;
-                case "--reset-logs":
-                    await ClearFolder("./Output/Logs");
-                    await ClearFolder("./Output/Errors");
-                    Console.WriteLine("Successfully clear logs folder");
-                    break;
-                case "--exit":
-                case "exit":
-                    Environment.Exit(0);
-                    break;
-
-                default:
-                    Console.WriteLine("Failed to execute command " + message[0]);
-                    break;
+                NoGUI(b);
             }
-        }
+            catch (IOException ex)
+            {
+                if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
+                {
+                    if (!Config.ContainsKey("LaunchMessage"))
+                        Config.AddValueToVariables("LaunchMessage", "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", false);
+                    Functions.WriteErrFile(ex.ToString());
+                }
+            }
+
+
+
+        });
+        mainThread.Start();
     }
 
     private static async Task PreLoadComponents()
@@ -462,12 +366,19 @@ public class Program
                     string newVersion = s[1];
                     if (!newVersion.Equals(Config.GetValue<string>("Version")))
                     {
+
+                        VersionString nVer = new VersionString(newVersion.Substring(2));
+                        VersionString cVer = new VersionString(Config.GetValue<string>("Version").Substring(2));
+                        if (cVer > nVer)
+                        {
+                            Config.SetValue<string>("Version", "1." + cVer.ToShortString() + " (Beta)");
+                            break;
+                        }
+
                         if (Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS)
                         {
 
                             string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
-                            //string url2 = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}-preview/net6.0.zip";
-
                             Process.Start(".\\Updater\\Updater.exe", $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
 
                         }
@@ -486,7 +397,7 @@ public class Program
                     break;
                 case "UpdaterVersion":
                     string updaternewversion = s[1];
-                    if (Config.UpdaterVersion != updaternewversion && Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS)
+                    if ((Config.UpdaterVersion != updaternewversion && Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS) || !Directory.Exists("./Updater") || !File.Exists("./Updater/Updater.exe"))
                     {
                         Console.Clear();
                         Console.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
