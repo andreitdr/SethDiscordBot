@@ -57,7 +57,7 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
-                        display[3] = (await VersionString.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
+                        display[3] = (await Online.ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
                         if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else
@@ -72,7 +72,7 @@ public class PluginsManager
                         display[0] = content[0];
                         display[1] = content[1];
                         display[2] = content[2];
-                        display[3] = (await VersionString.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
+                        display[3] = (await Online.ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0")).ToShortString();
                         if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
                             display[4] = "✓";
                         else

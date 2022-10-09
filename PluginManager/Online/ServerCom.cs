@@ -85,5 +85,23 @@ namespace PluginManager.Online
             await DownloadFileAsync(URL, location, progress);
         }
 
+        public static VersionString? GetVersionOfPackage(string pakName)
+        {
+            if (!Config.PluginVersionsContainsKey(pakName))
+                return null;
+            return new VersionString(Config.GetPluginVersion(pakName));
+        }
+
+        public static async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
+        {
+            string url = "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions";
+            List<string> data = await ServerCom.ReadTextFromURL(url);
+            string? version = (from item in data
+                               where !item.StartsWith("#") && item.StartsWith(pakName)
+                               select item.Split(',')[1]).FirstOrDefault();
+            if (version == default || version == null) return null;
+            return new VersionString(version);
+        }
+
     }
 }

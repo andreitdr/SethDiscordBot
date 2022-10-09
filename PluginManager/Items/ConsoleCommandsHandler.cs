@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+
+
 namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
@@ -129,6 +130,7 @@ public class ConsoleCommandsHandler
 
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
+
                 isDownloading = true;
                 if (args.Length == 1)
                 {
@@ -222,7 +224,7 @@ public class ConsoleCommandsHandler
 
                     Console.WriteLine();
                 }
-                VersionString? ver = await VersionString.GetVersionOfPackageFromWeb(name);
+                VersionString? ver = await Online.ServerCom.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
                 Config.SetPluginVersion(name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
 
@@ -297,29 +299,38 @@ public class ConsoleCommandsHandler
         AddCommand("import", "Load an external command", "import [pluginName]", async (args) =>
         {
             if (args.Length <= 1) return;
-            string pName = Functions.MergeStrings(args, 1);
-            HttpClient client = new HttpClient();
-            string url = (await manager.GetPluginLinkByName(pName))[1];
-            Stream s = await client.GetStreamAsync(url);
-            MemoryStream str = new MemoryStream();
-            await s.CopyToAsync(str);
-            var asmb = Assembly.Load(str.ToArray());
-
-            var types = asmb.GetTypes();
-            foreach (var type in types)
+            try
             {
-                if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+                string pName = Functions.MergeStrings(args, 1);
+                HttpClient client = new HttpClient();
+                string url = (await manager.GetPluginLinkByName(pName))[1];
+                if (url is null) throw new Exception($"Invalid plugin name {pName}.");
+                Stream s = await client.GetStreamAsync(url);
+                MemoryStream str = new MemoryStream();
+                await s.CopyToAsync(str);
+                var asmb = Assembly.Load(str.ToArray());
+
+                var types = asmb.GetTypes();
+                foreach (var type in types)
                 {
-                    DBEvent instance = (DBEvent)Activator.CreateInstance(type);
-                    instance.Start(this.client);
-                    Console.WriteLine($"Loaded external {type.FullName}!");
-                }
-                else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
-                {
-                    Console.WriteLine("Only events can be loaded from external sources !");
-                    return;
+                    if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+                    {
+                        DBEvent instance = (DBEvent)Activator.CreateInstance(type);
+                        instance.Start(this.client);
+                        Console.WriteLine($"[EVENT] Loaded external {type.FullName}!");
+                    }
+                    else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
+                    {
+                        DBCommand instance = (DBCommand)Activator.CreateInstance(type);
+                        Console.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         });
 
         AddCommand("remplug", "Remove a plugin", "remplug [plugName]", async args =>

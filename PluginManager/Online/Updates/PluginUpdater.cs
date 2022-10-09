@@ -14,8 +14,8 @@ namespace PluginManager.Online.Updates
         {
             try
             {
-                var webV = await VersionString.GetVersionOfPackageFromWeb(pakName);
-                var local = VersionString.GetVersionOfPackage(pakName);
+                var webV = await Online.ServerCom.GetVersionOfPackageFromWeb(pakName);
+                var local = Online.ServerCom.GetVersionOfPackage(pakName);
 
                 if (local is null) return true;
                 if (webV is null) return false;
@@ -33,7 +33,7 @@ namespace PluginManager.Online.Updates
         {
             string url = "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions";
             List<string> info = await ServerCom.ReadTextFromURL(url);
-            VersionString? version = await VersionString.GetVersionOfPackageFromWeb(pakName);
+            VersionString? version = await Online.ServerCom.GetVersionOfPackageFromWeb(pakName);
 
             if (version is null) return Update.Empty;
             Update update = new Update(pakName, string.Join('\n', info), version);
@@ -42,7 +42,7 @@ namespace PluginManager.Online.Updates
 
         public static async Task Download(string pakName)
         {
-            Console_Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" + (await VersionString.GetVersionOfPackageFromWeb(pakName))?.ToShortString() + "&c. Current Version: &y" + VersionString.GetVersionOfPackage(pakName)?.ToShortString());
+            Console_Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" + (await Online.ServerCom.GetVersionOfPackageFromWeb(pakName))?.ToShortString() + "&c. Current Version: &y" + Online.ServerCom.GetVersionOfPackage(pakName)?.ToShortString());
             await ConsoleCommandsHandler.ExecuteCommad("dwplug " + pakName);
         }
 
