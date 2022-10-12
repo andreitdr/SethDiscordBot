@@ -7,7 +7,6 @@ using PluginManager.Online.Helpers;
 using PluginManager.Others;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -15,6 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Terminal.Gui;
+
+using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace DiscordBot;
 
@@ -31,11 +32,14 @@ public class Program
     [Obsolete]
     public static void Main(string[] args)
     {
-
         Console.WriteLine("Loading resources ...");
         PreLoadComponents().Wait();
 
-        if (!Config.ContainsKey("ServerID") || (!Config.ContainsKey("token") || Config.GetValue<string>("token") == null || (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59)) || (!Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null || Config.GetValue<string>("prefix")?.Length != 1) || (args.Length > 0 && args[0] == "/newconfig"))
+        if (!Config.ContainsKey("ServerID") || !Config.ContainsKey("token") ||
+            Config.GetValue<string>("token") == null ||
+            (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59) ||
+            !Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null ||
+            Config.GetValue<string>("prefix")?.Length != 1 || (args.Length > 0 && args[0] == "/newconfig"))
         {
             Application.Init();
             var top = Application.Top;
@@ -49,11 +53,13 @@ public class Program
 
             top.Add(win);
 
-            var labelInfo = new Label("Configuration file not found or invalid. Please fill the following fields to create a new configuration file.")
-            {
-                X = Pos.Center(),
-                Y = 2
-            };
+            var labelInfo =
+                new Label(
+                    "Configuration file not found or invalid. Please fill the following fields to create a new configuration file.")
+                {
+                    X = Pos.Center(),
+                    Y = 2
+                };
 
 
             var labelToken = new Label("Please insert your token here: ")
@@ -84,8 +90,7 @@ public class Program
             var labelServerid = new Label("Please insert your server id here (optional): ")
             {
                 X = 5,
-                Y = 11,
-
+                Y = 11
             };
             var textFiledServerID = new TextField("")
             {
@@ -106,15 +111,11 @@ public class Program
                 Y = 16
             };
 
-            Console.CancelKeyPress += (sender, e) =>
-            {
-                top.Running = false;
-
-            };
+            Console.CancelKeyPress += (sender, e) => { top.Running = false; };
 
             button.Clicked += () =>
             {
-                string passMessage = "";
+                var passMessage = "";
                 if (textFiledToken.Text.Length != 70 && textFiledToken.Text.Length != 59)
                     passMessage += "Invalid token, ";
                 if (textFiledPrefix.Text.ContainsAny("0123456789/\\ ") || textFiledPrefix.Text.Length != 1)
@@ -124,37 +125,39 @@ public class Program
 
                 if (passMessage != "")
                 {
-                    MessageBox.ErrorQuery("Discord Bot Settings", "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
+                    MessageBox.ErrorQuery("Discord Bot Settings",
+                                          "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
                     return;
                 }
 
 
-                Config.AddValueToVariables<string>("ServerID", ((string)textFiledServerID.Text), true);
-                Config.AddValueToVariables<string>("token", ((string)textFiledToken.Text), true);
-                Config.AddValueToVariables<string>("prefix", ((string)textFiledPrefix.Text), true);
+                Config.AddValueToVariables("ServerID", (string)textFiledServerID.Text, true);
+                Config.AddValueToVariables("token", (string)textFiledToken.Text, true);
+                Config.AddValueToVariables("prefix", (string)textFiledPrefix.Text, true);
 
-                MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D", "Start :D");
+                MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D",
+                                 "Start :D");
                 top.Running = false;
-
-
             };
 
             button2.Clicked += async () =>
             {
-                List<string> license = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
-                string ProductLicense = "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
-                int r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
+                var license =
+                    await ServerCom.ReadTextFromURL(
+                        "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
+                var ProductLicense =
+                    "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
+                var r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
                 if (r == 1)
                 {
-                    int i = 0;
+                    var i = 0;
                     while (i < license.Count)
                     {
-                        string print_message = license[i++] + "\n";
+                        var print_message = license[i++] + "\n";
                         for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
                             print_message += license[i] + "\n";
                         if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
                     }
-
                 }
             };
 
@@ -174,7 +177,6 @@ public class Program
     /// <param name="discordbooter">The discord booter used to start the application</param>
     private static void NoGUI(Boot discordbooter)
     {
-
 #if DEBUG
         Console.WriteLine();
         ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
@@ -186,14 +188,13 @@ public class Program
 
         while (true)
         {
-
             var cmd = Console.ReadLine();
             if (!consoleCommandsHandler.HandleCommand(cmd!
 #if DEBUG
-               , false
+                                                    , false
 #endif
 
-             ) && cmd.Length > 0)
+            ) && cmd.Length > 0)
                 Console.WriteLine("Failed to run command " + cmd);
         }
     }
@@ -207,15 +208,19 @@ public class Program
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
-        List<string> startupMessageList = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
+        var startupMessageList =
+            await ServerCom.ReadTextFromURL(
+                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
         foreach (var message in startupMessageList)
             Console.WriteLine(message);
 
-        Console.WriteLine($"Running on version: {Config.GetValue<string>("Version") ?? System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
+        Console.WriteLine(
+            $"Running on version: {Config.GetValue<string>("Version") ?? Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
         Console.WriteLine($"Git URL: {Config.GetValue<string>("GitURL") ?? " Could not find Git URL"}");
 
-        Console_Utilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
+        Console_Utilities.WriteColorText(
+            "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
 
         if (Config.ContainsKey("LaunchMessage"))
@@ -224,8 +229,9 @@ public class Program
             Config.RemoveKey("LaunchMessage");
         }
 
-        Console_Utilities.WriteColorText("Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
-        Console.WriteLine($"============================ LOG ============================");
+        Console_Utilities.WriteColorText(
+            "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
+        Console.WriteLine("============================ LOG ============================");
 
         try
         {
@@ -235,11 +241,8 @@ public class Program
             if (!Directory.Exists("./Data/BetaTest"))
                 Console.WriteLine("Failed to start in debug mode because the folder ./Data/BetaTest does not exist");
             else
-            {
                 token = File.ReadAllText("./Data/BetaTest/token.txt");
-
-                //Debug mode code...
-            }
+            //Debug mode code...
 #endif
 
             var prefix = Config.GetValue<string>("prefix");
@@ -284,14 +287,13 @@ public class Program
 
         if (len > 0 && args[0] == "/remplug")
         {
-
-            string plugName = Functions.MergeStrings(args, 1);
+            var plugName = args.MergeStrings(1);
             Console.WriteLine("Starting to remove " + plugName);
             await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
             loadPluginsOnStartup = true;
         }
 
-        Thread mainThread = new Thread(() =>
+        var mainThread = new Thread(() =>
         {
             try
             {
@@ -302,20 +304,19 @@ public class Program
                 if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
                 {
                     if (!Config.ContainsKey("LaunchMessage"))
-                        Config.AddValueToVariables("LaunchMessage", "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", false);
+                        Config.AddValueToVariables("LaunchMessage",
+                                                   "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
+                                                   false);
                     Functions.WriteErrFile(ex.ToString());
                 }
             }
-
-
-
         });
         mainThread.Start();
     }
 
     private static async Task PreLoadComponents()
     {
-        Console_Utilities.ProgressBar main = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+        var main = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins/Commands");
@@ -326,7 +327,9 @@ public class Program
             if (Config.GetValue<bool>("DeleteLogsAtStartup"))
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
-        List<string> OnlineDefaultKeys = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
+        var OnlineDefaultKeys =
+            await ServerCom.ReadTextFromURL(
+                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
 
         Config.PluginConfig.Load();
 
@@ -338,11 +341,13 @@ public class Program
         foreach (var key in OnlineDefaultKeys)
         {
             if (key.Length <= 3 || !key.Contains(' ')) continue;
-            string[] s = key.Split(' ');
+            var s = key.Split(' ');
             try
             {
                 if (Config.ContainsKey(s[0])) Config.SetValue(s[0], s[1]);
-                else Config.GetAndAddValueToVariable(s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
+                else
+                    Config.GetAndAddValueToVariable(
+                        s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
             }
             catch (Exception ex)
             {
@@ -351,66 +356,72 @@ public class Program
         }
 
 
-
-
-        List<string> onlineSettingsList = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
+        var onlineSettingsList =
+            await ServerCom.ReadTextFromURL(
+                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
         main.Stop("Loaded online settings. Loading updates ...");
         foreach (var key in onlineSettingsList)
         {
             if (key.Length <= 3 || !key.Contains(' ')) continue;
 
-            string[] s = key.Split(' ');
+            var s = key.Split(' ');
             switch (s[0])
             {
                 case "CurrentVersion":
-                    string newVersion = s[1];
+                    var newVersion = s[1];
                     if (!newVersion.Equals(Config.GetValue<string>("Version")))
                     {
-
-                        VersionString nVer = new VersionString(newVersion.Substring(2));
-                        VersionString cVer = new VersionString(Config.GetValue<string>("Version").Substring(2));
+                        var nVer = new VersionString(newVersion.Substring(2));
+                        var cVer = new VersionString(Config.GetValue<string>("Version").Substring(2));
                         if (cVer > nVer)
                         {
-                            Config.SetValue<string>("Version", "1." + cVer.ToShortString() + " (Beta)");
+                            Config.SetValue("Version", "1." + cVer.ToShortString() + " (Beta)");
                             break;
                         }
 
-                        if (Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS)
+                        if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
                         {
-
-                            string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
-                            Process.Start(".\\Updater\\Updater.exe", $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
-
+                            var url =
+                                $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
+                            Process.Start(".\\Updater\\Updater.exe",
+                                          $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
                         }
                         else
                         {
-                            string url = $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
+                            var url =
+                                $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
                             Console.WriteLine("Downloading update ...");
                             await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
-                            await File.WriteAllTextAsync("Install.sh", "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
+                            await File.WriteAllTextAsync("Install.sh",
+                                                         "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
                             Process.Start("Install.sh").WaitForExit();
                             Environment.Exit(0);
-
                         }
                     }
 
                     break;
                 case "UpdaterVersion":
-                    string updaternewversion = s[1];
-                    if ((Config.UpdaterVersion != updaternewversion && Functions.GetOperatingSystem() == PluginManager.Others.OperatingSystem.WINDOWS) || !Directory.Exists("./Updater") || !File.Exists("./Updater/Updater.exe"))
+                    var updaternewversion = s[1];
+                    if ((Config.UpdaterVersion != updaternewversion &&
+                         Functions.GetOperatingSystem() == OperatingSystem.WINDOWS) || !Directory.Exists("./Updater") ||
+                        !File.Exists("./Updater/Updater.exe"))
                     {
                         Console.Clear();
                         Console.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
-                        Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                        var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
-                        await ServerCom.DownloadFileNoProgressAsync("https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip", "./Updater.zip");
-                        await Functions.ExtractArchive("./Updater.zip", "./", null, UnzipProgressType.PercentageFromTotalSize);
+                        await ServerCom.DownloadFileNoProgressAsync(
+                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip",
+                            "./Updater.zip");
+                        await Functions.ExtractArchive("./Updater.zip", "./", null,
+                                                       UnzipProgressType.PercentageFromTotalSize);
                         Config.UpdaterVersion = updaternewversion;
                         File.Delete("Updater.zip");
                         await Config.SaveConfig(SaveType.NORMAL);
                         bar.Stop("Updater has been updated !");
                         Console.Clear();
                     }
+
                     break;
             }
         }

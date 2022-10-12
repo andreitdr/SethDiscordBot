@@ -1,10 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using Discord.Commands;
 using Discord.WebSocket;
-
 using PluginManager.Loaders;
 using PluginManager.Others;
 using PluginManager.Others.Permissions;
@@ -13,9 +12,9 @@ namespace DiscordBot.Discord.Core;
 
 internal class CommandHandler
 {
-    private readonly string botPrefix;
+    private readonly string              botPrefix;
     private readonly DiscordSocketClient client;
-    private readonly CommandService commandService;
+    private readonly CommandService      commandService;
 
     /// <summary>
     ///     Command handler constructor
@@ -25,9 +24,9 @@ internal class CommandHandler
     /// <param name="botPrefix">The prefix to watch for</param>
     public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
     {
-        this.client = client;
+        this.client         = client;
         this.commandService = commandService;
-        this.botPrefix = botPrefix;
+        this.botPrefix      = botPrefix;
     }
 
     /// <summary>
@@ -75,9 +74,15 @@ internal class CommandHandler
 
             await commandService.ExecuteAsync(context, argPos, null);
 
-            var plugin = PluginLoader.Commands!.Where(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) || (p.Aliases is not null && p.Aliases.Contains(message.Content.Split(' ')[0].Substring(botPrefix.Length)))).FirstOrDefault();
+            var plugin = PluginLoader.Commands!
+                                     .Where(
+                                          p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
+                                               (p.Aliases is not null &&
+                                                p.Aliases.Contains(
+                                                    message.Content.Split(' ')[0].Substring(botPrefix.Length))))
+                                     .FirstOrDefault();
 
-            if (plugin is null) throw new System.Exception("Failed to run command. !");
+            if (plugin is null) throw new Exception("Failed to run command. !");
 
             if (plugin.requireAdmin && !context.Message.Author.isAdmin())
                 return;
@@ -85,9 +90,8 @@ internal class CommandHandler
             if (context.Channel is SocketDMChannel)
                 plugin.ExecuteDM(context);
             else plugin.ExecuteServer(context);
-
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             ex.WriteErrFile();
         }

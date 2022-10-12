@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Discord.WebSocket;
 using PluginManager.Interfaces;
 using PluginManager.Others;
-using PluginManager.Others.Permissions;
 using DiscordLibCommands = Discord.Commands;
 using DiscordLib = Discord;
 using OperatingSystem = PluginManager.Others.OperatingSystem;
@@ -42,7 +40,7 @@ internal class Restart : DBCommand
     public async void ExecuteServer(DiscordLibCommands.SocketCommandContext context)
     {
         var args = Functions.GetArguments(context.Message);
-        var OS = Functions.GetOperatingSystem();
+        var OS   = Functions.GetOperatingSystem();
         if (args.Count == 0)
         {
             switch (OS)

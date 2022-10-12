@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-
 using PluginManager;
 using PluginManager.Interfaces;
 
@@ -44,12 +40,14 @@ internal class Settings : DBCommand
         try
         {
             var content = context.Message.Content;
-            var data = content.Split(' ');
+            var data    = content.Split(' ');
             var keyword = data[1];
             if (keyword.ToLower() == "help")
             {
-                await channel.SendMessageAsync("set token [new value] -- set the value of the new token (require restart)");
-                await channel.SendMessageAsync("set prefix [new value] -- set the value of the new preifx (require restart)");
+                await channel.SendMessageAsync(
+                    "set token [new value] -- set the value of the new token (require restart)");
+                await channel.SendMessageAsync(
+                    "set prefix [new value] -- set the value of the new preifx (require restart)");
 
                 return;
             }

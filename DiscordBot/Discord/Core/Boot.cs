@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
-using PluginManager;
-
 using static PluginManager.Others.Functions;
 
 namespace DiscordBot.Discord.Core;
@@ -47,7 +42,7 @@ internal class Boot
     public Boot(string botToken, string botPrefix)
     {
         this.botPrefix = botPrefix;
-        this.botToken = botToken;
+        this.botToken  = botToken;
     }
 
 
@@ -63,9 +58,9 @@ internal class Boot
     /// <returns>Task</returns>
     public async Task Awake()
     {
-        DiscordSocketConfig config = new DiscordSocketConfig { AlwaysDownloadUsers = true };
+        var config = new DiscordSocketConfig { AlwaysDownloadUsers = true };
 
-        client = new DiscordSocketClient(config);
+        client  = new DiscordSocketClient(config);
         service = new CommandService();
 
         CommonTasks();
@@ -84,9 +79,9 @@ internal class Boot
     {
         if (client == null) return;
         client.LoggedOut += Client_LoggedOut;
-        client.Log += Log;
-        client.LoggedIn += LoggedIn;
-        client.Ready += Ready;
+        client.Log       += Log;
+        client.LoggedIn  += LoggedIn;
+        client.Ready     += Ready;
     }
 
     private Task Client_LoggedOut()
@@ -99,7 +94,7 @@ internal class Boot
     private Task Ready()
     {
         Console.Title = "ONLINE";
-        isReady = true;
+        isReady       = true;
 
         return Task.CompletedTask;
     }
@@ -141,5 +136,4 @@ internal class Boot
 
         return Task.CompletedTask;
     }
-
 }

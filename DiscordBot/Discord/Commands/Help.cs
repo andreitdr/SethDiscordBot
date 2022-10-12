@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
@@ -62,16 +58,14 @@ internal class Help : DBCommand
 
         var embedBuilder = new EmbedBuilder();
 
-        var adminCommands = "";
+        var adminCommands  = "";
         var normalCommands = "";
 
         foreach (var cmd in PluginLoader.Commands!)
-        {
             if (cmd.requireAdmin)
                 adminCommands += cmd.Command + " ";
             else
                 normalCommands += cmd.Command + " ";
-        }
 
         embedBuilder.AddField("Admin Commands", adminCommands);
         embedBuilder.AddField("Normal Commands", normalCommands);
@@ -81,7 +75,8 @@ internal class Help : DBCommand
     private EmbedBuilder GenerateHelpCommand(string command)
     {
         var embedBuilder = new EmbedBuilder();
-        var cmd = PluginLoader.Commands!.Find(p => p.Command == command || (p.Aliases is not null && p.Aliases.Contains(command)));
+        var cmd = PluginLoader.Commands!.Find(p => p.Command == command ||
+                                                   (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
         embedBuilder.AddField("Usage", Config.GetValue<string>("prefix") + cmd.Usage);

@@ -3,7 +3,6 @@
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
-using PluginManager.Online.Helpers;
 using PluginManager.Others;
 
 using System;
@@ -15,18 +14,21 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace PluginManager.Items;
 
 public class ConsoleCommandsHandler
 {
-    private static readonly PluginsManager manager = new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
+    private static readonly PluginsManager manager =
+        new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
+
     private static readonly List<ConsoleCommand> commandList = new();
+
+
+    private static bool isDownloading;
+    private static bool pluginsLoaded;
     private readonly DiscordSocketClient? client;
-
-
-    private static bool isDownloading = false;
-    private static bool pluginsLoaded = false;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
@@ -37,7 +39,6 @@ public class ConsoleCommandsHandler
 
     private void InitializeBasicCommands()
     {
-
         commandList.Clear();
 
         AddCommand("help", "Show help", "help <command>", args =>
@@ -45,7 +46,7 @@ public class ConsoleCommandsHandler
                 if (args.Length <= 1)
                 {
                     Console.WriteLine("Available commands:");
-                    List<string[]> items = new List<string[]>();
+                    var items = new List<string[]>();
                     items.Add(new[] { "-", "-", "-" });
                     items.Add(new[] { "Command", "Description", "Usage" });
                     items.Add(new[] { " ", " ", "Argument type: <optional> [required]" });
@@ -53,7 +54,9 @@ public class ConsoleCommandsHandler
 
                     foreach (var command in commandList)
                     {
-                        var pa = from p in command.Action.Method.GetParameters() where p.Name != null select p.ParameterType.FullName;
+                        var pa = from p in command.Action.Method.GetParameters()
+                                 where p.Name != null
+                                 select p.ParameterType.FullName;
                         items.Add(new[] { command.CommandName, command.Description, command.Usage });
                     }
 
@@ -81,10 +84,9 @@ public class ConsoleCommandsHandler
                 if (pluginsLoaded)
                     return;
                 var loader = new PluginLoader(client!);
-                ConsoleColor cc = Console.ForegroundColor;
+                var cc = Console.ForegroundColor;
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
-
                     if (name == null || name.Length < 2)
                         name = typeName;
                     if (success)
@@ -99,6 +101,7 @@ public class ConsoleCommandsHandler
 
                         Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
                     }
+
                     Console.ForegroundColor = cc;
                 };
                 loader.onEVELoad += (name, typeName, success, exception) =>
@@ -116,13 +119,13 @@ public class ConsoleCommandsHandler
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
                     }
+
                     Console.ForegroundColor = cc;
                 };
 
                 loader.LoadPlugins();
                 Console.ForegroundColor = cc;
                 pluginsLoaded = true;
-
             }
         );
 
@@ -130,7 +133,6 @@ public class ConsoleCommandsHandler
 
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
-
                 isDownloading = true;
                 if (args.Length == 1)
                 {
@@ -152,32 +154,36 @@ public class ConsoleCommandsHandler
                         Console_Utilities.WriteColorText("Name is invalid");
                         return;
                     }
+
                     isDownloading = false;
-                    Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" + " Use &glistplugs &ccommand to display all available plugins !");
+                    Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" +
+                                                     " Use &glistplugs &ccommand to display all available plugins !");
                     return;
                 }
 
                 string path;
                 if (info[0] == "Command" || info[0] == "Event")
-                    path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command" ? PluginLoader.pluginCMDExtension : PluginLoader.pluginEVEExtension);
+                    path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command"
+                        ? PluginLoader.pluginCMDExtension
+                        : PluginLoader.pluginEVEExtension);
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
-                if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                 {
                     await ServerCom.DownloadFileAsync(info[1], path);
                 }
-                else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                 {
-                    Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                    var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
                     bar.Start();
                     await ServerCom.DownloadFileNoProgressAsync(info[1], path);
                     bar.Stop("Plugin Downloaded !");
                 }
 
                 if (info[0] == "Event")
-                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Event));
+                    Config.PluginConfig.InstalledPlugins.Add(new Tuple<string, PluginType>(name, PluginType.Event));
                 else if (info[0] == "Command")
-                    Config.PluginConfig.InstalledPlugins.Add(new(name, PluginType.Command));
+                    Config.PluginConfig.InstalledPlugins.Add(new Tuple<string, PluginType>(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -197,25 +203,31 @@ public class ConsoleCommandsHandler
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
-                        if (Others.OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
-                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
-                        else if (Others.OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                        if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
-                            Others.Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
+                        }
+                        else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
+                        {
+                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
                             bar.Start();
                             await ServerCom.DownloadFileNoProgressAsync(split[0], "./" + split[1]);
                             bar.Stop("Item downloaded !");
-
                         }
+
                         Console.WriteLine();
                         if (split[0].EndsWith(".pak"))
+                        {
                             File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
+                        }
                         else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
                         {
                             Console.WriteLine($"Extracting {split[1]} ...");
-                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);// { Max = 100f, Color = ConsoleColor.Green };
+                            var bar = new Console_Utilities.ProgressBar(
+                                ProgressBarType.NO_END); // { Max = 100f, Color = ConsoleColor.Green };
                             bar.Start();
-                            await Functions.ExtractArchive("./" + split[1], "./", null, UnzipProgressType.PercentageFromTotalSize);
+                            await Functions.ExtractArchive("./" + split[1], "./", null,
+                                                           UnzipProgressType.PercentageFromTotalSize);
                             bar.Stop("Extracted");
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
@@ -224,15 +236,14 @@ public class ConsoleCommandsHandler
 
                     Console.WriteLine();
                 }
-                VersionString? ver = await Online.ServerCom.GetVersionOfPackageFromWeb(name);
+
+                var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
-                Config.SetPluginVersion(name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
+                Config.SetPluginVersion(
+                    name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
 
                 isDownloading = false;
-
-
             }
-
         );
 
 
@@ -280,7 +291,7 @@ public class ConsoleCommandsHandler
             {
                 if (client is null)
                     return;
-                Console_Utilities.ProgressBar bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
 
                 bar.Start();
                 await Config.SaveConfig(SaveType.NORMAL);
@@ -292,57 +303,52 @@ public class ConsoleCommandsHandler
 
                 await Task.Delay(1000);
                 Environment.Exit(0);
-
             }
         );
 
-        AddCommand("import", "Load an external command", "import [pluginName]", async (args) =>
+        AddCommand("import", "Load an external command", "import [pluginName]", async args =>
         {
             if (args.Length <= 1) return;
             try
             {
-                string pName = Functions.MergeStrings(args, 1);
-                HttpClient client = new HttpClient();
-                string url = (await manager.GetPluginLinkByName(pName))[1];
+                var pName = args.MergeStrings(1);
+                var client = new HttpClient();
+                var url = (await manager.GetPluginLinkByName(pName))[1];
                 if (url is null) throw new Exception($"Invalid plugin name {pName}.");
-                Stream s = await client.GetStreamAsync(url);
-                MemoryStream str = new MemoryStream();
+                var s = await client.GetStreamAsync(url);
+                var str = new MemoryStream();
                 await s.CopyToAsync(str);
                 var asmb = Assembly.Load(str.ToArray());
 
                 var types = asmb.GetTypes();
                 foreach (var type in types)
-                {
                     if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
                     {
-                        DBEvent instance = (DBEvent)Activator.CreateInstance(type);
+                        var instance = (DBEvent)Activator.CreateInstance(type);
                         instance.Start(this.client);
                         Console.WriteLine($"[EVENT] Loaded external {type.FullName}!");
                     }
                     else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
                     {
-                        DBCommand instance = (DBCommand)Activator.CreateInstance(type);
+                        var instance = (DBCommand)Activator.CreateInstance(type);
                         Console.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
                     }
-                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
         });
 
         AddCommand("remplug", "Remove a plugin", "remplug [plugName]", async args =>
         {
-
             if (args.Length <= 1) return;
 
             isDownloading = true;
-            string plugName = Functions.MergeStrings(args, 1);
+            var plugName = args.MergeStrings(1);
             if (pluginsLoaded)
             {
-                if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
+                if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
                 {
                     Process.Start("DiscordBot.exe", $"/remplug {plugName}");
                     await Task.Delay(100);
@@ -354,16 +360,18 @@ public class ConsoleCommandsHandler
                     await Task.Delay(100);
                     Environment.Exit(0);
                 }
+
                 isDownloading = false;
                 return;
             }
 
 
-            string location = "./Data/Plugins/";
+            var location = "./Data/Plugins/";
 
             location = Config.PluginConfig.GetPluginType(plugName) switch
             {
-                PluginType.Command => location + "Commands/" + plugName + "." + PluginLoader.pluginCMDExtension,
+                PluginType.Command => location + "Commands/" + plugName + "." +
+                                      PluginLoader.pluginCMDExtension,
                 PluginType.Event => location + "Events/" + plugName + "." + PluginLoader.pluginEVEExtension,
                 PluginType.Unknown => "./",
                 _ => throw new NotImplementedException("Plugin type incorrect")
@@ -379,11 +387,12 @@ public class ConsoleCommandsHandler
             if (Config.PluginConfig.Contains(plugName))
             {
                 var tuple = Config.PluginConfig.InstalledPlugins.Where(t => t.Item1 == plugName).FirstOrDefault();
-                Console.WriteLine("Found: " + tuple.ToString());
+                Console.WriteLine("Found: " + tuple);
                 Config.PluginConfig.InstalledPlugins.Remove(tuple);
                 Config.RemovePluginVersion(plugName);
                 await Config.SaveConfig(SaveType.NORMAL);
             }
+
             Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
 
             var info = await manager.GetPluginLinkByName(plugName);
@@ -406,25 +415,26 @@ public class ConsoleCommandsHandler
                 if (Directory.Exists(plugName))
                     Directory.Delete(plugName, true);
             }
+
             isDownloading = false;
             Console.WriteLine(plugName + " has been successfully deleted !");
-
         });
 
         AddCommand("reload", "Reload the bot with all plugins", () =>
         {
-            if (Functions.GetOperatingSystem() == Others.OperatingSystem.WINDOWS)
+            if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
             {
-                Process.Start("DiscordBot.exe", $"lp");
+                Process.Start("DiscordBot.exe", "lp");
                 HandleCommand("sd");
             }
             else
             {
-
-                Process.Start("./DiscordBot", $"lp");
+                Process.Start("./DiscordBot", "lp");
                 HandleCommand("sd");
             }
         });
+
+        //AddCommand("");
 
         //Sort the commands by name
         commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
@@ -432,7 +442,8 @@ public class ConsoleCommandsHandler
 
     public static void AddCommand(string command, string description, string usage, Action<string[]> action)
     {
-        commandList.Add(new ConsoleCommand { CommandName = command, Description = description, Action = action, Usage = usage });
+        commandList.Add(new ConsoleCommand
+        { CommandName = command, Description = description, Action = action, Usage = usage });
         Console.ForegroundColor = ConsoleColor.White;
         Console_Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
     }
@@ -468,7 +479,6 @@ public class ConsoleCommandsHandler
                 Console.WriteLine();
 
                 while (isDownloading) await Task.Delay(1000);
-
             }
     }
 
@@ -482,7 +492,7 @@ public class ConsoleCommandsHandler
                 if (removeCommandExecution)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    for (int i = 0; i < command.Length + 30; i++)
+                    for (var i = 0; i < command.Length + 30; i++)
                         Console.Write(" ");
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }
