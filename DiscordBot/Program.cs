@@ -258,23 +258,6 @@ public class Program
     }
 
     /// <summary>
-    ///     Clear folder
-    /// </summary>
-    /// <param name="d">Directory path</param>
-    private static Task ClearFolder(string d)
-    {
-        var files = Directory.GetFiles(d);
-        var fileNumb = files.Length;
-        for (var i = 0; i < fileNumb; i++)
-        {
-            File.Delete(files[i]);
-            Console.WriteLine("Deleting : " + files[i]);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
     ///     Handle user input arguments from the startup of the application
     /// </summary>
     /// <param name="args">The arguments</param>

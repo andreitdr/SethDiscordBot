@@ -131,7 +131,7 @@ public class PluginLoader
             if (e.IsLoaded)
                 ((DBEvent)e.Plugin!).Start(_client);
 
-            onEVELoad?.Invoke(((DBEvent)e.Plugin!).name, e.TypeName!, e.IsLoaded, e.Exception);
+            onEVELoad?.Invoke(((DBEvent)e.Plugin!).Name, e.TypeName!, e.IsLoaded, e.Exception);
         }
         catch (Exception ex)
         {

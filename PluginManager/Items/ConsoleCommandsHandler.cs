@@ -98,7 +98,9 @@ public class ConsoleCommandsHandler
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-
+                        if (exception is null)
+                            Console.WriteLine("An error occured while loading: " + name);
+                        else
                         Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
