@@ -1,17 +1,17 @@
-﻿using DiscordBot.Discord.Core;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+
+using DiscordBot.Discord.Core;
 
 using PluginManager;
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Terminal.Gui;
 
@@ -55,7 +55,9 @@ public class Program
 
             var labelInfo =
                 new Label(
-                    "Configuration file not found or invalid. Please fill the following fields to create a new configuration file.")
+                    "Configuration file not found or invalid. " +
+                    "Please fill the following fields to create a new configuration file."
+                )
                 {
                     X = Pos.Center(),
                     Y = 2
@@ -174,8 +176,7 @@ public class Program
     /// <summary>
     ///     The main loop for the discord bot
     /// </summary>
-    /// <param name="discordbooter">The discord booter used to start the application</param>
-    private static void NoGUI(Boot discordbooter)
+    private static void NoGUI()
     {
 #if DEBUG
         Console.WriteLine();
@@ -203,7 +204,7 @@ public class Program
     ///     Start the bot without user interface
     /// </summary>
     /// <returns>Returns the boot loader for the Discord Bot</returns>
-    private static async Task<Boot> StartNoGUI()
+    private static async Task<Boot> StartNoGui()
     {
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -258,23 +259,6 @@ public class Program
     }
 
     /// <summary>
-    ///     Clear folder
-    /// </summary>
-    /// <param name="d">Directory path</param>
-    private static Task ClearFolder(string d)
-    {
-        var files = Directory.GetFiles(d);
-        var fileNumb = files.Length;
-        for (var i = 0; i < fileNumb; i++)
-        {
-            File.Delete(files[i]);
-            Console.WriteLine("Deleting : " + files[i]);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
     ///     Handle user input arguments from the startup of the application
     /// </summary>
     /// <param name="args">The arguments</param>
@@ -282,7 +266,7 @@ public class Program
     {
         var len = args.Length;
 
-        var b = await StartNoGUI();
+        var b = await StartNoGui();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
 
         if (len > 0 && args[0] == "/remplug")
@@ -293,11 +277,14 @@ public class Program
             loadPluginsOnStartup = true;
         }
 
+        if (len > 0 && args[0] == "/lp")
+            loadPluginsOnStartup = true;
+
         var mainThread = new Thread(() =>
         {
             try
             {
-                NoGUI(b);
+                NoGUI();
             }
             catch (IOException ex)
             {
@@ -402,8 +389,11 @@ public class Program
                     break;
                 case "UpdaterVersion":
                     var updaternewversion = s[1];
-                    if ((Config.UpdaterVersion != updaternewversion &&
-                         Functions.GetOperatingSystem() == OperatingSystem.WINDOWS) || !Directory.Exists("./Updater") ||
+                    if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
+                        break;
+
+                    if (Config.UpdaterVersion != updaternewversion ||
+                        !Directory.Exists("./Updater") ||
                         !File.Exists("./Updater/Updater.exe"))
                     {
                         Console.Clear();
