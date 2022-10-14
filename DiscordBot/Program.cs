@@ -385,10 +385,12 @@ public class Program
                     break;
                 case "UpdaterVersion":
                     var updaternewversion = s[1];
-                    if ((Config.UpdaterVersion != updaternewversion &&
-                         Functions.GetOperatingSystem() == OperatingSystem.WINDOWS) || !Directory.Exists("./Updater") ||
+                    if (Config.UpdaterVersion != updaternewversion || !Directory.Exists("./Updater") ||
                         !File.Exists("./Updater/Updater.exe"))
                     {
+
+                        if (Functions.GetOperatingSystem() != OperatingSystem.WINDOWS)
+                            break;
                         Console.Clear();
                         Console.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
                         var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
