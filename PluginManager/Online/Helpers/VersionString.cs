@@ -13,19 +13,20 @@ public class VersionString
         var data = version.Split('.');
         try
         {
-            PackageVersionID    = int.Parse(data[0]);
-            PackageMainVersion  = int.Parse(data[1]);
+            PackageVersionID = int.Parse(data[0]);
+            PackageMainVersion = int.Parse(data[1]);
             PackageCheckVersion = int.Parse(data[2]);
         }
         catch (Exception ex)
         {
+            Console.WriteLine(version);
             throw new Exception("Failed to write Version", ex);
         }
     }
 
     public override string ToString()
     {
-        return "{PackageID: "            + PackageVersionID    + ", PackageVersion: " + PackageMainVersion +
+        return "{PackageID: " + PackageVersionID + ", PackageVersion: " + PackageMainVersion +
                ", PackageCheckVersion: " + PackageCheckVersion + "}";
     }
 
@@ -45,7 +46,7 @@ public class VersionString
         if (s1.PackageVersionID == s2.PackageVersionID)
         {
             if (s1.PackageMainVersion > s2.PackageMainVersion) return true;
-            if (s1.PackageMainVersion  == s2.PackageMainVersion &&
+            if (s1.PackageMainVersion == s2.PackageMainVersion &&
                 s1.PackageCheckVersion > s2.PackageCheckVersion) return true;
         }
 
@@ -59,7 +60,7 @@ public class VersionString
 
     public static bool operator ==(VersionString s1, VersionString s2)
     {
-        if (s1.PackageVersionID    == s2.PackageVersionID && s1.PackageMainVersion == s2.PackageMainVersion &&
+        if (s1.PackageVersionID == s2.PackageVersionID && s1.PackageMainVersion == s2.PackageMainVersion &&
             s1.PackageCheckVersion == s2.PackageCheckVersion) return true;
         return false;
     }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+
 using Discord.WebSocket;
+
 using PluginManager.Interfaces;
 using PluginManager.Online;
 using PluginManager.Online.Updates;
@@ -19,8 +21,8 @@ public class PluginLoader
     private const string pluginCMDFolder = @"./Data/Plugins/Commands/";
     private const string pluginEVEFolder = @"./Data/Plugins/Events/";
 
-    internal const   string              pluginCMDExtension = "dll";
-    internal const   string              pluginEVEExtension = "dll";
+    internal const string pluginCMDExtension = "dll";
+    internal const string pluginEVEExtension = "dll";
     private readonly DiscordSocketClient _client;
 
     /// <summary>
@@ -64,9 +66,12 @@ public class PluginLoader
             await Task.Run(async () =>
             {
                 var name = new FileInfo(file).Name.Split('.')[0];
+                var version = await ServerCom.GetVersionOfPackageFromWeb(name);
+                if (version is null)
+                    return;
                 if (!Config.PluginVersionsContainsKey(name))
                     Config.SetPluginVersion(
-                        name, (await ServerCom.GetVersionOfPackageFromWeb(name))?.PackageVersionID + ".0.0");
+                        name, (version.PackageVersionID + ".0.0"));
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
@@ -78,9 +83,12 @@ public class PluginLoader
             await Task.Run(async () =>
             {
                 var name = new FileInfo(file).Name.Split('.')[0];
+                var version = await ServerCom.GetVersionOfPackageFromWeb(name);
+                if (version is null)
+                    return;
                 if (!Config.PluginVersionsContainsKey(name))
                     Config.SetPluginVersion(
-                        name, (await ServerCom.GetVersionOfPackageFromWeb(name))?.PackageVersionID + ".0.0");
+                        name, (version.PackageVersionID + ".0.0"));
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
@@ -94,22 +102,24 @@ public class PluginLoader
         //Load all plugins
 
         Commands = new List<DBCommand>();
-        Events   = new List<DBEvent>();
+        Events = new List<DBEvent>();
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
         Console.WriteLine("Loading plugins");
 
         var commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
-        var eventsLoader   = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
+        var eventsLoader = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
 
-        commandsLoader.FileLoaded   += OnCommandFileLoaded;
+
+        commandsLoader.FileLoaded += OnCommandFileLoaded;
         commandsLoader.PluginLoaded += OnCommandLoaded;
 
-        eventsLoader.FileLoaded   += EventFileLoaded;
+        eventsLoader.FileLoaded += EventFileLoaded;
         eventsLoader.PluginLoaded += OnEventLoaded;
 
         Commands = commandsLoader.Load();
-        Events   = eventsLoader.Load();
+        Events = eventsLoader.Load();
+
     }
 
     private void EventFileLoaded(LoaderArgs e)
@@ -136,8 +146,8 @@ public class PluginLoader
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
-            Console.WriteLine("Plugin: "   + e.PluginName);
-            Console.WriteLine("Type: "     + e.TypeName);
+            Console.WriteLine("Plugin: " + e.PluginName);
+            Console.WriteLine("Type: " + e.TypeName);
             Console.WriteLine("IsLoaded: " + e.IsLoaded);
         }
     }

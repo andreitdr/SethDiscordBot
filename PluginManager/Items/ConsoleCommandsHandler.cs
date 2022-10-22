@@ -1,11 +1,4 @@
-﻿using Discord.WebSocket;
-
-using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Online;
-using PluginManager.Others;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +6,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+
+using Discord.WebSocket;
+
+using PluginManager.Interfaces;
+using PluginManager.Loaders;
+using PluginManager.Online;
+using PluginManager.Others;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
@@ -101,7 +101,7 @@ public class ConsoleCommandsHandler
                         if (exception is null)
                             Console.WriteLine("An error occured while loading: " + name);
                         else
-                        Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
+                            Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -143,7 +143,7 @@ public class ConsoleCommandsHandler
                     return;
                 }
 
-                var name = args.MergeStrings(1);
+                var name = string.Join(' ', args, 1, args.Length - 1);
                 // info[0] = plugin type
                 // info[1] = plugin link
                 // info[2] = if others are required, or string.Empty if none
@@ -313,7 +313,7 @@ public class ConsoleCommandsHandler
             if (args.Length <= 1) return;
             try
             {
-                var pName = args.MergeStrings(1);
+                var pName = string.Join(' ', args, 1, args.Length - 1);
                 var client = new HttpClient();
                 var url = (await manager.GetPluginLinkByName(pName))[1];
                 if (url is null) throw new Exception($"Invalid plugin name {pName}.");
@@ -347,7 +347,7 @@ public class ConsoleCommandsHandler
             if (args.Length <= 1) return;
 
             isDownloading = true;
-            var plugName = args.MergeStrings(1);
+            var plugName = string.Join(' ', args, 1, args.Length - 1);
             if (pluginsLoaded)
             {
                 if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
