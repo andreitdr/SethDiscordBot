@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using Discord.Commands;
 
 namespace PluginManager.Interfaces;
