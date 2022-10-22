@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
+using Discord;
 using Discord.WebSocket;
 
 using PluginManager.Interfaces;
@@ -56,6 +57,11 @@ public class PluginLoader
     public static List<DBEvent>? Events { get; set; }
 
     /// <summary>
+    ///     A list of <see cref="DBSlashCommand"/> commands
+    /// </summary>
+    public static List<DBSlashCommand>? SlashCommands { get; set; }
+
+    /// <summary>
     ///     The main mathod that is called to load all events
     /// </summary>
     public async void LoadPlugins()
@@ -103,13 +109,14 @@ public class PluginLoader
 
         Commands = new List<DBCommand>();
         Events = new List<DBEvent>();
+        SlashCommands = new List<DBSlashCommand>();
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
         Console.WriteLine("Loading plugins");
 
         var commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
         var eventsLoader = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
-
+        var slashLoader = new Loader<DBSlashCommand>("./Data/Plugins/SlashCommands/", "dll");
 
         commandsLoader.FileLoaded += OnCommandFileLoaded;
         commandsLoader.PluginLoaded += OnCommandLoaded;
@@ -117,9 +124,37 @@ public class PluginLoader
         eventsLoader.FileLoaded += EventFileLoaded;
         eventsLoader.PluginLoaded += OnEventLoaded;
 
+        slashLoader.FileLoaded += SlashLoader_FileLoaded;
+        slashLoader.PluginLoaded += SlashLoader_PluginLoaded;
+
         Commands = commandsLoader.Load();
         Events = eventsLoader.Load();
+        SlashCommands = slashLoader.Load();
 
+    }
+
+    private async void SlashLoader_PluginLoaded(LoaderArgs args)
+    {
+        if (args.IsLoaded)
+        {
+            var slash = (DBSlashCommand)args.Plugin;
+            SlashCommandBuilder builder = new SlashCommandBuilder();
+            builder.WithName(slash.Name);
+            builder.WithDescription(slash.Description);
+            builder.WithDMPermission(slash.canUseDM);
+            builder.Options = slash.Options;
+            Console.WriteLine("Loaded " + slash.Name);
+            await _client.CreateGlobalApplicationCommandAsync(builder.Build());
+
+
+        }
+        else Console.WriteLine("Failed to load " + args.PluginName + "\nException: " + args.Exception.Message);
+    }
+
+    private void SlashLoader_FileLoaded(LoaderArgs args)
+    {
+        if (!args.IsLoaded)
+            Functions.WriteLogFile($"[SLASH] Event from file [{args.PluginName}] has been successfully created !");
     }
 
     private void EventFileLoaded(LoaderArgs e)
