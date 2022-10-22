@@ -9,7 +9,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Discord.WebSocket;
+
 using PluginManager.Items;
 
 namespace PluginManager.Others;
@@ -114,31 +116,6 @@ public static class Functions
     }
 
     /// <summary>
-    ///     Merge one array of strings into one string
-    /// </summary>
-    /// <param name="s">The array of strings</param>
-    /// <param name="indexToStart">The index from where the merge should start (included)</param>
-    /// <returns>A string built based on the array</returns>
-    public static string MergeStrings(this string[] s, int indexToStart)
-    {
-        return string.Join(' ', s, indexToStart, s.Length - 1);
-
-        /*            string r = "";
-
-                    int len = s.Length;
-                    if (len <= indexToStart) return "";
-                    for (int i = indexToStart; i < len - 1; ++i)
-                    {
-                        r += s[i] + " ";
-                    }
-
-                    r += s[len - 1];
-
-                    return r;
-        */
-    }
-
-    /// <summary>
     ///     Get the Operating system you are runnin on
     /// </summary>
     /// <returns>An Operating system</returns>
@@ -168,22 +145,21 @@ public static class Functions
     /// <exception cref="ArgumentOutOfRangeException">Triggered if <paramref name="bufferSize" /> is less then or equal to 0</exception>
     /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream" /> is not readable</exception>
     /// <exception cref="ArgumentException">Triggered in <paramref name="destination" /> is not writable</exception>
-    public static async Task CopyToOtherStreamAsync(this Stream       stream, Stream destination, int bufferSize,
-                                                    IProgress<long>?  progress          = null,
+    public static async Task CopyToOtherStreamAsync(this Stream stream, Stream destination, int bufferSize,
+                                                    IProgress<long>? progress = null,
                                                     CancellationToken cancellationToken = default)
     {
-        if (stream      == null) throw new ArgumentNullException(nameof(stream));
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (destination == null) throw new ArgumentNullException(nameof(destination));
-        if (bufferSize  <= 0) throw new ArgumentOutOfRangeException(nameof(bufferSize));
+        if (bufferSize <= 0) throw new ArgumentOutOfRangeException(nameof(bufferSize));
         if (!stream.CanRead) throw new InvalidOperationException("The stream is not readable.");
         if (!destination.CanWrite)
             throw new ArgumentException("Destination stream is not writable", nameof(destination));
 
-        var  buffer         = new byte[bufferSize];
+        var buffer = new byte[bufferSize];
         long totalBytesRead = 0;
-        int  bytesRead;
-        while ((bytesRead =
-            await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+        int bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
         {
             await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
             totalBytesRead += bytesRead;
@@ -199,7 +175,7 @@ public static class Functions
     /// <param name="progress">The progress that is updated as a file is processed</param>
     /// <param name="type">The type of progress</param>
     /// <returns></returns>
-    public static async Task ExtractArchive(string            zip, string folder, IProgress<float> progress,
+    public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress,
                                             UnzipProgressType type)
     {
         Directory.CreateDirectory(folder);
@@ -207,7 +183,7 @@ public static class Functions
         {
             if (type == UnzipProgressType.PercentageFromNumberOfFiles)
             {
-                var totalZIPFiles  = archive.Entries.Count();
+                var totalZIPFiles = archive.Entries.Count();
                 var currentZIPFile = 0;
                 foreach (var entry in archive.Entries)
                 {
@@ -264,32 +240,6 @@ public static class Functions
         }
     }
 
-
-    /// <summary>
-    ///     Convert Bytes to highest measurement unit possible
-    /// </summary>
-    /// <param name="bytes">The amount of bytes</param>
-    /// <returns></returns>
-    public static (double, string) ConvertBytes(long bytes)
-    {
-        var units = new List<string>
-        {
-            "B",
-            "KB",
-            "MB",
-            "GB",
-            "TB"
-        };
-        var i = 0;
-        while (bytes >= 1024)
-        {
-            i++;
-            bytes /= 1024;
-        }
-
-        return (bytes, units[i]);
-    }
-
     /// <summary>
     ///     Save to JSON file
     /// </summary>
@@ -323,36 +273,6 @@ public static class Functions
         return (obj ?? default)!;
     }
 
-    /// <summary>
-    ///     Check if all words from <paramref name="str" /> are in <paramref name="baseString" /><br />
-    ///     This function returns true if<br />
-    ///     1. The <paramref name="str" /> is part of <paramref name="baseString" /><br />
-    ///     2. The words (split by a space) of <paramref name="str" /> are located (separately) in
-    ///     <paramref name="baseString" /> <br />
-    ///     <example>
-    ///         The following example will return <see langword="TRUE" /><br />
-    ///         <c>STRContains("Hello World !", "I type word Hello and then i typed word World !")</c><br />
-    ///         The following example will return <see langword="TRUE" /><br />
-    ///         <c>STRContains("Hello World !", "I typed Hello World !" </c><br />
-    ///         The following example will return <see langword="TRUE" /><br />
-    ///         <c>STRContains("Hello World", "I type World then Hello")</c><br />
-    ///         The following example will return <see langword="FALSE" /><br />
-    ///         <c>STRContains("Hello World !", "I typed Hello World")</c><br />
-    ///     </example>
-    /// </summary>
-    /// <param name="str">The string you are checking</param>
-    /// <param name="baseString">The main string that should contain <paramref name="str" /></param>
-    /// <returns></returns>
-    public static bool STRContains(this string str, string baseString)
-    {
-        if (baseString.Contains(str)) return true;
-        var array = str.Split(' ');
-        foreach (var s in array)
-            if (!baseString.Contains(s))
-                return false;
-        return true;
-    }
-
     public static bool TryReadValueFromJson(string input, string codeName, out JsonElement element)
     {
         Stream text;
@@ -373,7 +293,7 @@ public static class Functions
         using (var md5 = MD5.Create())
         {
             var inputBytes = Encoding.ASCII.GetBytes(input);
-            var hashBytes  = md5.ComputeHash(inputBytes);
+            var hashBytes = md5.ComputeHash(inputBytes);
             return Convert.ToHexString(hashBytes);
         }
     }

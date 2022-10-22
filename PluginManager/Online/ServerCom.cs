@@ -1,13 +1,13 @@
-﻿using PluginManager.Online.Helpers;
-using PluginManager.Others;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
+using PluginManager.Online.Helpers;
+using PluginManager.Others;
 
 namespace PluginManager.Online;
 
@@ -100,10 +100,15 @@ public static class ServerCom
     {
         var url = "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions";
         var data = await ReadTextFromURL(url);
-        var version = (from item in data
-                       where !item.StartsWith("#") && item.StartsWith(pakName)
-                       select item.Split(',')[1]).FirstOrDefault();
-        if (version == default || version == null) return null;
-        return new VersionString(version);
+        foreach (var item in data)
+        {
+            if (item.StartsWith("#"))
+                continue;
+
+            string[] split = item.Split(',');
+            if (split[0] == pakName)
+                return new VersionString(split[1]);
+        }
+        return null;
     }
 }

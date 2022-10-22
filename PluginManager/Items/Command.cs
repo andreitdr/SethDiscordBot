@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Discord.WebSocket;
-using PluginManager.Others;
 
 namespace PluginManager.Items;
 
@@ -20,9 +20,9 @@ public class Command
     {
         Author = message.Author;
         var data = message.Content.Split(' ');
-        Arguments   = data.Length > 1 ? new List<string>(data.MergeStrings(1).Split(' ')) : new List<string>();
+        Arguments = data.Length > 1 ? new List<string>(string.Join(' ', data, 1, data.Length - 1).Split(' ')) : new List<string>();
         CommandName = data[0].Substring(1);
-        PrefixUsed  = data[0][0];
+        PrefixUsed = data[0][0];
     }
 
     /// <summary>
@@ -43,8 +43,8 @@ public class Command
 
 public class ConsoleCommand
 {
-    public string           CommandName { get; init; }
-    public string           Description { get; init; }
-    public string           Usage       { get; init; }
-    public Action<string[]> Action      { get; init; }
+    public string CommandName { get; init; }
+    public string Description { get; init; }
+    public string Usage { get; init; }
+    public Action<string[]> Action { get; init; }
 }

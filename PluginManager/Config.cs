@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using PluginManager.Loaders;
 using PluginManager.Others;
 
@@ -11,10 +12,10 @@ namespace PluginManager;
 
 internal class AppConfig
 {
-    public string?                     UpdaterVersion       { get; set; }
+    public string? UpdaterVersion { get; set; }
     public Dictionary<string, object>? ApplicationVariables { get; init; }
-    public List<string>?               ProtectedKeyWords    { get; init; }
-    public Dictionary<string, string>? PluginVersions       { get; init; }
+    public List<string>? ProtectedKeyWords { get; init; }
+    public Dictionary<string, string>? PluginVersions { get; init; }
 }
 
 public static class Config
@@ -23,8 +24,8 @@ public static class Config
 
     public static string UpdaterVersion
     {
-        get => appConfig.UpdaterVersion;
-        set => appConfig.UpdaterVersion = value;
+        get => appConfig!.UpdaterVersion!;
+        set => appConfig!.UpdaterVersion = value;
     }
 
     public static string GetPluginVersion(string pluginName)
@@ -133,6 +134,25 @@ public static class Config
         SaveConfig(SaveType.NORMAL);
     }
 
+    public static bool TrySetValue<T>(string key, T value)
+    {
+        if (Config.ContainsKey(key))
+        {
+            try
+            {
+                Config.SetValue(key, value);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        Config.AddValueToVariables(key, value, false);
+        return true;
+    }
+
     public static void RemoveKey(string key)
     {
         if (key == "Version" || key == "token" || key == "prefix")
@@ -176,7 +196,7 @@ public static class Config
             {
                 File.Delete(path);
                 Console.WriteLine("An error occured while loading the settings. Importing from backup file...");
-                path      = Functions.dataFolder + "config.json.bak";
+                path = Functions.dataFolder + "config.json.bak";
                 appConfig = await Functions.ConvertFromJson<AppConfig>(path);
                 Functions.WriteErrFile(ex.Message);
             }
@@ -192,7 +212,7 @@ public static class Config
             try
             {
                 Console.WriteLine("An error occured while loading the settings. Importing from backup file...");
-                path      = Functions.dataFolder + "config.json.bak";
+                path = Functions.dataFolder + "config.json.bak";
                 appConfig = await Functions.ConvertFromJson<AppConfig>(path);
 
                 return;
@@ -205,8 +225,10 @@ public static class Config
 
         appConfig = new AppConfig
         {
-            ApplicationVariables = new Dictionary<string, object>(), ProtectedKeyWords = new List<string>(),
-            PluginVersions       = new Dictionary<string, string>(), UpdaterVersion    = "-1"
+            ApplicationVariables = new Dictionary<string, object>(),
+            ProtectedKeyWords = new List<string>(),
+            PluginVersions = new Dictionary<string, string>(),
+            UpdaterVersion = "-1"
         };
     }
 
@@ -220,9 +242,9 @@ public static class Config
         return appConfig!.ApplicationVariables!.ContainsKey(key);
     }
 
-    public static IDictionary<string, object> GetAllVariables()
+    public static IDictionary<string, object>? GetAllVariables()
     {
-        return appConfig.ApplicationVariables;
+        return appConfig?.ApplicationVariables;
     }
 
     public static class PluginConfig

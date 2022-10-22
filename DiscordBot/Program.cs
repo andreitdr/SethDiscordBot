@@ -271,7 +271,7 @@ public class Program
 
         if (len > 0 && args[0] == "/remplug")
         {
-            var plugName = args.MergeStrings(1);
+            var plugName = string.Join(' ', args, 1, args.Length - 1);
             Console.WriteLine("Starting to remove " + plugName);
             await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
             loadPluginsOnStartup = true;
