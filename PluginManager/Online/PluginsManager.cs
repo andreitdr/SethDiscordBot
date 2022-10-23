@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
+
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace PluginManager.Online;
@@ -31,17 +33,17 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
 
             var data = new List<string[]>();
-            var op   = Functions.GetOperatingSystem();
+            var op = Functions.GetOperatingSystem();
 
-            var      len    = lines.Length;
-            string[] titles = { "Name", "Description", "Type", "Version", "Installed" };
-            data.Add(new[] { "-", "-", "-", "-", "-" });
+            var len = lines.Length;
+            string[] titles = { "Name", "Description", "Type", "Version" };
+            data.Add(new[] { "-", "-", "-", "-" });
             data.Add(titles);
-            data.Add(new[] { "-", "-", "-", "-", "-" });
+            data.Add(new[] { "-", "-", "-", "-" });
             for (var i = 0; i < len; i++)
             {
                 if (lines[i].Length <= 2)
@@ -58,10 +60,6 @@ public class PluginsManager
                         display[3] =
                             (await ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
                            .ToShortString();
-                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
-                            display[4] = "✓";
-                        else
-                            display[4] = "X";
                         data.Add(display);
                     }
                 }
@@ -75,16 +73,12 @@ public class PluginsManager
                         display[3] =
                             (await ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
                            .ToShortString();
-                        if (Config.PluginConfig.Contains(content[0]) || Config.PluginConfig.Contains(content[0]))
-                            display[4] = "✓";
-                        else
-                            display[4] = "X";
                         data.Add(display);
                     }
                 }
             }
 
-            data.Add(new[] { "-", "-", "-", "-", "-" });
+            data.Add(new[] { "-", "-", "-", "-" });
 
             Console_Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
         }
@@ -104,9 +98,9 @@ public class PluginsManager
     {
         try
         {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
-            var len   = lines.Length;
+            var len = lines.Length;
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');

@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManager", "PluginMana
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicLibrary", "..\DiscordBotItems\Plugins\MusicLibrary\MusicLibrary.csproj", "{878DFE01-4596-4EBC-9651-0679598CE794}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicLibraryEvent", "..\DiscordBotItems\Plugins\MusicLibraryEvent\MusicLibraryEvent.csproj", "{3EE0C8B4-5625-48A8-8246-5AD54A38A9B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlashCommands", "..\DiscordBotItems\Plugins\SlashCommands\SlashCommands.csproj", "{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashCommands", "..\DiscordBotItems\Plugins\SlashCommands\SlashCommands.csproj", "{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevelingSystem", "..\DiscordBotItems\Plugins\LevelingSystem\LevelingSystem.csproj", "{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,14 +31,14 @@ Global
 		{878DFE01-4596-4EBC-9651-0679598CE794}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{878DFE01-4596-4EBC-9651-0679598CE794}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{878DFE01-4596-4EBC-9651-0679598CE794}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3EE0C8B4-5625-48A8-8246-5AD54A38A9B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3EE0C8B4-5625-48A8-8246-5AD54A38A9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3EE0C8B4-5625-48A8-8246-5AD54A38A9B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3EE0C8B4-5625-48A8-8246-5AD54A38A9B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

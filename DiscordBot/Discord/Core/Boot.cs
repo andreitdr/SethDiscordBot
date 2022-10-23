@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+
 using static PluginManager.Others.Functions;
 
 namespace DiscordBot.Discord.Core;
@@ -42,7 +44,7 @@ internal class Boot
     public Boot(string botToken, string botPrefix)
     {
         this.botPrefix = botPrefix;
-        this.botToken  = botToken;
+        this.botToken = botToken;
     }
 
 
@@ -60,16 +62,19 @@ internal class Boot
     {
         var config = new DiscordSocketConfig { AlwaysDownloadUsers = true };
 
-        client  = new DiscordSocketClient(config);
+        client = new DiscordSocketClient(config);
         service = new CommandService();
 
         CommonTasks();
 
         await client.LoginAsync(TokenType.Bot, botToken);
+
         await client.StartAsync();
 
         commandServiceHandler = new CommandHandler(client, service, botPrefix);
         await commandServiceHandler.InstallCommandsAsync();
+
+
 
         await Task.Delay(2000);
         while (!isReady) ;
@@ -79,24 +84,27 @@ internal class Boot
     {
         if (client == null) return;
         client.LoggedOut += Client_LoggedOut;
-        client.Log       += Log;
-        client.LoggedIn  += LoggedIn;
-        client.Ready     += Ready;
+        client.Log += Log;
+        client.LoggedIn += LoggedIn;
+        client.Ready += Ready;
     }
 
-    private Task Client_LoggedOut()
+    private async Task Client_LoggedOut()
     {
         WriteLogFile("Successfully Logged Out");
-        Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
-        return Task.CompletedTask;
+        await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
+
+        /*        var cmds = await client.GetGlobalApplicationCommandsAsync();
+                foreach (var cmd in cmds)
+                    await cmd.DeleteAsync();*/
     }
 
-    private Task Ready()
+    private async Task Ready()
     {
         Console.Title = "ONLINE";
-        isReady       = true;
 
-        return Task.CompletedTask;
+
+        isReady = true;
     }
 
     private Task LoggedIn()

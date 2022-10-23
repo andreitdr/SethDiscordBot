@@ -36,16 +36,6 @@ public enum OutputLogLevel
     CRITICAL
 }
 
-/// <summary>
-///     Plugin Type
-/// </summary>
-public enum PluginType
-{
-    Command,
-    Event,
-    Unknown
-}
-
 public enum UnzipProgressType
 {
     PercentageFromNumberOfFiles,

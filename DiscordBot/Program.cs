@@ -306,8 +306,7 @@ public class Program
         var main = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
         Directory.CreateDirectory("./Data/Resources");
-        Directory.CreateDirectory("./Data/Plugins/Commands");
-        Directory.CreateDirectory("./Data/Plugins/Events");
+        Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
         await Config.LoadConfig();
         if (Config.ContainsKey("DeleteLogsAtStartup"))
@@ -317,8 +316,6 @@ public class Program
         var OnlineDefaultKeys =
             await ServerCom.ReadTextFromURL(
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
-
-        Config.PluginConfig.Load();
 
         if (!Config.ContainsKey("Version"))
             Config.AddValueToVariables("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);

@@ -125,6 +125,25 @@ public class ConsoleCommandsHandler
                     Console.ForegroundColor = cc;
                 };
 
+                loader.onSLSHLoad += (name, typeName, success, exception) =>
+                {
+                    if (name == null || name.Length < 2)
+                        name = typeName;
+
+                    if (success)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("[SLASH] Successfully loaded command : " + name);
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[SLASH] Failed to load command : " + name + " because " + exception!.Message);
+                    }
+
+                    Console.ForegroundColor = cc;
+                };
+
                 loader.LoadPlugins();
                 Console.ForegroundColor = cc;
                 pluginsLoaded = true;
@@ -164,12 +183,11 @@ public class ConsoleCommandsHandler
                 }
 
                 string path;
-                if (info[0] == "Command" || info[0] == "Event")
-                    path = "./Data/Plugins/" + info[0] + "s/" + name + "." + (info[0] == "Command"
-                        ? PluginLoader.pluginCMDExtension
-                        : PluginLoader.pluginEVEExtension);
+                if (info[0] == "Plugin")
+                    path = "./Data/Plugins/" + name + ".dll";
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
+
                 if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                 {
                     await ServerCom.DownloadFileAsync(info[1], path);
@@ -181,11 +199,6 @@ public class ConsoleCommandsHandler
                     await ServerCom.DownloadFileNoProgressAsync(info[1], path);
                     bar.Stop("Plugin Downloaded !");
                 }
-
-                if (info[0] == "Event")
-                    Config.PluginConfig.InstalledPlugins.Add(new Tuple<string, PluginType>(name, PluginType.Event));
-                else if (info[0] == "Command")
-                    Config.PluginConfig.InstalledPlugins.Add(new Tuple<string, PluginType>(name, PluginType.Command));
 
 
                 Console.WriteLine("\n");
@@ -226,7 +239,7 @@ public class ConsoleCommandsHandler
                         {
                             Console.WriteLine($"Extracting {split[1]} ...");
                             var bar = new Console_Utilities.ProgressBar(
-                                ProgressBarType.NO_END); // { Max = 100f, Color = ConsoleColor.Green };
+                                ProgressBarType.NO_END);
                             bar.Start();
                             await Functions.ExtractArchive("./" + split[1], "./", null,
                                                            UnzipProgressType.PercentageFromTotalSize);
@@ -368,16 +381,7 @@ public class ConsoleCommandsHandler
             }
 
 
-            var location = "./Data/Plugins/";
-
-            location = Config.PluginConfig.GetPluginType(plugName) switch
-            {
-                PluginType.Command => location + "Commands/" + plugName + "." +
-                                      PluginLoader.pluginCMDExtension,
-                PluginType.Event => location + "Events/" + plugName + "." + PluginLoader.pluginEVEExtension,
-                PluginType.Unknown => "./",
-                _ => throw new NotImplementedException("Plugin type incorrect")
-            };
+            var location = $"./Data/Plugins/{plugName}.dll";
 
             if (!File.Exists(location))
             {
@@ -386,14 +390,6 @@ public class ConsoleCommandsHandler
             }
 
             File.Delete(location);
-            if (Config.PluginConfig.Contains(plugName))
-            {
-                var tuple = Config.PluginConfig.InstalledPlugins.Where(t => t.Item1 == plugName).FirstOrDefault();
-                Console.WriteLine("Found: " + tuple);
-                Config.PluginConfig.InstalledPlugins.Remove(tuple);
-                Config.RemovePluginVersion(plugName);
-                await Config.SaveConfig(SaveType.NORMAL);
-            }
 
             Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
 
@@ -413,6 +409,8 @@ public class ConsoleCommandsHandler
                     Console.WriteLine("Removed: " + split[1]);
                 }
 
+                if (Directory.Exists($"./Data/Plugins/{plugName}"))
+                    Directory.Delete($"./Data/Plugins/{plugName}", true);
 
                 if (Directory.Exists(plugName))
                     Directory.Delete(plugName, true);
