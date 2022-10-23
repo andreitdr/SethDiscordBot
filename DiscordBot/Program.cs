@@ -113,6 +113,12 @@ public class Program
                 Y = 16
             };
 
+            var button3 = new Button("ⓘ")
+            {
+                X = Pos.Left(textFiledServerID) + 20,
+                Y = textFiledServerID.Y
+            };
+
             Console.CancelKeyPress += (sender, e) => { top.Running = false; };
 
             button.Clicked += () =>
@@ -163,9 +169,16 @@ public class Program
                 }
             };
 
+            button3.Clicked += () =>
+            {
+                MessageBox.Query("Discord Bot Settings",
+                                 "Server ID can be found in Server settings => Widget => Server ID",
+                                 "Close");
+            };
+
             win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
             win.Add(textFiledToken, textFiledPrefix, textFiledServerID);
-            win.Add(button, button2);
+            win.Add(button, button2, button3);
             Application.Run();
             Application.Shutdown();
         }
