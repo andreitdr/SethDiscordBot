@@ -254,8 +254,7 @@ public class ConsoleCommandsHandler
 
                 var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
-                Config.SetPluginVersion(
-                    name, $"{ver.PackageVersionID}.{ver.PackageMainVersion}.{ver.PackageCheckVersion}");
+                await Config.Plugins.SetVersionAsync(name, ver);
 
                 isDownloading = false;
             }
@@ -266,10 +265,10 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length != 2)
                     return;
-                if (!Config.ContainsKey(args[1]))
+                if (!Config.Variables.Exists(args[1]))
                     return;
 
-                var data = Config.GetValue<string>(args[1]);
+                var data = Config.Variables.GetValue(args[1]);
                 Console.WriteLine($"{args[1]} => {data}");
             }
         );
@@ -284,7 +283,7 @@ public class ConsoleCommandsHandler
 
                 try
                 {
-                    Config.GetAndAddValueToVariable(key, value, isReadOnly);
+                    Config.Variables.Add(key, value, isReadOnly);
                     Console.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
                 }
                 catch (Exception ex)
@@ -298,7 +297,7 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length < 2)
                     return;
-                Config.RemoveKey(args[1]);
+                Config.Variables.RemoveKey(args[1]);
             }
         );
 
@@ -309,10 +308,9 @@ public class ConsoleCommandsHandler
                 var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
 
                 bar.Start();
-                await Config.SaveConfig(SaveType.NORMAL);
-                await Config.SaveConfig(SaveType.BACKUP);
                 bar.Stop("Saved config !");
                 Console.WriteLine();
+                Settings.sqlDatabase.Stop();
                 await client.StopAsync();
                 await client.DisposeAsync();
 

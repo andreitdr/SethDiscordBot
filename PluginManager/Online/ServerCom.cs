@@ -91,9 +91,9 @@ public static class ServerCom
 
     public static VersionString? GetVersionOfPackage(string pakName)
     {
-        if (!Config.PluginVersionsContainsKey(pakName))
+        if (Config.Plugins.GetVersion(pakName) is null)
             return null;
-        return new VersionString(Config.GetPluginVersion(pakName));
+        return new VersionString(Config.Plugins.GetVersion(pakName));
     }
 
     public static async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)

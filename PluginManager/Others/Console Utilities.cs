@@ -6,25 +6,16 @@ namespace PluginManager.Others;
 
 public static class Console_Utilities
 {
-    public static void Initialize()
+    private static Dictionary<char, ConsoleColor> Colors = new()
     {
-        if (!Config.ContainsKey("TableVariables"))
-            Config.AddValueToVariables("TableVariables", new Dictionary<string, string> { { "DefaultSpace", "3" } },
-                                       false);
-        if (!Config.ContainsKey("ColorDataBase"))
-            Config.AddValueToVariables("ColorDataBase", new Dictionary<char, ConsoleColor>
-                {
                     { 'g', ConsoleColor.Green },
                     { 'b', ConsoleColor.Blue },
                     { 'r', ConsoleColor.Red },
                     { 'm', ConsoleColor.Magenta },
                     { 'y', ConsoleColor.Yellow }
-                }, false
-            );
+    };
 
-        if (!Config.ContainsKey("ColorPrefix"))
-            Config.AddValueToVariables("ColorPrefix", '&', false);
-    }
+    private static char ColorPrefix = '&';
 
 
     private static bool CanAproximateTo(this float f, float y)
@@ -41,9 +32,9 @@ public static class Console_Utilities
     {
         if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
         {
-            var tableLine  = '-';
+            var tableLine = '-';
             var tableCross = '+';
-            var tableWall  = '|';
+            var tableWall = '|';
 
             var len = new int[data[0].Length];
             foreach (var line in data)
@@ -150,12 +141,11 @@ public static class Console_Utilities
         if (format == TableFormat.DEFAULT)
         {
             var widths = new int[data[0].Length];
-            var space_between_columns =
-                int.Parse(Config.GetValue<Dictionary<string, string>>("TableVariables")?["DefaultSpace"]!);
+            var space_between_columns = 3;
             for (var i = 0; i < data.Count; i++)
-            for (var j = 0; j < data[i].Length; j++)
-                if (data[i][j].Length > widths[j])
-                    widths[j] = data[i][j].Length;
+                for (var j = 0; j < data[i].Length; j++)
+                    if (data[i][j].Length > widths[j])
+                        widths[j] = data[i][j].Length;
 
             for (var i = 0; i < data.Count; i++)
             {
@@ -180,16 +170,15 @@ public static class Console_Utilities
     public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
     {
         var initialForeGround = Console.ForegroundColor;
-        var input             = text.ToCharArray();
+        var input = text.ToCharArray();
         for (var i = 0; i < input.Length; i++)
-            if (input[i] == Config.GetValue<char>("ColorPrefix"))
+            if (input[i] == ColorPrefix)
             {
                 if (i + 1 < input.Length)
                 {
-                    if (Config.GetValue<Dictionary<char, ConsoleColor>>("ColorDataBase")!.ContainsKey(input[i + 1]))
+                    if (Colors.ContainsKey(input[i + 1]))
                     {
-                        Console.ForegroundColor =
-                            Config.GetValue<Dictionary<char, ConsoleColor>>("ColorDataBase")![input[i + 1]];
+                        Console.ForegroundColor = Colors[input[i + 1]];
                         i++;
                     }
                     else if (input[i + 1] == 'c')
@@ -218,7 +207,7 @@ public static class Console_Utilities
         private readonly int BarLength = 32;
 
         private bool isRunning;
-        private int  position = 1;
+        private int position = 1;
         private bool positive = true;
 
         public ProgressBar(ProgressBarType type)
@@ -226,10 +215,10 @@ public static class Console_Utilities
             this.type = type;
         }
 
-        public float           Max     { get; init; }
-        public ConsoleColor    Color   { get; init; }
-        public bool            NoColor { get; init; }
-        public ProgressBarType type    { get; set; }
+        public float Max { get; init; }
+        public ConsoleColor Color { get; init; }
+        public bool NoColor { get; init; }
+        public ProgressBarType type { get; set; }
 
         public int TotalLength { get; private set; }
 
@@ -345,18 +334,18 @@ public static class Console_Utilities
             for (var i = 0; i < onechunk * progress; i++)
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : Color;
-                Console.CursorLeft      = position++;
+                Console.CursorLeft = position++;
                 Console.Write("#");
             }
 
             for (var i = position; i < BarLength; i++)
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
-                Console.CursorLeft      = position++;
+                Console.CursorLeft = position++;
                 Console.Write(" ");
             }
 
-            Console.CursorLeft      = BarLength + 4;
+            Console.CursorLeft = BarLength + 4;
             Console.BackgroundColor = ConsoleColor.Black;
             if (progress.CanAproximateTo(Max))
                 Console.Write(progress + " %      ✓");

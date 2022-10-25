@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using DiscordBot.Discord.Core;
 
 using PluginManager;
+using PluginManager.Database;
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
@@ -35,11 +36,12 @@ public class Program
         Console.WriteLine("Loading resources ...");
         PreLoadComponents().Wait();
 
-        if (!Config.ContainsKey("ServerID") || !Config.ContainsKey("token") ||
-            Config.GetValue<string>("token") == null ||
-            (Config.GetValue<string>("token")?.Length != 70 && Config.GetValue<string>("token")?.Length != 59) ||
-            !Config.ContainsKey("prefix") || Config.GetValue<string>("prefix") == null ||
-            Config.GetValue<string>("prefix")?.Length != 1 || (args.Length > 0 && args[0] == "/newconfig"))
+        if (!Config.Variables.Exists("ServerID") || !Config.Variables.Exists("token") ||
+            Config.Variables.GetValue("token") == null ||
+            (Config.Variables.GetValue("token")?.Length != 70 && Config.Variables.GetValue("token")?.Length != 59) ||
+            !Config.Variables.Exists("prefix") || Config.Variables.GetValue("prefix") == null ||
+            Config.Variables.GetValue("prefix")?.Length != 1 ||
+            (args.Length == 1 && args[0] == "/reset"))
         {
             Application.Init();
             var top = Application.Top;
@@ -53,15 +55,14 @@ public class Program
 
             top.Add(win);
 
-            var labelInfo =
-                new Label(
+            var labelInfo = new Label(
                     "Configuration file not found or invalid. " +
                     "Please fill the following fields to create a new configuration file."
                 )
-                {
-                    X = Pos.Center(),
-                    Y = 2
-                };
+            {
+                X = Pos.Center(),
+                Y = 2
+            };
 
 
             var labelToken = new Label("Please insert your token here: ")
@@ -139,9 +140,9 @@ public class Program
                 }
 
 
-                Config.AddValueToVariables("ServerID", (string)textFiledServerID.Text, true);
-                Config.AddValueToVariables("token", (string)textFiledToken.Text, true);
-                Config.AddValueToVariables("prefix", (string)textFiledPrefix.Text, true);
+                Config.Variables.Add("ServerID", (string)textFiledServerID.Text, true);
+                Config.Variables.Add("token", (string)textFiledToken.Text, true);
+                Config.Variables.Add("prefix", (string)textFiledPrefix.Text, true);
 
                 MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D",
                                  "Start :D");
@@ -164,6 +165,8 @@ public class Program
                         var print_message = license[i++] + "\n";
                         for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
                             print_message += license[i] + "\n";
+                        if (print_message.Contains("https://"))
+                            print_message += "\n\nCTRL + Click on a link to open it";
                         if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
                     }
                 }
@@ -177,8 +180,8 @@ public class Program
             };
 
             win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
-            win.Add(textFiledToken, textFiledPrefix, textFiledServerID);
-            win.Add(button, button2, button3);
+            win.Add(textFiledToken, textFiledPrefix, textFiledServerID, button3);
+            win.Add(button, button2);
             Application.Run();
             Application.Shutdown();
         }
@@ -198,7 +201,6 @@ public class Program
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
         if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 #endif
-        Config.SaveConfig(SaveType.NORMAL).Wait();
 
         while (true)
         {
@@ -230,18 +232,16 @@ public class Program
             Console.WriteLine(message);
 
         Console.WriteLine(
-            $"Running on version: {Config.GetValue<string>("Version") ?? Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
-        Console.WriteLine($"Git URL: {Config.GetValue<string>("GitURL") ?? " Could not find Git URL"}");
+            $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
+        Console.WriteLine($"Git URL: {Settings.Variables.WebsiteURL}");
 
         Console_Utilities.WriteColorText(
             "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
 
-        if (Config.ContainsKey("LaunchMessage"))
-        {
-            Console_Utilities.WriteColorText(Config.GetValue<string>("LaunchMessage"));
-            Config.RemoveKey("LaunchMessage");
-        }
+        if (Config.Variables.Exists("LaunchMessage"))
+            Console_Utilities.WriteColorText(Config.Variables.GetValue("LaunchMessage"));
+
 
         Console_Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
@@ -249,7 +249,7 @@ public class Program
 
         try
         {
-            var token = Config.GetValue<string>("token");
+            var token = Config.Variables.GetValue("token");
 #if DEBUG
             Console.WriteLine("Starting in DEBUG MODE");
             if (!Directory.Exists("./Data/BetaTest"))
@@ -259,7 +259,7 @@ public class Program
             //Debug mode code...
 #endif
 
-            var prefix = Config.GetValue<string>("prefix");
+            var prefix = Config.Variables.GetValue("prefix");
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
             return discordbooter;
@@ -303,8 +303,8 @@ public class Program
             {
                 if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
                 {
-                    if (!Config.ContainsKey("LaunchMessage"))
-                        Config.AddValueToVariables("LaunchMessage",
+                    if (Config.Variables.Exists("LaunchMessage"))
+                        Config.Variables.Add("LaunchMessage",
                                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
                                                    false);
                     Functions.WriteErrFile(ex.ToString());
@@ -321,19 +321,28 @@ public class Program
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
-        await Config.LoadConfig();
-        if (Config.ContainsKey("DeleteLogsAtStartup"))
-            if (Config.GetValue<bool>("DeleteLogsAtStartup"))
+
+        Settings.sqlDatabase = new SqlDatabase(Functions.dataFolder + "SetDB.dat");
+
+        await Settings.sqlDatabase.Open();
+        await Config.Initialize();
+
+
+
+        if (await Config.Variables.ExistsAsync("DeleteLogsAtStartup"))
+            if (await Config.Variables.GetValueAsync("DeleteLogsAtStartup") == "true")
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
         var OnlineDefaultKeys =
             await ServerCom.ReadTextFromURL(
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
 
-        if (!Config.ContainsKey("Version"))
-            Config.AddValueToVariables("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
+
+        if (!await Config.Variables.ExistsAsync("Version"))
+            await Config.Variables.AddAsync("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
         else
-            Config.SetValue("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            await Config.Variables.SetValueAsync("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+
 
         foreach (var key in OnlineDefaultKeys)
         {
@@ -341,10 +350,9 @@ public class Program
             var s = key.Split(' ');
             try
             {
-                if (Config.ContainsKey(s[0])) Config.SetValue(s[0], s[1]);
+                if (await Config.Variables.ExistsAsync(s[0])) await Config.Variables.SetValueAsync(s[0], s[1]);
                 else
-                    Config.GetAndAddValueToVariable(
-                        s[0], s[1], s[2].Equals("true", StringComparison.CurrentCultureIgnoreCase));
+                    await Config.Variables.AddAsync(s[0], s[1], s[2].ToLower() == "true");
             }
             catch (Exception ex)
             {
@@ -366,13 +374,13 @@ public class Program
             {
                 case "CurrentVersion":
                     var newVersion = s[1];
-                    if (!newVersion.Equals(Config.GetValue<string>("Version")))
+                    if (!newVersion.Equals(await Config.Variables.GetValueAsync("Version")))
                     {
                         var nVer = new VersionString(newVersion.Substring(2));
-                        var cVer = new VersionString(Config.GetValue<string>("Version").Substring(2));
+                        var cVer = new VersionString((await Config.Variables.GetValueAsync("Version")).Substring(2));
                         if (cVer > nVer)
                         {
-                            Config.SetValue("Version", "1." + cVer.ToShortString() + " (Beta)");
+                            await Config.Variables.SetValueAsync("Version", "1." + cVer.ToShortString() + " (Beta)");
                             break;
                         }
 
@@ -402,7 +410,9 @@ public class Program
                     if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
                         break;
 
-                    if (Config.UpdaterVersion != updaternewversion ||
+                    if (!await Config.Variables.ExistsAsync("UpdaterVersion"))
+                        await Config.Variables.AddAsync("UpdaterVersion", "0.0.0.0", false);
+                    if (await Config.Variables.GetValueAsync("UpdaterVersion") != updaternewversion ||
                         !Directory.Exists("./Updater") ||
                         !File.Exists("./Updater/Updater.exe"))
                     {
@@ -415,9 +425,8 @@ public class Program
                             "./Updater.zip");
                         await Functions.ExtractArchive("./Updater.zip", "./", null,
                                                        UnzipProgressType.PercentageFromTotalSize);
-                        Config.UpdaterVersion = updaternewversion;
+                        await Config.Variables.SetValueAsync("UpdaterVersion", updaternewversion);
                         File.Delete("Updater.zip");
-                        await Config.SaveConfig(SaveType.NORMAL);
                         bar.Stop("Updater has been updated !");
                         Console.Clear();
                     }
@@ -425,10 +434,6 @@ public class Program
                     break;
             }
         }
-
-
-        Console_Utilities.Initialize();
-        await Config.SaveConfig(SaveType.NORMAL);
         Console.Clear();
     }
 }

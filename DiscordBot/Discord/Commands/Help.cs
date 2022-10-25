@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+
 using Discord;
 using Discord.Commands;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
@@ -58,7 +60,7 @@ internal class Help : DBCommand
 
         var embedBuilder = new EmbedBuilder();
 
-        var adminCommands  = "";
+        var adminCommands = "";
         var normalCommands = "";
 
         foreach (var cmd in PluginLoader.Commands!)
@@ -79,7 +81,7 @@ internal class Help : DBCommand
                                                    (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Config.GetValue<string>("prefix") + cmd.Usage);
+        embedBuilder.AddField("Usage", Config.Variables.GetValue("prefix") + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

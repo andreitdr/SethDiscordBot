@@ -80,18 +80,12 @@ public class PluginLoader
                 var version = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (version is null)
                     return;
-                if (!Config.PluginVersionsContainsKey(name))
-                    Config.SetPluginVersion(
-                        name, (version.PackageVersionID + ".0.0"));
+                if (Config.Plugins.GetVersion(name) is not null)
+                    Config.Plugins.SetVersion(name, version);
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);
             });
-
-
-
-        //Save the new config file (after the updates)
-        await Config.SaveConfig(SaveType.NORMAL);
 
 
         //Load all plugins
@@ -102,23 +96,6 @@ public class PluginLoader
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
         Console.WriteLine("Loading plugins");
-
-        /*        var commandsLoader = new Loader<DBCommand>(pluginCMDFolder, pluginCMDExtension);
-                var eventsLoader = new Loader<DBEvent>(pluginEVEFolder, pluginEVEExtension);
-                var slashLoader = new Loader<DBSlashCommand>("./Data/Plugins/SlashCommands/", "dll");
-
-                commandsLoader.FileLoaded += OnCommandFileLoaded;
-                commandsLoader.PluginLoaded += OnCommandLoaded;
-
-                eventsLoader.FileLoaded += EventFileLoaded;
-                eventsLoader.PluginLoaded += OnEventLoaded;
-
-                slashLoader.FileLoaded += SlashLoader_FileLoaded;
-                slashLoader.PluginLoaded += SlashLoader_PluginLoaded;
-
-                Commands = commandsLoader.Load();
-                Events = eventsLoader.Load();
-                SlashCommands = slashLoader.Load();*/
 
         var loader = new LoaderV2("./Data/Plugins", "dll");
         loader.FileLoaded += (args) => Functions.WriteLogFile($"{args.PluginName} file Loaded");
