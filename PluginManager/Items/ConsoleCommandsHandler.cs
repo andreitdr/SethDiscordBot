@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using Discord.WebSocket;
 
-using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
@@ -259,6 +258,8 @@ public class ConsoleCommandsHandler
                 await Config.Plugins.SetVersionAsync(name, ver);
 
                 isDownloading = false;
+
+                await ExecuteCommad("localload " + name);
             }
         );
 
@@ -307,15 +308,10 @@ public class ConsoleCommandsHandler
             {
                 if (client is null)
                     return;
-                var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
 
-                bar.Start();
-                bar.Stop("Saved config !");
-                Settings.Variables.outputStream.WriteLine();
                 Settings.sqlDatabase.Stop();
                 await client.StopAsync();
                 await client.DisposeAsync();
-
                 await Task.Delay(1000);
                 Environment.Exit(0);
             }
@@ -335,19 +331,23 @@ public class ConsoleCommandsHandler
                 await s.CopyToAsync(str);
                 var asmb = Assembly.Load(str.ToArray());
 
-                var types = asmb.GetTypes();
-                foreach (var type in types)
-                    if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
-                    {
-                        var instance = (DBEvent)Activator.CreateInstance(type);
-                        instance.Start(this.client);
-                        Settings.Variables.outputStream.WriteLine($"[EVENT] Loaded external {type.FullName}!");
-                    }
-                    else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
-                    {
-                        var instance = (DBCommand)Activator.CreateInstance(type);
-                        Settings.Variables.outputStream.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
-                    }
+                await PluginLoader.LoadPluginFromAssembly(asmb, this.client);
+            }
+            catch (Exception ex)
+            {
+                Settings.Variables.outputStream.WriteLine(ex.Message);
+            }
+        });
+
+        AddCommand("localload", "Load a local command", "local [pluginName]", async args =>
+        {
+            if (args.Length <= 1) return;
+            try
+            {
+                var pName = string.Join(' ', args, 1, args.Length - 1);
+                var asmb = Assembly.LoadFile(Path.GetFullPath("./Data/Plugins/" + pName + ".dll"));
+
+                await PluginLoader.LoadPluginFromAssembly(asmb, this.client);
             }
             catch (Exception ex)
             {
@@ -422,6 +422,7 @@ public class ConsoleCommandsHandler
 
         AddCommand("reload", "Reload the bot with all plugins", () =>
         {
+
             if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
             {
                 Process.Start("DiscordBot.exe", "lp");

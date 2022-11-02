@@ -41,11 +41,6 @@ public static class Functions
     /// </summary>
     public static readonly string pakFolder = @"./Data/PAKS/";
 
-    /// <summary>
-    ///     Beta testing folder
-    /// </summary>
-    public static readonly string betaFolder = @"./Data/BetaTest/";
-
 
     /// <summary>
     ///     Read data from a file that is inside an archive (ZIP format)

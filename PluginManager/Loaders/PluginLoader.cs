@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using Discord;
@@ -108,7 +109,7 @@ public class PluginLoader
 
     private async void Loader_PluginLoaded(LoaderArgs args)
     {
-        // Settings.Variables.outputStream.WriteLine(args.TypeName);
+
         switch (args.TypeName)
         {
             case "DBCommand":
@@ -139,7 +140,7 @@ public class PluginLoader
                     builder.WithDescription(slash.Description);
                     builder.WithDMPermission(slash.canUseDM);
                     builder.Options = slash.Options;
-                    //Settings.Variables.outputStream.WriteLine("Loaded " + slash.Name);
+
                     onSLSHLoad?.Invoke(((DBSlashCommand)args.Plugin!).Name, args.TypeName, args.IsLoaded, args.Exception);
                     await _client.CreateGlobalApplicationCommandAsync(builder.Build());
 
@@ -147,5 +148,37 @@ public class PluginLoader
                 }
                 break;
         }
+    }
+    public static async Task LoadPluginFromAssembly(Assembly asmb, DiscordSocketClient client)
+    {
+        var types = asmb.GetTypes();
+        foreach (var type in types)
+            if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+            {
+                var instance = (DBEvent)Activator.CreateInstance(type);
+                instance.Start(client);
+                PluginLoader.Events.Add(instance);
+                Settings.Variables.outputStream.WriteLine($"[EVENT] Loaded external {type.FullName}!");
+            }
+            else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
+            {
+                var instance = (DBCommand)Activator.CreateInstance(type);
+                PluginLoader.Commands.Add(instance);
+                Settings.Variables.outputStream.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
+            }
+            else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
+            {
+                var instance = (DBSlashCommand)Activator.CreateInstance(type);
+                SlashCommandBuilder builder = new SlashCommandBuilder();
+                builder.WithName(instance.Name);
+                builder.WithDescription(instance.Description);
+                builder.WithDMPermission(instance.canUseDM);
+                builder.Options = instance.Options;
+
+                await client.CreateGlobalApplicationCommandAsync(builder.Build());
+                PluginLoader.SlashCommands.Add(instance);
+                Settings.Variables.outputStream.WriteLine($"[SLASH] Instance: {type.FullName} loaded !");
+
+            }
     }
 }
