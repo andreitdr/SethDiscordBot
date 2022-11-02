@@ -30,10 +30,9 @@ public class Program
     ///     The main entry point for the application.
     /// </summary>
     [STAThread]
-    [Obsolete]
-    public static void Main(string[] args)
+    public static void Startup(string[] args)
     {
-        Console.WriteLine("Loading resources ...");
+
         PreLoadComponents().Wait();
 
         if (!Config.Variables.Exists("ServerID") || !Config.Variables.Exists("token") ||
@@ -195,7 +194,7 @@ public class Program
     private static void NoGUI()
     {
 #if DEBUG
-        Console.WriteLine();
+        Settings.Variables.outputStream.WriteLine();
         ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
 #else
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
@@ -211,7 +210,7 @@ public class Program
 #endif
 
             ) && cmd.Length > 0)
-                Console.WriteLine("Failed to run command " + cmd);
+                Settings.Variables.outputStream.WriteLine("Failed to run command " + cmd);
         }
     }
 
@@ -229,36 +228,37 @@ public class Program
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
         foreach (var message in startupMessageList)
-            Console.WriteLine(message);
+            Settings.Variables.outputStream.WriteLine(message);
 
-        Console.WriteLine(
+        Settings.Variables.outputStream.WriteLine(
             $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Console.WriteLine($"Git URL: {Settings.Variables.WebsiteURL}");
+        Settings.Variables.outputStream.WriteLine($"Git URL: {Settings.Variables.WebsiteURL}");
 
-        Console_Utilities.WriteColorText(
+        Utilities.WriteColorText(
             "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
 
         if (Config.Variables.Exists("LaunchMessage"))
-            Console_Utilities.WriteColorText(Config.Variables.GetValue("LaunchMessage"));
+            Utilities.WriteColorText(Config.Variables.GetValue("LaunchMessage"));
 
 
-        Console_Utilities.WriteColorText(
+        Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
-        Console.WriteLine("============================ LOG ============================");
+        Settings.Variables.outputStream.WriteLine("============================ LOG ============================");
 
         try
         {
-            var token = Config.Variables.GetValue("token");
+            string token = "";
 #if DEBUG
-            Console.WriteLine("Starting in DEBUG MODE");
-            if (!Directory.Exists("./Data/BetaTest"))
-                Console.WriteLine("Failed to start in debug mode because the folder ./Data/BetaTest does not exist");
-            else
-                token = File.ReadAllText("./Data/BetaTest/token.txt");
-            //Debug mode code...
-#endif
 
+            if (await Settings.sqlDatabase.TableExistsAsync("BetaTest"))
+            {
+                Settings.Variables.outputStream.WriteLine("Starting in DEBUG MODE");
+                token = await Settings.sqlDatabase.GetValueAsync("BetaTest", "VariableName", "Token", "Value");
+            }
+#else
+            token = Config.Variables.GetValue("token");
+#endif
             var prefix = Config.Variables.GetValue("prefix");
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
@@ -266,7 +266,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Settings.Variables.outputStream.WriteLine(ex);
             return null;
         }
     }
@@ -285,7 +285,7 @@ public class Program
         if (len > 0 && args[0] == "/remplug")
         {
             var plugName = string.Join(' ', args, 1, args.Length - 1);
-            Console.WriteLine("Starting to remove " + plugName);
+            Settings.Variables.outputStream.WriteLine("Starting to remove " + plugName);
             await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
             loadPluginsOnStartup = true;
         }
@@ -316,7 +316,9 @@ public class Program
 
     private static async Task PreLoadComponents()
     {
-        var main = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+        Settings.Variables.outputStream = Console.Out;
+        Settings.Variables.outputStream.WriteLine("Loading resources ...");
+        var main = new Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins");
@@ -395,7 +397,7 @@ public class Program
                         {
                             var url =
                                 $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                            Console.WriteLine("Downloading update ...");
+                            Settings.Variables.outputStream.WriteLine("Downloading update ...");
                             await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
                             await File.WriteAllTextAsync("Install.sh",
                                                          "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
@@ -417,8 +419,8 @@ public class Program
                         !File.Exists("./Updater/Updater.exe"))
                     {
                         Console.Clear();
-                        Console.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
-                        var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                        Settings.Variables.outputStream.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
+                        var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
                         await ServerCom.DownloadFileNoProgressAsync(
                             "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip",

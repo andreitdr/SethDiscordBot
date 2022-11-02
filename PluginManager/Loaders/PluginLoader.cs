@@ -95,7 +95,7 @@ public class PluginLoader
         SlashCommands = new List<DBSlashCommand>();
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
-        Console.WriteLine("Loading plugins");
+        Settings.Variables.outputStream.WriteLine("Loading plugins");
 
         var loader = new LoaderV2("./Data/Plugins", "dll");
         loader.FileLoaded += (args) => Functions.WriteLogFile($"{args.PluginName} file Loaded");
@@ -108,7 +108,7 @@ public class PluginLoader
 
     private async void Loader_PluginLoaded(LoaderArgs args)
     {
-        // Console.WriteLine(args.TypeName);
+        // Settings.Variables.outputStream.WriteLine(args.TypeName);
         switch (args.TypeName)
         {
             case "DBCommand":
@@ -124,10 +124,10 @@ public class PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
-                    Console.WriteLine("Plugin: " + args.PluginName);
-                    Console.WriteLine("Type: " + args.TypeName);
-                    Console.WriteLine("IsLoaded: " + args.IsLoaded);
+                    Settings.Variables.outputStream.WriteLine(ex.ToString());
+                    Settings.Variables.outputStream.WriteLine("Plugin: " + args.PluginName);
+                    Settings.Variables.outputStream.WriteLine("Type: " + args.TypeName);
+                    Settings.Variables.outputStream.WriteLine("IsLoaded: " + args.IsLoaded);
                 }
                 break;
             case "DBSlashCommand":
@@ -139,73 +139,13 @@ public class PluginLoader
                     builder.WithDescription(slash.Description);
                     builder.WithDMPermission(slash.canUseDM);
                     builder.Options = slash.Options;
-                    //Console.WriteLine("Loaded " + slash.Name);
+                    //Settings.Variables.outputStream.WriteLine("Loaded " + slash.Name);
                     onSLSHLoad?.Invoke(((DBSlashCommand)args.Plugin!).Name, args.TypeName, args.IsLoaded, args.Exception);
                     await _client.CreateGlobalApplicationCommandAsync(builder.Build());
 
 
                 }
-                //else Console.WriteLine("Failed to load " + args.PluginName + "\nException: " + args.Exception.Message);
                 break;
         }
     }
-    /*
-        private async void SlashLoader_PluginLoaded(LoaderArgs args)
-        {
-            if (args.IsLoaded)
-            {
-                var slash = (DBSlashCommand)args.Plugin;
-                SlashCommandBuilder builder = new SlashCommandBuilder();
-                builder.WithName(slash.Name);
-                builder.WithDescription(slash.Description);
-                builder.WithDMPermission(slash.canUseDM);
-                builder.Options = slash.Options;
-                Console.WriteLine("Loaded " + slash.Name);
-                await _client.CreateGlobalApplicationCommandAsync(builder.Build());
-
-
-            }
-            else Console.WriteLine("Failed to load " + args.PluginName + "\nException: " + args.Exception.Message);
-        }
-
-        private void SlashLoader_FileLoaded(LoaderArgs args)
-        {
-            if (!args.IsLoaded)
-                Functions.WriteLogFile($"[SLASH] SlashCommand from file [{args.PluginName}] has been successfully created !");
-        }
-
-        private void EventFileLoaded(LoaderArgs e)
-        {
-            if (!e.IsLoaded)
-                Functions.WriteLogFile($"[EVENT] Event from file [{e.PluginName}] has been successfully created !");
-        }
-
-        private void OnCommandFileLoaded(LoaderArgs e)
-        {
-            if (!e.IsLoaded)
-                Functions.WriteLogFile($"[CMD] Command from file [{e.PluginName}] has been successfully loaded !");
-        }
-
-        private void OnEventLoaded(LoaderArgs e)
-        {
-            try
-            {
-                if (e.IsLoaded)
-                    ((DBEvent)e.Plugin!).Start(_client);
-
-                onEVELoad?.Invoke(((DBEvent)e.Plugin!).Name, e.TypeName!, e.IsLoaded, e.Exception);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                Console.WriteLine("Plugin: " + e.PluginName);
-                Console.WriteLine("Type: " + e.TypeName);
-                Console.WriteLine("IsLoaded: " + e.IsLoaded);
-            }
-        }
-
-        private void OnCommandLoaded(LoaderArgs e)
-        {
-            onCMDLoad?.Invoke(((DBCommand)e.Plugin!).Command, e.TypeName!, e.IsLoaded, e.Exception);
-        }*/
 }

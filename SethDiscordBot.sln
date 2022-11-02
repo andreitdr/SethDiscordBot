@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicLibrary", "..\DiscordB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlashCommands", "..\DiscordBotItems\Plugins\SlashCommands\SlashCommands.csproj", "{C2D73BE8-997B-4A4A-8EA5-989BE33EE1DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevelingSystem", "..\DiscordBotItems\Plugins\LevelingSystem\LevelingSystem.csproj", "{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelingSystem", "..\DiscordBotItems\Plugins\LevelingSystem\LevelingSystem.csproj", "{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

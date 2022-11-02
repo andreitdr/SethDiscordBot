@@ -80,11 +80,11 @@ public class PluginsManager
 
             data.Add(new[] { "-", "-", "-", "-" });
 
-            Console_Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
+            Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
         }
         catch (Exception exception)
         {
-            Console.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
+            Settings.Variables.outputStream.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Functions.WriteErrFile(exception.ToString());
         }
     }
@@ -116,7 +116,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Console.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
+            Settings.Variables.outputStream.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Functions.WriteErrFile(exception.ToString());
         }
 

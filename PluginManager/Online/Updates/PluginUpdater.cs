@@ -42,7 +42,7 @@ public class PluginUpdater
 
     public static async Task Download(string pakName)
     {
-        Console_Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" +
+        Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" +
                                          (await ServerCom.GetVersionOfPackageFromWeb(pakName))?.ToShortString() +
                                          "&c. Current Version: &y" +
                                          ServerCom.GetVersionOfPackage(pakName)?.ToShortString());

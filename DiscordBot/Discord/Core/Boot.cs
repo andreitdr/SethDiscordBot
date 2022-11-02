@@ -60,7 +60,14 @@ internal class Boot
     /// <returns>Task</returns>
     public async Task Awake()
     {
-        var config = new DiscordSocketConfig { AlwaysDownloadUsers = true };
+        var config = new DiscordSocketConfig
+        {
+
+            AlwaysDownloadUsers = true,
+
+            //Disable system clock checkup (for responses at slash commands)
+            UseInteractionSnowflakeDate = false
+        };
 
         client = new DiscordSocketClient(config);
         service = new CommandService();

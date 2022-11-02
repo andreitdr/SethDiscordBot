@@ -57,7 +57,7 @@ public static class ServerCom
         var isDownloading = true;
         float c_progress = 0;
 
-        var pbar = new Console_Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, NoColor = true };
+        var pbar = new Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, NoColor = true };
 
         IProgress<float> progress = new Progress<float>(percent => { c_progress = percent; });
 

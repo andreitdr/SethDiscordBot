@@ -34,7 +34,9 @@ public class ConsoleCommandsHandler
     {
         this.client = client;
         InitializeBasicCommands();
-        //Console.WriteLine("Initialized console command handler !");
+
+
+        //Settings.Variables.outputStream.WriteLine("Initialized console command handler !");
     }
 
     private void InitializeBasicCommands()
@@ -45,7 +47,7 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length <= 1)
                 {
-                    Console.WriteLine("Available commands:");
+                    Settings.Variables.outputStream.WriteLine("Available commands:");
                     var items = new List<string[]>();
                     items.Add(new[] { "-", "-", "-" });
                     items.Add(new[] { "Command", "Description", "Usage" });
@@ -61,19 +63,19 @@ public class ConsoleCommandsHandler
                     }
 
                     items.Add(new[] { "-", "-", "-" });
-                    Console_Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
+                    Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
                 }
                 else
                 {
                     foreach (var command in commandList)
                         if (command.CommandName == args[1])
                         {
-                            Console.WriteLine("Command description: " + command.Description);
-                            Console.WriteLine("Command execution format:" + command.Usage);
+                            Settings.Variables.outputStream.WriteLine("Command description: " + command.Description);
+                            Settings.Variables.outputStream.WriteLine("Command execution format:" + command.Usage);
                             return;
                         }
 
-                    Console.WriteLine("Command not found");
+                    Settings.Variables.outputStream.WriteLine("Command not found");
                 }
             }
         );
@@ -92,16 +94,16 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("[CMD] Successfully loaded command : " + name);
+                        Settings.Variables.outputStream.WriteLine("[CMD] Successfully loaded command : " + name);
                     }
 
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         if (exception is null)
-                            Console.WriteLine("An error occured while loading: " + name);
+                            Settings.Variables.outputStream.WriteLine("An error occured while loading: " + name);
                         else
-                            Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
+                            Settings.Variables.outputStream.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -114,12 +116,12 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("[EVENT] Successfully loaded event : " + name);
+                        Settings.Variables.outputStream.WriteLine("[EVENT] Successfully loaded event : " + name);
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
+                        Settings.Variables.outputStream.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -133,12 +135,12 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("[SLASH] Successfully loaded command : " + name);
+                        Settings.Variables.outputStream.WriteLine("[SLASH] Successfully loaded command : " + name);
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("[SLASH] Failed to load command : " + name + " because " + exception!.Message);
+                        Settings.Variables.outputStream.WriteLine("[SLASH] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -158,7 +160,7 @@ public class ConsoleCommandsHandler
                 if (args.Length == 1)
                 {
                     isDownloading = false;
-                    Console.WriteLine("Please specify plugin name");
+                    Settings.Variables.outputStream.WriteLine("Please specify plugin name");
                     return;
                 }
 
@@ -172,12 +174,12 @@ public class ConsoleCommandsHandler
                     if (name == "")
                     {
                         isDownloading = false;
-                        Console_Utilities.WriteColorText("Name is invalid");
+                        Utilities.WriteColorText("Name is invalid");
                         return;
                     }
 
                     isDownloading = false;
-                    Console_Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" +
+                    Utilities.WriteColorText($"Failed to find plugin &b{name} &c!" +
                                                      " Use &glistplugs &ccommand to display all available plugins !");
                     return;
                 }
@@ -194,20 +196,20 @@ public class ConsoleCommandsHandler
                 }
                 else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                 {
-                    var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                    var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                     bar.Start();
                     await ServerCom.DownloadFileNoProgressAsync(info[1], path);
                     bar.Stop("Plugin Downloaded !");
                 }
 
 
-                Console.WriteLine("\n");
+                Settings.Variables.outputStream.WriteLine("\n");
 
                 // check requirements if any
 
                 if (info.Length == 3 && info[2] != string.Empty && info[2] != null)
                 {
-                    Console.WriteLine($"Downloading requirements for plugin : {name}");
+                    Settings.Variables.outputStream.WriteLine($"Downloading requirements for plugin : {name}");
 
                     var lines = await ServerCom.ReadTextFromURL(info[2]);
 
@@ -216,7 +218,7 @@ public class ConsoleCommandsHandler
                         if (!(line.Length > 0 && line.Contains(",")))
                             continue;
                         var split = line.Split(',');
-                        Console.WriteLine($"\nDownloading item: {split[1]}");
+                        Settings.Variables.outputStream.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
                         if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
@@ -224,32 +226,32 @@ public class ConsoleCommandsHandler
                         }
                         else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                         {
-                            var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                            var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                             bar.Start();
                             await ServerCom.DownloadFileNoProgressAsync(split[0], "./" + split[1]);
                             bar.Stop("Item downloaded !");
                         }
 
-                        Console.WriteLine();
+                        Settings.Variables.outputStream.WriteLine();
                         if (split[0].EndsWith(".pak"))
                         {
                             File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
                         }
                         else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
                         {
-                            Console.WriteLine($"Extracting {split[1]} ...");
-                            var bar = new Console_Utilities.ProgressBar(
+                            Settings.Variables.outputStream.WriteLine($"Extracting {split[1]} ...");
+                            var bar = new Utilities.ProgressBar(
                                 ProgressBarType.NO_END);
                             bar.Start();
                             await Functions.ExtractArchive("./" + split[1], "./", null,
                                                            UnzipProgressType.PercentageFromTotalSize);
                             bar.Stop("Extracted");
-                            Console.WriteLine("\n");
+                            Settings.Variables.outputStream.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
                     }
 
-                    Console.WriteLine();
+                    Settings.Variables.outputStream.WriteLine();
                 }
 
                 var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
@@ -269,7 +271,7 @@ public class ConsoleCommandsHandler
                     return;
 
                 var data = Config.Variables.GetValue(args[1]);
-                Console.WriteLine($"{args[1]} => {data}");
+                Settings.Variables.outputStream.WriteLine($"{args[1]} => {data}");
             }
         );
 
@@ -284,11 +286,11 @@ public class ConsoleCommandsHandler
                 try
                 {
                     Config.Variables.Add(key, value, isReadOnly);
-                    Console.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
+                    Settings.Variables.outputStream.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Settings.Variables.outputStream.WriteLine(ex.ToString());
                 }
             }
         );
@@ -305,11 +307,11 @@ public class ConsoleCommandsHandler
             {
                 if (client is null)
                     return;
-                var bar = new Console_Utilities.ProgressBar(ProgressBarType.NO_END);
+                var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
 
                 bar.Start();
                 bar.Stop("Saved config !");
-                Console.WriteLine();
+                Settings.Variables.outputStream.WriteLine();
                 Settings.sqlDatabase.Stop();
                 await client.StopAsync();
                 await client.DisposeAsync();
@@ -339,17 +341,17 @@ public class ConsoleCommandsHandler
                     {
                         var instance = (DBEvent)Activator.CreateInstance(type);
                         instance.Start(this.client);
-                        Console.WriteLine($"[EVENT] Loaded external {type.FullName}!");
+                        Settings.Variables.outputStream.WriteLine($"[EVENT] Loaded external {type.FullName}!");
                     }
                     else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
                     {
                         var instance = (DBCommand)Activator.CreateInstance(type);
-                        Console.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
+                        Settings.Variables.outputStream.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
                     }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Settings.Variables.outputStream.WriteLine(ex.Message);
             }
         });
 
@@ -383,13 +385,13 @@ public class ConsoleCommandsHandler
 
             if (!File.Exists(location))
             {
-                Console.WriteLine("The plugin does not exist");
+                Settings.Variables.outputStream.WriteLine("The plugin does not exist");
                 return;
             }
 
             File.Delete(location);
 
-            Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
+            Settings.Variables.outputStream.WriteLine("Removed the plugin DLL. Checking for other files ...");
 
             var info = await manager.GetPluginLinkByName(plugName);
             if (info[2] != string.Empty)
@@ -404,7 +406,7 @@ public class ConsoleCommandsHandler
                         File.Delete("./" + split[1]);
 
 
-                    Console.WriteLine("Removed: " + split[1]);
+                    Settings.Variables.outputStream.WriteLine("Removed: " + split[1]);
                 }
 
                 if (Directory.Exists($"./Data/Plugins/{plugName}"))
@@ -415,7 +417,7 @@ public class ConsoleCommandsHandler
             }
 
             isDownloading = false;
-            Console.WriteLine(plugName + " has been successfully deleted !");
+            Settings.Variables.outputStream.WriteLine(plugName + " has been successfully deleted !");
         });
 
         AddCommand("reload", "Reload the bot with all plugins", () =>
@@ -443,7 +445,7 @@ public class ConsoleCommandsHandler
         commandList.Add(new ConsoleCommand
         { CommandName = command, Description = description, Action = action, Usage = usage });
         Console.ForegroundColor = ConsoleColor.White;
-        Console_Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
+        Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
     }
 
     public static void AddCommand(string command, string description, Action action)
@@ -469,13 +471,10 @@ public class ConsoleCommandsHandler
     public static async Task ExecuteCommad(string command)
     {
         var args = command.Split(' ');
-        // Console.WriteLine(command);
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
             {
                 item.Action.Invoke(args);
-                Console.WriteLine();
-
                 while (isDownloading) await Task.Delay(1000);
             }
     }
@@ -491,17 +490,17 @@ public class ConsoleCommandsHandler
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
                     for (var i = 0; i < command.Length + 30; i++)
-                        Console.Write(" ");
+                        Settings.Variables.outputStream.Write(" ");
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }
 
-                Console.WriteLine();
+                Settings.Variables.outputStream.WriteLine();
                 item.Action(args);
 
                 return true;
             }
 
         return false;
-        //Console.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
+        //Settings.Variables.outputStream.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
     }
 }

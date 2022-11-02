@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace PluginManager.Others;
 
-public static class Console_Utilities
+public static class Utilities
 {
     private static Dictionary<char, ConsoleColor> Colors = new()
     {
@@ -46,38 +46,38 @@ public static class Console_Utilities
             foreach (var row in data)
             {
                 if (row[0][0] == tableLine)
-                    Console.Write(tableCross);
+                    Settings.Variables.outputStream.Write(tableCross);
                 else
-                    Console.Write(tableWall);
+                    Settings.Variables.outputStream.Write(tableWall);
                 for (var l = 0; l < row.Length; l++)
                 {
                     if (row[l][0] == tableLine)
                     {
                         for (var i = 0; i < len[l] + 4; ++i)
-                            Console.Write(tableLine);
+                            Settings.Variables.outputStream.Write(tableLine);
                     }
                     else if (row[l].Length == len[l])
                     {
-                        Console.Write("  ");
-                        Console.Write(row[l]);
-                        Console.Write("  ");
+                        Settings.Variables.outputStream.Write("  ");
+                        Settings.Variables.outputStream.Write(row[l]);
+                        Settings.Variables.outputStream.Write("  ");
                     }
                     else
                     {
                         var lenHalf = row[l].Length / 2;
                         for (var i = 0; i < (len[l] + 4) / 2 - lenHalf; ++i)
-                            Console.Write(" ");
-                        Console.Write(row[l]);
+                            Settings.Variables.outputStream.Write(" ");
+                        Settings.Variables.outputStream.Write(row[l]);
                         for (var i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
-                            Console.Write(" ");
+                            Settings.Variables.outputStream.Write(" ");
                         if (row[l].Length % 2 == 0)
-                            Console.Write(" ");
+                            Settings.Variables.outputStream.Write(" ");
                     }
 
-                    Console.Write(row[l][0] == tableLine ? tableCross : tableWall);
+                    Settings.Variables.outputStream.Write(row[l][0] == tableLine ? tableCross : tableWall);
                 }
 
-                Console.WriteLine(); //end line
+                Settings.Variables.outputStream.WriteLine(); //end line
             }
 
             return;
@@ -95,44 +95,44 @@ public static class Console_Utilities
 
             foreach (var row in data)
             {
-                Console.Write("\t");
+                Settings.Variables.outputStream.Write("\t");
                 if (row[0] == "-")
-                    Console.Write("+");
+                    Settings.Variables.outputStream.Write("+");
                 else
-                    Console.Write("|");
+                    Settings.Variables.outputStream.Write("|");
 
                 foreach (var s in row)
                 {
                     if (s == "-")
                     {
                         for (var i = 0; i < maxLen + 4; ++i)
-                            Console.Write("-");
+                            Settings.Variables.outputStream.Write("-");
                     }
                     else if (s.Length == maxLen)
                     {
-                        Console.Write("  ");
-                        Console.Write(s);
-                        Console.Write("  ");
+                        Settings.Variables.outputStream.Write("  ");
+                        Settings.Variables.outputStream.Write(s);
+                        Settings.Variables.outputStream.Write("  ");
                     }
                     else
                     {
                         var lenHalf = s.Length / 2;
                         for (var i = 0; i < div - lenHalf; ++i)
-                            Console.Write(" ");
-                        Console.Write(s);
+                            Settings.Variables.outputStream.Write(" ");
+                        Settings.Variables.outputStream.Write(s);
                         for (var i = div + lenHalf + 1; i < maxLen + 4; ++i)
-                            Console.Write(" ");
+                            Settings.Variables.outputStream.Write(" ");
                         if (s.Length % 2 == 0)
-                            Console.Write(" ");
+                            Settings.Variables.outputStream.Write(" ");
                     }
 
                     if (s == "-")
-                        Console.Write("+");
+                        Settings.Variables.outputStream.Write("+");
                     else
-                        Console.Write("|");
+                        Settings.Variables.outputStream.Write("|");
                 }
 
-                Console.WriteLine(); //end line
+                Settings.Variables.outputStream.WriteLine(); //end line
             }
 
             return;
@@ -153,12 +153,12 @@ public static class Console_Utilities
                 {
                     if (data[i][j] == "-")
                         data[i][j] = " ";
-                    Console.Write(data[i][j]);
+                    Settings.Variables.outputStream.Write(data[i][j]);
                     for (var k = 0; k < widths[j] - data[i][j].Length + 1 + space_between_columns; k++)
-                        Console.Write(" ");
+                        Settings.Variables.outputStream.Write(" ");
                 }
 
-                Console.WriteLine();
+                Settings.Variables.outputStream.WriteLine();
             }
 
             return;
@@ -169,6 +169,13 @@ public static class Console_Utilities
 
     public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
     {
+        if (Console.Out != Settings.Variables.outputStream)
+        {
+            Settings.Variables.outputStream.Write(text);
+            if (appendNewLineAtEnd)
+                Settings.Variables.outputStream.WriteLine();
+            return;
+        }
         var initialForeGround = Console.ForegroundColor;
         var input = text.ToCharArray();
         for (var i = 0; i < input.Length; i++)
@@ -190,12 +197,12 @@ public static class Console_Utilities
             }
             else
             {
-                Console.Write(input[i]);
+                Settings.Variables.outputStream.Write(input[i]);
             }
 
         Console.ForegroundColor = initialForeGround;
         if (appendNewLineAtEnd)
-            Console.WriteLine();
+            Settings.Variables.outputStream.WriteLine();
     }
 
 
@@ -212,6 +219,8 @@ public static class Console_Utilities
 
         public ProgressBar(ProgressBarType type)
         {
+            if (Settings.Variables.outputStream != Console.Out)
+                throw new Exception("This class (or function) can be used with console only. For UI please use another approach.");
             this.type = type;
         }
 
@@ -272,9 +281,9 @@ public static class Console_Utilities
             {
                 Console.CursorLeft = 0;
                 for (var i = 0; i < BarLength + message.Length + 1; i++)
-                    Console.Write(" ");
+                    Settings.Variables.outputStream.Write(" ");
                 Console.CursorLeft = 0;
-                Console.WriteLine(message);
+                Settings.Variables.outputStream.WriteLine(message);
             }
         }
 
@@ -289,14 +298,14 @@ public static class Console_Utilities
         private void UpdateNoEnd(string message)
         {
             Console.CursorLeft = 0;
-            Console.Write("[");
+            Settings.Variables.outputStream.Write("[");
             for (var i = 1; i <= position; i++)
-                Console.Write(" ");
-            Console.Write("<==()==>");
+                Settings.Variables.outputStream.Write(" ");
+            Settings.Variables.outputStream.Write("<==()==>");
             position += positive ? 1 : -1;
             for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Console.Write(" ");
-            Console.Write("] " + message);
+                Settings.Variables.outputStream.Write(" ");
+            Settings.Variables.outputStream.Write("] " + message);
 
 
             if (position == BarLength - 1 || position == 1)
@@ -306,14 +315,14 @@ public static class Console_Utilities
         private void UpdateNoEnd()
         {
             Console.CursorLeft = 0;
-            Console.Write("[");
+            Settings.Variables.outputStream.Write("[");
             for (var i = 1; i <= position; i++)
-                Console.Write(" ");
-            Console.Write("<==()==>");
+                Settings.Variables.outputStream.Write(" ");
+            Settings.Variables.outputStream.Write("<==()==>");
             position += positive ? 1 : -1;
             for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Console.Write(" ");
-            Console.Write("]");
+                Settings.Variables.outputStream.Write(" ");
+            Settings.Variables.outputStream.Write("]");
 
 
             if (position == BarLength - 1 || position == 1)
@@ -323,9 +332,9 @@ public static class Console_Utilities
         private void UpdateNormal(float progress)
         {
             Console.CursorLeft = 0;
-            Console.Write("[");
+            Settings.Variables.outputStream.Write("[");
             Console.CursorLeft = BarLength;
-            Console.Write("]");
+            Settings.Variables.outputStream.Write("]");
             Console.CursorLeft = 1;
             var onechunk = 30.0f / Max;
 
@@ -335,22 +344,22 @@ public static class Console_Utilities
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : Color;
                 Console.CursorLeft = position++;
-                Console.Write("#");
+                Settings.Variables.outputStream.Write("#");
             }
 
             for (var i = position; i < BarLength; i++)
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
                 Console.CursorLeft = position++;
-                Console.Write(" ");
+                Settings.Variables.outputStream.Write(" ");
             }
 
             Console.CursorLeft = BarLength + 4;
             Console.BackgroundColor = ConsoleColor.Black;
             if (progress.CanAproximateTo(Max))
-                Console.Write(progress + " %      ✓");
+                Settings.Variables.outputStream.Write(progress + " %      ✓");
             else
-                Console.Write(MathF.Round(progress, 2) + " %       ");
+                Settings.Variables.outputStream.Write(MathF.Round(progress, 2) + " %       ");
         }
     }
 }

@@ -197,7 +197,7 @@ public static class Functions
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                            Settings.Variables.outputStream.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
                         }
 
                     currentZIPFile++;
@@ -229,7 +229,7 @@ public static class Functions
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                        Settings.Variables.outputStream.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
                     }
 
                     await Task.Delay(10);
