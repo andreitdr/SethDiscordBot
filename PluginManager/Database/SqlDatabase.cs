@@ -17,6 +17,7 @@ namespace PluginManager.Database
             Connection = new SQLiteConnection(ConnectionString);
         }
 
+
         public async Task Open()
         {
             await Connection.OpenAsync();

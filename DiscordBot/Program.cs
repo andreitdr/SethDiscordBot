@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -386,23 +387,43 @@ public class Program
                             break;
                         }
 
-                        if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
+                        Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("A new version of the bot is available !");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("Current version : " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("New version : " + newVersion);
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                        Console.WriteLine("Changelog :");
+
+                        List<string> changeLog = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
+                        foreach (var item in changeLog)
+                            Utilities.WriteColorText(item);
+                        Console.WriteLine("Do you want to update the bot ? (y/n)");
+                        if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
-                            var url =
-                                $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
-                            Process.Start(".\\Updater\\Updater.exe",
-                                          $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
-                        }
-                        else
-                        {
-                            var url =
-                                $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                            Settings.Variables.outputStream.WriteLine("Downloading update ...");
-                            await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
-                            await File.WriteAllTextAsync("Install.sh",
-                                                         "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
-                            Process.Start("Install.sh").WaitForExit();
-                            Environment.Exit(0);
+
+
+                            if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
+                            {
+                                var url =
+                                    $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
+                                Process.Start(".\\Updater\\Updater.exe",
+                                              $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
+                            }
+                            else
+                            {
+                                var url =
+                                    $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
+                                Settings.Variables.outputStream.WriteLine("Downloading update ...");
+                                await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
+                                await File.WriteAllTextAsync("Install.sh",
+                                                             "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
+                                Process.Start("Install.sh").WaitForExit();
+                                Environment.Exit(0);
+                            }
                         }
                     }
 
