@@ -257,6 +257,7 @@ public class Program
                 Settings.Variables.outputStream.WriteLine("Starting in DEBUG MODE");
                 token = await Settings.sqlDatabase.GetValueAsync("BetaTest", "VariableName", "Token", "Value");
             }
+            else token = Config.Variables.GetValue("token");
 #else
             token = Config.Variables.GetValue("token");
 #endif
