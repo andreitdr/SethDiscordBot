@@ -96,7 +96,7 @@ public class PluginLoader
         SlashCommands = new List<DBSlashCommand>();
 
         Functions.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
-        Settings.Variables.outputStream.WriteLine("Loading plugins");
+        Logger.WriteLine("Loading plugins");
 
         var loader = new LoaderV2("./Data/Plugins", "dll");
         loader.FileLoaded += (args) => Functions.WriteLogFile($"{args.PluginName} file Loaded");
@@ -125,10 +125,10 @@ public class PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    Settings.Variables.outputStream.WriteLine(ex.ToString());
-                    Settings.Variables.outputStream.WriteLine("Plugin: " + args.PluginName);
-                    Settings.Variables.outputStream.WriteLine("Type: " + args.TypeName);
-                    Settings.Variables.outputStream.WriteLine("IsLoaded: " + args.IsLoaded);
+                    Logger.WriteLine(ex.ToString());
+                    Logger.WriteLine("Plugin: " + args.PluginName);
+                    Logger.WriteLine("Type: " + args.TypeName);
+                    Logger.WriteLine("IsLoaded: " + args.IsLoaded);
                 }
                 break;
             case "DBSlashCommand":
@@ -158,13 +158,13 @@ public class PluginLoader
                 var instance = (DBEvent)Activator.CreateInstance(type);
                 instance.Start(client);
                 PluginLoader.Events.Add(instance);
-                Settings.Variables.outputStream.WriteLine($"[EVENT] Loaded external {type.FullName}!");
+                Logger.WriteLine($"[EVENT] Loaded external {type.FullName}!");
             }
             else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
             {
                 var instance = (DBCommand)Activator.CreateInstance(type);
                 PluginLoader.Commands.Add(instance);
-                Settings.Variables.outputStream.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
+                Logger.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
             }
             else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
             {
@@ -177,7 +177,7 @@ public class PluginLoader
 
                 await client.CreateGlobalApplicationCommandAsync(builder.Build());
                 PluginLoader.SlashCommands.Add(instance);
-                Settings.Variables.outputStream.WriteLine($"[SLASH] Instance: {type.FullName} loaded !");
+                Logger.WriteLine($"[SLASH] Instance: {type.FullName} loaded !");
 
             }
     }

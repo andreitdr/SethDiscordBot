@@ -84,7 +84,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Settings.Variables.outputStream.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
+            Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Functions.WriteErrFile(exception.ToString());
         }
     }
@@ -116,7 +116,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Settings.Variables.outputStream.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
+            Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Functions.WriteErrFile(exception.ToString());
         }
 

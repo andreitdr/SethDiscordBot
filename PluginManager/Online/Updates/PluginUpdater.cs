@@ -23,7 +23,7 @@ public class PluginUpdater
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex);
         }
 
 

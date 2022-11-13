@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlashCommands", "..\Discord
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelingSystem", "..\DiscordBotItems\Plugins\LevelingSystem\LevelingSystem.csproj", "{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI", "..\DiscordBotItems\DiscordBotUI\DiscordBotUI.csproj", "{3202CE21-BB39-452E-9B0C-740528CAFE43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0138F343-BBB9-4D5F-B499-D9C2978BE9AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3202CE21-BB39-452E-9B0C-740528CAFE43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3202CE21-BB39-452E-9B0C-740528CAFE43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3202CE21-BB39-452E-9B0C-740528CAFE43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3202CE21-BB39-452E-9B0C-740528CAFE43}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

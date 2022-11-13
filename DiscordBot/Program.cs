@@ -195,7 +195,7 @@ public class Program
     private static void NoGUI()
     {
 #if DEBUG
-        Settings.Variables.outputStream.WriteLine();
+        Logger.WriteLine();
         ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
 #else
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
@@ -211,7 +211,7 @@ public class Program
 #endif
 
             ) && cmd.Length > 0)
-                Settings.Variables.outputStream.WriteLine("Failed to run command " + cmd);
+                Logger.WriteLine("Failed to run command " + cmd);
         }
     }
 
@@ -229,11 +229,11 @@ public class Program
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
         foreach (var message in startupMessageList)
-            Settings.Variables.outputStream.WriteLine(message);
+            Logger.WriteLine(message);
 
-        Settings.Variables.outputStream.WriteLine(
+        Logger.WriteLine(
             $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Settings.Variables.outputStream.WriteLine($"Git URL: {Settings.Variables.WebsiteURL}");
+        Logger.WriteLine($"Git URL: {Settings.Variables.WebsiteURL}");
 
         Utilities.WriteColorText(
             "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
@@ -245,7 +245,7 @@ public class Program
 
         Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
-        Settings.Variables.outputStream.WriteLine("============================ LOG ============================");
+        Logger.WriteLine("============================ LOG ============================");
 
         try
         {
@@ -254,7 +254,7 @@ public class Program
 
             if (await Settings.sqlDatabase.TableExistsAsync("BetaTest"))
             {
-                Settings.Variables.outputStream.WriteLine("Starting in DEBUG MODE");
+                Logger.WriteLine("Starting in DEBUG MODE");
                 token = await Settings.sqlDatabase.GetValueAsync("BetaTest", "VariableName", "Token", "Value");
             }
             else token = Config.Variables.GetValue("token");
@@ -268,7 +268,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Settings.Variables.outputStream.WriteLine(ex);
+            Logger.LogError(ex);
             return null;
         }
     }
@@ -287,7 +287,7 @@ public class Program
         if (len > 0 && args[0] == "/remplug")
         {
             var plugName = string.Join(' ', args, 1, args.Length - 1);
-            Settings.Variables.outputStream.WriteLine("Starting to remove " + plugName);
+            Logger.WriteLine("Starting to remove " + plugName);
             await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
             loadPluginsOnStartup = true;
         }
@@ -318,8 +318,12 @@ public class Program
 
     private static async Task PreLoadComponents()
     {
-        Settings.Variables.outputStream = Console.Out;
-        Settings.Variables.outputStream.WriteLine("Loading resources ...");
+        Logger.LogEvent += (message) =>
+        {
+            Console.Write(message);
+        };
+
+        Logger.WriteLine("Loading resources ...");
         var main = new Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
         Directory.CreateDirectory("./Data/Resources");
@@ -390,19 +394,19 @@ public class Program
 
                         Console.Clear();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("A new version of the bot is available !");
+                        Logger.WriteLine("A new version of the bot is available !");
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("Current version : " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                        Logger.WriteLine("Current version : " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("New version : " + newVersion);
+                        Logger.WriteLine("New version : " + newVersion);
                         Console.ForegroundColor = ConsoleColor.White;
 
-                        Console.WriteLine("Changelog :");
+                        Logger.WriteLine("Changelog :");
 
                         List<string> changeLog = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
                         foreach (var item in changeLog)
                             Utilities.WriteColorText(item);
-                        Console.WriteLine("Do you want to update the bot ? (y/n)");
+                        Logger.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
 
@@ -418,7 +422,7 @@ public class Program
                             {
                                 var url =
                                     $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                                Settings.Variables.outputStream.WriteLine("Downloading update ...");
+                                Logger.WriteLine("Downloading update ...");
                                 await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
                                 await File.WriteAllTextAsync("Install.sh",
                                                              "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
@@ -441,7 +445,7 @@ public class Program
                         !File.Exists("./Updater/Updater.exe"))
                     {
                         Console.Clear();
-                        Settings.Variables.outputStream.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
+                        Logger.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
                         var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
                         await ServerCom.DownloadFileNoProgressAsync(
