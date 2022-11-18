@@ -57,7 +57,8 @@ namespace PluginManager
             LogEvent?.Invoke(message);
         }
 
-        public static void Write(char c)
+
+        public static void Write<T>(T c)
         {
             LogEvent?.Invoke($"{c}");
         }
