@@ -81,6 +81,39 @@ public static class Functions
         }
     }
 
+    /// <summary>
+    /// Read content of a packed file as a <see cref="Stream"/>
+    /// </summary>
+    /// <param name="fileName">The file name inside the archive</param>
+    /// <param name="archFile">The archive name</param>
+    public static async Task<Stream> ReadStreamFromPAKAsync(string fileName, string archFile)
+    {
+
+        archFile = pakFolder + archFile;
+        if (!File.Exists(archFile))
+            throw new Exception("Failed to load file !");
+
+        try
+        {
+            Stream stream = Stream.Null;
+            using (var fs = new FileStream(archFile, FileMode.Open))
+            using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
+            {
+                foreach (var entry in zip.Entries)
+                    if (entry.Name == fileName || entry.FullName == fileName)
+                        stream = entry.Open();
+            }
+
+            return stream;
+        }
+        catch (Exception ex)
+        {
+            ex.WriteErrFile();
+            await Task.Delay(100);
+            return await ReadStreamFromPAKAsync(fileName, archFile);
+        }
+    }
+
 
     /// <summary>
     ///     Write logs to file
