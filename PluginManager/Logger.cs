@@ -88,7 +88,8 @@ namespace PluginManager
             LogEvent?.Invoke(message);
         }
 
-        public static void Write(char c)
+
+        public static void Write<T>(T c)
         {
             if (!isInitialized) throw new Exception("Logger is not initialized");
             LogEvent?.Invoke($"{c}");
