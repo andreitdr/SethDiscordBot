@@ -31,6 +31,7 @@ public class ConsoleCommandsHandler
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
+        if (!Logger.isConsole) throw new Exception("Can not use ConsoleCommandsHandler for Non console apps");
         this.client = client;
         InitializeBasicCommands();
 
@@ -242,7 +243,7 @@ public class ConsoleCommandsHandler
                             var bar = new Utilities.ProgressBar(
                                 ProgressBarType.NO_END);
                             bar.Start();
-                            await Functions.ExtractArchive("./" + split[1], "./", null,
+                            await ArchiveManager.ExtractArchive("./" + split[1], "./", null,
                                                            UnzipProgressType.PercentageFromTotalSize);
                             bar.Stop("Extracted");
                             Logger.WriteLine("\n");
@@ -471,6 +472,8 @@ public class ConsoleCommandsHandler
 
     public static async Task ExecuteCommad(string command)
     {
+        if (!Logger.isConsole)
+            throw new Exception("Can not use console based commands on non console based application !");
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
@@ -482,18 +485,20 @@ public class ConsoleCommandsHandler
 
     public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
-        Console.ForegroundColor = ConsoleColor.White;
+        if (Logger.isConsole)
+            Console.ForegroundColor = ConsoleColor.White;
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
             {
-                if (removeCommandExecution)
-                {
-                    Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    for (var i = 0; i < command.Length + 30; i++)
-                        Logger.Write(" ");
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                }
+                if (Logger.isConsole)
+                    if (removeCommandExecution)
+                    {
+                        Console.SetCursorPosition(0, Console.CursorTop - 1);
+                        for (var i = 0; i < command.Length + 30; i++)
+                            Logger.Write(" ");
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                    }
 
                 Logger.WriteLine();
                 item.Action(args);

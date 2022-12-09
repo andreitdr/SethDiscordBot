@@ -309,7 +309,7 @@ public class Program
                         Config.Variables.Add("LaunchMessage",
                                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
                                                    false);
-                    Functions.WriteErrFile(ex.ToString());
+                    Logger.WriteErrFile(ex.ToString());
                 }
             }
         });
@@ -318,6 +318,14 @@ public class Program
 
     private static async Task PreLoadComponents()
     {
+        Settings.sqlDatabase = new SqlDatabase(Functions.dataFolder + "SetDB.dat");
+
+        await Settings.sqlDatabase.Open();
+        await Config.Initialize();
+        Logger.Initialize(true);
+        ArchiveManager.Initialize();
+
+
         Logger.LogEvent += (message) =>
         {
             Console.Write(message);
@@ -329,13 +337,6 @@ public class Program
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
-
-        Settings.sqlDatabase = new SqlDatabase(Functions.dataFolder + "SetDB.dat");
-
-        await Settings.sqlDatabase.Open();
-        await Config.Initialize();
-
-
 
         if (await Config.Variables.ExistsAsync("DeleteLogsAtStartup"))
             if (await Config.Variables.GetValueAsync("DeleteLogsAtStartup") == "true")
@@ -364,7 +365,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                Functions.WriteErrFile(ex.Message);
+                Logger.WriteErrFile(ex.Message);
             }
         }
 
@@ -451,7 +452,7 @@ public class Program
                         await ServerCom.DownloadFileNoProgressAsync(
                             "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip",
                             "./Updater.zip");
-                        await Functions.ExtractArchive("./Updater.zip", "./", null,
+                        await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
                                                        UnzipProgressType.PercentageFromTotalSize);
                         await Config.Variables.SetValueAsync("UpdaterVersion", updaternewversion);
                         File.Delete("Updater.zip");

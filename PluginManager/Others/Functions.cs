@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -25,90 +22,6 @@ public static class Functions
     ///     The location for the Resources folder
     /// </summary>
     public static readonly string dataFolder = @"./Data/Resources/";
-
-    /// <summary>
-    ///     The location for all logs
-    /// </summary>
-    public static readonly string logFolder = @"./Data/Output/Logs/";
-
-    /// <summary>
-    ///     The location for all errors
-    /// </summary>
-    public static readonly string errFolder = @"./Data/Output/Errors/";
-
-    /// <summary>
-    ///     Archives folder
-    /// </summary>
-    public static readonly string pakFolder = @"./Data/PAKS/";
-
-
-    /// <summary>
-    ///     Read data from a file that is inside an archive (ZIP format)
-    /// </summary>
-    /// <param name="FileName">The file name that is inside the archive or its full path</param>
-    /// <param name="archFile">The archive location from the PAKs folder</param>
-    /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-    public static async Task<string> ReadFromPakAsync(string FileName, string archFile)
-    {
-        archFile = pakFolder + archFile;
-        if (!File.Exists(archFile))
-            throw new Exception("Failed to load file !");
-
-        try
-        {
-            string textValue = null;
-            using (var fs = new FileStream(archFile, FileMode.Open))
-            using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
-            {
-                foreach (var entry in zip.Entries)
-                    if (entry.Name == FileName || entry.FullName == FileName)
-                        using (var s = entry.Open())
-                        using (var reader = new StreamReader(s))
-                        {
-                            textValue = await reader.ReadToEndAsync();
-                            reader.Close();
-                            s.Close();
-                            fs.Close();
-                        }
-            }
-
-            return textValue;
-        }
-        catch
-        {
-            await Task.Delay(100);
-            return await ReadFromPakAsync(FileName, archFile);
-        }
-    }
-
-
-    /// <summary>
-    ///     Write logs to file
-    /// </summary>
-    /// <param name="LogMessage">The message to be wrote</param>
-    public static void WriteLogFile(string LogMessage)
-    {
-        var logsPath = logFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Log.txt";
-        Directory.CreateDirectory(logFolder);
-        File.AppendAllText(logsPath, LogMessage + " \n");
-    }
-
-    /// <summary>
-    ///     Write error to file
-    /// </summary>
-    /// <param name="ErrMessage">The message to be wrote</param>
-    public static void WriteErrFile(string ErrMessage)
-    {
-        var errPath = errFolder +
-                      $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
-        Directory.CreateDirectory(errFolder);
-        File.AppendAllText(errPath, ErrMessage + " \n");
-    }
-
-    public static void WriteErrFile(this Exception ex)
-    {
-        WriteErrFile(ex.ToString());
-    }
 
     /// <summary>
     ///     Get the Operating system you are runnin on
@@ -163,79 +76,6 @@ public static class Functions
     }
 
     /// <summary>
-    ///     Extract zip to location
-    /// </summary>
-    /// <param name="zip">The zip location</param>
-    /// <param name="folder">The target location</param>
-    /// <param name="progress">The progress that is updated as a file is processed</param>
-    /// <param name="type">The type of progress</param>
-    /// <returns></returns>
-    public static async Task ExtractArchive(string zip, string folder, IProgress<float> progress,
-                                            UnzipProgressType type)
-    {
-        Directory.CreateDirectory(folder);
-        using (var archive = ZipFile.OpenRead(zip))
-        {
-            if (type == UnzipProgressType.PercentageFromNumberOfFiles)
-            {
-                var totalZIPFiles = archive.Entries.Count();
-                var currentZIPFile = 0;
-                foreach (var entry in archive.Entries)
-                {
-                    if (entry.FullName.EndsWith("/")) // it is a folder
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
-
-                    else
-                        try
-                        {
-                            entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
-                        }
-
-                    currentZIPFile++;
-                    await Task.Delay(10);
-                    if (progress != null)
-                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
-                }
-            }
-            else if (type == UnzipProgressType.PercentageFromTotalSize)
-            {
-                ulong zipSize = 0;
-
-                foreach (var entry in archive.Entries)
-                    zipSize += (ulong)entry.CompressedLength;
-
-                ulong currentSize = 0;
-                foreach (var entry in archive.Entries)
-                {
-                    if (entry.FullName.EndsWith("/"))
-                    {
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
-                        continue;
-                    }
-
-                    try
-                    {
-                        entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                        currentSize += (ulong)entry.CompressedLength;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
-                    }
-
-                    await Task.Delay(10);
-                    if (progress != null)
-                        progress.Report((float)currentSize / zipSize * 100);
-                }
-            }
-        }
-    }
-
-    /// <summary>
     ///     Save to JSON file
     /// </summary>
     /// <typeparam name="T">The class type</typeparam>
@@ -266,30 +106,5 @@ public static class Functions
         var obj = await JsonSerializer.DeserializeAsync<T>(text);
         text.Close();
         return (obj ?? default)!;
-    }
-
-    public static bool TryReadValueFromJson(string input, string codeName, out JsonElement element)
-    {
-        Stream text;
-        if (File.Exists(input))
-            text = File.OpenRead(input);
-
-        else
-            text = new MemoryStream(Encoding.ASCII.GetBytes(input));
-
-        var jsonObject = JsonDocument.Parse(text);
-
-        var data = jsonObject.RootElement.TryGetProperty(codeName, out element);
-        return data;
-    }
-
-    public static string CreateMD5(string input)
-    {
-        using (var md5 = MD5.Create())
-        {
-            var inputBytes = Encoding.ASCII.GetBytes(input);
-            var hashBytes = md5.ComputeHash(inputBytes);
-            return Convert.ToHexString(hashBytes);
-        }
     }
 }

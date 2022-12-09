@@ -5,7 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using static PluginManager.Others.Functions;
+using PluginManager;
 
 namespace DiscordBot.Discord.Core;
 
@@ -98,7 +98,7 @@ internal class Boot
 
     private async Task Client_LoggedOut()
     {
-        WriteLogFile("Successfully Logged Out");
+        Logger.WriteLine("Successfully Logged Out");
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
 
         /*        var cmds = await client.GetGlobalApplicationCommandsAsync();
@@ -117,7 +117,7 @@ internal class Boot
     private Task LoggedIn()
     {
         Console.Title = "CONNECTED";
-        WriteLogFile("The bot has been logged in at " + DateTime.Now.ToShortDateString() + " (" +
+        Logger.WriteLine("The bot has been logged in at " + DateTime.Now.ToShortDateString() + " (" +
                      DateTime.Now.ToShortTimeString() + ")"
         );
         return Task.CompletedTask;
@@ -129,7 +129,7 @@ internal class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                WriteErrFile(message.Message);
+                Logger.WriteErrFile(message.Message);
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("[ERROR] " + message.Message);
@@ -139,7 +139,7 @@ internal class Boot
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                WriteLogFile(message.Message);
+                Logger.WriteLogFile(message.Message);
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("[INFO] " + message.Message);

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 
 using PluginManager.Interfaces;
-using PluginManager.Others;
 
 namespace PluginManager.Loaders
 {
@@ -47,7 +46,17 @@ namespace PluginManager.Loaders
             var files = Directory.GetFiles(path, $"*.{extension}", SearchOption.AllDirectories);
             foreach (var file in files)
             {
-                Assembly.LoadFrom(file);
+                try
+                {
+                    Assembly.LoadFrom(file);
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine(ex.Message);
+                    Logger.WriteLine("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded");
+
+                    continue;
+                }
                 if (FileLoaded != null)
                 {
                     var args = new LoaderArgs
@@ -116,7 +125,7 @@ namespace PluginManager.Loaders
             }
             catch (Exception ex)
             {
-                Functions.WriteErrFile(ex.ToString());
+                Logger.WriteErrFile(ex.ToString());
 
                 return null;
             }

@@ -7,8 +7,9 @@ using Discord.Commands;
 using Discord.WebSocket;
 
 using PluginManager.Loaders;
-using PluginManager.Others;
 using PluginManager.Others.Permissions;
+
+using static PluginManager.Logger;
 
 namespace DiscordBot.Discord.Core;
 

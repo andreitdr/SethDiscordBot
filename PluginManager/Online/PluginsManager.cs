@@ -85,7 +85,7 @@ public class PluginsManager
         catch (Exception exception)
         {
             Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
-            Functions.WriteErrFile(exception.ToString());
+            Logger.WriteErrFile(exception.ToString());
         }
     }
 
@@ -117,7 +117,7 @@ public class PluginsManager
         catch (Exception exception)
         {
             Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
-            Functions.WriteErrFile(exception.ToString());
+            Logger.WriteErrFile(exception.ToString());
         }
 
         return new string[] { null!, null!, null! };

@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using PluginManager.Others;
-
 namespace PluginManager.Loaders;
 
 internal class LoaderArgs : EventArgs
@@ -102,7 +100,7 @@ internal class Loader<T>
         }
         catch (Exception ex)
         {
-            Functions.WriteErrFile(ex.ToString());
+            Logger.WriteErrFile(ex.ToString());
         }
 
 

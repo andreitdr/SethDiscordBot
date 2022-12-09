@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
+using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
+
 using DiscordLibCommands = Discord.Commands;
-using DiscordLib = Discord;
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace DiscordBot.Discord.Commands;
@@ -40,7 +42,7 @@ internal class Restart : DBCommand
     public async void ExecuteServer(DiscordLibCommands.SocketCommandContext context)
     {
         var args = Functions.GetArguments(context.Message);
-        var OS   = Functions.GetOperatingSystem();
+        var OS = Functions.GetOperatingSystem();
         if (args.Count == 0)
         {
             switch (OS)
@@ -79,7 +81,7 @@ internal class Restart : DBCommand
                 switch (OS)
                 {
                     case OperatingSystem.WINDOWS:
-                        Functions.WriteLogFile("Restarting the bot with the following arguments: \"" + cmd + "\"");
+                        Logger.WriteLogFile("Restarting the bot with the following arguments: \"" + cmd + "\"");
                         Process.Start("./DiscordBot.exe", cmd);
                         break;
                     case OperatingSystem.LINUX:
