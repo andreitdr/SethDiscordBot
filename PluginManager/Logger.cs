@@ -16,6 +16,7 @@ namespace PluginManager
 
         public static void Initialize(bool console)
         {
+
             if (isInitialized) throw new Exception("Logger is already initialized");
 
             if (!Config.Variables.Exists("LogFolder"))
@@ -27,7 +28,7 @@ namespace PluginManager
             isInitialized = true;
             logFolder = Config.Variables.GetValue("LogFolder");
             errFolder = Config.Variables.GetValue("ErrorFolder");
-            isConsole = console;
+            isConsole = console
         }
 
 
