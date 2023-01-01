@@ -30,6 +30,7 @@ internal class CommandHandler
         this.client = client;
         this.commandService = commandService;
         this.botPrefix = botPrefix;
+
     }
 
     /// <summary>
@@ -76,12 +77,13 @@ internal class CommandHandler
     {
         try
         {
+            if (Message.Author.IsBot) return;
             if (Message as SocketUserMessage == null)
                 return;
 
             var message = Message as SocketUserMessage;
 
-            if (message == null)
+            if (message is null)
                 return;
 
             if (!message.Content.StartsWith(botPrefix))
@@ -94,9 +96,6 @@ internal class CommandHandler
                 await message.Channel.SendMessageAsync("Can not exec mentioned commands !");
                 return;
             }
-
-            if (message.Author.IsBot)
-                return;
 
             var context = new SocketCommandContext(client, message);
 

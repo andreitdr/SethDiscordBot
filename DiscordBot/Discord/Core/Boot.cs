@@ -66,7 +66,9 @@ internal class Boot
             AlwaysDownloadUsers = true,
 
             //Disable system clock checkup (for responses at slash commands)
-            UseInteractionSnowflakeDate = false
+            UseInteractionSnowflakeDate = false,
+
+            GatewayIntents = GatewayIntents.All
         };
 
         client = new DiscordSocketClient(config);

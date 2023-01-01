@@ -88,6 +88,8 @@ public static class Functions
         var str = new MemoryStream();
         await JsonSerializer.SerializeAsync(str, Data, typeof(T), new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllBytesAsync(file, str.ToArray());
+        await str.FlushAsync();
+        str.Close();
     }
 
     /// <summary>
@@ -105,6 +107,7 @@ public static class Functions
             text = new MemoryStream(Encoding.ASCII.GetBytes(input));
         text.Position = 0;
         var obj = await JsonSerializer.DeserializeAsync<T>(text);
+        await text.FlushAsync();
         text.Close();
         return (obj ?? default)!;
     }

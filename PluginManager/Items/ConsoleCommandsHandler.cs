@@ -56,10 +56,8 @@ public class ConsoleCommandsHandler
 
                     foreach (var command in commandList)
                     {
-                        var pa = from p in command.Action.Method.GetParameters()
-                                 where p.Name != null
-                                 select p.ParameterType.FullName;
-                        items.Add(new[] { command.CommandName, command.Description, command.Usage });
+                        if (!command.CommandName.StartsWith("_"))
+                            items.Add(new[] { command.CommandName, command.Description, command.Usage });
                     }
 
                     items.Add(new[] { "-", "-", "-" });
@@ -470,6 +468,20 @@ public class ConsoleCommandsHandler
         return commandList.FirstOrDefault(t => t.CommandName == command);
     }
 
+    /*    public static async Task ExecuteSpecialCommand(string command)
+        {
+            if (!command.StartsWith("_")) return;
+
+            string[] args = command.Split(' ');
+            foreach (var item in commandList)
+                if (item.CommandName == args[0])
+                {
+                    Logger.WriteLine();
+                    item.Action(args);
+                }
+
+        }*/
+
     public static async Task ExecuteCommad(string command)
     {
         if (!Logger.isConsole)
@@ -485,12 +497,16 @@ public class ConsoleCommandsHandler
 
     public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
-        if (Logger.isConsole)
-            Console.ForegroundColor = ConsoleColor.White;
+        if (!Logger.isConsole)
+            throw new Exception("Can not use console based commands on non console based application !");
+        Console.ForegroundColor = ConsoleColor.White;
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
             {
+                if (args[0].StartsWith("_"))
+                    throw new Exception("This command is reserved for internal worker and can not be executed manually !");
+
                 if (Logger.isConsole)
                     if (removeCommandExecution)
                     {

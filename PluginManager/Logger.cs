@@ -28,7 +28,7 @@ namespace PluginManager
             isInitialized = true;
             logFolder = Config.Variables.GetValue("LogFolder");
             errFolder = Config.Variables.GetValue("ErrorFolder");
-            isConsole = console
+            isConsole = console;
         }
 
 

@@ -2,6 +2,7 @@
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
+
 namespace PluginManager.Database
 {
     public class SqlDatabase
@@ -11,6 +12,8 @@ namespace PluginManager.Database
 
         public SqlDatabase(string fileName)
         {
+            if (!fileName.StartsWith("./Data/Resources/"))
+                fileName = Path.Combine("./Data/Resources", fileName);
             if (!File.Exists(fileName))
                 SQLiteConnection.CreateFile(fileName);
             ConnectionString = $"URI=file:{fileName}";
@@ -27,7 +30,6 @@ namespace PluginManager.Database
 
         public async Task InsertAsync(string tableName, params string[] values)
         {
-
             string query = $"INSERT INTO {tableName} VALUES (";
             for (int i = 0; i < values.Length; i++)
             {
@@ -35,6 +37,7 @@ namespace PluginManager.Database
                 if (i != values.Length - 1)
                     query += ", ";
             }
+
             query += ")";
 
             SQLiteCommand command = new SQLiteCommand(query, Connection);
@@ -43,7 +46,6 @@ namespace PluginManager.Database
 
         public void Insert(string tableName, params string[] values)
         {
-
             string query = $"INSERT INTO {tableName} VALUES (";
             for (int i = 0; i < values.Length; i++)
             {
@@ -51,34 +53,27 @@ namespace PluginManager.Database
                 if (i != values.Length - 1)
                     query += ", ";
             }
+
             query += ")";
 
             SQLiteCommand command = new SQLiteCommand(query, Connection);
             command.ExecuteNonQuery();
-
         }
 
         public async Task RemoveKeyAsync(string tableName, string KeyName, string KeyValue)
         {
-
             string query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
             SQLiteCommand command = new SQLiteCommand(query, Connection);
             await command.ExecuteNonQueryAsync();
-
-
         }
 
         public void RemoveKey(string tableName, string KeyName, string KeyValue)
         {
-
-
             string query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
             SQLiteCommand command = new SQLiteCommand(query, Connection);
             command.ExecuteNonQuery();
-
-
         }
 
 
@@ -100,19 +95,21 @@ namespace PluginManager.Database
                 return true;
 
             return false;
-
         }
 
 
-        public async Task SetValueAsync(string tableName, string keyName, string KeyValue, string ResultColumnName, string ResultColumnValue)
+        public async Task SetValueAsync(string tableName, string keyName, string KeyValue, string ResultColumnName,
+                                        string ResultColumnValue)
         {
             if (!await TableExistsAsync(tableName))
                 throw new System.Exception($"Table {tableName} does not exist");
 
-            await ExecuteAsync($"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'");
+            await ExecuteAsync(
+                $"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'");
         }
 
-        public void SetValue(string tableName, string keyName, string KeyValue, string ResultColumnName, string ResultColumnValue)
+        public void SetValue(string tableName, string keyName, string KeyValue, string ResultColumnName,
+                             string ResultColumnValue)
         {
             if (!TableExists(tableName))
                 throw new System.Exception($"Table {tableName} does not exist");
@@ -121,7 +118,8 @@ namespace PluginManager.Database
         }
 
 
-        public async Task<string> GetValueAsync(string tableName, string keyName, string KeyValue, string ResultColumnName)
+        public async Task<string> GetValueAsync(string tableName, string keyName, string KeyValue,
+                                                string ResultColumnName)
         {
             if (!await TableExistsAsync(tableName))
                 throw new System.Exception($"Table {tableName} does not exist");
@@ -144,7 +142,6 @@ namespace PluginManager.Database
 
         public async Task AddColumnsToTableAsync(string tableName, string[] columns)
         {
-
             var command = Connection.CreateCommand();
             command.CommandText = $"SELECT * FROM {tableName}";
             var reader = await command.ExecuteReaderAsync();
@@ -164,7 +161,6 @@ namespace PluginManager.Database
 
         public void AddColumnsToTable(string tableName, string[] columns)
         {
-
             var command = Connection.CreateCommand();
             command.CommandText = $"SELECT * FROM {tableName}";
             var reader = command.ExecuteReader();
@@ -180,12 +176,10 @@ namespace PluginManager.Database
                     command.ExecuteNonQuery();
                 }
             }
-
         }
 
         public async Task<bool> TableExistsAsync(string tableName)
         {
-
             var cmd = Connection.CreateCommand();
             cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}'";
             var result = await cmd.ExecuteScalarAsync();
@@ -197,7 +191,6 @@ namespace PluginManager.Database
 
         public bool TableExists(string tableName)
         {
-
             var cmd = Connection.CreateCommand();
             cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}'";
             var result = cmd.ExecuteScalar();
@@ -209,20 +202,16 @@ namespace PluginManager.Database
 
         public async Task CreateTableAsync(string tableName, params string[] columns)
         {
-
             var cmd = Connection.CreateCommand();
             cmd.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
             await cmd.ExecuteNonQueryAsync();
-
         }
 
         public void CreateTable(string tableName, params string[] columns)
         {
-
             var cmd = Connection.CreateCommand();
             cmd.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
             cmd.ExecuteNonQuery();
-
         }
 
         public async Task<int> ExecuteAsync(string query)
@@ -257,6 +246,7 @@ namespace PluginManager.Database
                 reader.GetValues(values);
                 return string.Join<object>(" ", values);
             }
+
             return null;
         }
 
@@ -273,6 +263,7 @@ namespace PluginManager.Database
                 reader.GetValues(values);
                 return string.Join<object>(" ", values);
             }
+
             return null;
         }
 
@@ -289,7 +280,31 @@ namespace PluginManager.Database
                 reader.GetValues(values);
                 return values;
             }
+
             return null;
+        }
+
+        public async Task<List<string[]>> ReadAllRowsAsync(string query)
+        {
+            if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
+                await Connection.OpenAsync();
+            var command = new SQLiteCommand(query, Connection);
+            var reader = await command.ExecuteReaderAsync();
+
+            if (!reader.HasRows)
+                return null;
+
+            List<string[]> rows = new();
+            while (await reader.ReadAsync())
+            {
+                string[] values = new string[reader.FieldCount];
+                reader.GetValues(values);
+                rows.Add(values);
+            }
+
+            if (rows.Count == 0) return null;
+
+            return rows;
         }
 
         public object[] ReadDataArray(string query)
@@ -305,6 +320,7 @@ namespace PluginManager.Database
                 reader.GetValues(values);
                 return values;
             }
+
             return null;
         }
     }

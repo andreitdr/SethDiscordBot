@@ -33,7 +33,6 @@ public class Program
     [STAThread]
     public static void Startup(string[] args)
     {
-
         PreLoadComponents().Wait();
 
         if (!Config.Variables.Exists("ServerID") || !Config.Variables.Exists("token") ||
@@ -56,9 +55,9 @@ public class Program
             top.Add(win);
 
             var labelInfo = new Label(
-                    "Configuration file not found or invalid. " +
-                    "Please fill the following fields to create a new configuration file."
-                )
+                "Configuration file not found or invalid. " +
+                "Please fill the following fields to create a new configuration file."
+            )
             {
                 X = Pos.Center(),
                 Y = 2
@@ -251,12 +250,7 @@ public class Program
         {
             string token = "";
 #if DEBUG
-
-            if (await Settings.sqlDatabase.TableExistsAsync("BetaTest"))
-            {
-                Logger.WriteLine("Starting in DEBUG MODE");
-                token = await Settings.sqlDatabase.GetValueAsync("BetaTest", "VariableName", "Token", "Value");
-            }
+            if (File.Exists("./Data/Resources/token.txt")) token = File.ReadAllText("./Data/Resources/token.txt");
             else token = Config.Variables.GetValue("token");
 #else
             token = Config.Variables.GetValue("token");
@@ -307,8 +301,8 @@ public class Program
                 {
                     if (Config.Variables.Exists("LaunchMessage"))
                         Config.Variables.Add("LaunchMessage",
-                                                   "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
-                                                   false);
+                                             "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
+                                             false);
                     Logger.WriteErrFile(ex.ToString());
                 }
             }
@@ -318,7 +312,7 @@ public class Program
 
     private static async Task PreLoadComponents()
     {
-        Settings.sqlDatabase = new SqlDatabase(Functions.dataFolder + "SetDB.dat");
+        Settings.sqlDatabase = new SqlDatabase("SetDB.dat");
 
         await Settings.sqlDatabase.Open();
         await Config.Initialize();
@@ -326,10 +320,7 @@ public class Program
         ArchiveManager.Initialize();
 
 
-        Logger.LogEvent += (message) =>
-        {
-            Console.Write(message);
-        };
+        Logger.LogEvent += (message) => { Console.Write(message); };
 
         Logger.WriteLine("Loading resources ...");
         var main = new Utilities.ProgressBar(ProgressBarType.NO_END);
@@ -348,9 +339,11 @@ public class Program
 
 
         if (!await Config.Variables.ExistsAsync("Version"))
-            await Config.Variables.AddAsync("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(), false);
+            await Config.Variables.AddAsync("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                                            false);
         else
-            await Config.Variables.SetValueAsync("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            await Config.Variables.SetValueAsync(
+                "Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
 
         foreach (var key in OnlineDefaultKeys)
@@ -397,21 +390,21 @@ public class Program
                         Console.ForegroundColor = ConsoleColor.Red;
                         Logger.WriteLine("A new version of the bot is available !");
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Logger.WriteLine("Current version : " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                        Logger.WriteLine("Current version : " +
+                                         Assembly.GetExecutingAssembly().GetName().Version.ToString());
                         Console.ForegroundColor = ConsoleColor.Green;
                         Logger.WriteLine("New version : " + newVersion);
                         Console.ForegroundColor = ConsoleColor.White;
 
                         Logger.WriteLine("Changelog :");
 
-                        List<string> changeLog = await ServerCom.ReadTextFromURL("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
+                        List<string> changeLog = await ServerCom.ReadTextFromURL(
+                            "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
                         foreach (var item in changeLog)
                             Utilities.WriteColorText(item);
                         Logger.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
-
-
                             if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
                             {
                                 var url =
@@ -453,7 +446,7 @@ public class Program
                             "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip",
                             "./Updater.zip");
                         await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
-                                                       UnzipProgressType.PercentageFromTotalSize);
+                                                            UnzipProgressType.PercentageFromTotalSize);
                         await Config.Variables.SetValueAsync("UpdaterVersion", updaternewversion);
                         File.Delete("Updater.zip");
                         bar.Stop("Updater has been updated !");
@@ -463,6 +456,7 @@ public class Program
                     break;
             }
         }
+
         Console.Clear();
     }
 }
