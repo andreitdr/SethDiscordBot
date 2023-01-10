@@ -44,7 +44,7 @@ internal class CommandHandler
         await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
     }
 
-    private async Task Client_SlashCommandExecuted(SocketSlashCommand arg)
+    private Task Client_SlashCommandExecuted(SocketSlashCommand arg)
     {
         try
         {
@@ -52,7 +52,8 @@ internal class CommandHandler
              .Where(p => p.Name == arg.Data.Name)
              .FirstOrDefault();
 
-            if (plugin is null) throw new Exception("Failed to run command. !");
+            if (plugin is null)
+                throw new Exception("Failed to run command. !");
 
 
             if (arg.Channel is SocketDMChannel)
@@ -65,6 +66,8 @@ internal class CommandHandler
             Console.WriteLine(ex.ToString());
             ex.WriteErrFile();
         }
+
+        return Task.CompletedTask;
 
     }
 

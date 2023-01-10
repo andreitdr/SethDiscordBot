@@ -118,7 +118,7 @@ namespace PluginManager.Database
         }
 
 
-        public async Task<string> GetValueAsync(string tableName, string keyName, string KeyValue,
+        public async Task<string?> GetValueAsync(string tableName, string keyName, string KeyValue,
                                                 string ResultColumnName)
         {
             if (!await TableExistsAsync(tableName))
@@ -127,7 +127,7 @@ namespace PluginManager.Database
             return await ReadDataAsync($"SELECT {ResultColumnName} FROM {tableName} WHERE {keyName}='{KeyValue}'");
         }
 
-        public string GetValue(string tableName, string keyName, string KeyValue, string ResultColumnName)
+        public string? GetValue(string tableName, string keyName, string KeyValue, string ResultColumnName)
         {
             if (!TableExists(tableName))
                 throw new System.Exception($"Table {tableName} does not exist");
@@ -233,7 +233,7 @@ namespace PluginManager.Database
             return r;
         }
 
-        public async Task<string> ReadDataAsync(string query)
+        public async Task<string?> ReadDataAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
                 await Connection.OpenAsync();
@@ -250,7 +250,7 @@ namespace PluginManager.Database
             return null;
         }
 
-        public string ReadData(string query)
+        public string? ReadData(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
                 Connection.Open();
@@ -267,7 +267,7 @@ namespace PluginManager.Database
             return null;
         }
 
-        public async Task<object[]> ReadDataArrayAsync(string query)
+        public async Task<object[]?> ReadDataArrayAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
                 await Connection.OpenAsync();
@@ -284,7 +284,7 @@ namespace PluginManager.Database
             return null;
         }
 
-        public async Task<List<string[]>> ReadAllRowsAsync(string query)
+        public async Task<List<string[]>?> ReadAllRowsAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
                 await Connection.OpenAsync();
@@ -307,7 +307,7 @@ namespace PluginManager.Database
             return rows;
         }
 
-        public object[] ReadDataArray(string query)
+        public object[]? ReadDataArray(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
                 Connection.Open();

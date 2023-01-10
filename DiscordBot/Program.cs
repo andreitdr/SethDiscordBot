@@ -24,7 +24,6 @@ namespace DiscordBot;
 public class Program
 {
     private static bool loadPluginsOnStartup;
-    private static bool listPluginsAtStartup;
     private static ConsoleCommandsHandler consoleCommandsHandler;
 
     /// <summary>
@@ -33,7 +32,7 @@ public class Program
     [STAThread]
     public static void Startup(string[] args)
     {
-        PreLoadComponents().Wait();
+        PreLoadComponents(args).Wait();
 
         if (!Config.Variables.Exists("ServerID") || !Config.Variables.Exists("token") ||
             Config.Variables.GetValue("token") == null ||
@@ -195,10 +194,11 @@ public class Program
     {
 #if DEBUG
         Logger.WriteLine();
-        ConsoleCommandsHandler.ExecuteCommad("lp").Wait();
+        Logger.WriteLine("Debug mode enabled");
+        Logger.WriteLine();
+        loadPluginsOnStartup = true;
 #else
         if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
-        if (listPluginsAtStartup) consoleCommandsHandler.HandleCommand("listplugs");
 #endif
 
         while (true)
@@ -310,8 +310,12 @@ public class Program
         mainThread.Start();
     }
 
-    private static async Task PreLoadComponents()
+    private static async Task PreLoadComponents(string[] args)
     {
+        Directory.CreateDirectory("./Data/Resources");
+        Directory.CreateDirectory("./Data/Plugins");
+        Directory.CreateDirectory("./Data/PAKS");
+
         Settings.sqlDatabase = new SqlDatabase("SetDB.dat");
 
         await Settings.sqlDatabase.Open();
@@ -325,9 +329,6 @@ public class Program
         Logger.WriteLine("Loading resources ...");
         var main = new Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
-        Directory.CreateDirectory("./Data/Resources");
-        Directory.CreateDirectory("./Data/Plugins");
-        Directory.CreateDirectory("./Data/PAKS");
 
         if (await Config.Variables.ExistsAsync("DeleteLogsAtStartup"))
             if (await Config.Variables.GetValueAsync("DeleteLogsAtStartup") == "true")
@@ -416,12 +417,37 @@ public class Program
                             {
                                 var url =
                                     $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                                Logger.WriteLine("Downloading update ...");
-                                await ServerCom.DownloadFileNoProgressAsync(url, "./update.zip");
+                                if (Logger.isConsole)
+                                    Console.SetCursorPosition(0, Console.CursorTop);
+                                Logger.WriteLine($"executing: download_file {url}");
+
+                                await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Logger.Write($"\rProgress: {percent}%        "); }));
                                 await File.WriteAllTextAsync("Install.sh",
-                                                             "#!/bin/bash\nunzip -qq update.zip -d ./\nrm update.zip\nchmod +x SethDiscordBot\n./DiscordBot");
-                                Process.Start("Install.sh").WaitForExit();
-                                Environment.Exit(0);
+                                                             "#!/bin/bash\nunzip -qq -o update.zip \nrm update.zip\nchmod a+x DiscordBot");
+                                Logger.WriteLine();
+
+                                try
+                                {
+                                    Logger.WriteLine("executing: chmod a+x Install.sh");
+                                    Process.Start("chmod", "a+x Install.sh").WaitForExit();
+                                    Process.Start("Install.sh").WaitForExit();
+
+                                    Logger.WriteLine("executing: rm Install.sh");
+                                    Process.Start("rm", "Install.sh").WaitForExit();
+
+                                    Logger.WriteLine("The new version of the bot has been installed.");
+                                    Logger.WriteLine("Please restart the bot.");
+                                    Environment.Exit(0);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.WriteErrFile(ex.Message);
+                                    if (ex.Message.Contains("Access de"))
+                                        Logger.WriteLine("Please run the bot as root.");
+                                }
+
+                                //Process.Start(Functions.dataFolder + "Applications/Updater", $"{url}");
+
                             }
                         }
                     }

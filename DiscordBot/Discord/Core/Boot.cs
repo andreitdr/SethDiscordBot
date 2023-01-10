@@ -108,12 +108,11 @@ internal class Boot
                     await cmd.DeleteAsync();*/
     }
 
-    private async Task Ready()
+    private Task Ready()
     {
         Console.Title = "ONLINE";
-
-
         isReady = true;
+        return Task.CompletedTask;
     }
 
     private Task LoggedIn()

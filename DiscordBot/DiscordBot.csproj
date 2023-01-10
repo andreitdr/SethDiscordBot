@@ -38,11 +38,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Discord.Net" Version="3.8.1" />
+	  <PackageReference Include="Discord.Net" Version="3.9.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\PluginManager\PluginManager.csproj" />
+	  <ProjectReference Include="..\PluginManager\PluginManager.csproj" />
 	</ItemGroup>
 
 </Project>

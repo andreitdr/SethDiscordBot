@@ -429,8 +429,8 @@ public class ConsoleCommandsHandler
             }
             else
             {
-                Process.Start("./DiscordBot", "lp");
-                HandleCommand("sd");
+                //HandleCommand("sd");
+                Console.WriteLine("This command can not be used outside of Windows yet. Please restart the bot using the manual way");
             }
         });
 
