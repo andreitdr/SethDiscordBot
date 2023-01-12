@@ -322,15 +322,19 @@ public class ConsoleCommandsHandler
             try
             {
                 var pName = string.Join(' ', args, 1, args.Length - 1);
-                var client = new HttpClient();
-                var url = (await manager.GetPluginLinkByName(pName))[1];
-                if (url is null) throw new Exception($"Invalid plugin name {pName}.");
-                var s = await client.GetStreamAsync(url);
-                var str = new MemoryStream();
-                await s.CopyToAsync(str);
-                var asmb = Assembly.Load(str.ToArray());
+                using (var client = new HttpClient())
+                {
+                    var url = (await manager.GetPluginLinkByName(pName))[1];
+                    if (url is null) throw new Exception($"Invalid plugin name {pName}.");
+                    var s = await client.GetStreamAsync(url);
+                    var str = new MemoryStream();
+                    await s.CopyToAsync(str);
+                    var asmb = Assembly.Load(str.ToArray());
 
-                await PluginLoader.LoadPluginFromAssembly(asmb, this.client);
+                    await PluginLoader.LoadPluginFromAssembly(asmb, this.client);
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -351,6 +355,7 @@ public class ConsoleCommandsHandler
             catch (Exception ex)
             {
                 Logger.WriteLine(ex.Message);
+                Logger.WriteErrFile(ex);
             }
         });
 
