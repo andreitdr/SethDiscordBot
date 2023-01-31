@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using PluginManager.Items;
 using PluginManager.Others;
@@ -30,12 +31,22 @@ public class PluginUpdater
         return false;
     }
 
-    public static async Task Download(string pakName)
+    public static async Task<List<string>> GetInfo(string pakName)
     {
+
         Utilities.WriteColorText("An update was found for &g" + pakName + "&c. Version: &r" +
                                          (await ServerCom.GetVersionOfPackageFromWeb(pakName))?.ToShortString() +
                                          "&c. Current Version: &y" +
                                          ServerCom.GetVersionOfPackage(pakName)?.ToShortString());
+
+        List<string> fileInfo = await ServerCom.ReadTextFromURL("");
+        return fileInfo;
+    }
+
+    public static async Task Download(string pakName)
+    {
+        var pakUpdateInfo = await GetInfo(pakName);
+        Logger.Log(string.Join("\n", pakUpdateInfo));
         await ConsoleCommandsHandler.ExecuteCommad("dwplug " + pakName);
     }
 }

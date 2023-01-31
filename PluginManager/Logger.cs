@@ -126,5 +126,6 @@ namespace PluginManager
             if (!isInitialized) throw new Exception("Logger is not initialized");
             WriteErrFile(ex.ToString());
         }
+
     }
 }
