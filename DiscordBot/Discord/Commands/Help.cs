@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
-
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
@@ -41,19 +41,16 @@ internal class Help : DBCommand
     ///     The main body of the command
     /// </summary>
     /// <param name="context">The command context</param>
-    public void ExecuteServer(SocketCommandContext context)
+    public void ExecuteServer(CmdArgs args)
     {
-        var args = Functions.GetArguments(context.Message);
-        if (args.Count != 0)
+        if (args.arguments is not null)
         {
-            foreach (var item in args)
-            {
-                var e = GenerateHelpCommand(item);
-                if (e is null)
-                    context.Channel.SendMessageAsync("Unknown Command " + item);
-                else
-                    context.Channel.SendMessageAsync(embed: e.Build());
-            }
+            var e = GenerateHelpCommand(args.arguments[0]);
+            if (e is null)
+                args.context.Channel.SendMessageAsync("Unknown Command " + args.arguments[0]);
+            else
+                args.context.Channel.SendMessageAsync(embed: e.Build());
+            
 
             return;
         }
@@ -69,9 +66,12 @@ internal class Help : DBCommand
             else
                 normalCommands += cmd.Command + " ";
 
-        embedBuilder.AddField("Admin Commands", adminCommands);
-        embedBuilder.AddField("Normal Commands", normalCommands);
-        context.Channel.SendMessageAsync(embed: embedBuilder.Build());
+
+        if(adminCommands.Length > 0)
+            embedBuilder.AddField("Admin Commands", adminCommands);
+        if(normalCommands.Length > 0)
+            embedBuilder.AddField("Normal Commands", normalCommands);
+        args.context.Channel.SendMessageAsync(embed: embedBuilder.Build());
     }
 
     private EmbedBuilder GenerateHelpCommand(string command)

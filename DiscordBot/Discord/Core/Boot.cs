@@ -81,6 +81,7 @@ internal class Boot
         await client.StartAsync();
 
         commandServiceHandler = new CommandHandler(client, service, botPrefix);
+
         await commandServiceHandler.InstallCommandsAsync();
 
 
@@ -96,16 +97,25 @@ internal class Boot
         client.Log += Log;
         client.LoggedIn += LoggedIn;
         client.Ready += Ready;
+        client.Disconnected += Client_Disconnected;
+    }
+
+    private Task Client_Disconnected(Exception arg)
+    {
+        if (arg.Message.Contains("401"))
+        {
+            Config.Variables.RemoveKey("token");
+            Program.GenerateStartUI("The token is invalid");
+        }
+
+        Logger.WriteErrFile(arg);
+        return Task.CompletedTask;
     }
 
     private async Task Client_LoggedOut()
     {
         Logger.WriteLine("Successfully Logged Out");
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
-
-        /*        var cmds = await client.GetGlobalApplicationCommandsAsync();
-                foreach (var cmd in cmds)
-                    await cmd.DeleteAsync();*/
     }
 
     private Task Ready()

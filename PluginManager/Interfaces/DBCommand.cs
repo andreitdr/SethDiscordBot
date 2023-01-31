@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Discord.Commands;
+using PluginManager.Others;
 
 namespace PluginManager.Interfaces;
 
@@ -37,7 +38,7 @@ public interface DBCommand
     ///     The main body of the command. This is what is executed when user calls the command in Server
     /// </summary>
     /// <param name="context">The disocrd Context</param>
-    void ExecuteServer(SocketCommandContext context)
+    void ExecuteServer(CmdArgs args)
     {
     }
 
@@ -45,7 +46,7 @@ public interface DBCommand
     ///     The main body of the command. This is what is executed when user calls the command in DM
     /// </summary>
     /// <param name="context">The disocrd Context</param>
-    void ExecuteDM(SocketCommandContext context)
+    void ExecuteDM(CmdArgs args)
     {
     }
 }

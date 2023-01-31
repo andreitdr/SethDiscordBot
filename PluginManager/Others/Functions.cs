@@ -36,12 +36,6 @@ public static class Functions
         return OperatingSystem.UNKNOWN;
     }
 
-    public static List<string> GetArguments(SocketMessage message)
-    {
-        var command = new Command(message);
-        return command.Arguments;
-    }
-
     /// <summary>
     ///     Copy one Stream to another <see langword="async" />
     /// </summary>

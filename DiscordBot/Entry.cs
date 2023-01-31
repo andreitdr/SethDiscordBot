@@ -1,12 +1,16 @@
-﻿using System;
+﻿using PluginManager.Others;
+using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace DiscordBot
 {
 
     public class Entry
     {
+        internal static StartupArguments startupArguments;
         [STAThread]
         public static void Main(string[] args)
         {
@@ -22,7 +26,16 @@ namespace DiscordBot
                 return assembly;
             }
 
-            Program.Startup(args);
+            Task.Run(async () => {
+                if (!File.Exists(Functions.dataFolder + "loader.json"))
+                {
+                    startupArguments = new StartupArguments();
+                    await Functions.SaveToJsonFile(Functions.dataFolder + "loader.json", startupArguments);
+                }
+                else
+                    startupArguments = await Functions.ConvertFromJson<StartupArguments>(Functions.dataFolder + "loader.json");
+                }).Wait();
+            Program.Startup(args.Concat(startupArguments.runArgs.Split(' ')).ToArray());
 
         }
     }

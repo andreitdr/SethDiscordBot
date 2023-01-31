@@ -120,6 +120,9 @@ public static class Config
                 throw new Exception("Config is not loaded");
             if (Exists(VarName))
             {
+                if (GetValue(VarName) == Value)
+                    return;
+
                 SetValue(VarName, Value);
                 SetReadOnly(VarName, ReadOnly);
                 return;

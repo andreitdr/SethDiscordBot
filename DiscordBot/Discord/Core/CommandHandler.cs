@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 using Discord.Commands;
 using Discord.WebSocket;
-
+using PluginManager.Interfaces;
 using PluginManager.Loaders;
+using PluginManager.Others;
 using PluginManager.Others.Permissions;
 
 using static PluginManager.Logger;
@@ -78,9 +79,12 @@ internal class CommandHandler
     /// <returns></returns>
     private async Task MessageHandler(SocketMessage Message)
     {
+
         try
         {
-            if (Message.Author.IsBot) return;
+            if (Message.Author.IsBot) 
+                return;
+
             if (Message as SocketUserMessage == null)
                 return;
 
@@ -89,41 +93,75 @@ internal class CommandHandler
             if (message is null)
                 return;
 
-            if (!message.Content.StartsWith(botPrefix))
-                return;
-
             var argPos = 0;
 
-            if (message.HasMentionPrefix(client.CurrentUser, ref argPos))
-            {
-                await message.Channel.SendMessageAsync("Can not exec mentioned commands !");
+            if (!message.Content.StartsWith(botPrefix) && !message.HasMentionPrefix(client.CurrentUser, ref argPos))
                 return;
-            }
 
             var context = new SocketCommandContext(client, message);
 
             await commandService.ExecuteAsync(context, argPos, null);
 
-            var plugin = PluginLoader.Commands!
-                                     .Where(
-                                          p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
-                                               (p.Aliases is not null &&
-                                                p.Aliases.Contains(
-                                                    message.Content.Split(' ')[0].Substring(botPrefix.Length))))
-                                     .FirstOrDefault();
+            DBCommand plugin;
+            string cleanMessage = "";
 
-            if (plugin is null) throw new Exception("Failed to run command. !");
+            if (message.HasMentionPrefix(client.CurrentUser, ref argPos))
+            {
+                string mentionPrefix = "<@" + client.CurrentUser.Id + ">";
+
+                plugin = PluginLoader.Commands!
+                   .Where
+                   (
+                       plug => plug.Command == message.Content.Substring(mentionPrefix.Length+1).Split(' ')[0] ||
+                               (
+                                   plug.Aliases is not null &&
+                                       plug.Aliases.Contains(message.CleanContent.Substring(mentionPrefix.Length+1).Split(' ')[0])
+                               )
+                   )
+                   .FirstOrDefault();
+
+                cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
+            }
+
+            else
+            {
+                plugin = PluginLoader.Commands!
+                             .Where(
+                                  p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
+                                       (p.Aliases is not null &&
+                                        p.Aliases.Contains(
+                                            message.Content.Split(' ')[0].Substring(botPrefix.Length))))
+                             .FirstOrDefault();
+                cleanMessage = message.Content.Substring(botPrefix.Length);
+            }
+            if (plugin is null) 
+                throw new Exception($"Failed to run command ! " + message.CleanContent);
 
             if (plugin.requireAdmin && !context.Message.Author.isAdmin())
                 return;
 
+            string[] split = cleanMessage.Split(' ');
+
+            string[] argsClean = null;
+            if(split.Length > 1)
+                argsClean = string.Join(' ', split, 1, split.Length-1).Split(' ');
+
+            CmdArgs cmd = new() { 
+                context = context,
+                cleanContent = cleanMessage,
+                commandUsed = split[0],
+                arguments = argsClean
+            };
+
             if (context.Channel is SocketDMChannel)
-                plugin.ExecuteDM(context);
-            else plugin.ExecuteServer(context);
+                plugin.ExecuteDM(cmd);
+            else plugin.ExecuteServer(cmd);
         }
         catch (Exception ex)
         {
             ex.WriteErrFile();
+
+            Console.WriteLine(ex.ToString());
         }
     }
 }

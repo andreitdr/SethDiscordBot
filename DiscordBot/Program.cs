@@ -25,6 +25,7 @@ public class Program
 {
     private static bool loadPluginsOnStartup;
     private static ConsoleCommandsHandler consoleCommandsHandler;
+    //private static bool isUI_ON;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -41,147 +42,7 @@ public class Program
             Config.Variables.GetValue("prefix")?.Length != 1 ||
             (args.Length == 1 && args[0] == "/reset"))
         {
-            Application.Init();
-            var top = Application.Top;
-            var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
-            {
-                X = 0,
-                Y = 1,
-                Width = Dim.Fill(),
-                Height = Dim.Fill()
-            };
-
-            top.Add(win);
-
-            var labelInfo = new Label(
-                "Configuration file not found or invalid. " +
-                "Please fill the following fields to create a new configuration file."
-            )
-            {
-                X = Pos.Center(),
-                Y = 2
-            };
-
-
-            var labelToken = new Label("Please insert your token here: ")
-            {
-                X = 5,
-                Y = 5
-            };
-
-            var textFiledToken = new TextField("")
-            {
-                X = Pos.Left(labelToken) + labelToken.Text.Length + 2,
-                Y = labelToken.Y,
-                Width = 70
-            };
-
-            var labelPrefix = new Label("Please insert your prefix here: ")
-            {
-                X = 5,
-                Y = 8
-            };
-            var textFiledPrefix = new TextField("")
-            {
-                X = Pos.Left(labelPrefix) + labelPrefix.Text.Length + 2,
-                Y = labelPrefix.Y,
-                Width = 1
-            };
-
-            var labelServerid = new Label("Please insert your server id here (optional): ")
-            {
-                X = 5,
-                Y = 11
-            };
-            var textFiledServerID = new TextField("")
-            {
-                X = Pos.Left(labelServerid) + labelServerid.Text.Length + 2,
-                Y = labelServerid.Y,
-                Width = 18
-            };
-
-            var button = new Button("Submit")
-            {
-                X = Pos.Center() - 10,
-                Y = 16
-            };
-
-            var button2 = new Button("License")
-            {
-                X = Pos.Center() + 10,
-                Y = 16
-            };
-
-            var button3 = new Button("ⓘ")
-            {
-                X = Pos.Left(textFiledServerID) + 20,
-                Y = textFiledServerID.Y
-            };
-
-            Console.CancelKeyPress += (sender, e) => { top.Running = false; };
-
-            button.Clicked += () =>
-            {
-                var passMessage = "";
-                if (textFiledToken.Text.Length != 70 && textFiledToken.Text.Length != 59)
-                    passMessage += "Invalid token, ";
-                if (textFiledPrefix.Text.ContainsAny("0123456789/\\ ") || textFiledPrefix.Text.Length != 1)
-                    passMessage += "Invalid prefix, ";
-                if (textFiledServerID.Text.Length != 18 && textFiledServerID.Text.Length > 0)
-                    passMessage += "Invalid serverID";
-
-                if (passMessage != "")
-                {
-                    MessageBox.ErrorQuery("Discord Bot Settings",
-                                          "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
-                    return;
-                }
-
-
-                Config.Variables.Add("ServerID", (string)textFiledServerID.Text, true);
-                Config.Variables.Add("token", (string)textFiledToken.Text, true);
-                Config.Variables.Add("prefix", (string)textFiledPrefix.Text, true);
-
-                MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D",
-                                 "Start :D");
-                top.Running = false;
-            };
-
-            button2.Clicked += async () =>
-            {
-                var license =
-                    await ServerCom.ReadTextFromURL(
-                        "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
-                var ProductLicense =
-                    "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
-                var r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
-                if (r == 1)
-                {
-                    var i = 0;
-                    while (i < license.Count)
-                    {
-                        var print_message = license[i++] + "\n";
-                        for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
-                            print_message += license[i] + "\n";
-                        if (print_message.Contains("https://"))
-                            print_message += "\n\nCTRL + Click on a link to open it";
-                        if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
-                    }
-                }
-            };
-
-            button3.Clicked += () =>
-            {
-                MessageBox.Query("Discord Bot Settings",
-                                 "Server ID can be found in Server settings => Widget => Server ID",
-                                 "Close");
-            };
-
-            win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
-            win.Add(textFiledToken, textFiledPrefix, textFiledServerID, button3);
-            win.Add(button, button2);
-            Application.Run();
-            Application.Shutdown();
+            GenerateStartUI("First time setup. Please fill the following with your discord bot data.\nThis are saved ONLY on YOUR computer.");
         }
 
         HandleInput(args).Wait();
@@ -196,10 +57,10 @@ public class Program
         Logger.WriteLine();
         Logger.WriteLine("Debug mode enabled");
         Logger.WriteLine();
-        loadPluginsOnStartup = true;
-#else
-        if (loadPluginsOnStartup) consoleCommandsHandler.HandleCommand("lp");
+
 #endif
+        if (loadPluginsOnStartup) 
+            consoleCommandsHandler.HandleCommand("lp");
 
         while (true)
         {
@@ -278,6 +139,8 @@ public class Program
         var b = await StartNoGui();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
 
+        if (Entry.startupArguments.loadPluginsAtStartup) { loadPluginsOnStartup = true; }
+
         if (len > 0 && args[0] == "/remplug")
         {
             var plugName = string.Join(' ', args, 1, args.Length - 1);
@@ -286,8 +149,7 @@ public class Program
             loadPluginsOnStartup = true;
         }
 
-        if (len > 0 && args[0] == "/lp")
-            loadPluginsOnStartup = true;
+        
 
         var mainThread = new Thread(() =>
         {
@@ -410,7 +272,7 @@ public class Program
                             {
                                 var url =
                                     $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
-                                Process.Start(".\\Updater\\Updater.exe",
+                                Process.Start($"{Functions.dataFolder}Applications/Updater.exe",
                                               $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
                             }
                             else
@@ -461,20 +323,19 @@ public class Program
                     if (!await Config.Variables.ExistsAsync("UpdaterVersion"))
                         await Config.Variables.AddAsync("UpdaterVersion", "0.0.0.0", false);
                     if (await Config.Variables.GetValueAsync("UpdaterVersion") != updaternewversion ||
-                        !Directory.Exists("./Updater") ||
-                        !File.Exists("./Updater/Updater.exe"))
+                        !File.Exists(Functions.dataFolder+"Applications/Updater.exe"))
                     {
                         Console.Clear();
                         Logger.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
                         var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
                         await ServerCom.DownloadFileNoProgressAsync(
-                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.zip",
-                            "./Updater.zip");
-                        await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
-                                                            UnzipProgressType.PercentageFromTotalSize);
+                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.exe",
+                            $"{Functions.dataFolder}Applications/Updater.exe");
+                        //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
+                        //                                    UnzipProgressType.PercentageFromTotalSize);
                         await Config.Variables.SetValueAsync("UpdaterVersion", updaternewversion);
-                        File.Delete("Updater.zip");
+                        // File.Delete("Updater.zip");
                         bar.Stop("Updater has been updated !");
                         Console.Clear();
                     }
@@ -484,5 +345,147 @@ public class Program
         }
 
         Console.Clear();
+    }
+
+    public static void GenerateStartUI(string titleMessage)
+    {
+        Application.Init();
+        var top = Application.Top;
+        var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
+        {
+            X = 0,
+            Y = 1,
+            Width = Dim.Fill(),
+            Height = Dim.Fill()
+        };
+
+        top.Add(win);
+
+        var labelInfo = new Label(titleMessage)
+        {
+            X = Pos.Center(),
+            Y = 2
+        };
+
+
+        var labelToken = new Label("Please insert your token here: ")
+        {
+            X = 5,
+            Y = 5
+        };
+
+        var textFiledToken = new TextField(Config.Variables.GetValue("token") ?? "")
+        {
+            X = Pos.Left(labelToken) + labelToken.Text.Length + 2,
+            Y = labelToken.Y,
+            Width = 70
+        };
+
+        var labelPrefix = new Label("Please insert your prefix here: ")
+        {
+            X = 5,
+            Y = 8
+        };
+        var textFiledPrefix = new TextField(Config.Variables.GetValue("prefix") ?? "")
+        {
+            X = Pos.Left(labelPrefix) + labelPrefix.Text.Length + 2,
+            Y = labelPrefix.Y,
+            Width = 1
+        };
+
+        var labelServerid = new Label("Please insert your server id here (optional): ")
+        {
+            X = 5,
+            Y = 11
+        };
+        var textFiledServerID = new TextField(Config.Variables.GetValue("ServerID") ?? "")
+        {
+            X = Pos.Left(labelServerid) + labelServerid.Text.Length + 2,
+            Y = labelServerid.Y,
+            Width = 18
+        };
+
+        var button = new Button("Submit")
+        {
+            X = Pos.Center() - 10,
+            Y = 16
+        };
+
+        var button2 = new Button("License")
+        {
+            X = Pos.Center() + 10,
+            Y = 16
+        };
+
+        var button3 = new Button("ⓘ")
+        {
+            X = Pos.Left(textFiledServerID) + 20,
+            Y = textFiledServerID.Y
+        };
+
+        Console.CancelKeyPress += (sender, e) => { top.Running = false; };
+
+        button.Clicked += () =>
+        {
+            var passMessage = "";
+            if (textFiledToken.Text.Length != 70 && textFiledToken.Text.Length != 59)
+                passMessage += "Invalid token, ";
+            if (textFiledPrefix.Text.ContainsAny("0123456789/\\ ") || textFiledPrefix.Text.Length != 1)
+                passMessage += "Invalid prefix, ";
+            if (textFiledServerID.Text.Length != 18 && textFiledServerID.Text.Length > 0)
+                passMessage += "Invalid serverID";
+
+            if (passMessage != "")
+            {
+                MessageBox.ErrorQuery("Discord Bot Settings",
+                                      "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
+                return;
+            }
+
+
+            Config.Variables.Add("ServerID", (string)textFiledServerID.Text, true);
+            Config.Variables.Add("token", (string)textFiledToken.Text, true);
+            Config.Variables.Add("prefix", (string)textFiledPrefix.Text, true);
+
+            MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D",
+                             "Start :D");
+            top.Running = false;
+        };
+
+        button2.Clicked += async () =>
+        {
+            var license =
+                await ServerCom.ReadTextFromURL(
+                    "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
+            var ProductLicense =
+                "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
+            var r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
+            if (r == 1)
+            {
+                var i = 0;
+                while (i < license.Count)
+                {
+                    var print_message = license[i++] + "\n";
+                    for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
+                        print_message += license[i] + "\n";
+                    if (print_message.Contains("https://"))
+                        print_message += "\n\nCTRL + Click on a link to open it";
+                    if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
+                }
+            }
+        };
+
+        button3.Clicked += () =>
+        {
+            MessageBox.Query("Discord Bot Settings",
+                             "Server ID can be found in Server settings => Widget => Server ID",
+                             "Close");
+        };
+
+        win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
+        win.Add(textFiledToken, textFiledPrefix, textFiledServerID, button3);
+        win.Add(button, button2);
+        Application.Run();
+        Application.Shutdown();
     }
 }
