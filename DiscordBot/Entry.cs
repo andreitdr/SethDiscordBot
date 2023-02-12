@@ -11,7 +11,6 @@ namespace DiscordBot
     public class Entry
     {
         internal static StartupArguments startupArguments;
-        [STAThread]
         public static void Main(string[] args)
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -26,16 +25,7 @@ namespace DiscordBot
                 return assembly;
             }
 
-            Task.Run(async () => {
-                if (!File.Exists(Functions.dataFolder + "loader.json"))
-                {
-                    startupArguments = new StartupArguments();
-                    await Functions.SaveToJsonFile(Functions.dataFolder + "loader.json", startupArguments);
-                }
-                else
-                    startupArguments = await Functions.ConvertFromJson<StartupArguments>(Functions.dataFolder + "loader.json");
-                }).Wait();
-            Program.Startup(args.Concat(startupArguments.runArgs.Split(' ')).ToArray());
+            Program.Startup(args);
 
         }
     }

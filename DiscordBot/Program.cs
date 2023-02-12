@@ -178,6 +178,15 @@ public class Program
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
 
+        if (!File.Exists(Functions.dataFolder + "loader.json"))
+        {
+            Entry.startupArguments = new StartupArguments();
+            await Functions.SaveToJsonFile(Functions.dataFolder + "loader.json", Entry.startupArguments);
+        }
+        else
+            Entry.startupArguments = await Functions.ConvertFromJson<StartupArguments>(Functions.dataFolder + "loader.json");
+        
+
         Settings.sqlDatabase = new SqlDatabase("SetDB.dat");
 
         await Settings.sqlDatabase.Open();
