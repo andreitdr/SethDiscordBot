@@ -329,6 +329,7 @@ public class Program
                     if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
                         break;
 
+                    Directory.CreateDirectory(Functions.dataFolder + "Applications");
                     if (!await Config.Variables.ExistsAsync("UpdaterVersion"))
                         await Config.Variables.AddAsync("UpdaterVersion", "0.0.0.0", false);
                     if (await Config.Variables.GetValueAsync("UpdaterVersion") != updaternewversion ||
