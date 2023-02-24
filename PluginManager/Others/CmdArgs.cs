@@ -15,5 +15,13 @@ namespace PluginManager.Others
         public string commandUsed { get;init; }
         public string[] arguments { get;init; }
 
+        public CmdArgs(SocketCommandContext context, string cleanContent, string commandUsed, string[] arguments)
+        {
+            this.context = context;
+            this.cleanContent = cleanContent;
+            this.commandUsed = commandUsed;
+            this.arguments = arguments;
+        }
+
     }
 }

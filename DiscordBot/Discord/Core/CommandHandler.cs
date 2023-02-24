@@ -146,12 +146,7 @@ internal class CommandHandler
             if(split.Length > 1)
                 argsClean = string.Join(' ', split, 1, split.Length-1).Split(' ');
 
-            CmdArgs cmd = new() { 
-                context = context,
-                cleanContent = cleanMessage,
-                commandUsed = split[0],
-                arguments = argsClean
-            };
+            CmdArgs cmd = new(context, cleanMessage, split[0], argsClean);
 
             if (context.Channel is SocketDMChannel)
                 plugin.ExecuteDM(cmd);

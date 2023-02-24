@@ -372,3 +372,4 @@ FodyWeavers.xsd
 /DiscordBot/Data/
 /DiscordBot/Updater/
 .vscode/
+.idea/
