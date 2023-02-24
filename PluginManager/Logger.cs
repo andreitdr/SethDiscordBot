@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-
+using System.Numerics;
 using Discord;
 
 namespace PluginManager
@@ -105,7 +105,7 @@ namespace PluginManager
             if (!isInitialized) throw new Exception("Logger is not initialized");
             var logsPath = logFolder + $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Log.txt";
             Directory.CreateDirectory(logFolder);
-            File.AppendAllTextAsync(logsPath, LogMessage + " \n").Wait();
+            File.AppendAllText(logsPath, $"[{DateTime.Today.ToShortTimeString()}] {LogMessage} \n");
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace PluginManager
             var errPath = errFolder +
                           $"{DateTime.Today.ToShortDateString().Replace("/", "-").Replace("\\", "-")} Error.txt";
             Directory.CreateDirectory(errFolder);
-            File.AppendAllText(errPath, ErrMessage + " \n");
+            File.AppendAllText(errPath, $"[{DateTime.Today.ToShortTimeString()}] {ErrMessage} \n");
         }
 
         public static void WriteErrFile(this Exception ex)

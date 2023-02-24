@@ -248,8 +248,24 @@ public class Program
             {
                 case "CurrentVersion":
                     var newVersion = s[1];
-                    if (!newVersion.Equals(await Config.Variables.GetValueAsync("Version")))
+                    var currentVersion = await Config.Variables.GetValueAsync("Version");
+                    if (!newVersion.Equals(currentVersion))
                     {
+
+                        if(OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+                        {
+                            Console.Clear();
+                            Logger.WriteLine("A new update was found !");
+                            Logger.WriteLine("Run the launcher to update");
+                            Logger.WriteLine("Current version: " + currentVersion);
+                            Logger.WriteLine("Latest version: " + s[1]);
+
+                            File.WriteAllText("version.txt", currentVersion);
+
+                            await Task.Delay(3000);
+
+                            break;
+                        }
                         var nVer = new VersionString(newVersion.Substring(2));
                         var cVer = new VersionString((await Config.Variables.GetValueAsync("Version")).Substring(2));
                         if (cVer > nVer)
@@ -268,6 +284,8 @@ public class Program
                         Logger.WriteLine("New version : " + newVersion);
                         Console.ForegroundColor = ConsoleColor.White;
 
+                        File.WriteAllText("version.txt", newVersion);
+
                         Logger.WriteLine("Changelog :");
 
                         List<string> changeLog = await ServerCom.ReadTextFromURL(
@@ -277,15 +295,6 @@ public class Program
                         Logger.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
-                            if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
-                            {
-                                var url =
-                                    $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0.zip";
-                                Process.Start($"{Functions.dataFolder}Applications/Updater.exe",
-                                              $"{newVersion} {url} {Process.GetCurrentProcess().ProcessName}");
-                            }
-                            else
-                            {
                                 var url =
                                     $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
                                 if (Logger.isConsole)
@@ -317,36 +326,35 @@ public class Program
                                         Logger.WriteLine("Please run the bot as root.");
                                 }
 
-                                //Process.Start(Functions.dataFolder + "Applications/Updater", $"{url}");
-
-                            }
+                            
                         }
                     }
 
                     break;
-                case "UpdaterVersion":
+                case "LauncherVersion":
                     var updaternewversion = s[1];
+                    //File.WriteAllText(updaternewversion + ".txt", updaternewversion);
                     if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
                         break;
 
                     Directory.CreateDirectory(Functions.dataFolder + "Applications");
-                    if (!await Config.Variables.ExistsAsync("UpdaterVersion"))
-                        await Config.Variables.AddAsync("UpdaterVersion", "0.0.0.0", false);
-                    if (await Config.Variables.GetValueAsync("UpdaterVersion") != updaternewversion ||
-                        !File.Exists(Functions.dataFolder+"Applications/Updater.exe"))
+                    if (!await Config.Variables.ExistsAsync("LauncherVersion"))
+                        await Config.Variables.AddAsync("LauncherVersion", "0.0.0.0", false);
+                    if (await Config.Variables.GetValueAsync("LauncherVersion") != updaternewversion ||
+                        !File.Exists("./Launcher.exe"))
                     {
                         Console.Clear();
-                        Logger.WriteLine("Installing updater ...\nDo NOT close the bot during update !");
+                        Logger.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
                         var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
                         await ServerCom.DownloadFileNoProgressAsync(
-                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Updater.exe",
-                            $"{Functions.dataFolder}Applications/Updater.exe");
+                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Launcher.exe",
+                            $"./Launcher.exe");
                         //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
                         //                                    UnzipProgressType.PercentageFromTotalSize);
-                        await Config.Variables.SetValueAsync("UpdaterVersion", updaternewversion);
+                        await Config.Variables.SetValueAsync("LauncherVersion", updaternewversion);
                         // File.Delete("Updater.zip");
-                        bar.Stop("Updater has been updated !");
+                        bar.Stop("The launcher has been updated !");
                         Console.Clear();
                     }
 
