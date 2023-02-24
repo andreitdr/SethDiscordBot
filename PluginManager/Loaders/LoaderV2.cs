@@ -8,9 +8,17 @@ using PluginManager.Interfaces;
 
 namespace PluginManager.Loaders
 {
-    internal class LoaderV2
+    internal class LoaderArgs : EventArgs
     {
-        internal LoaderV2(string path, string extension)
+        internal string? PluginName { get; init; }
+        internal string? TypeName { get; init; }
+        internal bool IsLoaded { get; init; }
+        internal Exception? Exception { get; init; }
+        internal object? Plugin { get; init; }
+    }
+    internal class Loader
+    {
+        internal Loader(string path, string extension)
         {
             this.path = path;
             this.extension = extension;

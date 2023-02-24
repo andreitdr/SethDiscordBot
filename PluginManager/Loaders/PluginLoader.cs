@@ -97,7 +97,7 @@ public class PluginLoader
         Logger.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
         Logger.WriteLine("Loading plugins");
 
-        var loader = new LoaderV2("./Data/Plugins", "dll");
+        var loader = new Loader("./Data/Plugins", "dll");
         loader.FileLoaded += (args) => Logger.WriteLogFile($"{args.PluginName} file Loaded");
         loader.PluginLoaded += Loader_PluginLoaded;
         var res = loader.Load();

@@ -258,7 +258,7 @@ public class ConsoleCommandsHandler
 
                 isDownloading = false;
 
-                await ExecuteCommad("localload " + name);
+                //await ExecuteCommad("localload " + name);
             }
         );
 

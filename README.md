@@ -47,7 +47,7 @@ internal class LevelCommand : DBCommand
 
     public bool requireAdmin => false;
 
-    public async void ExecuteServer(SocketCommandContext context)
+    public async void ExecuteServer(CmdArgs context)
     {
         object[] user = await Variables.database.ReadDataArrayAsync($"SELECT * FROM Levels WHERE UserID='{context.Message.Author.Id}'");
         if (user is null)
@@ -69,6 +69,11 @@ internal class LevelCommand : DBCommand
         builder.WithAuthor(context.Message.Author.Mention);
         await context.Channel.SendMessageAsync(embed: builder.Build());
     }
+
+    //Optional method (tell the bot what should it do if the command is executed from a DM channel)
+    //public async void ExecuteDM(CmdArgs context) {
+    //
+    //}
 }
 
 
