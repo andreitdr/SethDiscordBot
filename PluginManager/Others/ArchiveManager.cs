@@ -9,7 +9,7 @@ namespace PluginManager.Others
     public static class ArchiveManager
     {
         public static bool isInitialized { get; private set; }
-        private static string archiveFolder;
+        private static string? archiveFolder;
 
         public static void Initialize()
         {
@@ -28,7 +28,7 @@ namespace PluginManager.Others
         /// <param name="FileName">The file name that is inside the archive or its full path</param>
         /// <param name="archFile">The archive location from the PAKs folder</param>
         /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-        public static async Task<string> ReadFromPakAsync(string FileName, string archFile)
+        public static async Task<string?> ReadFromPakAsync(string FileName, string archFile)
         {
             if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
             archFile = archiveFolder + archFile;
@@ -37,7 +37,7 @@ namespace PluginManager.Others
 
             try
             {
-                string textValue = null;
+                string? textValue = null;
                 using (var fs = new FileStream(archFile, FileMode.Open))
                 using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
                 {

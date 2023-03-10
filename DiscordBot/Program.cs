@@ -6,10 +6,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-using DiscordBot.Discord.Core;
-
 using PluginManager;
-using PluginManager.Database;
+using PluginManager.Bot;
 using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
@@ -105,6 +103,9 @@ public class Program
 
         Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
+
+        Logger.WriteLine();
+        Logger.WriteLine("Running on " + Functions.GetOperatingSystem().ToString());
         Logger.WriteLine("============================ LOG ============================");
 
         try
@@ -174,9 +175,7 @@ public class Program
 
     private static async Task PreLoadComponents(string[] args)
     {
-        Directory.CreateDirectory("./Data/Resources");
-        Directory.CreateDirectory("./Data/Plugins");
-        Directory.CreateDirectory("./Data/PAKS");
+
 
         if (!File.Exists(Functions.dataFolder + "loader.json"))
         {
@@ -185,17 +184,8 @@ public class Program
         }
         else
             Entry.startupArguments = await Functions.ConvertFromJson<StartupArguments>(Functions.dataFolder + "loader.json");
-        
 
-        Settings.sqlDatabase = new SqlDatabase("SetDB.dat");
-
-        await Settings.sqlDatabase.Open();
-        await Config.Initialize();
-        Logger.Initialize(true);
-        ArchiveManager.Initialize();
-
-
-        Logger.LogEvent += (message) => { Console.Write(message); };
+        await Config.Initialize("SetDB.dat", true);
 
         Logger.WriteLine("Loading resources ...");
         var main = new Utilities.ProgressBar(ProgressBarType.NO_END);

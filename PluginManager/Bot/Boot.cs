@@ -1,15 +1,14 @@
-﻿using System;
+using System.Net.Mime;
+using System;
 using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using PluginManager;
+namespace PluginManager.Bot;
 
-namespace DiscordBot.Discord.Core;
-
-internal class Boot
+public class Boot
 {
     /// <summary>
     ///     The bot prefix
@@ -57,10 +56,12 @@ internal class Boot
     /// <summary>
     ///     The start method for the bot. This method is used to load the bot
     /// </summary>
+    /// <param name="config">The discord socket config. If null then the default one will be applied (AlwaysDownloadUsers=true, UseInteractionSnowflakeDate=false, GatewayIntents=GatewayIntents.All)</param>
     /// <returns>Task</returns>
-    public async Task Awake()
+    public async Task Awake(DiscordSocketConfig? config = null)
     {
-        var config = new DiscordSocketConfig
+        if(config is null)
+        config = new DiscordSocketConfig
         {
 
             AlwaysDownloadUsers = true,
@@ -100,16 +101,17 @@ internal class Boot
         client.Disconnected += Client_Disconnected;
     }
 
-    private Task Client_Disconnected(Exception arg)
+    private async Task Client_Disconnected(Exception arg)
     {
         if (arg.Message.Contains("401"))
         {
             Config.Variables.RemoveKey("token");
-            Program.GenerateStartUI("The token is invalid");
+            Logger.LogError("The token is invalid. Please restart the bot and enter a valid token.");
+            await Task.Delay(4000);
+            Environment.Exit(0);
         }
 
         Logger.WriteErrFile(arg);
-        return Task.CompletedTask;
     }
 
     private async Task Client_LoggedOut()
@@ -128,9 +130,6 @@ internal class Boot
     private Task LoggedIn()
     {
         Console.Title = "CONNECTED";
-        Logger.WriteLine("The bot has been logged in at " + DateTime.Now.ToShortDateString() + " (" +
-                     DateTime.Now.ToShortTimeString() + ")"
-        );
         return Task.CompletedTask;
     }
 
@@ -141,20 +140,14 @@ internal class Boot
             case LogSeverity.Error:
             case LogSeverity.Critical:
                 Logger.WriteErrFile(message.Message);
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[ERROR] " + message.Message);
-                Console.ForegroundColor = ConsoleColor.White;
+                Logger.WriteColored(message.Message + "\n", ConsoleColor.Red);
 
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
                 Logger.WriteLogFile(message.Message);
-
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("[INFO] " + message.Message);
-                Console.ForegroundColor = ConsoleColor.White;
+                Logger.WriteColored(message.Message + "\n", ConsoleColor.White);
 
 
                 break;

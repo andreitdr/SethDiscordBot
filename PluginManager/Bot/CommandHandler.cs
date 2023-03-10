@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,9 +10,7 @@ using PluginManager.Loaders;
 using PluginManager.Others;
 using PluginManager.Others.Permissions;
 
-using static PluginManager.Logger;
-
-namespace DiscordBot.Discord.Core;
+namespace PluginManager.Bot;
 
 internal class CommandHandler
 {

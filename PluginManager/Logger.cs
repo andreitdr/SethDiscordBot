@@ -96,6 +96,25 @@ namespace PluginManager
             LogEvent?.Invoke($"{c}");
         }
 
+        public static void Write<T>(T c, params object[] Args)
+        {
+            if (!isInitialized) throw new Exception("Logger is not initialized");
+            LogEvent?.Invoke(string.Format($"{c}", Args));
+        }
+
+        public static void WriteColored(string message, ConsoleColor color)
+        {
+            if (!isInitialized) throw new Exception("Logger is not initialized");
+            if(!isConsole) {
+                LogEvent?.Invoke(message);
+                return;
+            }
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            LogEvent?.Invoke(message);
+            Console.ForegroundColor = oldColor;
+        }
+
         /// <summary>
         ///     Write logs to file
         /// </summary>

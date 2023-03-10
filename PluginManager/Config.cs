@@ -1,17 +1,27 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.IO;
 
 using PluginManager.Online.Helpers;
+using PluginManager.Database;
 
 namespace PluginManager;
 
 public static class Config
 {
     private static bool IsLoaded = false;
-    public static async Task Initialize()
+    public static async Task Initialize(string DatabaseName, bool isConsole)
     {
         if (IsLoaded)
             return;
+
+        Directory.CreateDirectory("./Data/Resources");
+        Directory.CreateDirectory("./Data/Plugins");
+        Directory.CreateDirectory("./Data/PAKS");
+
+        Settings.sqlDatabase = new SqlDatabase(DatabaseName);
+        await Settings.sqlDatabase.Open();
+
 
         if (!await Settings.sqlDatabase.TableExistsAsync("Plugins"))
             await Settings.sqlDatabase.CreateTableAsync("Plugins", "PluginName", "Version");
@@ -19,18 +29,24 @@ public static class Config
             await Settings.sqlDatabase.CreateTableAsync("Variables", "VarName", "Value", "ReadOnly");
 
         IsLoaded = true;
+
+        Logger.Initialize(isConsole);
+        PluginManager.Others.ArchiveManager.Initialize();
+
+        if(isConsole)
+            Logger.LogEvent += (message) => { Console.Write(message); };
     }
 
     public static class Variables
     {
-        public static async Task<string> GetValueAsync(string VarName)
+        public static async Task<string?> GetValueAsync(string VarName)
         {
             if (!IsLoaded)
                 throw new Exception("Config is not loaded");
             return await Settings.sqlDatabase.GetValueAsync("Variables", "VarName", VarName, "Value");
         }
 
-        public static string GetValue(string VarName)
+        public static string? GetValue(string VarName)
         {
             if (!IsLoaded)
                 throw new Exception("Config is not loaded");

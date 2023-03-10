@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using Discord;
-using Discord.Commands;
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
@@ -60,7 +58,7 @@ internal class Help : DBCommand
         var adminCommands = "";
         var normalCommands = "";
 
-        foreach (var cmd in PluginLoader.Commands!)
+        foreach (var cmd in PluginLoader.Commands)
             if (cmd.requireAdmin)
                 adminCommands += cmd.Command + " ";
             else
@@ -77,7 +75,7 @@ internal class Help : DBCommand
     private EmbedBuilder GenerateHelpCommand(string command)
     {
         var embedBuilder = new EmbedBuilder();
-        var cmd = PluginLoader.Commands!.Find(p => p.Command == command ||
+        var cmd = PluginLoader.Commands.Find(p => p.Command == command ||
                                                    (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
