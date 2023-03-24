@@ -80,8 +80,8 @@ public class PluginLoader
                 var version = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (version is null)
                     return;
-                if (Config.Plugins.GetVersion(name) is not null)
-                    Config.Plugins.SetVersion(name, version);
+                if (Config.Plugins[name] is not null)
+                    Config.Plugins[name] = version.ToShortString();
 
                 if (await PluginUpdater.CheckForUpdates(name))
                     await PluginUpdater.Download(name);

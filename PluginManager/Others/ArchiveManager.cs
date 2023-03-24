@@ -15,11 +15,12 @@ namespace PluginManager.Others
         {
             if (isInitialized) throw new Exception("ArchiveManager is already initialized");
 
-            if (!Config.Variables.Exists("ArchiveFolder"))
-                Config.Variables.Add("ArchiveFolder", "./Data/PAKS/");
+            if (!Config.Data.ContainsKey("ArchiveFolder"))
+                Config.Data["ArchiveFolder"] = "./Data/PAKS/";
+
+            archiveFolder = Config.Data["ArchiveFolder"];
 
             isInitialized = true;
-            archiveFolder = Config.Variables.GetValue("ArchiveFolder");
 
         }
         /// <summary>

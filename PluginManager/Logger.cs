@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
+
 using Discord;
 
 namespace PluginManager
@@ -17,17 +18,19 @@ namespace PluginManager
         public static void Initialize(bool console)
         {
 
-            if (isInitialized) throw new Exception("Logger is already initialized");
+            if (isInitialized)
+                throw new Exception("Logger is already initialized");
 
-            if (!Config.Variables.Exists("LogFolder"))
-                Config.Variables.Add("LogFolder", "./Data/Output/Logs/");
+            if (!Config.Data.ContainsKey("LogFolder"))
+                Config.Data.Add("LogFolder", "./Data/Output/Logs/");
 
-            if (!Config.Variables.Exists("ErrorFolder"))
-                Config.Variables.Add("ErrorFolder", "./Data/Output/Errors/");
+            if (!Config.Data.ContainsKey("ErrorFolder"))
+                Config.Data.Add("ErrorFolder", "./Data/Output/Errors/");
 
             isInitialized = true;
-            logFolder = Config.Variables.GetValue("LogFolder");
-            errFolder = Config.Variables.GetValue("ErrorFolder");
+
+            logFolder = Config.Data["LogFolder"];
+            errFolder = Config.Data["ErrorFolder"];
             isConsole = console;
         }
 
@@ -105,7 +108,8 @@ namespace PluginManager
         public static void WriteColored(string message, ConsoleColor color)
         {
             if (!isInitialized) throw new Exception("Logger is not initialized");
-            if(!isConsole) {
+            if (!isConsole)
+            {
                 LogEvent?.Invoke(message);
                 return;
             }

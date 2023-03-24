@@ -2,15 +2,21 @@
 using System.Threading.Tasks;
 using System.IO;
 
+using System.Collections.Generic;
+using PluginManager.Others;
+using System.Collections;
 using PluginManager.Online.Helpers;
-using PluginManager.Database;
 
 namespace PluginManager;
 
 public static class Config
 {
     private static bool IsLoaded = false;
-    public static async Task Initialize(string DatabaseName, bool isConsole)
+
+    public static Json<string, string> Data;
+    public static Json<string, string> Plugins;
+
+    public static async Task Initialize(bool isConsole)
     {
         if (IsLoaded)
             return;
@@ -19,200 +25,126 @@ public static class Config
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
 
-        Settings.sqlDatabase = new SqlDatabase(DatabaseName);
-        await Settings.sqlDatabase.Open();
-
-
-        if (!await Settings.sqlDatabase.TableExistsAsync("Plugins"))
-            await Settings.sqlDatabase.CreateTableAsync("Plugins", "PluginName", "Version");
-        if (!await Settings.sqlDatabase.TableExistsAsync("Variables"))
-            await Settings.sqlDatabase.CreateTableAsync("Variables", "VarName", "Value", "ReadOnly");
+        Data = new Json<string, string>("./Data/Resources/config.json");
+        Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
 
         IsLoaded = true;
-
         Logger.Initialize(isConsole);
-        PluginManager.Others.ArchiveManager.Initialize();
+        ArchiveManager.Initialize();
 
-        if(isConsole)
+        if (isConsole)
             Logger.LogEvent += (message) => { Console.Write(message); };
     }
 
-    public static class Variables
+    public class Json<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        public static async Task<string?> GetValueAsync(string VarName)
+        protected IDictionary<TKey, TValue> _dictionary;
+
+        public Json(IDictionary<TKey, TValue> dictionary)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return await Settings.sqlDatabase.GetValueAsync("Variables", "VarName", VarName, "Value");
+            _dictionary = dictionary;
         }
 
-        public static string? GetValue(string VarName)
+        public Json(string file)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return Settings.sqlDatabase.GetValue("Variables", "VarName", VarName, "Value");
+            _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
         }
 
-
-        public static async Task SetValueAsync(string VarName, string Value)
+        public virtual void Add(TKey key, TValue value)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-
-            if (await IsReadOnlyAsync(VarName))
-                throw new Exception($"Variable ({VarName}) is read only and can not be changed to {Value}");
-
-            await Settings.sqlDatabase.SetValueAsync("Variables", "VarName", VarName, "Value", Value);
+            _dictionary.Add(key, value);
         }
 
-        public static void SetValue(string VarName, string Value)
+        public void Clear() { _dictionary.Clear(); }
+
+        public bool ContainsKey(TKey key)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            if (IsReadOnly(VarName))
-                throw new Exception($"Variable ({VarName}) is read only and can not be changed to {Value}");
-            Settings.sqlDatabase.SetValue("Variables", "VarName", VarName, "Value", Value);
+            if (_dictionary == null)
+                throw new Exception("Dictionary is null");
+
+            return _dictionary.ContainsKey(key);
         }
 
+        public virtual ICollection<TKey> Keys => _dictionary.Keys;
 
-        public static async Task<bool> IsReadOnlyAsync(string VarName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return (await Settings.sqlDatabase.GetValueAsync("Variables", "VarName", VarName, "ReadOnly")).Equals("true", StringComparison.CurrentCultureIgnoreCase);
-        }
+        public virtual ICollection<TValue> Values => _dictionary.Values;
 
-        public static bool IsReadOnly(string VarName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return (Settings.sqlDatabase.GetValue("Variables", "VarName", VarName, "ReadOnly")).Equals("true", StringComparison.CurrentCultureIgnoreCase);
-        }
+        public int Count => _dictionary.Count;
 
-        public static async Task SetReadOnlyAsync(string VarName, bool ReadOnly)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            await Settings.sqlDatabase.SetValueAsync("Variables", "VarName", VarName, "ReadOnly", ReadOnly ? "true" : "false");
-        }
+        public bool IsReadOnly => _dictionary.IsReadOnly;
 
-        public static void SetReadOnly(string VarName, bool ReadOnly)
+        public virtual TValue this[TKey key]
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            Settings.sqlDatabase.SetValue("Variables", "VarName", VarName, "ReadOnly", ReadOnly ? "true" : "false");
-        }
-
-        public static async Task<bool> ExistsAsync(string VarName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return await Settings.sqlDatabase.KeyExistsAsync("Variables", "VarName", VarName);
-        }
-
-        public static bool Exists(string VarName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            return Settings.sqlDatabase.KeyExists("Variables", "VarName", VarName);
-        }
-
-        public static async Task AddAsync(string VarName, string Value, bool ReadOnly = false)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            if (await ExistsAsync(VarName))
+            get
             {
-                await SetValueAsync(VarName, Value);
-                await SetReadOnlyAsync(VarName, ReadOnly);
-                return;
-            }
-            await Settings.sqlDatabase.InsertAsync("Variables", VarName, Value, ReadOnly ? "true" : "false");
-        }
+                if (_dictionary.TryGetValue(key, out TValue value)) return value;
+                return default;
 
-        public static void Add(string VarName, string Value, bool ReadOnly = false)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            if (Exists(VarName))
+            }
+            set
             {
-                if (GetValue(VarName) == Value)
-                    return;
-
-                SetValue(VarName, Value);
-                SetReadOnly(VarName, ReadOnly);
-                return;
+                if (_dictionary.ContainsKey(key))
+                    _dictionary[key] = value;
+                else _dictionary.Add(key, value);
             }
-            Settings.sqlDatabase.Insert("Variables", VarName, Value, ReadOnly ? "true" : "false");
         }
 
-        public static async Task RemoveKeyAsync(string VarName)
+        public virtual bool TryGetValue(TKey key, out TValue value)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            await Settings.sqlDatabase.RemoveKeyAsync("Variables", "VarName", VarName);
+            return _dictionary.TryGetValue(key, out value);
         }
 
-        public static void RemoveKey(string VarName)
+        private async Task<Dictionary<TKey, TValue>> PrivateReadConfig(string file)
         {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded");
-            Settings.sqlDatabase.RemoveKey("Variables", "VarName", VarName);
+            if (!File.Exists(file))
+            {
+                var dictionary = new Dictionary<TKey, TValue>();
+                await Functions.SaveToJsonFile(file, _dictionary);
+                return dictionary;
+            }
+
+            var d = await Functions.ConvertFromJson<Dictionary<TKey, TValue>>(file);
+
+            if (d is null)
+                throw new Exception("Failed to read config file");
+
+            return d;
+        }
+
+        public bool Remove(TKey key)
+        {
+            return _dictionary.Remove(key);
+        }
+
+        public void Add(KeyValuePair<TKey, TValue> item)
+        {
+            _dictionary.Add(item);
+        }
+
+        public bool Contains(KeyValuePair<TKey, TValue> item)
+        {
+            return _dictionary.Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        {
+            _dictionary.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<TKey, TValue> item)
+        {
+            return _dictionary.Remove(item);
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            return _dictionary.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_dictionary).GetEnumerator();
         }
     }
 
-    public static class Plugins
-    {
-        public static async Task<string> GetVersionAsync(string pluginName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded yet");
-
-            string result = await Settings.sqlDatabase.GetValueAsync("Plugins", "PluginName", pluginName, "Version");
-            if (result is null)
-                return "0.0.0";
-
-            return result;
-        }
-
-        public static string GetVersion(string pluginName)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded yet");
-
-            string result = Settings.sqlDatabase.GetValue("Plugins", "PluginName", pluginName, "Version");
-            if (result is null)
-                return "0.0.0";
-
-            return result;
-        }
-
-        public static async Task SetVersionAsync(string pluginName, VersionString version)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded yet");
-
-            if (!await Settings.sqlDatabase.KeyExistsAsync("Plugins", "PluginName", pluginName))
-            {
-                await Settings.sqlDatabase.InsertAsync("Plugins", pluginName, version.ToShortString());
-                return;
-            }
-            await Settings.sqlDatabase.SetValueAsync("Plugins", "PluginName", pluginName, "Version", version.ToShortString());
-        }
-
-        public static void SetVersion(string pluginName, VersionString version)
-        {
-            if (!IsLoaded)
-                throw new Exception("Config is not loaded yet");
-
-            if (!Settings.sqlDatabase.KeyExists("Plugins", "PluginName", pluginName))
-            {
-                Settings.sqlDatabase.Insert("Plugins", pluginName, version.ToShortString());
-                return;
-            }
-
-            Settings.sqlDatabase.SetValue("Plugins", "PluginName", pluginName, "Version", version.ToShortString());
-        }
-
-    }
 }

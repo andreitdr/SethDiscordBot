@@ -94,6 +94,7 @@ public static class Functions
     /// <returns></returns>
     public static async Task<T> ConvertFromJson<T>(string input)
     {
+        Console.WriteLine(input);
         Stream text;
         if (File.Exists(input))
             text = new MemoryStream(await File.ReadAllBytesAsync(input));

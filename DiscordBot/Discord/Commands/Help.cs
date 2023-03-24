@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Discord;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
@@ -48,7 +49,7 @@ internal class Help : DBCommand
                 args.context.Channel.SendMessageAsync("Unknown Command " + args.arguments[0]);
             else
                 args.context.Channel.SendMessageAsync(embed: e.Build());
-            
+
 
             return;
         }
@@ -65,9 +66,9 @@ internal class Help : DBCommand
                 normalCommands += cmd.Command + " ";
 
 
-        if(adminCommands.Length > 0)
+        if (adminCommands.Length > 0)
             embedBuilder.AddField("Admin Commands", adminCommands);
-        if(normalCommands.Length > 0)
+        if (normalCommands.Length > 0)
             embedBuilder.AddField("Normal Commands", normalCommands);
         args.context.Channel.SendMessageAsync(embed: embedBuilder.Build());
     }
@@ -79,7 +80,7 @@ internal class Help : DBCommand
                                                    (p.Aliases is not null && p.Aliases.Contains(command)));
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Config.Variables.GetValue("prefix") + cmd.Usage);
+        embedBuilder.AddField("Usage", Config.Data["prefix"] + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

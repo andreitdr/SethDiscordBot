@@ -254,7 +254,7 @@ public class ConsoleCommandsHandler
 
                 var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
-                await Config.Plugins.SetVersionAsync(name, ver);
+                Config.Plugins[name] = ver.ToShortString();
 
                 isDownloading = false;
 
@@ -267,15 +267,15 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length != 2)
                     return;
-                if (!Config.Variables.Exists(args[1]))
+                if (!Config.Data.ContainsKey(args[1]))
                     return;
 
-                var data = Config.Variables.GetValue(args[1]);
+                var data = Config.Data[args[1]];
                 Logger.WriteLine($"{args[1]} => {data}");
             }
         );
 
-        AddCommand("add", "add variable to the system variables", "add [key] [value] [isReadOnly=true/false]", args =>
+        AddCommand("add", "add variable to the system variables", "add [key] [value]", args =>
             {
                 if (args.Length < 4)
                     return;
@@ -285,7 +285,7 @@ public class ConsoleCommandsHandler
 
                 try
                 {
-                    Config.Variables.Add(key, value, isReadOnly);
+                    Config.Data[key] = value;
                     Logger.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
                 }
                 catch (Exception ex)
@@ -299,7 +299,7 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length < 2)
                     return;
-                Config.Variables.RemoveKey(args[1]);
+                Config.Data.Remove(args[1]);
             }
         );
 
@@ -308,7 +308,8 @@ public class ConsoleCommandsHandler
                 if (client is null)
                     return;
 
-                Settings.sqlDatabase.Stop();
+                await Functions.SaveToJsonFile(Functions.dataFolder + "config.json", Config.Data);
+                await Functions.SaveToJsonFile(Functions.dataFolder + "Plugins.json", Config.Plugins);
                 await client.StopAsync();
                 await client.DisposeAsync();
                 await Task.Delay(1000);

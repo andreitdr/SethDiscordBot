@@ -60,17 +60,17 @@ public class Boot
     /// <returns>Task</returns>
     public async Task Awake(DiscordSocketConfig? config = null)
     {
-        if(config is null)
-        config = new DiscordSocketConfig
-        {
+        if (config is null)
+            config = new DiscordSocketConfig
+            {
 
-            AlwaysDownloadUsers = true,
+                AlwaysDownloadUsers = true,
 
-            //Disable system clock checkup (for responses at slash commands)
-            UseInteractionSnowflakeDate = false,
+                //Disable system clock checkup (for responses at slash commands)
+                UseInteractionSnowflakeDate = false,
 
-            GatewayIntents = GatewayIntents.All
-        };
+                GatewayIntents = GatewayIntents.All
+            };
 
         client = new DiscordSocketClient(config);
         service = new CommandService();
@@ -105,7 +105,7 @@ public class Boot
     {
         if (arg.Message.Contains("401"))
         {
-            Config.Variables.RemoveKey("token");
+            Config.Data.Remove("token");
             Logger.LogError("The token is invalid. Please restart the bot and enter a valid token.");
             await Task.Delay(4000);
             Environment.Exit(0);

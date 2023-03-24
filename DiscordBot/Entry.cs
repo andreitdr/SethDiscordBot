@@ -1,4 +1,5 @@
 ﻿using PluginManager.Others;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,6 @@ namespace DiscordBot
 
     public class Entry
     {
-        internal static StartupArguments startupArguments;
         public static void Main(string[] args)
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
