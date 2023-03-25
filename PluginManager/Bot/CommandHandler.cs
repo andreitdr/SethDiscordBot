@@ -108,15 +108,11 @@ internal class CommandHandler
                 string mentionPrefix = "<@" + client.CurrentUser.Id + ">";
 
                 plugin = PluginLoader.Commands!
-                   .Where
-                   (
-                       plug => plug.Command == message.Content.Substring(mentionPrefix.Length+1).Split(' ')[0] ||
-                               (
-                                   plug.Aliases is not null &&
-                                       plug.Aliases.Contains(message.CleanContent.Substring(mentionPrefix.Length+1).Split(' ')[0])
-                               )
-                   )
-                   .FirstOrDefault();
+                    .FirstOrDefault(plug => plug.Command == message.Content.Substring(mentionPrefix.Length+1).Split(' ')[0] ||
+                                            (
+                                                plug.Aliases is not null &&
+                                                plug.Aliases.Contains(message.CleanContent.Substring(mentionPrefix.Length+1).Split(' ')[0])
+                                            ));
 
                 cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
             }
@@ -124,16 +120,14 @@ internal class CommandHandler
             else
             {
                 plugin = PluginLoader.Commands!
-                             .Where(
-                                  p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
-                                       (p.Aliases is not null &&
-                                        p.Aliases.Contains(
-                                            message.Content.Split(' ')[0].Substring(botPrefix.Length))))
-                             .FirstOrDefault();
+                    .FirstOrDefault(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
+                                         (p.Aliases is not null &&
+                                          p.Aliases.Contains(
+                                              message.Content.Split(' ')[0].Substring(botPrefix.Length))));
                 cleanMessage = message.Content.Substring(botPrefix.Length);
             }
             if (plugin is null) 
-                throw new Exception($"Failed to run command ! " + message.CleanContent);
+                throw new Exception($"Failed to run command ! " + message.CleanContent + " (user: " + context.Message.Author.Username + " - " + context.Message.Author.Id + ")");
 
             if (plugin.requireAdmin && !context.Message.Author.isAdmin())
                 return;

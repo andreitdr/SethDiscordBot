@@ -27,10 +27,11 @@ public static class Config
 
         Data = new Json<string, string>("./Data/Resources/config.json");
         Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
-
-        IsLoaded = true;
+        
         Logger.Initialize(isConsole);
         ArchiveManager.Initialize();
+
+        IsLoaded = true;
 
         if (isConsole)
             Logger.LogEvent += (message) => { Console.Write(message); };
@@ -103,12 +104,19 @@ public static class Config
                 return dictionary;
             }
 
-            var d = await Functions.ConvertFromJson<Dictionary<TKey, TValue>>(file);
+            try
+            {
+                var d = await Functions.ConvertFromJson<Dictionary<TKey, TValue>>(file);
+                if (d is null)
+                    throw new Exception("Failed to read config file");
+                
+                return d;
+            }catch (Exception ex)
+            {
+                File.Delete(file);
+                return new Dictionary<TKey, TValue>();
+            }
 
-            if (d is null)
-                throw new Exception("Failed to read config file");
-
-            return d;
         }
 
         public bool Remove(TKey key)
