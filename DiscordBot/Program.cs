@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +13,7 @@ using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-
-using Terminal.Gui;
+using PluginManager.WindowManagement;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
@@ -41,7 +41,7 @@ public class Program
             Config.Data["prefix"]?.Length != 1 ||
             (args.Length == 1 && args[0] == "/reset"))
         {
-            GenerateStartUI("First time setup. Please fill the following with your discord bot data.\nThis are saved ONLY on YOUR computer.");
+            GenerateStartUI();
         }
 
         HandleInput(args).Wait();
@@ -336,145 +336,56 @@ public class Program
         Console.Clear();
     }
 
-    public static void GenerateStartUI(string titleMessage)
+    public static void GenerateStartUI()
     {
-        Application.Init();
-        var top = Application.Top;
-        var win = new Window("Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version)
-        {
-            X = 0,
-            Y = 1,
-            Width = Dim.Fill(),
-            Height = Dim.Fill()
-        };
+        InputBox box = new InputBox();
+        box.Title = "Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version;
+        box.Message = "Let's setup the bot. Please go through this setup so that you can run the bot.\n\n";
+        box.AddLabel("Note:All the information collected here will only be stored locally (on your machine) at the following path: ", TextType.WARNING);
+        box.AddLabel("<executable path>/Data/Resources/Config.json", TextType.SUCCESS);
 
-        top.Add(win);
-
-        var labelInfo = new Label(titleMessage)
-        {
-            X = Pos.Center(),
-            Y = 2
-        };
-
-
-        var labelToken = new Label("Please insert your token here: ")
-        {
-            X = 5,
-            Y = 5
-        };
-
-        var textFiledToken = new TextField(Config.Data["token"] ?? "")
-        {
-            X = Pos.Left(labelToken) + labelToken.Text.Length + 2,
-            Y = labelToken.Y,
-            Width = 70
-        };
-
-        var labelPrefix = new Label("Please insert your prefix here: ")
-        {
-            X = 5,
-            Y = 8
-        };
-        var textFiledPrefix = new TextField(Config.Data["prefix"] ?? "")
-        {
-            X = Pos.Left(labelPrefix) + labelPrefix.Text.Length + 2,
-            Y = labelPrefix.Y,
-            Width = 1
-        };
-
-        var labelServerid = new Label("Please insert your server id here (optional): ")
-        {
-            X = 5,
-            Y = 11
-        };
-        var textFiledServerID = new TextField(Config.Data["ServerID"] ?? "")
-        {
-            X = Pos.Left(labelServerid) + labelServerid.Text.Length + 2,
-            Y = labelServerid.Y,
-            Width = 18
-        };
-
-        var button = new Button("Submit")
-        {
-            X = Pos.Center() - 10,
-            Y = 16
-        };
-
-        var button2 = new Button("License")
-        {
-            X = Pos.Center() + 10,
-            Y = 16
-        };
-
-        var button3 = new Button("ⓘ")
-        {
-            X = Pos.Left(textFiledServerID) + 20,
-            Y = textFiledServerID.Y
-        };
-
-        Console.CancelKeyPress += (sender, e) => { top.Running = false; };
-
-        button.Clicked += () =>
-        {
-            var passMessage = "";
-            if (textFiledToken.Text.Length != 70 && textFiledToken.Text.Length != 59)
-                passMessage += "Invalid token, ";
-            if (textFiledPrefix.Text.ContainsAny("0123456789/\\ ") || textFiledPrefix.Text.Length != 1)
-                passMessage += "Invalid prefix, ";
-            if (textFiledServerID.Text.Length != 18 && textFiledServerID.Text.Length > 0)
-                passMessage += "Invalid serverID";
-
-            if (passMessage != "")
+        box.AddOption("Bot Token", (token) => {
+            if (token.Length != 70 && token.Length != 59)
             {
-                MessageBox.ErrorQuery("Discord Bot Settings",
-                                      "Failed to pass check. Invalid information given:\n" + passMessage, "Retry");
-                return;
+                Console.WriteLine("The token is invalid !");
+                return false;
             }
 
+            return true;
+        });
 
-            Config.Data.Add("ServerID", (string)textFiledServerID.Text);
-            Config.Data.Add("token", (string)textFiledToken.Text);
-            Config.Data.Add("prefix", (string)textFiledPrefix.Text);
-
-            MessageBox.Query("Discord Bot Settings", "Successfully saved config !\nJust start the bot :D",
-                             "Start :D");
-            top.Running = false;
-        };
-
-        button2.Clicked += async () =>
-        {
-            var license =
-                await ServerCom.ReadTextFromURL(
-                    "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/LICENSE.txt");
-            var ProductLicense =
-                "Seth Discord Bot\n\nDeveloped by Wizzy#9181\nThis application can be used and modified by anyone. Plugin development for this application is also free and supported";
-            var r = MessageBox.Query("Discord Bot Settings", ProductLicense, "Close", "Read about libraries used");
-            if (r == 1)
+        box.AddOption("Bot prefix (should be one character long)", (prefix) => {
+            if (int.TryParse(prefix, out int value))
             {
-                var i = 0;
-                while (i < license.Count)
-                {
-                    var print_message = license[i++] + "\n";
-                    for (; i < license.Count && !license[i].StartsWith("-----------"); i++)
-                        print_message += license[i] + "\n";
-                    if (print_message.Contains("https://"))
-                        print_message += "\n\nCTRL + Click on a link to open it";
-                    if (MessageBox.Query("Licenses", print_message, "Next", "Quit") == 1) break;
-                }
+                Console.WriteLine("The prefix can not be a number");
+                return false;
             }
-        };
 
-        button3.Clicked += () =>
-        {
-            MessageBox.Query("Discord Bot Settings",
-                             "Server ID can be found in Server settings => Widget => Server ID",
-                             "Close");
-        };
+            if (prefix.Length != 1)
+            {
+                Console.WriteLine("The bot does not support longer prefixes");
+                return false;
+            }
 
-        win.Add(labelInfo, labelPrefix, labelServerid, labelToken);
-        win.Add(textFiledToken, textFiledPrefix, textFiledServerID, button3);
-        win.Add(button, button2);
-        Application.Run();
-        Application.Shutdown();
+            return true;
+
+        });
+
+
+        box.AddOption("Server ID (Optional => Press ENTER to leave empty)\nIf you let the Server ID field option empty, some plugins may not work", (servId) => {
+            if (servId.Length != 18 && servId.Length > 0)
+            {
+                Console.WriteLine("The Server ID is invalid");
+                return false;
+            }
+
+            return true;
+        });
+
+        List<string> result = box.Show();
+
+        Config.Data.Add("ServerID", result[2]);
+        Config.Data.Add("token", result[0]);
+        Config.Data.Add("prefix", result[1]);
     }
 }

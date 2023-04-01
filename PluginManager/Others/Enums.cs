@@ -60,3 +60,12 @@ public enum ProgressBarType
     NORMAL,
     NO_END
 }
+
+public enum TextType
+{
+    NORMAL,
+    ERROR,
+    WARNING,
+    SUCCESS
+}
+

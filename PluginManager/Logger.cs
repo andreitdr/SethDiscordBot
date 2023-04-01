@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
+using PluginManager.Others;
 
 using Discord;
 
@@ -117,6 +118,34 @@ namespace PluginManager
             Console.ForegroundColor = color;
             LogEvent?.Invoke(message);
             Console.ForegroundColor = oldColor;
+        }
+        public static void SetConsoleColor(TextType type)
+        {
+            if(!isConsole) return;
+            switch (type)
+            {
+                case TextType.NORMAL:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+                case TextType.ERROR:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+                case TextType.WARNING:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    break;
+                case TextType.SUCCESS:
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    break;
+                default:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+            }
+        }
+
+        public static void ResetConsoleColor()
+        {
+            if (!isConsole) return;
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
