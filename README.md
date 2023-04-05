@@ -19,12 +19,12 @@ Plugin Types:
 
 ### How to create a plugin
 
-First of all, Create a new project (class library) in Visual Studio.
-Then import the PluginManager.dll as project to your project.
+First of all, create a new project (class library) in Visual Studio.
+Then import the PluginManager as reference to your project.
 
 ## 1. Commands
 
-Commands are loaded when all plugins are loaded into memory. When an user executes the command, only then the Execute function is called.
+Commands are loaded when all plugins are loaded into memory. The Execute method is called whenever any user (that respects the `requireAdmin` propery) calls the command using the bot prefix and the `Command`.
 Commands are plugins that allow users to interact with them. 
 Here is an example:
 ```cs
@@ -90,7 +90,7 @@ internal class LevelCommand : DBCommand
   - context - the command context
 
 From here on, start coding. When your plugin is done, build it as any DLL project then add it to the following path
-`{bot_executable}/Data/Plugins/<optional subfolder>/[your dll name].dll`
+`{bot_executable}/Data/Plugins/<optional subfolder>/[plugin name].dll`
 Then, reload bot and execute command `lp` in bot's console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
 there is something wrong in your command's code.
 
@@ -112,8 +112,6 @@ public class OnUserJoin : DBEvent
 
     public async void Start(Discord.WebSocket.DiscordSocketClient client)
     {
-        Console.WriteLine($"Hello World from {name}");
-        
         client.UserJoined += async (user) => {
             await (await user.CreateDMChannelAsync()).SendMessageAsync("Welcome to server !");
         };
@@ -185,3 +183,10 @@ namespace SlashCommands
   - context - the command context
 - ExecuteDM() - this function will be called if the command is invoked in a DM channel  (optional)
   - context - the command context
+
+
+## Note: 
+You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
+
+
+> Updated: 5.04.2023

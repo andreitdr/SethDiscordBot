@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +22,6 @@ public class Program
 {
     private static bool loadPluginsOnStartup;
     private static ConsoleCommandsHandler consoleCommandsHandler;
-    //private static bool isUI_ON;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -222,7 +220,14 @@ public class Program
                     var currentVersion = Config.Data["Version"];
                     if (!newVersion.Equals(currentVersion))
                     {
-
+                        var nVer = new VersionString(newVersion.Substring(2));
+                        var cVer = new VersionString((Config.Data["Version"]).Substring(2));
+                        if (cVer > nVer)
+                        {
+                            Config.Data["Version"] = "1." + cVer.ToShortString() + " (Beta)";
+                            break;
+                        }
+                        
                         if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
                             Console.Clear();
@@ -235,13 +240,6 @@ public class Program
 
                             await Task.Delay(3000);
 
-                            break;
-                        }
-                        var nVer = new VersionString(newVersion.Substring(2));
-                        var cVer = new VersionString((Config.Data["Version"]).Substring(2));
-                        if (cVer > nVer)
-                        {
-                            Config.Data["version"] = "1." + cVer.ToShortString() + " (Beta)";
                             break;
                         }
 
