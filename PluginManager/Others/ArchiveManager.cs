@@ -56,8 +56,9 @@ namespace PluginManager.Others
 
                 return textValue;
             }
-            catch
+            catch (Exception ex)
             {
+                ex.WriteErrFile(); // Write the error to a file
                 await Task.Delay(100);
                 return await ReadFromPakAsync(FileName, archFile);
             }
