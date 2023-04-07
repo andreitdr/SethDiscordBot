@@ -10,6 +10,10 @@ namespace PluginManager.Database
         private string ConnectionString;
         private SQLiteConnection Connection;
 
+        /// <summary>
+        /// Initialize a SQL connection by specifing its private path
+        /// </summary>
+        /// <param name="fileName">The path to the database (it is starting from ./Data/Resources/)</param>
         public SqlDatabase(string fileName)
         {
             if (!fileName.StartsWith("./Data/Resources/"))
@@ -21,13 +25,23 @@ namespace PluginManager.Database
         }
 
 
+        /// <summary>
+        /// Open the SQL Connection. To close use the Stop() method
+        /// </summary>
+        /// <returns></returns>
         public async Task Open()
         {
             await Connection.OpenAsync();
-
-            //Console.WriteLine("Opened database successfully");
         }
 
+        /// <summary>
+        /// <para>
+        ///     Insert into a specified table some values
+        /// </para>
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="values">The values to be inserted (in the correct order and number)</param>
+        /// <returns></returns>
         public async Task InsertAsync(string tableName, params string[] values)
         {
             string query = $"INSERT INTO {tableName} VALUES (";
@@ -44,6 +58,14 @@ namespace PluginManager.Database
             await command.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// <para>
+        ///     Insert into a specified table some values
+        /// </para>
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="values">The values to be inserted (in the correct order and number)</param>
+        /// <returns></returns>
         public void Insert(string tableName, params string[] values)
         {
             string query = $"INSERT INTO {tableName} VALUES (";
@@ -60,6 +82,13 @@ namespace PluginManager.Database
             command.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Remove every row in a table that has a certain propery
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="KeyName">The column name that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <returns></returns>
         public async Task RemoveKeyAsync(string tableName, string KeyName, string KeyValue)
         {
             string query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
@@ -68,6 +97,13 @@ namespace PluginManager.Database
             await command.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Remove every row in a table that has a certain propery
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="KeyName">The column name that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <returns></returns>
         public void RemoveKey(string tableName, string KeyName, string KeyValue)
         {
             string query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
@@ -76,7 +112,13 @@ namespace PluginManager.Database
             command.ExecuteNonQuery();
         }
 
-
+        /// <summary>
+        /// Check if the key exists in the table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <returns></returns>
         public async Task<bool> KeyExistsAsync(string tableName, string keyName, string KeyValue)
         {
             string query = $"SELECT * FROM {tableName} where {keyName} = '{KeyValue}'";
@@ -87,6 +129,13 @@ namespace PluginManager.Database
             return false;
         }
 
+        /// <summary>
+        /// Check if the key exists in the table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <returns></returns>
         public bool KeyExists(string tableName, string keyName, string KeyValue)
         {
             string query = $"SELECT * FROM {tableName} where {keyName} = '{KeyValue}'";
@@ -97,6 +146,14 @@ namespace PluginManager.Database
             return false;
         }
 
+        /// <summary>
+        /// Set value of a column in a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the column specified</param>
+        /// <param name="ResultColumnName">The column that has to be modified</param>
+        /// <param name="ResultColumnValue">The new value that will replace the old value from the column specified</param>
 
         public async Task SetValueAsync(string tableName, string keyName, string KeyValue, string ResultColumnName,
                                         string ResultColumnValue)
@@ -108,6 +165,15 @@ namespace PluginManager.Database
                 $"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'");
         }
 
+        /// <summary>
+        /// Set value of a column in a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the column specified</param>
+        /// <param name="ResultColumnName">The column that has to be modified</param>
+        /// <param name="ResultColumnValue">The new value that will replace the old value from the column specified</param>
+
         public void SetValue(string tableName, string keyName, string KeyValue, string ResultColumnName,
                              string ResultColumnValue)
         {
@@ -117,7 +183,14 @@ namespace PluginManager.Database
             Execute($"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'");
         }
 
-
+        /// <summary>
+        /// Get value from a column in a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <param name="ResultColumnName">The column that has the result</param>
+        /// <returns>A string that has the requested value (can be null if nothing found)</returns>
         public async Task<string?> GetValueAsync(string tableName, string keyName, string KeyValue,
                                                 string ResultColumnName)
         {
@@ -127,6 +200,15 @@ namespace PluginManager.Database
             return await ReadDataAsync($"SELECT {ResultColumnName} FROM {tableName} WHERE {keyName}='{KeyValue}'");
         }
 
+        /// <summary>
+        /// Get value from a column in a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="keyName">The column that the search is made by</param>
+        /// <param name="KeyValue">The value that is searched in the specified column</param>
+        /// <param name="ResultColumnName">The column that has the result</param>
+        /// <returns>A string that has the requested value (can be null if nothing found)</returns>
+
         public string? GetValue(string tableName, string keyName, string KeyValue, string ResultColumnName)
         {
             if (!TableExists(tableName))
@@ -134,13 +216,24 @@ namespace PluginManager.Database
 
             return ReadData($"SELECT {ResultColumnName} FROM {tableName} WHERE {keyName}='{KeyValue}'");
         }
-
+        
+        /// <summary>
+        /// Stop the connection to the SQL Database
+        /// </summary>
+        /// <returns></returns>
         public async void Stop()
         {
             await Connection.CloseAsync();
         }
 
-        public async Task AddColumnsToTableAsync(string tableName, string[] columns)
+        /// <summary>
+        /// Change the structure of a table by adding new columns
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columns">The columns to be added</param>
+        /// <param name="TYPE">The type of the columns (TEXT, INTEGER,  FLOAT, etc)</param>
+        /// <returns></returns>
+        public async Task AddColumnsToTableAsync(string tableName, string[] columns, string TYPE = "TEXT")
         {
             var command = Connection.CreateCommand();
             command.CommandText = $"SELECT * FROM {tableName}";
@@ -153,13 +246,21 @@ namespace PluginManager.Database
             {
                 if (!tableColumns.Contains(column))
                 {
-                    command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {column} TEXT";
+                    command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {column} {TYPE}";
                     await command.ExecuteNonQueryAsync();
                 }
             }
         }
 
-        public void AddColumnsToTable(string tableName, string[] columns)
+        /// <summary>
+        /// Change the structure of a table by adding new columns
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columns">The columns to be added</param>
+        /// <param name="TYPE">The type of the columns (TEXT, INTEGER,  FLOAT, etc)</param>
+        /// <returns></returns>
+
+        public void AddColumnsToTable(string tableName, string[] columns, string TYPE = "TEXT")
         {
             var command = Connection.CreateCommand();
             command.CommandText = $"SELECT * FROM {tableName}";
@@ -172,12 +273,17 @@ namespace PluginManager.Database
             {
                 if (!tableColumns.Contains(column))
                 {
-                    command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {column} TEXT";
+                    command.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {column} {TYPE}";
                     command.ExecuteNonQuery();
                 }
             }
         }
 
+        /// <summary>
+        /// Check if a table exists
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <returns>True if the table exists, false if not</returns>
         public async Task<bool> TableExistsAsync(string tableName)
         {
             var cmd = Connection.CreateCommand();
@@ -189,6 +295,11 @@ namespace PluginManager.Database
             return true;
         }
 
+        /// <summary>
+        /// Check if a table exists
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <returns>True if the table exists, false if not</returns>
         public bool TableExists(string tableName)
         {
             var cmd = Connection.CreateCommand();
@@ -200,12 +311,26 @@ namespace PluginManager.Database
             return true;
         }
 
+        /// <summary>
+        /// Create a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columns">The columns of the table</param>
+        /// <returns></returns>
+
         public async Task CreateTableAsync(string tableName, params string[] columns)
         {
             var cmd = Connection.CreateCommand();
             cmd.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
             await cmd.ExecuteNonQueryAsync();
         }
+
+        /// <summary>
+        /// Create a table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columns">The columns of the table</param>
+        /// <returns></returns>
 
         public void CreateTable(string tableName, params string[] columns)
         {
@@ -214,6 +339,11 @@ namespace PluginManager.Database
             cmd.ExecuteNonQuery();
         }
 
+        /// <summary>
+        /// Execute a custom query
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The number of rows that the query modified</returns>
         public async Task<int> ExecuteAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
@@ -223,6 +353,11 @@ namespace PluginManager.Database
             return answer;
         }
 
+        /// <summary>
+        /// Execute a custom query
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The number of rows that the query modified</returns>
         public int Execute(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
@@ -233,6 +368,11 @@ namespace PluginManager.Database
             return r;
         }
 
+        /// <summary>
+        /// Read data from the result table and return the first row
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The result is a string that has all values separated by space character</returns>
         public async Task<string?> ReadDataAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
@@ -250,6 +390,11 @@ namespace PluginManager.Database
             return null;
         }
 
+        /// <summary>
+        /// Read data from the result table and return the first row
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The result is a string that has all values separated by space character</returns>
         public string? ReadData(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
@@ -267,6 +412,11 @@ namespace PluginManager.Database
             return null;
         }
 
+        /// <summary>
+        ///    Read data from the result table and return the first row
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The first row as separated items</returns>
         public async Task<object[]?> ReadDataArrayAsync(string query)
         {
             if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
@@ -283,6 +433,35 @@ namespace PluginManager.Database
 
             return null;
         }
+
+
+        /// <summary>
+        ///    Read data from the result table and return the first row
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>The first row as separated items</returns>
+        public object[]? ReadDataArray(string query)
+        {
+            if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
+                Connection.Open();
+            var command = new SQLiteCommand(query, Connection);
+            var reader = command.ExecuteReader();
+
+            object[] values = new object[reader.FieldCount];
+            if (reader.Read())
+            {
+                reader.GetValues(values);
+                return values;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Read all rows from the result table and return them as a list of string arrays. The string arrays contain the values of each row
+        /// </summary>
+        /// <param name="query">The query</param>
+        /// <returns>A list of string arrays representing the values that the query returns</returns>
 
         public async Task<List<string[]>?> ReadAllRowsAsync(string query)
         {
@@ -305,23 +484,6 @@ namespace PluginManager.Database
             if (rows.Count == 0) return null;
 
             return rows;
-        }
-
-        public object[]? ReadDataArray(string query)
-        {
-            if (!Connection.State.HasFlag(System.Data.ConnectionState.Open))
-                Connection.Open();
-            var command = new SQLiteCommand(query, Connection);
-            var reader = command.ExecuteReader();
-
-            object[] values = new object[reader.FieldCount];
-            if (reader.Read())
-            {
-                reader.GetValues(values);
-                return values;
-            }
-
-            return null;
         }
     }
 }
