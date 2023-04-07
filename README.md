@@ -152,7 +152,7 @@ namespace SlashCommands
         public List<SlashCommandOptionBuilder> Options => new List<SlashCommandOptionBuilder>()
         {
             new SlashCommandOptionBuilder() {Name = "min-value", Description = "Minimum value", IsRequired=true, Type = ApplicationCommandOptionType.Integer, MinValue = 0, MaxValue = int.MaxValue-1},
-            new SlashCommandOptionBuilder() {Name="max-value", Description = "Maximum value", IsRequired=true, Type=ApplicationCommandOptionType.Integer,MinValue = 0, MaxValue = int.MaxValue-1}
+            new SlashCommandOptionBuilder() {Name = "max-value", Description = "Maximum value", IsRequired=true, Type=ApplicationCommandOptionType.Integer,MinValue = 0, MaxValue = int.MaxValue-1}
         };
 
         public async void ExecuteServer(SocketSlashCommand command)
@@ -190,4 +190,4 @@ namespace SlashCommands
 You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
 
 
-> Updated: 5.04.2023
+> Updated: 7.04.2023
