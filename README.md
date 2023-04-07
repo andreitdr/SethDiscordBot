@@ -49,6 +49,7 @@ internal class LevelCommand : DBCommand
 
     public async void ExecuteServer(CmdArgs context)
     {
+        //Variables.database is a sql connection that is defined in an auxiliary file in the same napespace as this class
         object[] user = await Variables.database.ReadDataArrayAsync($"SELECT * FROM Levels WHERE UserID='{context.Message.Author.Id}'");
         if (user is null)
         {
