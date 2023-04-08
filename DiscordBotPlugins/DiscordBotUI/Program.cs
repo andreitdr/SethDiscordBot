@@ -34,4 +34,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.Lifetime.ApplicationStopping.Register(async () =>
+{
+    await Task.Run(() => {
+        PluginManager.Logger.Log("Stopping bot...");
+        PluginManager.Config.Data.Save();
+        PluginManager.Config.Plugins.Save();
+    });
+});
 app.Run();
