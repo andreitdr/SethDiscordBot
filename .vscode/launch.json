@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0/DiscordBotUI.exe",
+            "program": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0/DiscordBotUI.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0",
+            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/",
             "stopAtEntry": false,
             "console": "externalTerminal",
             "serverReadyAction": {
@@ -31,7 +31,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/DiscordBot/bin/Debug/net6.0/DiscordBot.exe",
+            "program": "${workspaceFolder}/DiscordBot/bin/Debug/net6.0/DiscordBot.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DiscordBot/bin/Debug/net6.0",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
