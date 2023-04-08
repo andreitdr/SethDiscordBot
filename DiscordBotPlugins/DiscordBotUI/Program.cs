@@ -1,4 +1,7 @@
+using System.Diagnostics;
+
 await PluginManager.Config.Initialize(true);
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
+    Process.Start(new ProcessStartInfo
+    {
+        FileName = "http://localhost:5000",
+        UseShellExecute = true
+    });
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
