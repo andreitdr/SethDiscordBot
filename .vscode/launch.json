@@ -5,10 +5,10 @@
             "name": ".NET Core Launch (web)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "buildUI",
             "program": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0/DiscordBotUI.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/",
+            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0",
             "stopAtEntry": false,
             "console": "externalTerminal",
             "serverReadyAction": {

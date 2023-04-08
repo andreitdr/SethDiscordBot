@@ -1,0 +1,72 @@
+@model DiscordBotUI.Models.Bot.PluginsPageModel
+
+<html>
+<link rel="stylesheet" href="~/css/bot/plugins.css" asp-append-version="true" />
+<table class="text-white">
+    <thead>
+        <tr>
+            <th>Plugin Name</th>
+            <th>Plugin Description</th>
+            <th>Plugin Type</th>
+            <th>Plugin Version</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Plugins)
+        {
+            @if (item.Contains("+") || item.Contains("-") || item[0].Length < 2 || item[0] == "Name") continue;
+            <tr>
+                <td>@item[0]</td>
+                <td>@item[1]</td>
+                <td>@item[2]</td>
+                <td>@item[3]</td>
+                @if (Model.InstalledCommands.Contains(item[0]) || Model.InstalledEvents.Contains(item[0]) ||
+               Model.InstalledSlashCommands.Contains(item[0]))
+                {
+                    <td>Installed</td>
+                }
+                else
+                {
+                    <td><input type="button" value="Install" onclick="install(this)" name="@item[0]" /></td>
+                }
+                <td>
+                    <div class="demo-container" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-bar-value"></div>
+                        </div>
+                    </div>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+</html>
+
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+<script type="text/javascript">
+    function install(button) {
+        var pluginName = button.name;
+        var progress = button.parentElement.nextElementSibling.firstElementChild;
+        progress.style.display = "";
+        $.ajax({
+            url: "/Bot/InstallPlugin",
+            type: "GET",
+            data: { pluginName: pluginName },
+            success: function (data) {
+                if (data == 0)
+                    button.value = "Installed";
+                button.disabled = true;
+                progress.style.display = "none";
+            },
+            error: function (xhr, status, error) {
+                alert("Error: " + error);
+            }
+        });
+
+    }
+</script>

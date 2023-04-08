@@ -29,7 +29,6 @@ public class Program
     [STAThread]
     public static void Startup(string[] args)
     {
-
         PreLoadComponents(args).Wait();
 
         if (!Config.Data.ContainsKey("ServerID") || !Config.Data.ContainsKey("token") ||

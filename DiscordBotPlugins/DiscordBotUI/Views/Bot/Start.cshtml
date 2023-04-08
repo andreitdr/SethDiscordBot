@@ -1,10 +1,12 @@
 ﻿@model DiscordBotUI.Models.Bot.BotModel
+<link rel="stylesheet" href="~/css/bot/start.css" asp-append-version="true" />
 
-<label>Bot Name: @Model.BotName</label>
+
+<label class="text-white">Bot Name: @Model.BotName</label>
 <br />
-<label>Connection Status: @Model.StartStatus</label>
+<label class="text-white">Connection Status: @Model.StartStatus</label>
 <br />
-<label>Number of plugins loaded: @Model.PluginsLoaded</label>
+<label class="text-white">Number of plugins loaded: @Model.PluginsLoaded</label>
 <style>
     * {
         box-sizing: border-box;
@@ -45,7 +47,7 @@
     }
 </style>
 
-<div class="row">
+<div class="row text-white">
     <div class="column">
         <h2>Commands</h2>
         <table>
@@ -57,7 +59,7 @@
             </tr>
             @foreach(var cmd in Model.Commands)
             {
-                <tr>
+                <tr class="text-white bg-gradient" style="border: 0px; background-color: transparent;">
                     <td>@cmd.Command</td>
                     <td>@cmd.Description</td>
                     <td>@cmd.Usage</td>
@@ -81,7 +83,7 @@
             </tr>
             @foreach(var eve in Model.Events)
             {
-                <tr>
+                <tr class="text-white bg-gradient" style="border: 0px; background-color: transparent;">
                     <td>@eve.Name</td>
                     <td>@eve.Description</td>
                 </tr>
@@ -99,7 +101,7 @@
             </tr>
             @foreach(var scmd in Model.SlashCommands)
             {
-                <tr>
+                <tr class="text-white bg-gradient" style="border: 0px; background-color: transparent;">
                     <td>@scmd.Name</td>
                     <td>@scmd.Description</td>
                     @if (scmd.canUseDM)

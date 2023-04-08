@@ -66,7 +66,16 @@ public class PluginLoader
     /// </summary>
     public static List<DBSlashCommand>? SlashCommands { get; set; }
 
-    public static int PluginsLoaded { get => Commands!.Count + Events!.Count + SlashCommands!.Count;}
+    public static int PluginsLoaded { get {
+        var count = 0;
+        if (Commands is not null)
+            count += Commands.Count;
+        if (Events is not null)
+            count += Events.Count;
+        if (SlashCommands is not null)
+            count += SlashCommands.Count;
+        return count;
+    }}
 
     /// <summary>
     ///     The main mathod that is called to load all events

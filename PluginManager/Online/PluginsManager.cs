@@ -29,7 +29,7 @@ public class PluginsManager
     ///     The method to load all plugins
     /// </summary>
     /// <returns></returns>
-    public async Task ListAvailablePlugins()
+    public async Task<List<string[]>> ListAvailablePlugins()
     {
         try
         {
@@ -81,12 +81,16 @@ public class PluginsManager
             data.Add(new[] { "-", "-", "-", "-" });
 
             Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
+
+            return data;
         }
         catch (Exception exception)
         {
             Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
             Logger.WriteErrFile(exception.ToString());
         }
+
+        return null;
     }
 
     /// <summary>
