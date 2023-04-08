@@ -51,6 +51,11 @@ public static class Config
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
         }
 
+        public async void Save()
+        {
+            await Functions.SaveToJsonFile("./Data/Resources/config.json", _dictionary);
+        }
+
         public virtual void Add(TKey key, TValue value)
         {
             _dictionary.Add(key, value);

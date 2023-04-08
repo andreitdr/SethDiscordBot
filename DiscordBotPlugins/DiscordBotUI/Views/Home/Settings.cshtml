@@ -1,0 +1,26 @@
+@model DiscordBotUI.Models.Home.SettingsModel
+@{
+    ViewData["Title"] = "Settings page";
+}
+
+<link rel="stylesheet" href="~/css/home/settings.css" asp-append-version="true" />
+
+<div class="login-box">
+    <h2>Settings page</h2>
+    <form method="post" enctype="multipart/form-data">
+        <div class="user-box">
+            <input asp-for=BotToken type="text" name="BotToken" required="">
+            <label>Bot Token</label>
+        </div>
+        <div class="user-box">
+            <input asp-for=BotPrefix type="text" name="BotPrefix" required="">
+            <label>Bot Prefix</label>
+        </div>
+        <div class="user-box">
+            <input asp-for=ServerID type="text" name="ServerID">
+            <label>Server ID</label>
+        </div>
+
+        <input type="submit" class="btn btn-dark" value="Save Changes" />
+    </form>
+</div>
