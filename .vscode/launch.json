@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "buildUI",
-            "program": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0/DiscordBotUI.dll",
+            "program": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net6.0/DiscordBotUI.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net7.0",
+            "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net6.0",
             "stopAtEntry": false,
             "console": "externalTerminal",
             "serverReadyAction": {

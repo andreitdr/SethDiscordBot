@@ -35,6 +35,7 @@ namespace DiscordBotUI.Controllers
             while (!isReady)
                 await Task.Delay(100);
 
+
                 await Task.Delay(2000);
 
             BotModel model = new BotModel();
