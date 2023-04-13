@@ -2,6 +2,34 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/DiscordBotUI.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "options": {
+                "cwd": "${workspaceFolder}/DiscordBotPlugins/DiscordBotUI/bin/Debug/net6.0",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development"
+                },
+                "sourceFileMap": {
+                    "/Views": "${workspaceFolder}/Views"
+                },
+                "serverReadyAction": {
+                    "action": "openExternally",
+                    "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+                },
+                "console": "externalTerminal"
+            }
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
@@ -34,18 +62,6 @@
                 "${workspaceFolder}/DiscordBot/DiscordBot.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/DiscordBot/DiscordBot.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
