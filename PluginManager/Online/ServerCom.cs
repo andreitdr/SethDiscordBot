@@ -89,11 +89,6 @@ public static class ServerCom
         await DownloadFileAsync(URL, location, progress);
     }
 
-    public static VersionString? GetVersionOfPackage(string pakName)
-    {
-        return new VersionString(Config.Plugins[pakName]);
-    }
-
     public static async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
     {
         var url = "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions";

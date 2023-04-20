@@ -95,7 +95,7 @@ namespace PluginManager.Others
                             }
                             catch (Exception ex)
                             {
-                                Logger.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                                Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", TextType.ERROR);
                             }
 
                         currentZIPFile++;
@@ -127,7 +127,7 @@ namespace PluginManager.Others
                         }
                         catch (Exception ex)
                         {
-                            Logger.WriteLine($"Failed to extract {entry.Name}. Exception: {ex.Message}");
+                            Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", TextType.ERROR);
                         }
 
                         await Task.Delay(10);

@@ -48,11 +48,13 @@ public class ConsoleCommandsHandler
                 if (args.Length <= 1)
                 {
                     Logger.WriteLine("Available commands:");
-                    var items = new List<string[]>();
-                    items.Add(new[] { "-", "-", "-" });
-                    items.Add(new[] { "Command", "Description", "Usage" });
-                    items.Add(new[] { " ", " ", "Argument type: <optional> [required]" });
-                    items.Add(new[] { "-", "-", "-" });
+                    var items = new List<string[]>
+                    {
+                        new[] { "-", "-", "-" },
+                        new[] { "Command", "Description", "Usage" },
+                        new[] { " ", " ", "Argument type: <optional> [required]" },
+                        new[] { "-", "-", "-" }
+                    };
 
                     foreach (var command in commandList)
                     {

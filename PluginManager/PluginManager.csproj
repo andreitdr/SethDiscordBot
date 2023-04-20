@@ -15,4 +15,7 @@
     <PackageReference Include="Discord.Net" Version="3.8.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Others\Actions\" />
+  </ItemGroup>
 </Project>

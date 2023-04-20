@@ -146,9 +146,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-            ex.WriteErrFile();
-
-            Console.WriteLine(ex.ToString());
+            Config.Logger.Log(ex.Message, this, TextType.ERROR);
         }
     }
 }

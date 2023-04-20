@@ -106,30 +106,27 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.Data.Remove("token");
-            Logger.LogError("The token is invalid. Please restart the bot and enter a valid token.");
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this, Others.TextType.ERROR);
             await Task.Delay(4000);
             Environment.Exit(0);
         }
-
-        Logger.WriteErrFile(arg);
     }
 
     private async Task Client_LoggedOut()
     {
-        Logger.WriteLine("Successfully Logged Out");
+        Config.Logger.Log("Successfully Logged Out", this);
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
     }
 
     private Task Ready()
     {
-        Console.Title = "ONLINE";
         isReady = true;
         return Task.CompletedTask;
     }
 
     private Task LoggedIn()
     {
-        Console.Title = "CONNECTED";
+        Config.Logger.Log("Successfully Logged In", this);
         return Task.CompletedTask;
     }
 
@@ -139,15 +136,13 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Logger.WriteErrFile(message.Message);
-                Logger.WriteColored(message.Message + "\n", ConsoleColor.Red);
+                Config.Logger.Log(message.Message, this, Others.TextType.ERROR);
 
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Logger.WriteLogFile(message.Message);
-                Logger.WriteColored(message.Message + "\n", ConsoleColor.White);
+                Config.Logger.Log(message.Message, this);
 
 
                 break;

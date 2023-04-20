@@ -9,7 +9,6 @@ using Discord.WebSocket;
 
 using PluginManager.Interfaces;
 using PluginManager.Online;
-using PluginManager.Online.Updates;
 
 namespace PluginManager.Loaders;
 
@@ -82,34 +81,16 @@ public class PluginLoader
     /// </summary>
     public async void LoadPlugins()
     {
-        //Check for updates in commands
-        foreach (var file in Directory.GetFiles("./Data/Plugins/", $"*.{pluginExtension}",
-                                                SearchOption.AllDirectories))
-            await Task.Run(async () =>
-            {
-                var name = new FileInfo(file).Name.Split('.')[0];
-                var version = await ServerCom.GetVersionOfPackageFromWeb(name);
-                if (version is null)
-                    return;
-                if (Config.Plugins[name] is not null)
-                    Config.Plugins[name] = version.ToShortString();
-
-                if (await PluginUpdater.CheckForUpdates(name))
-                    await PluginUpdater.Download(name);
-            });
-
-
         //Load all plugins
 
         Commands = new List<DBCommand>();
         Events = new List<DBEvent>();
         SlashCommands = new List<DBSlashCommand>();
 
-        Logger.WriteLogFile("Starting plugin loader ... Client: " + _client.CurrentUser.Username);
-        Logger.WriteLine("Loading plugins");
+        Config.Logger.Log("Starting plugin loader ... Client: " + _client.CurrentUser.Username, this, Others.TextType.NORMAL);
 
         var loader = new Loader("./Data/Plugins", "dll");
-        loader.FileLoaded += (args) => Logger.WriteLogFile($"{args.PluginName} file Loaded");
+        loader.FileLoaded += (args) => Config.Logger.Log($"{args.PluginName} file Loaded", this , Others.TextType.SUCCESS);
         loader.PluginLoaded += Loader_PluginLoaded;
         var res = loader.Load();
         Events = res.Item1;
@@ -135,10 +116,7 @@ public class PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteLine(ex.ToString());
-                    Logger.WriteLine("Plugin: " + args.PluginName);
-                    Logger.WriteLine("Type: " + args.TypeName);
-                    Logger.WriteLine("IsLoaded: " + args.IsLoaded);
+                    Config.Logger.Log(ex.Message, this, Others.TextType.ERROR);
                 }
                 break;
             case "DBSlashCommand":
@@ -168,13 +146,13 @@ public class PluginLoader
                 var instance = (DBEvent)Activator.CreateInstance(type);
                 instance.Start(client);
                 PluginLoader.Events.Add(instance);
-                Logger.WriteLine($"[EVENT] Loaded external {type.FullName}!");
+                Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", Others.TextType.SUCCESS);
             }
             else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
             {
                 var instance = (DBCommand)Activator.CreateInstance(type);
                 PluginLoader.Commands.Add(instance);
-                Logger.WriteLine($"[CMD] Instance: {type.FullName} loaded !");
+                Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", Others.TextType.SUCCESS);
             }
             else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
             {
@@ -187,7 +165,7 @@ public class PluginLoader
 
                 await client.CreateGlobalApplicationCommandAsync(builder.Build());
                 PluginLoader.SlashCommands.Add(instance);
-                Logger.WriteLine($"[SLASH] Instance: {type.FullName} loaded !");
+                Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", Others.TextType.SUCCESS);
 
             }
     }

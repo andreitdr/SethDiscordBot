@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Discord.WebSocket;
-
-using PluginManager.Items;
-
 
 namespace PluginManager.Others;
 

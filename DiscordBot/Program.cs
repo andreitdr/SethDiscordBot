@@ -50,9 +50,7 @@ public class Program
     private static void NoGUI()
     {
 #if DEBUG
-        Logger.WriteLine();
-        Logger.WriteLine("Debug mode enabled");
-        Logger.WriteLine();
+        Console.WriteLine("Debug mode enabled");
 
 #endif
         if (loadPluginsOnStartup)
@@ -67,7 +65,7 @@ public class Program
 #endif
 
             ) && cmd.Length > 0)
-                Logger.WriteLine("Failed to run command " + cmd);
+                Console.WriteLine("Failed to run command " + cmd);
         }
     }
 
@@ -85,7 +83,7 @@ public class Program
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
         foreach (var message in startupMessageList)
-            Logger.WriteLine(message);
+            Config.Logger.Log(message);
 
         Logger.WriteLine(
             $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");

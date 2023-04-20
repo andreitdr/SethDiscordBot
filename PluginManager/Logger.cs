@@ -7,9 +7,9 @@ using Discord;
 
 namespace PluginManager
 {
+    [Obsolete("Use Logger from PluginManager.Others.Logger namespace instead\nThis class will be removed soon")]
     public static class Logger
     {
-
         public static bool isConsole { get; private set; }
         private static bool isInitialized;
 
@@ -18,7 +18,6 @@ namespace PluginManager
 
         public static void Initialize(bool console)
         {
-
             if (isInitialized)
                 throw new Exception("Logger is already initialized");
 

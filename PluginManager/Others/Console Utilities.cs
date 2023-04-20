@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using PluginManager;
+
 namespace PluginManager.Others;
 
 public static class Utilities
@@ -46,38 +48,38 @@ public static class Utilities
             foreach (var row in data)
             {
                 if (row[0][0] == tableLine)
-                    Logger.Write(tableCross);
+                    PluginManager.Logger.Write(tableCross);
                 else
-                    Logger.Write(tableWall);
+                    PluginManager.Logger.Write(tableWall);
                 for (var l = 0; l < row.Length; l++)
                 {
                     if (row[l][0] == tableLine)
                     {
                         for (var i = 0; i < len[l] + 4; ++i)
-                            Logger.Write(tableLine);
+                            PluginManager.Logger.Write(tableLine);
                     }
                     else if (row[l].Length == len[l])
                     {
-                        Logger.Write("  ");
-                        Logger.Write(row[l]);
-                        Logger.Write("  ");
+                        PluginManager.Logger.Write("  ");
+                        PluginManager.Logger.Write(row[l]);
+                        PluginManager.Logger.Write("  ");
                     }
                     else
                     {
                         var lenHalf = row[l].Length / 2;
                         for (var i = 0; i < (len[l] + 4) / 2 - lenHalf; ++i)
-                            Logger.Write(" ");
-                        Logger.Write(row[l]);
+                            PluginManager.Logger.Write(" ");
+                        PluginManager.Logger.Write(row[l]);
                         for (var i = (len[l] + 4) / 2 + lenHalf + 1; i < len[l] + 4; ++i)
-                            Logger.Write(" ");
+                            PluginManager.Logger.Write(" ");
                         if (row[l].Length % 2 == 0)
-                            Logger.Write(" ");
+                            PluginManager.Logger.Write(" ");
                     }
 
-                    Logger.Write(row[l][0] == tableLine ? tableCross : tableWall);
+                    PluginManager.Logger.Write(row[l][0] == tableLine ? tableCross : tableWall);
                 }
 
-                Logger.WriteLine(); //end line
+                PluginManager.Logger.WriteLine(); //end line
             }
 
             return;
@@ -95,44 +97,44 @@ public static class Utilities
 
             foreach (var row in data)
             {
-                Logger.Write("\t");
+                PluginManager.Logger.Write("\t");
                 if (row[0] == "-")
-                    Logger.Write("+");
+                    PluginManager.Logger.Write("+");
                 else
-                    Logger.Write("|");
+                    PluginManager.Logger.Write("|");
 
                 foreach (var s in row)
                 {
                     if (s == "-")
                     {
                         for (var i = 0; i < maxLen + 4; ++i)
-                            Logger.Write("-");
+                            PluginManager.Logger.Write("-");
                     }
                     else if (s.Length == maxLen)
                     {
-                        Logger.Write("  ");
-                        Logger.Write(s);
-                        Logger.Write("  ");
+                        PluginManager.Logger.Write("  ");
+                        PluginManager.Logger.Write(s);
+                        PluginManager.Logger.Write("  ");
                     }
                     else
                     {
                         var lenHalf = s.Length / 2;
                         for (var i = 0; i < div - lenHalf; ++i)
-                            Logger.Write(" ");
-                        Logger.Write(s);
+                            PluginManager.Logger.Write(" ");
+                        PluginManager.Logger.Write(s);
                         for (var i = div + lenHalf + 1; i < maxLen + 4; ++i)
-                            Logger.Write(" ");
+                            PluginManager.Logger.Write(" ");
                         if (s.Length % 2 == 0)
-                            Logger.Write(" ");
+                            PluginManager.Logger.Write(" ");
                     }
 
                     if (s == "-")
-                        Logger.Write("+");
+                        PluginManager.Logger.Write("+");
                     else
-                        Logger.Write("|");
+                        PluginManager.Logger.Write("|");
                 }
 
-                Logger.WriteLine(); //end line
+                PluginManager.Logger.WriteLine(); //end line
             }
 
             return;
@@ -153,12 +155,12 @@ public static class Utilities
                 {
                     if (data[i][j] == "-")
                         data[i][j] = " ";
-                    Logger.Write(data[i][j]);
+                    PluginManager.Logger.Write(data[i][j]);
                     for (var k = 0; k < widths[j] - data[i][j].Length + 1 + space_between_columns; k++)
-                        Logger.Write(" ");
+                        PluginManager.Logger.Write(" ");
                 }
 
-                Logger.WriteLine();
+                PluginManager.Logger.WriteLine();
             }
 
             return;
@@ -169,13 +171,13 @@ public static class Utilities
 
     public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
     {
-        if (!Logger.isConsole)
+        if (!PluginManager.Logger.isConsole)
         {
             foreach (var item in Colors)
                 text = text.Replace($"{ColorPrefix}{item.Key}", "").Replace("&c", "");
-            Logger.Write(text);
+            PluginManager.Logger.Write(text);
             if (appendNewLineAtEnd)
-                Logger.WriteLine();
+                PluginManager.Logger.WriteLine();
             return;
 
         }
@@ -200,12 +202,12 @@ public static class Utilities
             }
             else
             {
-                Logger.Write(input[i]);
+                PluginManager.Logger.Write(input[i]);
             }
 
         Console.ForegroundColor = initialForeGround;
         if (appendNewLineAtEnd)
-            Logger.WriteLine();
+            PluginManager.Logger.WriteLine();
     }
 
 
@@ -222,7 +224,7 @@ public static class Utilities
 
         public ProgressBar(ProgressBarType type)
         {
-            if (!Logger.isConsole)
+            if (!PluginManager.Logger.isConsole)
                 throw new Exception("This class (or function) can be used with console only. For UI please use another approach.");
             this.type = type;
         }
@@ -284,9 +286,9 @@ public static class Utilities
             {
                 Console.CursorLeft = 0;
                 for (var i = 0; i < BarLength + message.Length + 1; i++)
-                    Logger.Write(" ");
+                    PluginManager.Logger.Write(" ");
                 Console.CursorLeft = 0;
-                Logger.WriteLine(message);
+                PluginManager.Logger.WriteLine(message);
             }
         }
 
@@ -301,14 +303,14 @@ public static class Utilities
         private void UpdateNoEnd(string message)
         {
             Console.CursorLeft = 0;
-            Logger.Write("[");
+            PluginManager.Logger.Write("[");
             for (var i = 1; i <= position; i++)
-                Logger.Write(" ");
-            Logger.Write("<==()==>");
+                PluginManager.Logger.Write(" ");
+            PluginManager.Logger.Write("<==()==>");
             position += positive ? 1 : -1;
             for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Logger.Write(" ");
-            Logger.Write("] " + message);
+                PluginManager.Logger.Write(" ");
+            PluginManager.Logger.Write("] " + message);
 
 
             if (position == BarLength - 1 || position == 1)
@@ -318,14 +320,14 @@ public static class Utilities
         private void UpdateNoEnd()
         {
             Console.CursorLeft = 0;
-            Logger.Write("[");
+            PluginManager.Logger.Write("[");
             for (var i = 1; i <= position; i++)
-                Logger.Write(" ");
-            Logger.Write("<==()==>");
+                PluginManager.Logger.Write(" ");
+            PluginManager.Logger.Write("<==()==>");
             position += positive ? 1 : -1;
             for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Logger.Write(" ");
-            Logger.Write("]");
+                PluginManager.Logger.Write(" ");
+            PluginManager.Logger.Write("]");
 
 
             if (position == BarLength - 1 || position == 1)
@@ -335,9 +337,9 @@ public static class Utilities
         private void UpdateNormal(float progress)
         {
             Console.CursorLeft = 0;
-            Logger.Write("[");
+            PluginManager.Logger.Write("[");
             Console.CursorLeft = BarLength;
-            Logger.Write("]");
+            PluginManager.Logger.Write("]");
             Console.CursorLeft = 1;
             var onechunk = 30.0f / Max;
 
@@ -347,22 +349,22 @@ public static class Utilities
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : Color;
                 Console.CursorLeft = position++;
-                Logger.Write("#");
+                PluginManager.Logger.Write("#");
             }
 
             for (var i = position; i < BarLength; i++)
             {
                 Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
                 Console.CursorLeft = position++;
-                Logger.Write(" ");
+                PluginManager.Logger.Write(" ");
             }
 
             Console.CursorLeft = BarLength + 4;
             Console.BackgroundColor = ConsoleColor.Black;
             if (progress.CanAproximateTo(Max))
-                Logger.Write(progress + " %      ✓");
+                PluginManager.Logger.Write(progress + " %      ✓");
             else
-                Logger.Write(MathF.Round(progress, 2) + " %       ");
+                PluginManager.Logger.Write(MathF.Round(progress, 2) + " %       ");
         }
     }
 }

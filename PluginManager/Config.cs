@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using PluginManager.Others;
 using System.Collections;
 using PluginManager.Online.Helpers;
+using PluginManager.Others.Logger;
 
 namespace PluginManager;
 
@@ -13,6 +14,7 @@ public static class Config
 {
     private static bool IsLoaded = false;
 
+    public static DBLogger Logger;
     public static Json<string, string> Data;
     public static Json<string, string> Plugins;
 
@@ -27,14 +29,19 @@ public static class Config
 
         Data = new Json<string, string>("./Data/Resources/config.json");
         Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
+
+        Logger = new DBLogger();
+
+        PluginManager.Logger.Initialize(isConsole);
         
-        Logger.Initialize(isConsole);
         ArchiveManager.Initialize();
 
         IsLoaded = true;
 
         if (isConsole)
-            Logger.LogEvent += (message) => { Console.Write(message); };
+            PluginManager.Logger.LogEvent += (message) => { Console.Write(message); };
+
+        Logger.Log("Config initialized", TextType.NORMAL);
     }
 
     public class Json<TKey, TValue> : IDictionary<TKey, TValue>
