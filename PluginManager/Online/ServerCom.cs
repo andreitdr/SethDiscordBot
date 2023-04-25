@@ -33,7 +33,7 @@ public static class ServerCom
     /// <param name="progress">The <see cref="IProgress{T}" /> to track the download</param>
     /// <returns></returns>
     public static async Task DownloadFileAsync(string URL, string location, IProgress<float> progress,
-                                               IProgress<long>? downloadedBytes = null)
+                                               IProgress<long>? downloadedBytes)
     {
         using (var client = new HttpClient())
         {
@@ -46,47 +46,9 @@ public static class ServerCom
         }
     }
 
-    /// <summary>
-    ///     Download file from url
-    /// </summary>
-    /// <param name="URL">The url to the file</param>
-    /// <param name="location">The location where to store the downloaded data</param>
-    /// <returns></returns>
-    public static async Task DownloadFileAsync(string URL, string location)
+    public static async Task DownloadFileAsync(string URl, string location, IProgress<float> progress)
     {
-        var isDownloading = true;
-        float c_progress = 0;
-
-        var pbar = new Utilities.ProgressBar(ProgressBarType.NORMAL) { Max = 100f, NoColor = true };
-
-        IProgress<float> progress = new Progress<float>(percent => { c_progress = percent; });
-
-
-        var updateProgressBarTask = new Task(() =>
-            {
-                while (isDownloading)
-                {
-                    pbar.Update(c_progress);
-                    if (c_progress == 100f)
-                        break;
-                    Thread.Sleep(500);
-                }
-            }
-        );
-
-        new Thread(updateProgressBarTask.Start).Start();
-        await DownloadFileAsync(URL, location, progress);
-
-
-        c_progress = pbar.Max;
-        pbar.Update(100f);
-        isDownloading = false;
-    }
-
-    public static async Task DownloadFileNoProgressAsync(string URL, string location)
-    {
-        IProgress<float> progress = new Progress<float>();
-        await DownloadFileAsync(URL, location, progress);
+        await DownloadFileAsync(URl, location, progress, null);
     }
 
     public static async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace PluginManager.Items;
+namespace DiscordBot.Utilities;
 
 public class ConsoleCommand
 {

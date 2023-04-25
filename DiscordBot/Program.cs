@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 
 using PluginManager;
 using PluginManager.Bot;
-using PluginManager.Items;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
 using PluginManager.WindowManagement;
+
+using DiscordBot.Utilities;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
@@ -89,15 +90,15 @@ public class Program
             $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
         Logger.WriteLine($"Git URL: {Config.Data["GitURL"]}");
 
-        Utilities.WriteColorText(
+        Utilities.Utilities.WriteColorText(
             "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
 
         if (Config.Data.ContainsKey("LaunchMessage"))
-            Utilities.WriteColorText(Config.Data["LaunchMessage"]);
+            Utilities.Utilities.WriteColorText(Config.Data["LaunchMessage"]);
 
 
-        Utilities.WriteColorText(
+        Utilities.Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
 
         Logger.WriteLine();
@@ -172,7 +173,7 @@ public class Program
 
 
         Logger.WriteLine("Loading resources ...");
-        var main = new Utilities.ProgressBar(ProgressBarType.NO_END);
+        var main = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
 
         if (Config.Data.ContainsKey("DeleteLogsAtStartup"))
@@ -257,7 +258,7 @@ public class Program
                         List<string> changeLog = await ServerCom.ReadTextFromURL(
                             "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
                         foreach (var item in changeLog)
-                            Utilities.WriteColorText(item);
+                            Utilities.Utilities.WriteColorText(item);
                         Logger.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
@@ -311,11 +312,11 @@ public class Program
                     {
                         Console.Clear();
                         Logger.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
-                        var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
+                        var bar = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
-                        await ServerCom.DownloadFileNoProgressAsync(
+                        await ServerCom.DownloadFileAsync(
                             "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Launcher.exe",
-                            $"./Launcher.exe");
+                            $"./Launcher.exe", null);
                         //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
                         //                                    UnzipProgressType.PercentageFromTotalSize);
                         Config.Data["LauncherVersion"] = updaternewversion;

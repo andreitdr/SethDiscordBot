@@ -42,23 +42,10 @@ public enum UnzipProgressType
     PercentageFromTotalSize
 }
 
-public enum TableFormat
-{
-    CENTER_EACH_COLUMN_BASED,
-    CENTER_OVERALL_LENGTH,
-    DEFAULT
-}
-
 public enum SaveType
 {
     NORMAL,
     BACKUP
-}
-
-public enum ProgressBarType
-{
-    NORMAL,
-    NO_END
 }
 
 public enum TextType

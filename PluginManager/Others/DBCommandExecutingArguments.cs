@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace PluginManager.Others
 {
-    public class CmdArgs
+    public class DBCommandExecutingArguments
     {
         public SocketCommandContext context { get; init; }
         public string cleanContent { get; init; }
         public string commandUsed { get;init; }
         public string[] arguments { get;init; }
 
-        public CmdArgs(SocketCommandContext context, string cleanContent, string commandUsed, string[] arguments)
+        public DBCommandExecutingArguments(SocketCommandContext context, string cleanContent, string commandUsed, string[] arguments)
         {
             this.context = context;
             this.cleanContent = cleanContent;

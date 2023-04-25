@@ -29,7 +29,7 @@ public class PluginsManager
     ///     The method to load all plugins
     /// </summary>
     /// <returns></returns>
-    public async Task<List<string[]>> ListAvailablePlugins()
+    public async Task<List<string[]>> GetAvailablePlugins()
     {
         try
         {
@@ -40,16 +40,12 @@ public class PluginsManager
             var op = Functions.GetOperatingSystem();
 
             var len = lines.Length;
-            string[] titles = { "Name", "Description", "Type", "Version" };
-            data.Add(new[] { "-", "-", "-", "-" });
-            data.Add(titles);
-            data.Add(new[] { "-", "-", "-", "-" });
             for (var i = 0; i < len; i++)
             {
                 if (lines[i].Length <= 2)
                     continue;
                 var content = lines[i].Split(',');
-                var display = new string[titles.Length];
+                var display = new string[4]; // 4 columns
                 if (op == OperatingSystem.WINDOWS)
                 {
                     if (content[4].Contains("Windows"))
@@ -80,14 +76,11 @@ public class PluginsManager
 
             data.Add(new[] { "-", "-", "-", "-" });
 
-            Utilities.FormatAndAlignTable(data, TableFormat.CENTER_EACH_COLUMN_BASED);
-
             return data;
         }
         catch (Exception exception)
         {
-            Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
-            Logger.WriteErrFile(exception.ToString());
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, TextType.ERROR);
         }
 
         return null;
@@ -120,8 +113,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Logger.WriteLine("Failed to execute command: listplugs\nReason: " + exception.Message);
-            Logger.WriteErrFile(exception.ToString());
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, TextType.ERROR);
         }
 
         return new string[] { null!, null!, null! };

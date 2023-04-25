@@ -40,7 +40,7 @@ internal class Help : DBCommand
     ///     The main body of the command
     /// </summary>
     /// <param name="context">The command context</param>
-    public void ExecuteServer(CmdArgs args)
+    public void ExecuteServer(DBCommandExecutingArguments args)
     {
         if (args.arguments is not null)
         {

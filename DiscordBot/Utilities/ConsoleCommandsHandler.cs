@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 
 using Discord.WebSocket;
 
+using PluginManager;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
-namespace PluginManager.Items;
+namespace DiscordBot.Utilities;
 
 public class ConsoleCommandsHandler
 {
@@ -31,12 +32,11 @@ public class ConsoleCommandsHandler
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
-        if (!Logger.isConsole) throw new Exception("Can not use ConsoleCommandsHandler for Non console apps");
         this.client = client;
         InitializeBasicCommands();
 
 
-        //Logger.WriteLine("Initialized console command handler !");
+        //Console.WriteLine("Initialized console command handler !");
     }
 
     private void InitializeBasicCommands()
@@ -47,7 +47,7 @@ public class ConsoleCommandsHandler
             {
                 if (args.Length <= 1)
                 {
-                    Logger.WriteLine("Available commands:");
+                    Console.WriteLine("Available commands:");
                     var items = new List<string[]>
                     {
                         new[] { "-", "-", "-" },
@@ -70,12 +70,12 @@ public class ConsoleCommandsHandler
                     foreach (var command in commandList)
                         if (command.CommandName == args[1])
                         {
-                            Logger.WriteLine("Command description: " + command.Description);
-                            Logger.WriteLine("Command execution format:" + command.Usage);
+                            Console.WriteLine("Command description: " + command.Description);
+                            Console.WriteLine("Command execution format:" + command.Usage);
                             return;
                         }
 
-                    Logger.WriteLine("Command not found");
+                    Console.WriteLine("Command not found");
                 }
             }
         );
@@ -94,16 +94,16 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Logger.WriteLine("[CMD] Successfully loaded command : " + name);
+                        Console.WriteLine("[CMD] Successfully loaded command : " + name);
                     }
 
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         if (exception is null)
-                            Logger.WriteLine("An error occured while loading: " + name);
+                            Console.WriteLine("An error occured while loading: " + name);
                         else
-                            Logger.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
+                            Console.WriteLine("[CMD] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -116,12 +116,12 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Logger.WriteLine("[EVENT] Successfully loaded event : " + name);
+                        Console.WriteLine("[EVENT] Successfully loaded event : " + name);
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Logger.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
+                        Console.WriteLine("[EVENT] Failed to load event : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -135,12 +135,12 @@ public class ConsoleCommandsHandler
                     if (success)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Logger.WriteLine("[SLASH] Successfully loaded command : " + name);
+                        Console.WriteLine("[SLASH] Successfully loaded command : " + name);
                     }
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Logger.WriteLine("[SLASH] Failed to load command : " + name + " because " + exception!.Message);
+                        Console.WriteLine("[SLASH] Failed to load command : " + name + " because " + exception!.Message);
                     }
 
                     Console.ForegroundColor = cc;
@@ -152,7 +152,23 @@ public class ConsoleCommandsHandler
             }
         );
 
-        AddCommand("listplugs", "list available plugins", () => { manager.ListAvailablePlugins().Wait(); });
+        AddCommand("listplugs", "list available plugins", async () => {
+            var data = await manager.GetAvailablePlugins();
+            var items = new List<string[]>
+            {
+                new[] { "-", "-", "-", "-" },
+                new[] { "Name", "Type", "Description", "Required" },
+                new[] { "-", "-", "-", "-" }
+            };
+
+            foreach (var plugin in data)
+            {
+                items.Add(new[] { plugin[0], plugin[1], plugin[2], plugin[3] });
+            }
+
+            items.Add(new[] { "-", "-", "-", "-" });
+            Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
+        });
 
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
@@ -160,7 +176,7 @@ public class ConsoleCommandsHandler
                 if (args.Length == 1)
                 {
                     isDownloading = false;
-                    Logger.WriteLine("Please specify plugin name");
+                    Console.WriteLine("Please specify plugin name");
                     return;
                 }
 
@@ -192,24 +208,24 @@ public class ConsoleCommandsHandler
 
                 if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                 {
-                    await ServerCom.DownloadFileAsync(info[1], path);
+                    await ServerCom.DownloadFileAsync(info[1], path, null);
                 }
                 else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                 {
                     var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                     bar.Start();
-                    await ServerCom.DownloadFileNoProgressAsync(info[1], path);
+                    await ServerCom.DownloadFileAsync(info[1], path, null);
                     bar.Stop("Plugin Downloaded !");
                 }
 
 
-                Logger.WriteLine("\n");
+                Console.WriteLine("\n");
 
                 // check requirements if any
 
                 if (info.Length == 3 && info[2] != string.Empty && info[2] != null)
                 {
-                    Logger.WriteLine($"Downloading requirements for plugin : {name}");
+                    Console.WriteLine($"Downloading requirements for plugin : {name}");
 
                     var lines = await ServerCom.ReadTextFromURL(info[2]);
 
@@ -218,45 +234,45 @@ public class ConsoleCommandsHandler
                         if (!(line.Length > 0 && line.Contains(",")))
                             continue;
                         var split = line.Split(',');
-                        Logger.WriteLine($"\nDownloading item: {split[1]}");
+                        Console.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
                         if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
-                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1]);
+                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
                         }
                         else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                         {
                             var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
                             bar.Start();
-                            await ServerCom.DownloadFileNoProgressAsync(split[0], "./" + split[1]);
+                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
                             bar.Stop("Item downloaded !");
                         }
 
-                        Logger.WriteLine();
+                        Console.WriteLine();
                         if (split[0].EndsWith(".pak"))
                         {
                             File.Move("./" + split[1], "./Data/PAKS/" + split[1], true);
                         }
                         else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
                         {
-                            Logger.WriteLine($"Extracting {split[1]} ...");
+                            Console.WriteLine($"Extracting {split[1]} ...");
                             var bar = new Utilities.ProgressBar(
                                 ProgressBarType.NO_END);
                             bar.Start();
                             await ArchiveManager.ExtractArchive("./" + split[1], "./", null,
                                                            UnzipProgressType.PercentageFromTotalSize);
                             bar.Stop("Extracted");
-                            Logger.WriteLine("\n");
+                            Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
                     }
 
-                    Logger.WriteLine();
+                    Console.WriteLine();
                 }
 
                 var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
-                Config.Plugins[name] = ver.ToShortString();
+                    Config.Plugins[name] = ver.ToShortString();
 
                 isDownloading = false;
 
@@ -273,7 +289,7 @@ public class ConsoleCommandsHandler
                     return;
 
                 var data = Config.Data[args[1]];
-                Logger.WriteLine($"{args[1]} => {data}");
+                Console.WriteLine($"{args[1]} => {data}");
             }
         );
 
@@ -288,11 +304,11 @@ public class ConsoleCommandsHandler
                 try
                 {
                     Config.Data[key] = value;
-                    Logger.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
+                    Console.WriteLine($"Updated config file with the following command: {args[1]} => {value}");
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.ToString());
                 }
             }
         );
@@ -341,7 +357,7 @@ public class ConsoleCommandsHandler
             }
             catch (Exception ex)
             {
-                Logger.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
             }
         });
 
@@ -357,8 +373,8 @@ public class ConsoleCommandsHandler
             }
             catch (Exception ex)
             {
-                Logger.WriteLine(ex.Message);
-                Logger.WriteErrFile(ex);
+                Console.WriteLine(ex.Message);
+                Config.Logger.Log(ex.Message, this, TextType.ERROR);
             }
         });
 
@@ -392,13 +408,13 @@ public class ConsoleCommandsHandler
 
             if (!File.Exists(location))
             {
-                Logger.WriteLine("The plugin does not exist");
+                Console.WriteLine("The plugin does not exist");
                 return;
             }
 
             File.Delete(location);
 
-            Logger.WriteLine("Removed the plugin DLL. Checking for other files ...");
+            Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
 
             var info = await manager.GetPluginLinkByName(plugName);
             if (info[2] != string.Empty)
@@ -413,7 +429,7 @@ public class ConsoleCommandsHandler
                         File.Delete("./" + split[1]);
 
 
-                    Logger.WriteLine("Removed: " + split[1]);
+                    Console.WriteLine("Removed: " + split[1]);
                 }
 
                 if (Directory.Exists($"./Data/Plugins/{plugName}"))
@@ -424,7 +440,7 @@ public class ConsoleCommandsHandler
             }
 
             isDownloading = false;
-            Logger.WriteLine(plugName + " has been successfully deleted !");
+            Console.WriteLine(plugName + " has been successfully deleted !");
         });
 
         AddCommand("reload", "Reload the bot with all plugins", () =>
@@ -484,7 +500,7 @@ public class ConsoleCommandsHandler
             foreach (var item in commandList)
                 if (item.CommandName == args[0])
                 {
-                    Logger.WriteLine();
+                    Console.WriteLine();
                     item.Action(args);
                 }
 
@@ -492,8 +508,6 @@ public class ConsoleCommandsHandler
 
     public static async Task ExecuteCommad(string command)
     {
-        if (!Logger.isConsole)
-            throw new Exception("Can not use console based commands on non console based application !");
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
             if (item.CommandName == args[0])
@@ -505,8 +519,6 @@ public class ConsoleCommandsHandler
 
     public bool HandleCommand(string command, bool removeCommandExecution = true)
     {
-        if (!Logger.isConsole)
-            throw new Exception("Can not use console based commands on non console based application !");
         Console.ForegroundColor = ConsoleColor.White;
         var args = command.Split(' ');
         foreach (var item in commandList.ToList())
@@ -515,22 +527,20 @@ public class ConsoleCommandsHandler
                 if (args[0].StartsWith("_"))
                     throw new Exception("This command is reserved for internal worker and can not be executed manually !");
 
-                if (Logger.isConsole)
                     if (removeCommandExecution)
                     {
                         Console.SetCursorPosition(0, Console.CursorTop - 1);
                         for (var i = 0; i < command.Length + 30; i++)
-                            Logger.Write(" ");
+                            Console.Write(" ");
                         Console.SetCursorPosition(0, Console.CursorTop);
                     }
 
-                Logger.WriteLine();
+                Console.WriteLine();
                 item.Action(args);
 
                 return true;
             }
 
         return false;
-        //Logger.WriteLine($"Executing: {args[0]} with the following parameters: {args.MergeStrings(1)}");
     }
 }
