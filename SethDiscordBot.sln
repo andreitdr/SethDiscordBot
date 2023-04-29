@@ -9,9 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManager", "PluginMana
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DiscordBotPlugins", "DiscordBotPlugins", "{9239AF3F-3349-4924-98DC-7F512DF9AAF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy", "DiscordBotPlugins\Economy\Economy.csproj", "{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI", "DiscordBotPlugins\DiscordBotUI\DiscordBotUI.csproj", "{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy", "DiscordBotPlugins\Economy\Economy.csproj", "{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,19 +29,14 @@ Global
 		{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0B623D5E-2BAC-4B2D-8215-4F9B5A1C6527} = {9239AF3F-3349-4924-98DC-7F512DF9AAF3}
-		{D227BE4C-26C0-4F85-A724-A6CAF99D7AC1} = {9239AF3F-3349-4924-98DC-7F512DF9AAF3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
 	EndGlobalSection
 EndGlobal
