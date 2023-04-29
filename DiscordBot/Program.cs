@@ -11,7 +11,6 @@ using PluginManager.Bot;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-using PluginManager.WindowManagement;
 
 using DiscordBot.Utilities;
 
@@ -39,7 +38,7 @@ public class Program
             Config.Data["prefix"]?.Length != 1 ||
             (args.Length == 1 && args[0] == "/reset"))
         {
-            GenerateStartUI();
+            GenerateStartupConfig();
         }
 
         HandleInput(args).Wait();
@@ -84,11 +83,11 @@ public class Program
                 "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
 
         foreach (var message in startupMessageList)
-            Config.Logger.Log(message);
+            Console.WriteLine(message);
 
-        Logger.WriteLine(
+        Console.WriteLine(
             $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Logger.WriteLine($"Git URL: {Config.Data["GitURL"]}");
+        Console.WriteLine($"Git URL: {Config.Data["GitURL"]}");
 
         Utilities.Utilities.WriteColorText(
             "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
@@ -101,9 +100,8 @@ public class Program
         Utilities.Utilities.WriteColorText(
             "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
 
-        Logger.WriteLine();
-        Logger.WriteLine("Running on " + Functions.GetOperatingSystem().ToString());
-        Logger.WriteLine("============================ LOG ============================");
+        Console.WriteLine("Running on " + Functions.GetOperatingSystem().ToString());
+        Console.WriteLine("============================ LOG ============================");
 
         try
         {
@@ -121,7 +119,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex);
+            Config.Logger.Log(ex.ToString(),"Bot",TextType.ERROR);
             return null;
         }
     }
@@ -137,16 +135,6 @@ public class Program
         var b = await StartNoGui();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
 
-        if (len > 0 && args[0] == "/remplug")
-        {
-            var plugName = string.Join(' ', args, 1, args.Length - 1);
-            Logger.WriteLine("Starting to remove " + plugName);
-            await ConsoleCommandsHandler.ExecuteCommad("remplug " + plugName);
-            loadPluginsOnStartup = true;
-        }
-
-
-
         var mainThread = new Thread(() =>
         {
             try
@@ -160,7 +148,7 @@ public class Program
                     if (Config.Data.ContainsKey("LaunchMessage"))
                         Config.Data.Add("LaunchMessage",
                                              "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
-                    Logger.WriteErrFile(ex.ToString());
+                    Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !","Bot",TextType.ERROR);
                 }
             }
         });
@@ -169,10 +157,12 @@ public class Program
 
     private static async Task PreLoadComponents(string[] args)
     {
-        await Config.Initialize(true);
+        await Config.Initialize();
+
+        Config.Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
 
 
-        Logger.WriteLine("Loading resources ...");
+        Console.WriteLine("Loading resources ...");
         var main = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
         main.Start();
 
@@ -197,7 +187,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                Logger.WriteErrFile(ex.Message);
+                Config.Logger.Log(ex.ToString(),"Bot",TextType.ERROR);
             }
         }
 
@@ -225,14 +215,14 @@ public class Program
                             Config.Data["Version"] = "1." + cVer.ToShortString() + " (Beta)";
                             break;
                         }
-                        
+
                         if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
                             Console.Clear();
-                            Logger.WriteLine("A new update was found !");
-                            Logger.WriteLine("Run the launcher to update");
-                            Logger.WriteLine("Current version: " + currentVersion);
-                            Logger.WriteLine("Latest version: " + s[1]);
+                            Console.WriteLine("A new update was found !");
+                            Console.WriteLine("Run the launcher to update");
+                            Console.WriteLine("Current version: " + currentVersion);
+                            Console.WriteLine("Latest version: " + s[1]);
 
                             File.WriteAllText("version.txt", currentVersion);
 
@@ -243,54 +233,51 @@ public class Program
 
                         Console.Clear();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Logger.WriteLine("A new version of the bot is available !");
+                        Console.WriteLine("A new version of the bot is available !");
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Logger.WriteLine("Current version : " +
+                        Console.WriteLine("Current version : " +
                                          Assembly.GetExecutingAssembly().GetName().Version.ToString());
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Logger.WriteLine("New version : " + newVersion);
+                        Console.WriteLine("New version : " + newVersion);
                         Console.ForegroundColor = ConsoleColor.White;
 
                         File.WriteAllText("version.txt", newVersion);
 
-                        Logger.WriteLine("Changelog :");
+                        Console.WriteLine("Changelog :");
 
                         List<string> changeLog = await ServerCom.ReadTextFromURL(
                             "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
                         foreach (var item in changeLog)
                             Utilities.Utilities.WriteColorText(item);
-                        Logger.WriteLine("Do you want to update the bot ? (y/n)");
+                        Console.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
                             var url =
                                 $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
-                            if (Logger.isConsole)
-                                Console.SetCursorPosition(0, Console.CursorTop);
-                            Logger.WriteLine($"executing: download_file {url}");
+                            Config.Logger.Log($"executing: download_file {url}");
 
-                            await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Logger.Write($"\rProgress: {percent}%        "); }));
+                            await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Console.WriteLine($"\rProgress: {percent}%        "); }));
                             await File.WriteAllTextAsync("Install.sh",
                                                          "#!/bin/bash\nunzip -qq -o update.zip \nrm update.zip\nchmod a+x DiscordBot");
-                            Logger.WriteLine();
 
                             try
                             {
-                                Logger.WriteLine("executing: chmod a+x Install.sh");
+                                Console.WriteLine("executing: chmod a+x Install.sh");
                                 Process.Start("chmod", "a+x Install.sh").WaitForExit();
                                 Process.Start("Install.sh").WaitForExit();
 
-                                Logger.WriteLine("executing: rm Install.sh");
+                                Console.WriteLine("executing: rm Install.sh");
                                 Process.Start("rm", "Install.sh").WaitForExit();
 
-                                Logger.WriteLine("The new version of the bot has been installed.");
-                                Logger.WriteLine("Please restart the bot.");
+                                Config.Logger.Log("The new version of the bot has been installed.");
+                                Console.WriteLine("Please restart the bot.");
                                 Environment.Exit(0);
                             }
                             catch (Exception ex)
                             {
-                                Logger.WriteErrFile(ex.Message);
+                                Config.Logger.Log(ex.Message,"Updater", TextType.ERROR);
                                 if (ex.Message.Contains("Access de"))
-                                    Logger.WriteLine("Please run the bot as root.");
+                                    Config.Logger.Log("Please run the bot as root.");
                             }
 
 
@@ -311,7 +298,7 @@ public class Program
                         !File.Exists("./Launcher.exe"))
                     {
                         Console.Clear();
-                        Logger.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
+                        Console.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
                         var bar = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
                         await ServerCom.DownloadFileAsync(
@@ -332,56 +319,27 @@ public class Program
         Console.Clear();
     }
 
-    public static void GenerateStartUI()
+    public static void GenerateStartupConfig()
     {
-        InputBox box = new InputBox();
-        box.Title = "Discord Bot Config - " + Assembly.GetExecutingAssembly().GetName().Version;
-        box.Message = "Let's setup the bot. Please go through this setup so that you can run the bot.\n\n";
-        box.AddLabel("Note:All the information collected here will only be stored locally (on your machine) at the following path: ", TextType.WARNING);
-        box.AddLabel("<executable path>/Data/Resources/Config.json", TextType.SUCCESS);
+        Console.WriteLine("Welcome to the SethBot installer !");
+        Console.WriteLine("First, we need to configure the bot. Don't worry, it will be quick !");
+        Console.WriteLine("The following information will be stored in the config.json file in the ./Data/Resources folder. You can change it later from there.");
+        Console.WriteLine("The bot tokn is required to run the bot. You can get it from the Discord Developer Portal. (https://discord.com/developers/applications)");
+        Console.WriteLine("Please enter the bot token :");
+        var token = Console.ReadLine();
 
-        box.AddOption("Bot Token", (token) => {
-            if (token.Length != 70 && token.Length != 59)
-            {
-                Console.WriteLine("The token is invalid !");
-                return false;
-            }
+        Console.WriteLine("Please enter the bot prefix :");
+        var prefix = Console.ReadLine();
 
-            return true;
-        });
+        Console.WriteLine("Please enter the Server ID :");
+        var serverId = Console.ReadLine();
 
-        box.AddOption("Bot prefix (should be one character long)", (prefix) => {
-            if (int.TryParse(prefix, out int value))
-            {
-                Console.WriteLine("The prefix can not be a number");
-                return false;
-            }
+        Config.Data.Add("token", token);
+        Config.Data.Add("prefix", prefix);
+        Config.Data.Add("ServerID", serverId);
 
-            if (prefix.Length != 1)
-            {
-                Console.WriteLine("The bot does not support longer prefixes");
-                return false;
-            }
+        Config.Logger.Log("Config Saved", "Installer", TextType.NORMAL);
 
-            return true;
-
-        });
-
-
-        box.AddOption("Server ID (Optional => Press ENTER to leave empty)\nIf you let the Server ID field option empty, some plugins may not work", (servId) => {
-            if (servId.Length != 18 && servId.Length > 0)
-            {
-                Console.WriteLine("The Server ID is invalid");
-                return false;
-            }
-
-            return true;
-        });
-
-        List<string> result = box.Show();
-
-        Config.Data.Add("ServerID", result[2]);
-        Config.Data.Add("token", result[0]);
-        Config.Data.Add("prefix", result[1]);
+        Config.Data.Save();
     }
 }

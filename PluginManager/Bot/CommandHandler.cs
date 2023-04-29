@@ -61,9 +61,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-
-            Console.WriteLine(ex.ToString());
-            ex.WriteErrFile();
+            Config.Logger.Log(ex.Message, "CommandHandler", TextType.ERROR);
         }
 
         return Task.CompletedTask;

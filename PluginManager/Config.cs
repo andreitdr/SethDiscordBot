@@ -18,7 +18,7 @@ public static class Config
     public static Json<string, string> Data;
     public static Json<string, string> Plugins;
 
-    public static async Task Initialize(bool isConsole)
+    public static async Task Initialize()
     {
         if (IsLoaded)
             return;
@@ -26,20 +26,20 @@ public static class Config
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
+        Directory.CreateDirectory("./Data/Logs/Logs");
+        Directory.CreateDirectory("./Data/Logs/Errors");
 
         Data = new Json<string, string>("./Data/Resources/config.json");
         Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
 
-        Logger = new DBLogger();
+        Config.Data["LogFolder"] = "./Data/Logs/Logs";
+        Config.Data["ErrorFolder"] = "./Data/Logs/Errors";
 
-        PluginManager.Logger.Initialize(isConsole);
+        Logger = new DBLogger();
         
         ArchiveManager.Initialize();
 
         IsLoaded = true;
-
-        if (isConsole)
-            PluginManager.Logger.LogEvent += (message) => { Console.Write(message); };
 
         Logger.Log("Config initialized", TextType.NORMAL);
     }

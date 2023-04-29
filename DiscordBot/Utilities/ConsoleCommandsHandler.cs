@@ -34,9 +34,6 @@ public class ConsoleCommandsHandler
     {
         this.client = client;
         InitializeBasicCommands();
-
-
-        //Console.WriteLine("Initialized console command handler !");
     }
 
     private void InitializeBasicCommands()
@@ -209,6 +206,7 @@ public class ConsoleCommandsHandler
                 if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                 {
                     await ServerCom.DownloadFileAsync(info[1], path, null);
+                    Console.WriteLine("Plugin Downloaded !", this, TextType.SUCCESS);
                 }
                 else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                 {
@@ -217,6 +215,8 @@ public class ConsoleCommandsHandler
                     await ServerCom.DownloadFileAsync(info[1], path, null);
                     bar.Stop("Plugin Downloaded !");
                 }
+
+                
 
 
                 Console.WriteLine("\n");
@@ -239,6 +239,7 @@ public class ConsoleCommandsHandler
                         if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
                         {
                             await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
+                            Console.WriteLine("Item "+split[1]+" downloaded !", this, TextType.SUCCESS);
                         }
                         else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
                         {
@@ -275,6 +276,8 @@ public class ConsoleCommandsHandler
                     Config.Plugins[name] = ver.ToShortString();
 
                 isDownloading = false;
+
+                Config.Logger.Log("Plugin installed !", this, TextType.SUCCESS);
 
                 //await ExecuteCommad("localload " + name);
             }
@@ -330,6 +333,8 @@ public class ConsoleCommandsHandler
                 await Functions.SaveToJsonFile(Functions.dataFolder + "Plugins.json", Config.Plugins);
                 await client.StopAsync();
                 await client.DisposeAsync();
+
+                Config.Logger.SaveToFile();
                 await Task.Delay(1000);
                 Environment.Exit(0);
             }
@@ -378,89 +383,7 @@ public class ConsoleCommandsHandler
             }
         });
 
-        AddCommand("remplug", "Remove a plugin", "remplug [plugName]", async args =>
-        {
-            if (args.Length <= 1) return;
 
-            isDownloading = true;
-            var plugName = string.Join(' ', args, 1, args.Length - 1);
-            if (pluginsLoaded)
-            {
-                if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
-                {
-                    Process.Start("DiscordBot.exe", $"/remplug {plugName}");
-                    await Task.Delay(100);
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    Process.Start("./DiscordBot", $"/remplug {plugName}");
-                    await Task.Delay(100);
-                    Environment.Exit(0);
-                }
-
-                isDownloading = false;
-                return;
-            }
-
-
-            var location = $"./Data/Plugins/{plugName}.dll";
-
-            if (!File.Exists(location))
-            {
-                Console.WriteLine("The plugin does not exist");
-                return;
-            }
-
-            File.Delete(location);
-
-            Console.WriteLine("Removed the plugin DLL. Checking for other files ...");
-
-            var info = await manager.GetPluginLinkByName(plugName);
-            if (info[2] != string.Empty)
-            {
-                var lines = await ServerCom.ReadTextFromURL(info[2]);
-                foreach (var line in lines)
-                {
-                    if (!(line.Length > 0 && line.Contains(",")))
-                        continue;
-                    var split = line.Split(',');
-                    if (File.Exists("./" + split[1]))
-                        File.Delete("./" + split[1]);
-
-
-                    Console.WriteLine("Removed: " + split[1]);
-                }
-
-                if (Directory.Exists($"./Data/Plugins/{plugName}"))
-                    Directory.Delete($"./Data/Plugins/{plugName}", true);
-
-                if (Directory.Exists(plugName))
-                    Directory.Delete(plugName, true);
-            }
-
-            isDownloading = false;
-            Console.WriteLine(plugName + " has been successfully deleted !");
-        });
-
-        AddCommand("reload", "Reload the bot with all plugins", () =>
-        {
-
-            if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS)
-            {
-                Process.Start("DiscordBot.exe", "lp");
-                HandleCommand("sd");
-            }
-            else
-            {
-                //HandleCommand("sd");
-                Console.WriteLine("This command can not be used outside of Windows yet. Please restart the bot using the manual way");
-            }
-        });
-
-        //AddCommand("");
-
-        //Sort the commands by name
         commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
     }
 
@@ -491,20 +414,6 @@ public class ConsoleCommandsHandler
     {
         return commandList.FirstOrDefault(t => t.CommandName == command);
     }
-
-    /*    public static async Task ExecuteSpecialCommand(string command)
-        {
-            if (!command.StartsWith("_")) return;
-
-            string[] args = command.Split(' ');
-            foreach (var item in commandList)
-                if (item.CommandName == args[0])
-                {
-                    Console.WriteLine();
-                    item.Action(args);
-                }
-
-        }*/
 
     public static async Task ExecuteCommad(string command)
     {

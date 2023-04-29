@@ -60,9 +60,7 @@ namespace PluginManager.Loaders
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteLine(ex.Message);
-                    Logger.WriteLine("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded");
-
+                    Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", this, Others.TextType.ERROR);
                     continue;
                 }
                 if (FileLoaded != null)
@@ -133,7 +131,7 @@ namespace PluginManager.Loaders
             }
             catch (Exception ex)
             {
-                Logger.WriteErrFile(ex.ToString());
+                Config.Logger.Log(ex.Message, this, Others.TextType.ERROR);
 
                 return null;
             }
