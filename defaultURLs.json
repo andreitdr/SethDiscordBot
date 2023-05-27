@@ -1,0 +1,10 @@
+{
+    "PluginList": "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt",
+    "PluginVersions": "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions",
+    "StartupMessage" : "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage",
+    "SetupKeys": "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys",
+    "Versions": "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData",
+    "Changelog": "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot",
+    "LinuxBot": "https://github.com/Wizzy69/SethDiscordBot/releases/download/v{0}/net6.0_linux.zip",
+    "WindowsLauncher": "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Launcher.exe"
+}
