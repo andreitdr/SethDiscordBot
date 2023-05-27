@@ -50,20 +50,4 @@ public static class ServerCom
     {
         await DownloadFileAsync(URl, location, progress, null);
     }
-
-    public static async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
-    {
-        var url = "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Versions";
-        var data = await ReadTextFromURL(url);
-        foreach (var item in data)
-        {
-            if (item.StartsWith("#"))
-                continue;
-
-            string[] split = item.Split(',');
-            if (split[0] == pakName)
-                return new VersionString(split[1]);
-        }
-        return null;
-    }
 }

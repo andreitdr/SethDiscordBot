@@ -15,12 +15,14 @@ using PluginManager.Others;
 using DiscordBot.Utilities;
 
 using OperatingSystem = PluginManager.Others.OperatingSystem;
+using static PluginManager.Config;
 
 namespace DiscordBot;
 
 public class Program
 {
-    private static bool loadPluginsOnStartup;
+    public static Json<string, string> URLs;
+    private static bool loadPluginsOnStartup = false;
     private static ConsoleCommandsHandler consoleCommandsHandler;
 
     /// <summary>
@@ -38,7 +40,7 @@ public class Program
             Config.Data["prefix"]?.Length != 1 ||
             (args.Length == 1 && args[0] == "/reset"))
         {
-            GenerateStartupConfig();
+            Installer.GenerateStartupConfig();
         }
 
         HandleInput(args).Wait();
@@ -79,8 +81,7 @@ public class Program
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
         var startupMessageList =
-            await ServerCom.ReadTextFromURL(
-                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/StartupMessage");
+            await ServerCom.ReadTextFromURL(URLs["StartupMessage"]);
 
         foreach (var message in startupMessageList)
             Console.WriteLine(message);
@@ -132,6 +133,8 @@ public class Program
     {
         var len = args.Length;
 
+        Console.WriteLine("Loading Core ...");
+
         var b = await StartNoGui();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
 
@@ -139,6 +142,7 @@ public class Program
         {
             try
             {
+                Console.WriteLine("Launching core functions ...");
                 NoGUI();
             }
             catch (IOException ex)
@@ -157,8 +161,17 @@ public class Program
 
     private static async Task PreLoadComponents(string[] args)
     {
+        
         await Config.Initialize();
 
+        if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
+        {
+            await Installer.SetupPluginDatabase();
+        }
+
+
+        URLs = new Json<string, string>("./Data/Resources/URLs.json"); 
+        
         Config.Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
 
 
@@ -171,8 +184,7 @@ public class Program
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
         var OnlineDefaultKeys =
-            await ServerCom.ReadTextFromURL(
-                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/SetupKeys");
+            await ServerCom.ReadTextFromURL(URLs["SetupKeys"]);
 
 
         Config.Data["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -192,9 +204,7 @@ public class Program
         }
 
 
-        var onlineSettingsList =
-            await ServerCom.ReadTextFromURL(
-                "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/OnlineData");
+        var onlineSettingsList = await ServerCom.ReadTextFromURL(URLs["Versions"]);
         main.Stop("Loaded online settings. Loading updates ...");
         foreach (var key in onlineSettingsList)
         {
@@ -245,15 +255,13 @@ public class Program
 
                         Console.WriteLine("Changelog :");
 
-                        List<string> changeLog = await ServerCom.ReadTextFromURL(
-                            "https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/VersionData/DiscordBot");
+                        List<string> changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
                         foreach (var item in changeLog)
                             Utilities.Utilities.WriteColorText(item);
                         Console.WriteLine("Do you want to update the bot ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
-                            var url =
-                                $"https://github.com/Wizzy69/SethDiscordBot/releases/download/v{newVersion}/net6.0_linux.zip";
+                            var url = URLs["LinuxBot"].Replace("{0}", newVersion);
                             Config.Logger.Log($"executing: download_file {url}");
 
                             await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Console.WriteLine($"\rProgress: {percent}%        "); }));
@@ -301,9 +309,7 @@ public class Program
                         Console.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
                         var bar = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
                         bar.Start();
-                        await ServerCom.DownloadFileAsync(
-                            "https://github.com/Wizzy69/installer/releases/download/release-1-discordbot/Launcher.exe",
-                            $"./Launcher.exe", null);
+                        await ServerCom.DownloadFileAsync(URLs["WindowsLauncher"], $"./Launcher.exe", null);
                         //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
                         //                                    UnzipProgressType.PercentageFromTotalSize);
                         Config.Data["LauncherVersion"] = updaternewversion;
@@ -317,29 +323,5 @@ public class Program
         }
 
         Console.Clear();
-    }
-
-    public static void GenerateStartupConfig()
-    {
-        Console.WriteLine("Welcome to the SethBot installer !");
-        Console.WriteLine("First, we need to configure the bot. Don't worry, it will be quick !");
-        Console.WriteLine("The following information will be stored in the config.json file in the ./Data/Resources folder. You can change it later from there.");
-        Console.WriteLine("The bot tokn is required to run the bot. You can get it from the Discord Developer Portal. (https://discord.com/developers/applications)");
-        Console.WriteLine("Please enter the bot token :");
-        var token = Console.ReadLine();
-
-        Console.WriteLine("Please enter the bot prefix :");
-        var prefix = Console.ReadLine();
-
-        Console.WriteLine("Please enter the Server ID :");
-        var serverId = Console.ReadLine();
-
-        Config.Data.Add("token", token);
-        Config.Data.Add("prefix", prefix);
-        Config.Data.Add("ServerID", serverId);
-
-        Config.Logger.Log("Config Saved", "Installer", TextType.NORMAL);
-
-        Config.Data.Save();
     }
 }

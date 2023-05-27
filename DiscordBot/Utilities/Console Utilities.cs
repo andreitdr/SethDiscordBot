@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using PluginManager;
@@ -200,6 +201,45 @@ public static class Utilities
             Console.WriteLine();
     }
 
+    public class Spinner
+    {
+        private Thread thread;
+        private bool isRunning;
+        private readonly string[] Sequence;
+        private int position;
+
+        public Spinner()
+        {
+            Sequence = new[] {"|", "/", "-", "\\"};
+            position = 0;
+        }
+
+        public void Start()
+        {
+            Console.CursorVisible = false;
+            isRunning=true;
+            thread = new Thread(() => {
+                while (isRunning)
+                {
+                    Console.Write("\r" + Sequence[position]);
+                    position++;
+                    if (position >= Sequence.Length)
+                        position = 0;
+                    Thread.Sleep(100);
+                }
+            });
+
+            thread.Start();
+
+        }
+
+        public void Stop()
+        {
+            isRunning=false;
+            Console.CursorVisible = true;
+        }
+    }
+
 
     /// <summary>
     ///     Progress bar object
@@ -227,6 +267,7 @@ public static class Utilities
 
         public async void Start()
         {
+            Console.WriteLine();
             if (type != ProgressBarType.NO_END)
                 throw new Exception("Only NO_END progress bar can use this method");
             if (isRunning)

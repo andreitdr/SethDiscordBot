@@ -47,20 +47,17 @@ public static class Config
     public class Json<TKey, TValue> : IDictionary<TKey, TValue>
     {
         protected IDictionary<TKey, TValue> _dictionary;
-
-        public Json(IDictionary<TKey, TValue> dictionary)
-        {
-            _dictionary = dictionary;
-        }
-
+        private readonly string _file = "";
+        
         public Json(string file)
         {
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
+            this._file = file;
         }
 
         public async void Save()
         {
-            await Functions.SaveToJsonFile("./Data/Resources/config.json", _dictionary);
+            await Functions.SaveToJsonFile(_file, _dictionary);
         }
 
         public virtual void Add(TKey key, TValue value)
@@ -91,7 +88,7 @@ public static class Config
             get
             {
                 if (_dictionary.TryGetValue(key, out TValue value)) return value;
-                return default;
+                throw new Exception("Key not found in dictionary " + key.ToString() + " (Json )" + this.GetType().Name + ")");
 
             }
             set

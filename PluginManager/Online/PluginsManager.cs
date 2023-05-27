@@ -15,15 +15,17 @@ public class PluginsManager
     ///     The Plugin Manager constructor
     /// </summary>
     /// <param name="link">The link to the file where all plugins are stored</param>
-    public PluginsManager(string link)
+    public PluginsManager(string plink, string vlink)
     {
-        PluginsLink = link;
+        PluginsLink = plink;
+        VersionsLink = vlink;
     }
 
     /// <summary>
     ///     The URL of the server
     /// </summary>
     public string PluginsLink { get; }
+    public string VersionsLink {get; }
 
     /// <summary>
     ///     The method to load all plugins
@@ -54,7 +56,7 @@ public class PluginsManager
                         display[1] = content[1];
                         display[2] = content[2];
                         display[3] =
-                            (await ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
+                            (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
                            .ToShortString();
                         data.Add(display);
                     }
@@ -67,7 +69,7 @@ public class PluginsManager
                         display[1] = content[1];
                         display[2] = content[2];
                         display[3] =
-                            (await ServerCom.GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
+                            (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
                            .ToShortString();
                         data.Add(display);
                     }
@@ -83,6 +85,25 @@ public class PluginsManager
             Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, TextType.ERROR);
         }
 
+        return null;
+    }
+
+    public async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
+    {
+        var data = await ServerCom.ReadTextFromURL(VersionsLink);
+        foreach (var item in data)
+        {
+            if (item.StartsWith("#"))
+                continue;
+
+            string[] split = item.Split(',');
+            if (split[0] == pakName)
+            {
+                Console.WriteLine("Searched for " + pakName + " and found " + split[1] + " as version.\nUsed url: " + VersionsLink);
+                return new VersionString(split[1]);
+            }
+                
+        }
         return null;
     }
 

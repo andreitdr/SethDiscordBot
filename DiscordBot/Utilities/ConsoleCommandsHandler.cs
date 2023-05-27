@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Threading;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,20 +21,29 @@ namespace DiscordBot.Utilities;
 
 public class ConsoleCommandsHandler
 {
-    private static readonly PluginsManager manager =
-        new("https://raw.githubusercontent.com/Wizzy69/installer/discord-bot-files/Plugins.txt");
 
-    private static readonly List<ConsoleCommand> commandList = new();
+    public static ConsoleCommandsHandler handler;
+    private readonly PluginsManager manager;
+
+    private readonly List<ConsoleCommand> commandList = new();
 
 
-    private static bool isDownloading;
-    private static bool pluginsLoaded;
-    private readonly DiscordSocketClient? client;
+    private bool isDownloading;
+    private bool pluginsLoaded;
+    private DiscordSocketClient client;
 
     public ConsoleCommandsHandler(DiscordSocketClient client)
     {
         this.client = client;
+        
+        manager = new PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
         InitializeBasicCommands();
+        Console.WriteLine("Done");
+
+        if (handler == null)
+            handler = this;
+        else
+            throw new Exception("ConsoleCommandsHandler already initialized");
     }
 
     private void InitializeBasicCommands()
@@ -76,7 +86,6 @@ public class ConsoleCommandsHandler
                 }
             }
         );
-
 
         AddCommand("lp", "Load plugins", () =>
             {
@@ -150,6 +159,11 @@ public class ConsoleCommandsHandler
         );
 
         AddCommand("listplugs", "list available plugins", async () => {
+            if(manager == null)
+            {
+                Console.WriteLine("Plugin manager is null");
+                return;
+            }
             var data = await manager.GetAvailablePlugins();
             var items = new List<string[]>
             {
@@ -170,6 +184,7 @@ public class ConsoleCommandsHandler
         AddCommand("dwplug", "download plugin", "dwplug [name]", async args =>
             {
                 isDownloading = true;
+                Utilities.Spinner spinner = new Utilities.Spinner();
                 if (args.Length == 1)
                 {
                     isDownloading = false;
@@ -197,27 +212,17 @@ public class ConsoleCommandsHandler
                     return;
                 }
 
+                spinner.Start();
+
                 string path;
                 if (info[0] == "Plugin")
                     path = "./Data/Plugins/" + name + ".dll";
                 else
                     path = $"./{info[1].Split('/')[info[1].Split('/').Length - 1]}";
 
-                if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
-                {
-                    await ServerCom.DownloadFileAsync(info[1], path, null);
-                    Console.WriteLine("Plugin Downloaded !", this, TextType.SUCCESS);
-                }
-                else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
-                {
-                    var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
-                    bar.Start();
-                    await ServerCom.DownloadFileAsync(info[1], path, null);
-                    bar.Stop("Plugin Downloaded !");
-                }
-
                 
-
+                Console.WriteLine($"Downloading plugin {name} from {info[1]} to {path}");
+                await ServerCom.DownloadFileAsync(info[1], path, null);
 
                 Console.WriteLine("\n");
 
@@ -236,18 +241,9 @@ public class ConsoleCommandsHandler
                         var split = line.Split(',');
                         Console.WriteLine($"\nDownloading item: {split[1]}");
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
-                        if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
-                        {
-                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
-                            Console.WriteLine("Item "+split[1]+" downloaded !", this, TextType.SUCCESS);
-                        }
-                        else if (OperatingSystem.LINUX == Functions.GetOperatingSystem())
-                        {
-                            var bar = new Utilities.ProgressBar(ProgressBarType.NO_END);
-                            bar.Start();
-                            await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
-                            bar.Stop("Item downloaded !");
-                        }
+                        await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
+                            
+                        Console.WriteLine("Item " + split[1] + " downloaded !", this, TextType.SUCCESS);
 
                         Console.WriteLine();
                         if (split[0].EndsWith(".pak"))
@@ -257,12 +253,8 @@ public class ConsoleCommandsHandler
                         else if (split[0].EndsWith(".zip") || split[0].EndsWith(".pkg"))
                         {
                             Console.WriteLine($"Extracting {split[1]} ...");
-                            var bar = new Utilities.ProgressBar(
-                                ProgressBarType.NO_END);
-                            bar.Start();
                             await ArchiveManager.ExtractArchive("./" + split[1], "./", null,
                                                            UnzipProgressType.PercentageFromTotalSize);
-                            bar.Stop("Extracted");
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -270,12 +262,14 @@ public class ConsoleCommandsHandler
 
                     Console.WriteLine();
                 }
+                spinner.Stop();
 
-                var ver = await ServerCom.GetVersionOfPackageFromWeb(name);
+                var ver = await manager.GetVersionOfPackageFromWeb(name);
                 if (ver is null) throw new Exception("Incorrect version");
                     Config.Plugins[name] = ver.ToShortString();
 
                 isDownloading = false;
+                
 
                 Config.Logger.Log("Plugin installed !", this, TextType.SUCCESS);
 
@@ -387,43 +381,33 @@ public class ConsoleCommandsHandler
         commandList.Sort((x, y) => x.CommandName.CompareTo(y.CommandName));
     }
 
-    public static void AddCommand(string command, string description, string usage, Action<string[]> action)
+    public void AddCommand(string command, string description, string usage, Action<string[]> action)
     {
+        Console.WriteLine($"Adding command {command} ...");
         commandList.Add(new ConsoleCommand
         { CommandName = command, Description = description, Action = action, Usage = usage });
         Console.ForegroundColor = ConsoleColor.White;
         Utilities.WriteColorText($"Command &r{command} &cadded to the list of commands");
     }
 
-    public static void AddCommand(string command, string description, Action action)
+    public void AddCommand(string command, string description, Action action)
     {
         AddCommand(command, description, command, args => action());
     }
 
-    public static void RemoveCommand(string command)
+    public void RemoveCommand(string command)
     {
         commandList.RemoveAll(x => x.CommandName == command);
     }
 
-    public static bool CommandExists(string command)
+    public bool CommandExists(string command)
     {
         return GetCommand(command) is not null;
     }
 
-    public static ConsoleCommand? GetCommand(string command)
+    public ConsoleCommand? GetCommand(string command)
     {
         return commandList.FirstOrDefault(t => t.CommandName == command);
-    }
-
-    public static async Task ExecuteCommad(string command)
-    {
-        var args = command.Split(' ');
-        foreach (var item in commandList.ToList())
-            if (item.CommandName == args[0])
-            {
-                item.Action.Invoke(args);
-                while (isDownloading) await Task.Delay(1000);
-            }
     }
 
     public bool HandleCommand(string command, bool removeCommandExecution = true)
