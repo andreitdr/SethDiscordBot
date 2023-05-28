@@ -106,7 +106,7 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.Data.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this, Others.TextType.ERROR);
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this, Others.LogLevel.ERROR);
             await Task.Delay(4000);
             Environment.Exit(0);
         }
@@ -136,7 +136,7 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Config.Logger.Log(message.Message, this, Others.TextType.ERROR);
+                Config.Logger.Log(message.Message, this, Others.LogLevel.ERROR);
 
                 break;
 

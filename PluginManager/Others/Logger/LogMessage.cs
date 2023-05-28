@@ -9,17 +9,17 @@ namespace PluginManager.Others.Logger
     public class LogMessage
     {
         public string Message { get; set; }
-        public TextType Type { get; set; }
+        public LogLevel Type { get; set; }
         public string Time { get; set; }
         public string Sender { get; set; }
-        public LogMessage(string message, TextType type)
+        public LogMessage(string message, LogLevel type)
         {
             Message = message;
             Type = type;
             Time = DateTime.Now.ToString("HH:mm:ss");
         }
 
-        public LogMessage(string message, TextType type, string sender) : this(message, type)
+        public LogMessage(string message, LogLevel type, string sender) : this(message, type)
         {
             Sender = sender;
         }
@@ -31,15 +31,15 @@ namespace PluginManager.Others.Logger
 
         public static explicit operator LogMessage(string message)
         {
-            return new LogMessage(message, TextType.NORMAL);
+            return new LogMessage(message, LogLevel.INFO);
         }
 
-        public static explicit operator LogMessage((string message, TextType type) tuple)
+        public static explicit operator LogMessage((string message, LogLevel type) tuple)
         {
             return new LogMessage(tuple.message, tuple.type);
         }
 
-        public static explicit operator LogMessage((string message, TextType type, string sender) tuple)
+        public static explicit operator LogMessage((string message, LogLevel type, string sender) tuple)
         {
             return new LogMessage(tuple.message, tuple.type, tuple.sender);
         }

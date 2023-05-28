@@ -14,7 +14,8 @@ public class PluginsManager
     /// <summary>
     ///     The Plugin Manager constructor
     /// </summary>
-    /// <param name="link">The link to the file where all plugins are stored</param>
+    /// <param name="plink">The link to the file where all plugins are stored</param>
+    /// <param name="vlink">The link to the file where all plugin versions are stored</param>
     public PluginsManager(string plink, string vlink)
     {
         PluginsLink = plink;
@@ -82,7 +83,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, TextType.ERROR);
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, LogLevel.ERROR);
         }
 
         return null;
@@ -134,7 +135,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, TextType.ERROR);
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, LogLevel.ERROR);
         }
 
         return new string[] { null!, null!, null! };

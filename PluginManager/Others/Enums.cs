@@ -12,22 +12,9 @@ public enum OperatingSystem
 }
 
 /// <summary>
-///     A list with all errors
-/// </summary>
-public enum Error
-{
-    UNKNOWN_ERROR,
-    GUILD_NOT_FOUND,
-    STREAM_NOT_FOUND,
-    INVALID_USER,
-    INVALID_CHANNEL,
-    INVALID_PERMISSIONS
-}
-
-/// <summary>
 ///     The output log type
 /// </summary>
-public enum OutputLogLevel
+public enum LogLevel
 {
     NONE,
     INFO,
@@ -38,21 +25,13 @@ public enum OutputLogLevel
 
 public enum UnzipProgressType
 {
-    PercentageFromNumberOfFiles,
-    PercentageFromTotalSize
+    PERCENTAGE_FROM_NUMBER_OF_FILES,
+    PERCENTAGE_FROM_TOTAL_SIZE
 }
 
 public enum SaveType
 {
     NORMAL,
     BACKUP
-}
-
-public enum TextType
-{
-    NORMAL,
-    ERROR,
-    WARNING,
-    SUCCESS
 }
 

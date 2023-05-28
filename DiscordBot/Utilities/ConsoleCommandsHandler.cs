@@ -243,7 +243,7 @@ public class ConsoleCommandsHandler
                         if (File.Exists("./" + split[1])) File.Delete("./" + split[1]);
                         await ServerCom.DownloadFileAsync(split[0], "./" + split[1], null);
                             
-                        Console.WriteLine("Item " + split[1] + " downloaded !", this, TextType.SUCCESS);
+                        Console.WriteLine("Item " + split[1] + " downloaded !");
 
                         Console.WriteLine();
                         if (split[0].EndsWith(".pak"))
@@ -254,7 +254,7 @@ public class ConsoleCommandsHandler
                         {
                             Console.WriteLine($"Extracting {split[1]} ...");
                             await ArchiveManager.ExtractArchive("./" + split[1], "./", null,
-                                                           UnzipProgressType.PercentageFromTotalSize);
+                                                           UnzipProgressType.PERCENTAGE_FROM_TOTAL_SIZE);
                             Console.WriteLine("\n");
                             File.Delete("./" + split[1]);
                         }
@@ -271,7 +271,7 @@ public class ConsoleCommandsHandler
                 isDownloading = false;
                 
 
-                Config.Logger.Log("Plugin installed !", this, TextType.SUCCESS);
+                Config.Logger.Log("Plugin installed !", this, LogLevel.INFO);
 
                 //await ExecuteCommad("localload " + name);
             }
@@ -373,7 +373,7 @@ public class ConsoleCommandsHandler
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                Config.Logger.Log(ex.Message, this, TextType.ERROR);
+                Config.Logger.Log(ex.Message, this, LogLevel.ERROR);
             }
         });
 

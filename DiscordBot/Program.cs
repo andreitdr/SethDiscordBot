@@ -14,7 +14,7 @@ using PluginManager.Online.Helpers;
 using PluginManager.Others;
 
 using DiscordBot.Utilities;
-
+using Microsoft.VisualBasic.CompilerServices;
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 using static PluginManager.Config;
 
@@ -121,7 +121,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.ToString(), "Bot", TextType.ERROR);
+            Config.Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             return null;
         }
     }
@@ -154,7 +154,7 @@ public class Program
                 if (Config.Data.ContainsKey("LaunchMessage"))
                     Config.Data.Add("LaunchMessage",
                                          "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
-                Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", "Bot", TextType.ERROR);
+                Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", "Bot", LogLevel.ERROR);
             }
         }
         return;
@@ -200,7 +200,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                Config.Logger.Log(ex.ToString(), "Bot", TextType.ERROR);
+                Config.Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             }
         }
 
@@ -284,7 +284,7 @@ public class Program
                             }
                             catch (Exception ex)
                             {
-                                Config.Logger.Log(ex.Message, "Updater", TextType.ERROR);
+                                Config.Logger.Log(ex.Message, "Updater", LogLevel.ERROR);
                                 if (ex.Message.Contains("Access de"))
                                     Config.Logger.Log("Please run the bot as root.");
                             }

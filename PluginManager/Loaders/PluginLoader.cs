@@ -87,10 +87,10 @@ public class PluginLoader
         Events = new List<DBEvent>();
         SlashCommands = new List<DBSlashCommand>();
 
-        Config.Logger.Log("Starting plugin loader ... Client: " + _client.CurrentUser.Username, this, Others.TextType.NORMAL);
+        Config.Logger.Log("Starting plugin loader ... Client: " + _client.CurrentUser.Username, this, Others.LogLevel.INFO);
 
         var loader = new Loader("./Data/Plugins", "dll");
-        loader.FileLoaded += (args) => Config.Logger.Log($"{args.PluginName} file Loaded", this , Others.TextType.SUCCESS);
+        loader.FileLoaded += (args) => Config.Logger.Log($"{args.PluginName} file Loaded", this , Others.LogLevel.INFO);
         loader.PluginLoaded += Loader_PluginLoaded;
         var res = loader.Load();
         Events = res.Item1;
@@ -116,7 +116,7 @@ public class PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    Config.Logger.Log(ex.Message, this, Others.TextType.ERROR);
+                    Config.Logger.Log(ex.Message, this, Others.LogLevel.ERROR);
                 }
                 break;
             case "DBSlashCommand":
@@ -146,13 +146,13 @@ public class PluginLoader
                 var instance = (DBEvent)Activator.CreateInstance(type);
                 instance.Start(client);
                 PluginLoader.Events.Add(instance);
-                Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", Others.TextType.SUCCESS);
+                Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", Others.LogLevel.INFO);
             }
             else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
             {
                 var instance = (DBCommand)Activator.CreateInstance(type);
                 PluginLoader.Commands.Add(instance);
-                Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", Others.TextType.SUCCESS);
+                Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", Others.LogLevel.INFO);
             }
             else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
             {
@@ -165,7 +165,7 @@ public class PluginLoader
 
                 await client.CreateGlobalApplicationCommandAsync(builder.Build());
                 PluginLoader.SlashCommands.Add(instance);
-                Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", Others.TextType.SUCCESS);
+                Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", Others.LogLevel.INFO);
 
             }
     }

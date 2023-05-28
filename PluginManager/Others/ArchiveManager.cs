@@ -58,7 +58,7 @@ namespace PluginManager.Others
             }
             catch (Exception ex)
             {
-                Config.Logger.Log(ex.Message, "Archive Manager", TextType.ERROR); // Write the error to a file
+                Config.Logger.Log(ex.Message, "Archive Manager", LogLevel.ERROR); // Write the error to a file
                 await Task.Delay(100);
                 return await ReadFromPakAsync(FileName, archFile);
             }
@@ -79,7 +79,7 @@ namespace PluginManager.Others
             Directory.CreateDirectory(folder);
             using (var archive = ZipFile.OpenRead(zip))
             {
-                if (type == UnzipProgressType.PercentageFromNumberOfFiles)
+                if (type == UnzipProgressType.PERCENTAGE_FROM_NUMBER_OF_FILES)
                 {
                     var totalZIPFiles = archive.Entries.Count();
                     var currentZIPFile = 0;
@@ -95,7 +95,7 @@ namespace PluginManager.Others
                             }
                             catch (Exception ex)
                             {
-                                Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", TextType.ERROR);
+                                Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", LogLevel.ERROR);
                             }
 
                         currentZIPFile++;
@@ -104,7 +104,7 @@ namespace PluginManager.Others
                             progress.Report((float)currentZIPFile / totalZIPFiles * 100);
                     }
                 }
-                else if (type == UnzipProgressType.PercentageFromTotalSize)
+                else if (type == UnzipProgressType.PERCENTAGE_FROM_TOTAL_SIZE)
                 {
                     ulong zipSize = 0;
 
@@ -127,7 +127,7 @@ namespace PluginManager.Others
                         }
                         catch (Exception ex)
                         {
-                            Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", TextType.ERROR);
+                            Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}", "Archive Manager", LogLevel.ERROR);
                         }
 
                         await Task.Delay(10);

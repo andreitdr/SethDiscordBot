@@ -16,7 +16,7 @@ namespace PluginManager.Others.Logger
         public IReadOnlyList<LogMessage> Logs => LogHistory;
         public IReadOnlyList<LogMessage> Errors => ErrorHistory;
 
-        public delegate void LogHandler(string message, TextType logType);
+        public delegate void LogHandler(string message, LogLevel logType);
         public event LogHandler LogEvent;
 
         private string _logFolder;
@@ -28,20 +28,20 @@ namespace PluginManager.Others.Logger
             _errFolder = Config.Data["ErrorFolder"];
         }
 
-        public void Log(string message, string sender = "unknown", TextType type = TextType.NORMAL) => Log(new LogMessage(message, type, sender));
+        public void Log(string message, string sender = "unknown", LogLevel type = LogLevel.INFO) => Log(new LogMessage(message, type, sender));
 
         public void Log(LogMessage message)
         {
             if(LogEvent is not null)
                 LogEvent?.Invoke(message.Message, message.Type);
 
-            if (message.Type != TextType.ERROR)
+            if (message.Type != LogLevel.NONE)
                 LogHistory.Add(message);
             else
                 ErrorHistory.Add(message);
         }
 
-        public void Log(string message, object sender, TextType type = TextType.NORMAL) => Log(message, sender.GetType().Name, type);
+        public void Log(string message, object sender, LogLevel type = LogLevel.NONE) => Log(message, sender.GetType().Name, type);
 
         public async void SaveToFile()
         {

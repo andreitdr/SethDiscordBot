@@ -60,7 +60,7 @@ namespace PluginManager.Loaders
                 }
                 catch (Exception ex)
                 {
-                    Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", this, Others.TextType.ERROR);
+                    Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", this, Others.LogLevel.ERROR);
                     continue;
                 }
                 if (FileLoaded != null)
@@ -131,7 +131,7 @@ namespace PluginManager.Loaders
             }
             catch (Exception ex)
             {
-                Config.Logger.Log(ex.Message, this, Others.TextType.ERROR);
+                Config.Logger.Log(ex.Message, this, Others.LogLevel.ERROR);
 
                 return null;
             }

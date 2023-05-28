@@ -41,7 +41,7 @@ public static class Config
 
         IsLoaded = true;
 
-        Logger.Log("Config initialized", TextType.NORMAL);
+        Logger.Log("Config initialized", LogLevel.INFO);
     }
 
     public class Json<TKey, TValue> : IDictionary<TKey, TValue>

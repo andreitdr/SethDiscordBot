@@ -32,7 +32,7 @@ namespace DiscordBot
             Config.Data.Add("prefix", prefix);
             Config.Data.Add("ServerID", serverId);
 
-            Config.Logger.Log("Config Saved", "Installer", TextType.NORMAL);
+            Config.Logger.Log("Config Saved", "Installer", LogLevel.INFO);
 
             Config.Data.Save();
 
