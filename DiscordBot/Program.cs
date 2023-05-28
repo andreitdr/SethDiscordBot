@@ -215,112 +215,138 @@ public class Program
             switch (s[0])
             {
                 case "CurrentVersion":
-                    var newVersion = s[1];
                     var currentVersion = Config.Data["Version"];
-                    if (!newVersion.Equals(currentVersion))
+                    var newVersion = s[1];
+                    if(newVersion != currentVersion)
                     {
-                        var nVer = new VersionString(newVersion.Substring(2));
-                        var cVer = new VersionString((Config.Data["Version"]).Substring(2));
-                        if (cVer > nVer)
-                        {
-                            Config.Data["Version"] = "1." + cVer.ToShortString() + " (Beta)";
-                            break;
-                        }
+                        Console.WriteLine("A new updated was found. Check the changelog for more information.");
+                        Console.WriteLine("Current version: " + currentVersion);
+                        Console.WriteLine("Latest version: " + newVersion);
 
-                        if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
-                        {
-                            Console.Clear();
-                            Console.WriteLine("A new update was found !");
-                            Console.WriteLine("Run the launcher to update");
-                            Console.WriteLine("Current version: " + currentVersion);
-                            Console.WriteLine("Latest version: " + s[1]);
-
-                            File.WriteAllText("version.txt", currentVersion);
-
-                            await Task.Delay(3000);
-
-                            break;
-                        }
-
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("A new version of the bot is available !");
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("Current version : " +
-                                         Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("New version : " + newVersion);
-                        Console.ForegroundColor = ConsoleColor.White;
-
-                        File.WriteAllText("version.txt", newVersion);
-
-                        Console.WriteLine("Changelog :");
-
-                        List<string> changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
-                        foreach (var item in changeLog)
-                            Utilities.Utilities.WriteColorText(item);
-                        Console.WriteLine("Do you want to update the bot ? (y/n)");
+                        Console.WriteLine("Woud you like to go to the download page ? (y/n)");
                         if (Console.ReadKey().Key == ConsoleKey.Y)
                         {
-                            var url = URLs["LinuxBot"].Replace("{0}", newVersion);
-                            Config.Logger.Log($"executing: download_file {url}");
-
-                            await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Console.WriteLine($"\rProgress: {percent}%        "); }));
-                            await File.WriteAllTextAsync("Install.sh",
-                                                         "#!/bin/bash\nunzip -qq -o update.zip \nrm update.zip\nchmod a+x DiscordBot");
-
-                            try
-                            {
-                                Console.WriteLine("executing: chmod a+x Install.sh");
-                                Process.Start("chmod", "a+x Install.sh").WaitForExit();
-                                Process.Start("Install.sh").WaitForExit();
-
-                                Console.WriteLine("executing: rm Install.sh");
-                                Process.Start("rm", "Install.sh").WaitForExit();
-
-                                Config.Logger.Log("The new version of the bot has been installed.");
-                                Console.WriteLine("Please restart the bot.");
-                                Environment.Exit(0);
-                            }
-                            catch (Exception ex)
-                            {
-                                Config.Logger.Log(ex.Message, "Updater", LogLevel.ERROR);
-                                if (ex.Message.Contains("Access de"))
-                                    Config.Logger.Log("Please run the bot as root.");
-                            }
-
-
+                            Process.Start($"https://github.com/Wizzy69/SethDiscordBot/releases/tag/v{newVersion}");
                         }
+
+                        Console.WriteLine("Press any key to continue ...");
+                        Console.ReadKey();
                     }
+                break;
+            //     case "CurrentVersion":
+            //         var newVersion = s[1];
+            //         var currentVersion = Config.Data["Version"];
 
-                    break;
-                case "LauncherVersion":
-                    var updaternewversion = s[1];
-                    //File.WriteAllText(updaternewversion + ".txt", updaternewversion);
-                    if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
-                        break;
+            //         if (!newVersion.Equals(currentVersion))
+            //         {
 
-                    Directory.CreateDirectory(Functions.dataFolder + "Applications");
-                    if (!Config.Data.ContainsKey("LauncherVersion"))
-                        Config.Data["LauncherVersion"] = "0.0.0.0";
-                    if (Config.Data["LauncherVersion"] != updaternewversion ||
-                        !File.Exists("./Launcher.exe"))
-                    {
-                        Console.Clear();
-                        Console.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
-                        var bar = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
-                        bar.Start();
-                        await ServerCom.DownloadFileAsync(URLs["WindowsLauncher"], $"./Launcher.exe", null);
-                        //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
-                        //                                    UnzipProgressType.PercentageFromTotalSize);
-                        Config.Data["LauncherVersion"] = updaternewversion;
-                        // File.Delete("Updater.zip");
-                        bar.Stop("The launcher has been updated !");
-                        Console.Clear();
-                    }
+            //             var nVer = new VersionString(newVersion.Substring(2));
+            //             var cVer = new VersionString((Config.Data["Version"]).Substring(2));
+            //             if (cVer > nVer)
+            //             {
+            //                 Config.Data["Version"] = "1." + cVer.ToShortString() + " (Beta)";
+            //                 break;
+            //             }
 
-                    break;
-            }
+            //             if (OperatingSystem.WINDOWS == Functions.GetOperatingSystem())
+            //             {
+            //                 Console.Clear();
+            //                 Console.WriteLine("A new update was found !");
+            //                 Console.WriteLine("Run the launcher to update");
+            //                 Console.WriteLine("Current version: " + currentVersion);
+            //                 Console.WriteLine("Latest version: " + s[1]);
+
+            //                 File.WriteAllText("version.txt", currentVersion);
+
+            //                 await Task.Delay(3000);
+
+            //                 break;
+            //             }
+
+            //             if(OperatingSystem.LINUX == Functions.GetOperatingSystem())
+            //             {
+            //                 Console.WriteLine("A new update was found !");
+            //                 Console.WriteLine("Run the launcher to update");
+            //             }
+            //             Console.Clear();
+            //             Console.ForegroundColor = ConsoleColor.Red;
+            //             Console.WriteLine("A new version of the bot is available !");
+            //             Console.ForegroundColor = ConsoleColor.Yellow;
+            //             Console.WriteLine("Current version : " +
+            //                              Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            //             Console.ForegroundColor = ConsoleColor.Green;
+            //             Console.WriteLine("New version : " + newVersion);
+            //             Console.ForegroundColor = ConsoleColor.White;
+
+            //             File.WriteAllText("version.txt", newVersion);
+
+            //             Console.WriteLine("Changelog :");
+
+            //             List<string> changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
+            //             foreach (var item in changeLog)
+            //                 Utilities.Utilities.WriteColorText(item);
+            //             Console.WriteLine("Do you want to update the bot ? (y/n)");
+            //             if (Console.ReadKey().Key == ConsoleKey.Y)
+            //             {
+            //                 var url = URLs["LinuxBot"].Replace("{0}", newVersion);
+            //                 Config.Logger.Log($"executing: download_file {url}");
+
+            //                 await ServerCom.DownloadFileAsync(url, "./update.zip", new Progress<float>(percent => { Console.WriteLine($"\rProgress: {percent}%        "); }));
+            //                 await File.WriteAllTextAsync("Install.sh",
+            //                                              "#!/bin/bash\nunzip -qq -o update.zip \nrm update.zip\nchmod a+x DiscordBot");
+
+            //                 try
+            //                 {
+            //                     Console.WriteLine("executing: chmod a+x Install.sh");
+            //                     Process.Start("chmod", "a+x Install.sh").WaitForExit();
+            //                     Process.Start("Install.sh").WaitForExit();
+
+            //                     Console.WriteLine("executing: rm Install.sh");
+            //                     Process.Start("rm", "Install.sh").WaitForExit();
+
+            //                     Config.Logger.Log("The new version of the bot has been installed.");
+            //                     Console.WriteLine("Please restart the bot.");
+            //                     Environment.Exit(0);
+            //                 }
+            //                 catch (Exception ex)
+            //                 {
+            //                     Config.Logger.Log(ex.Message, "Updater", LogLevel.ERROR);
+            //                     if (ex.Message.Contains("Access de"))
+            //                         Config.Logger.Log("Please run the bot as sudo.");
+            //                 }
+
+
+            //             }
+            //         }
+
+            //         break;
+            //     case "LauncherVersion":
+            //         var updaternewversion = s[1];
+            //         //File.WriteAllText(updaternewversion + ".txt", updaternewversion);
+            //         if (Functions.GetOperatingSystem() == OperatingSystem.LINUX)
+            //             break;
+
+            //         Directory.CreateDirectory(Functions.dataFolder + "Applications");
+            //         if (!Config.Data.ContainsKey("LauncherVersion"))
+            //             Config.Data["LauncherVersion"] = "0.0.0.0";
+            //         if (Config.Data["LauncherVersion"] != updaternewversion ||
+            //             !File.Exists("./Launcher.exe"))
+            //         {
+            //             Console.Clear();
+            //             Console.WriteLine("Installing a new Launcher ...\nDo NOT close the bot during update !");
+            //             var bar = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
+            //             bar.Start();
+            //             await ServerCom.DownloadFileAsync(URLs["WindowsLauncher"], $"./Launcher.exe", null);
+            //             //await ArchiveManager.ExtractArchive("./Updater.zip", "./", null,
+            //             //                                    UnzipProgressType.PercentageFromTotalSize);
+            //             Config.Data["LauncherVersion"] = updaternewversion;
+            //             // File.Delete("Updater.zip");
+            //             bar.Stop("The launcher has been updated !");
+            //             Console.Clear();
+            //         }
+
+            //         break;
+             }
         }
 
         Console.Clear();
