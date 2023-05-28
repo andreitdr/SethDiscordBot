@@ -223,11 +223,7 @@ public class Program
                         Console.WriteLine("Current version: " + currentVersion);
                         Console.WriteLine("Latest version: " + newVersion);
 
-                        Console.WriteLine("Woud you like to go to the download page ? (y/n)");
-                        if (Console.ReadKey().Key == ConsoleKey.Y)
-                        {
-                            Process.Start($"https://github.com/Wizzy69/SethDiscordBot/releases/tag/v{newVersion}");
-                        }
+                        Console.WriteLine($"Download from here: https://github.com/Wizzy69/SethDiscordBot/releases/tag/v{newVersion}");
 
                         Console.WriteLine("Press any key to continue ...");
                         Console.ReadKey();
