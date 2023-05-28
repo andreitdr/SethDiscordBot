@@ -220,6 +220,9 @@ public class Program
                     if(newVersion != currentVersion)
                     {
                         Console.WriteLine("A new updated was found. Check the changelog for more information.");
+                        List<string> changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
+                        foreach (var item in changeLog)
+                            Utilities.Utilities.WriteColorText(item);
                         Console.WriteLine("Current version: " + currentVersion);
                         Console.WriteLine("Latest version: " + newVersion);
 
