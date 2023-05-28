@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 using PluginManager;
 using PluginManager.Bot;
@@ -42,8 +43,8 @@ public class Program
         {
             Installer.GenerateStartupConfig();
         }
-
-        HandleInput(args).Wait();
+        
+        HandleInput(args.ToList()).Wait(); 
     }
 
     /// <summary>
@@ -120,7 +121,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.ToString(),"Bot",TextType.ERROR);
+            Config.Logger.Log(ex.ToString(), "Bot", TextType.ERROR);
             return null;
         }
     }
@@ -129,39 +130,39 @@ public class Program
     ///     Handle user input arguments from the startup of the application
     /// </summary>
     /// <param name="args">The arguments</param>
-    private static async Task HandleInput(string[] args)
+    private static async Task HandleInput(List<string> args)
     {
-        var len = args.Length;
 
         Console.WriteLine("Loading Core ...");
 
         var b = await StartNoGui();
         consoleCommandsHandler = new ConsoleCommandsHandler(b.client);
-
-        var mainThread = new Thread(() =>
+        try
         {
-            try
+            if(args.Contains("--gui"))
             {
-                Console.WriteLine("Launching core functions ...");
-                NoGUI();
+                 // GUI not implemented yet 
+                 Console.WriteLine("GUI not implemented yet");
+                 return;
             }
-            catch (IOException ex)
+            NoGUI();
+        }
+        catch (IOException ex)
+        {
+            if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
-                {
-                    if (Config.Data.ContainsKey("LaunchMessage"))
-                        Config.Data.Add("LaunchMessage",
-                                             "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
-                    Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !","Bot",TextType.ERROR);
-                }
+                if (Config.Data.ContainsKey("LaunchMessage"))
+                    Config.Data.Add("LaunchMessage",
+                                         "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
+                Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", "Bot", TextType.ERROR);
             }
-        });
-        mainThread.Start();
+        }
+        return;
     }
 
     private static async Task PreLoadComponents(string[] args)
     {
-        
+
         await Config.Initialize();
 
         if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
@@ -170,8 +171,8 @@ public class Program
         }
 
 
-        URLs = new Json<string, string>("./Data/Resources/URLs.json"); 
-        
+        URLs = new Json<string, string>("./Data/Resources/URLs.json");
+
         Config.Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
 
 
@@ -199,7 +200,7 @@ public class Program
             }
             catch (Exception ex)
             {
-                Config.Logger.Log(ex.ToString(),"Bot",TextType.ERROR);
+                Config.Logger.Log(ex.ToString(), "Bot", TextType.ERROR);
             }
         }
 
@@ -283,7 +284,7 @@ public class Program
                             }
                             catch (Exception ex)
                             {
-                                Config.Logger.Log(ex.Message,"Updater", TextType.ERROR);
+                                Config.Logger.Log(ex.Message, "Updater", TextType.ERROR);
                                 if (ex.Message.Contains("Access de"))
                                     Config.Logger.Log("Please run the bot as root.");
                             }
