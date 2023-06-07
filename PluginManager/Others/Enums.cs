@@ -35,3 +35,8 @@ public enum SaveType
     BACKUP
 }
 
+public enum InternalActionRunType
+{
+    ON_STARTUP,
+    ON_CALL
+}

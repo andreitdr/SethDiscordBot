@@ -29,13 +29,14 @@ namespace PluginManager.Others.Logger
         }
 
         public void Log(string message, string sender = "unknown", LogLevel type = LogLevel.INFO) => Log(new LogMessage(message, type, sender));
+        public void Error(Exception? e) => Log(e.Message, e.Source, LogLevel.ERROR);
 
         public void Log(LogMessage message)
         {
             if(LogEvent is not null)
                 LogEvent?.Invoke(message.Message, message.Type);
 
-            if (message.Type != LogLevel.NONE)
+            if (message.Type != LogLevel.ERROR && message.Type != LogLevel.CRITICAL)
                 LogHistory.Add(message);
             else
                 ErrorHistory.Add(message);

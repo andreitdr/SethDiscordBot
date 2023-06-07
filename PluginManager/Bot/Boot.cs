@@ -88,6 +88,9 @@ public class Boot
 
 
         await Task.Delay(2000);
+
+        Config._DiscordBotClient = this;
+
         while (!isReady) ;
     }
 

@@ -110,7 +110,10 @@ namespace PluginManager.Loaders
                                 Exception = null,
                                 IsLoaded = true,
                                 PluginName = type.FullName,
-                                TypeName = typeof(T) == typeof(DBCommand) ? "DBCommand" : typeof(T) == typeof(DBEvent) ? "DBEvent" : "DBSlashCommand",
+                                TypeName  =  typeof(T) == typeof(DBCommand) ? "DBCommand" :
+                                             typeof(T) == typeof(DBEvent) ? "DBEvent" : 
+                                             typeof(T) == typeof(DBSlashCommand) ? "DBSlashCommand" : 
+                                             null,
                                 Plugin = plugin
                             }
                             );

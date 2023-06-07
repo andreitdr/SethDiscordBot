@@ -5,18 +5,23 @@ using System.IO;
 using System.Collections.Generic;
 using PluginManager.Others;
 using System.Collections;
-using PluginManager.Online.Helpers;
 using PluginManager.Others.Logger;
 
 namespace PluginManager;
 
-public static class Config
+public class Config
 {
     private static bool IsLoaded = false;
-
     public static DBLogger Logger;
     public static Json<string, string> Data;
     public static Json<string, string> Plugins;
+
+    internal static Bot.Boot? _DiscordBotClient;
+
+    public static Bot.Boot? DiscordBot
+    {
+        get => _DiscordBotClient;
+    }
 
     public static async Task Initialize()
     {
