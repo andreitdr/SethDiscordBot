@@ -54,6 +54,14 @@ public class Config
         protected IDictionary<TKey, TValue> _dictionary;
         private readonly string _file = "";
         
+        /// <summary>
+        /// Empty constructor
+        /// </summary>
+        public Json()
+        {
+            _dictionary = new Dictionary<TKey, TValue>();
+        }
+
         public Json(string file)
         {
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
@@ -62,7 +70,8 @@ public class Config
 
         public async void Save()
         {
-            await Functions.SaveToJsonFile(_file, _dictionary);
+            if(!string.IsNullOrEmpty(_file))
+                await Functions.SaveToJsonFile(_file, _dictionary);
         }
 
         public virtual void Add(TKey key, TValue value)

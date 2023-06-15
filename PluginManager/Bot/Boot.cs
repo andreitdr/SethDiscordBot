@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Discord;
@@ -68,7 +69,6 @@ public class Boot
 
                 //Disable system clock checkup (for responses at slash commands)
                 UseInteractionSnowflakeDate = false,
-
                 GatewayIntents = GatewayIntents.All
             };
 
@@ -110,6 +110,7 @@ public class Boot
         {
             Config.Data.Remove("token");
             Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this, Others.LogLevel.ERROR);
+            Config.Data.Save();
             await Task.Delay(4000);
             Environment.Exit(0);
         }

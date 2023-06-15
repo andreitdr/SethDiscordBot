@@ -18,19 +18,28 @@ namespace DiscordBot
             Console.WriteLine("Welcome to the SethBot installer !");
             Console.WriteLine("First, we need to configure the bot. Don't worry, it will be quick !");
             Console.WriteLine("The following information will be stored in the config.json file in the ./Data/Resources folder. You can change it later from there.");
-            Console.WriteLine("The bot tokn is required to run the bot. You can get it from the Discord Developer Portal. (https://discord.com/developers/applications)");
-            Console.WriteLine("Please enter the bot token :");
-            var token = Console.ReadLine();
+            Console.WriteLine("The bot token is required to run the bot. You can get it from the Discord Developer Portal. (https://discord.com/developers/applications)");
 
-            Console.WriteLine("Please enter the bot prefix :");
-            var prefix = Console.ReadLine();
+            if (!Config.Data.ContainsKey("token"))
+            {
+                Console.WriteLine("Please enter the bot token :");
+                var token = Console.ReadLine();
+                Config.Data.Add("token", token);
+            }
 
-            Console.WriteLine("Please enter the Server ID :");
-            var serverId = Console.ReadLine();
+            if (!Config.Data.ContainsKey("prefix"))
+            {
+                Console.WriteLine("Please enter the bot prefix :");
+                var prefix = Console.ReadLine();
+                Config.Data.Add("prefix", prefix);
+            }
 
-            Config.Data.Add("token", token);
-            Config.Data.Add("prefix", prefix);
-            Config.Data.Add("ServerID", serverId);
+            if (!Config.Data.ContainsKey("ServerID"))
+            {
+                Console.WriteLine("Please enter the Server ID :");
+                var serverId = Console.ReadLine();
+                Config.Data.Add("ServerID", serverId);
+            }
 
             Config.Logger.Log("Config Saved", "Installer", LogLevel.INFO);
 
