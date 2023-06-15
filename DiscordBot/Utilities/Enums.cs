@@ -12,10 +12,4 @@ namespace DiscordBot.Utilities
         CENTER_OVERALL_LENGTH,
         DEFAULT
     }
-
-    public enum ProgressBarType
-    {
-        NORMAL,
-        NO_END
-    }
 }

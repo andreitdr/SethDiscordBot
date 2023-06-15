@@ -51,7 +51,7 @@ public class Plugin : ICommandAction
 
                 items.Add(new[] { "-", "-", "-", "-" });
 
-                DiscordBot.Utilities.Utilities.FormatAndAlignTable(items, Utilities.TableFormat.DEFAULT);
+                Utilities.Utilities.FormatAndAlignTable(items, Utilities.TableFormat.DEFAULT);
                 break;
             
             
