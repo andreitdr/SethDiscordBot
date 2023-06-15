@@ -113,14 +113,10 @@ namespace DiscordBot
             string path = "./Data/Resources/URLs.json";
 
             Directory.CreateDirectory("./Data/Resources");
-            Utilities.Utilities.ProgressBar bar = new Utilities.Utilities.ProgressBar(Utilities.ProgressBarType.NORMAL){
-                Max = 100,
-                Color = ConsoleColor.Green,
-                NoColor = true
-            };
-            IProgress<float> downloadProgress = new Progress<float>(p => bar.Update(p));
-            await ServerCom.DownloadFileAsync(url, path, downloadProgress, null);
-            bar.Update(bar.Max);
+            Utilities.Utilities.Spinner spinner = new Utilities.Utilities.Spinner();
+            spinner.Start();
+            await ServerCom.DownloadFileAsync(url, path, null);
+            spinner.Stop();
         }
     }
 }

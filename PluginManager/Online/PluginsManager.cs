@@ -138,6 +138,6 @@ public class PluginsManager
             Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, LogLevel.ERROR);
         }
 
-        return new string[] { null!, null!, null! };
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -200,6 +201,8 @@ public static class Utilities
         if (appendNewLineAtEnd)
             Console.WriteLine();
     }
+    
+    
 
     public class Spinner
     {
@@ -239,161 +242,5 @@ public static class Utilities
             Console.CursorVisible = true;
         }
     }
-
-
-    /// <summary>
-    ///     Progress bar object
-    /// </summary>
-    public class ProgressBar
-    {
-        private readonly int BarLength = 32;
-
-        private bool isRunning;
-        private int position = 1;
-        private bool positive = true;
-
-        public ProgressBar(ProgressBarType type)
-        {
-            this.type = type;
-        }
-
-        public float Max { get; init; }
-        public ConsoleColor Color { get; init; }
-        public bool NoColor { get; init; }
-        public ProgressBarType type { get; set; }
-
-        public int TotalLength { get; private set; }
-
-
-        public async void Start()
-        {
-            Console.WriteLine();
-            if (type != ProgressBarType.NO_END)
-                throw new Exception("Only NO_END progress bar can use this method");
-            if (isRunning)
-                throw new Exception("This progress bar is already running");
-
-            isRunning = true;
-            while (isRunning)
-            {
-                UpdateNoEnd();
-                await Task.Delay(100);
-            }
-        }
-
-        public async void Start(string message)
-        {
-            if (type != ProgressBarType.NO_END)
-                throw new Exception("Only NO_END progress bar can use this method");
-            if (isRunning)
-                throw new Exception("This progress bar is already running");
-
-            isRunning = true;
-
-            TotalLength = message.Length + BarLength + 5;
-            while (isRunning)
-            {
-                UpdateNoEnd(message);
-                await Task.Delay(100);
-            }
-        }
-
-        public void Stop()
-        {
-            if (type != ProgressBarType.NO_END)
-                throw new Exception("Only NO_END progress bar can use this method");
-            if (!isRunning)
-                throw new Exception("Can not stop a progressbar that did not start");
-            isRunning = false;
-        }
-
-        public void Stop(string message)
-        {
-            Stop();
-
-            if (message is not null)
-            {
-                Console.CursorLeft = 0;
-                for (var i = 0; i < BarLength + message.Length + 1; i++)
-                    Console.Write(" ");
-                Console.CursorLeft = 0;
-                Console.WriteLine(message);
-            }
-        }
-
-        public void Update(float progress)
-        {
-            if (type == ProgressBarType.NO_END)
-                throw new Exception("This function is for progress bars with end");
-
-            UpdateNormal(progress);
-        }
-
-        private void UpdateNoEnd(string message)
-        {
-            Console.CursorLeft = 0;
-            Console.Write("[");
-            for (var i = 1; i <= position; i++)
-                Console.Write(" ");
-            Console.Write("<==()==>");
-            position += positive ? 1 : -1;
-            for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Console.Write(" ");
-            Console.Write("] " + message);
-
-
-            if (position == BarLength - 1 || position == 1)
-                positive = !positive;
-        }
-
-        private void UpdateNoEnd()
-        {
-            Console.CursorLeft = 0;
-            Console.Write("[");
-            for (var i = 1; i <= position; i++)
-                Console.Write(" ");
-            Console.Write("<==()==>");
-            position += positive ? 1 : -1;
-            for (var i = position; i <= BarLength - 1 - (positive ? 0 : 2); i++)
-                Console.Write(" ");
-            Console.Write("]");
-
-
-            if (position == BarLength - 1 || position == 1)
-                positive = !positive;
-        }
-
-        private void UpdateNormal(float progress)
-        {
-            Console.CursorLeft = 0;
-            Console.Write("[");
-            Console.CursorLeft = BarLength;
-            Console.Write("]");
-            Console.CursorLeft = 1;
-            var onechunk = 30.0f / Max;
-
-            var position = 1;
-
-            for (var i = 0; i < onechunk * progress; i++)
-            {
-                Console.BackgroundColor = NoColor ? ConsoleColor.Black : Color;
-                Console.CursorLeft = position++;
-                Console.Write("#");
-            }
-
-            for (var i = position; i < BarLength; i++)
-            {
-                Console.BackgroundColor = NoColor ? ConsoleColor.Black : ConsoleColor.DarkGray;
-                Console.CursorLeft = position++;
-                Console.Write(" ");
-            }
-
-            Console.CursorLeft = BarLength + 4;
-            Console.BackgroundColor = ConsoleColor.Black;
-            if (progress.CanAproximateTo(Max))
-                Console.Write(progress + " %      ✓");
-            else
-                Console.Write(MathF.Round(progress, 2) + " %       ");
-        }
-    }
+    
 }

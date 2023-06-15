@@ -174,8 +174,6 @@ public class Program
 
 
         Console.WriteLine("Loading resources ...");
-        var main = new Utilities.Utilities.ProgressBar(ProgressBarType.NO_END);
-        main.Start();
 
         if (Config.Data.ContainsKey("DeleteLogsAtStartup"))
             if (Config.Data["DeleteLogsAtStartup"] == "true")
@@ -203,7 +201,6 @@ public class Program
 
 
         var onlineSettingsList = await ServerCom.ReadTextFromURL(URLs["Versions"]);
-        main.Stop("Loaded online settings. Loading updates ...");
         foreach (var key in onlineSettingsList)
         {
             if (key.Length <= 3 || !key.Contains(' ')) continue;
