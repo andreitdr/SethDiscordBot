@@ -13,7 +13,7 @@ namespace PluginManager.Others
         public SocketCommandContext context { get; init; }
         public string cleanContent { get; init; }
         public string commandUsed { get;init; }
-        public string[] arguments { get;init; }
+        public string[]? arguments { get;init; }
 
         public DBCommandExecutingArguments(SocketCommandContext context, string cleanContent, string commandUsed, string[] arguments)
         {

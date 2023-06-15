@@ -50,7 +50,7 @@ public class Program
     {
 #if DEBUG
         Console.WriteLine("Debug mode enabled");
-
+        internalActionManager.Execute("plugin", "load").Wait(); // Load plugins at startup
 #endif
 
         while (true)

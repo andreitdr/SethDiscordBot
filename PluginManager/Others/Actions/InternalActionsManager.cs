@@ -37,7 +37,7 @@ namespace PluginManager.Others.Actions
             Config.Logger.Log($"Action {name} loaded successfully", typeName, LogLevel.INFO);
         }
 
-        public async Task<string> Execute(string actionName, string[]? args)
+        public async Task<string> Execute(string actionName, params string[]? args)
         {
             if (!Actions.ContainsKey(actionName))
             {
