@@ -47,9 +47,7 @@ internal class CommandHandler
     {
         try
         {
-            var plugin = PluginLoader.SlashCommands!
-             .Where(p => p.Name == arg.Data.Name)
-             .FirstOrDefault();
+            var plugin = PluginLoader.SlashCommands!.FirstOrDefault(p => p.Name == arg.Data.Name);
 
             if (plugin is null)
                 throw new Exception("Failed to run command. !");
@@ -98,7 +96,7 @@ internal class CommandHandler
 
             await commandService.ExecuteAsync(context, argPos, null);
 
-            DBCommand plugin;
+            DBCommand? plugin;
             string cleanMessage = "";
 
             if (message.HasMentionPrefix(client.CurrentUser, ref argPos))
@@ -132,7 +130,7 @@ internal class CommandHandler
 
             string[] split = cleanMessage.Split(' ');
 
-            string[] argsClean = null;
+            string[]? argsClean = null;
             if(split.Length > 1)
                 argsClean = string.Join(' ', split, 1, split.Length-1).Split(' ');
 

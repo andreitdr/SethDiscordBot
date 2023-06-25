@@ -21,6 +21,7 @@ namespace DiscordBot
                 string assemblyPath = Path.Combine(folderPath, new AssemblyName(args.Name).Name + ".dll");
                 if (!File.Exists(assemblyPath)) return null;
                 Assembly assembly = Assembly.LoadFrom(assemblyPath);
+                
                 return assembly;
             }
 

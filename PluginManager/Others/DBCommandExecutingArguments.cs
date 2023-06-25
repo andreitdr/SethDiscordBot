@@ -15,7 +15,7 @@ namespace PluginManager.Others
         public string commandUsed { get;init; }
         public string[]? arguments { get;init; }
 
-        public DBCommandExecutingArguments(SocketCommandContext context, string cleanContent, string commandUsed, string[] arguments)
+        public DBCommandExecutingArguments(SocketCommandContext context, string cleanContent, string commandUsed, string[]? arguments)
         {
             this.context = context;
             this.cleanContent = cleanContent;
