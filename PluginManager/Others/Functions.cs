@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 
 namespace PluginManager.Others;
 
@@ -99,5 +100,27 @@ public static class Functions
         await text.FlushAsync();
         text.Close();
         return (obj ?? default)!;
+    }
+
+    public static T SelectRandomValueOf<T> ()
+    {
+        var enums = Enum.GetValues(typeof(T));
+        var random = new Random();
+        return (T)enums.GetValue(random.Next(enums.Length));
+    }
+
+    public static T RandomValue<T>(this T[] values)
+    {
+        Random random = new();
+        return values[random.Next(values.Length)];
+    }
+
+    public static Discord.Color RandomColor
+    {
+        get
+        {
+            Random random = new Random();
+            return new Discord.Color(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+        }
     }
 }

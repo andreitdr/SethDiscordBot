@@ -6,7 +6,7 @@ using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
 
-namespace DiscordBot.Discord.Actions;
+namespace DiscordBot.Bot.Actions;
 
 public class Plugin : ICommandAction
 {

@@ -4,7 +4,7 @@ using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
-namespace DiscordBot.Discord.Actions;
+namespace DiscordBot.Bot.Actions;
 
 public class Exit : ICommandAction
 {

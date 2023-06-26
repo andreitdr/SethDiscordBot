@@ -128,17 +128,21 @@ public class Program
     {
 
         Console.WriteLine("Loading Core ...");
-
+        
+        //Handle arguments here:
+        
+        if(args.Contains("--gui"))
+        {
+            // GUI not implemented yet 
+            Console.WriteLine("GUI not implemented yet");
+            return;
+        }
+        
+        // Starting bot after all arguments are handled
+        
         var b = await StartNoGui();
         try
         {
-            if(args.Contains("--gui"))
-            {
-                 // GUI not implemented yet 
-                 Console.WriteLine("GUI not implemented yet");
-                 return;
-            }
-
             internalActionManager = new PluginManager.Others.Actions.InternalActionManager("./Data/Actions", "*.dll");
             await internalActionManager.Initialize();
 
@@ -220,7 +224,7 @@ public class Program
                         Console.WriteLine("Current version: " + currentVersion);
                         Console.WriteLine("Latest version: " + newVersion);
 
-                        Console.WriteLine($"Download from here: https://github.com/Wizzy69/SethDiscordBot/releases/tag/v{newVersion}");
+                        Console.WriteLine($"Download from here: https://github.com/andreitdr/SethDiscordBot/releases");
 
                         Console.WriteLine("Press any key to continue ...");
                         Console.ReadKey();

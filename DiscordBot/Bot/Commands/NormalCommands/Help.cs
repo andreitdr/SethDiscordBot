@@ -7,7 +7,7 @@ using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Others;
 
-namespace DiscordBot.Discord.Commands;
+namespace DiscordBot.Bot.Commands;
 
 /// <summary>
 ///     The help command

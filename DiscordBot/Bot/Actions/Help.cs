@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using PluginManager.Others;
 using PluginManager.Interfaces;
 
-namespace DiscordBot.Discord.Actions
+namespace DiscordBot.Bot.Actions
 {
     public class Help : ICommandAction
     {
