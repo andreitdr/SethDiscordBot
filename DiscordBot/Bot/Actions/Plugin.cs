@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DiscordBot.Utilities;
+using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
@@ -10,12 +12,11 @@ namespace DiscordBot.Bot.Actions;
 
 public class Plugin : ICommandAction
 {
-    public string ActionName => "plugin";
-    public string Description => "Manages plugins. Use plugin help for more info.";
-    public string Usage => "plugin [help|list|load|install]";
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
-
-    private bool pluginsLoaded = false;
+    private bool                  pluginsLoaded;
+    public  string                ActionName  => "plugin";
+    public  string                Description => "Manages plugins. Use plugin help for more info.";
+    public  string                Usage       => "plugin [help|list|load|install]";
+    public  InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)
     {
@@ -33,32 +34,30 @@ public class Plugin : ICommandAction
         switch (args[0])
         {
             case "list":
-                var manager = new PluginManager.Online.PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
+                var manager =
+                    new PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
 
                 var data = await manager.GetAvailablePlugins();
                 var items = new List<string[]>
                 {
                     new[] { "-", "-", "-", "-" },
-                    new[] { "Name", "Type", "Description", "Required" },
+                    new[] { "Name", "Description", "Type", "Version" },
                     new[] { "-", "-", "-", "-" }
                 };
 
-                foreach (var plugin in data)
-                {
-                    items.Add(new[] { plugin[0], plugin[1], plugin[2], plugin[3] });
-                }
+                foreach (var plugin in data) items.Add(new[] { plugin[0], plugin[1], plugin[2], plugin[3] });
 
                 items.Add(new[] { "-", "-", "-", "-" });
 
-                Utilities.Utilities.FormatAndAlignTable(items, Utilities.TableFormat.DEFAULT);
+                Utilities.Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
                 break;
-            
-            
+
+
             case "load":
                 if (pluginsLoaded)
                     break;
-                var loader = new PluginLoader(PluginManager.Config.DiscordBot.client);
-                var cc = Console.ForegroundColor;
+                var loader = new PluginLoader(Config.DiscordBot.client);
+                var cc     = Console.ForegroundColor;
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
                     if (name == null || name.Length < 2)
@@ -122,33 +121,34 @@ public class Plugin : ICommandAction
 
                 loader.LoadPlugins();
                 Console.ForegroundColor = cc;
-                pluginsLoaded = true;
+                pluginsLoaded           = true;
                 break;
-            
+
             case "install":
-                string pluginName = string.Join(' ', args, 1, args.Length-1);
-                if (string.IsNullOrEmpty(pluginName)|| pluginName.Length < 2)
+                var pluginName = string.Join(' ', args, 1, args.Length - 1);
+                if (string.IsNullOrEmpty(pluginName) || pluginName.Length < 2)
                 {
                     Console.WriteLine("Please specify a plugin name");
                     break;
                 }
-                
-                var pluginManager = new PluginManager.Online.PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
-                string[] pluginData = await pluginManager.GetPluginLinkByName(pluginName);
+
+                var pluginManager =
+                    new PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
+                var pluginData = await pluginManager.GetPluginLinkByName(pluginName);
                 if (pluginData == null || pluginData.Length == 0)
                 {
                     Console.WriteLine("Plugin not found");
                     break;
                 }
 
-                string pluginType = pluginData[0];
-                string pluginLink = pluginData[1];
-                string pluginRequirements = pluginData[2];
-                
-                
+                var pluginType         = pluginData[0];
+                var pluginLink         = pluginData[1];
+                var pluginRequirements = pluginData[2];
+
+
                 Console.WriteLine("Downloading plugin...");
                 //download plugin progress bar for linux and windows terminals
-                Utilities.Utilities.Spinner spinner = new Utilities.Utilities.Spinner();
+                var spinner = new Utilities.Utilities.Spinner();
                 spinner.Start();
                 await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", null);
                 spinner.Stop();
@@ -159,18 +159,18 @@ public class Plugin : ICommandAction
                     Console.WriteLine("Plugin installed successfully");
                     break;
                 }
-                
+
                 Console.WriteLine("Downloading plugin requirements...");
-                List<string> requirementsURLs = await ServerCom.ReadTextFromURL(pluginRequirements);
+                var requirementsURLs = await ServerCom.ReadTextFromURL(pluginRequirements);
 
                 foreach (var requirement in requirementsURLs)
                 {
-                    if(requirement.Length < 2)
+                    if (requirement.Length < 2)
                         continue;
-                    string[] reqdata = requirement.Split(',');
-                    string url = reqdata[0];
-                    string filename = reqdata[1];
-                    
+                    var reqdata  = requirement.Split(',');
+                    var url      = reqdata[0];
+                    var filename = reqdata[1];
+
                     Console.WriteLine($"Downloading {filename}... ");
                     spinner.Start();
 
@@ -179,7 +179,7 @@ public class Plugin : ICommandAction
                     await Task.Delay(1000);
                     Console.WriteLine("Downloaded " + filename + " successfully");
                 }
-                
+
                 Console.WriteLine("Finished installing " + pluginName + " successfully");
 
                 break;

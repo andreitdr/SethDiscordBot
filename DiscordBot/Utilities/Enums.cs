@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace DiscordBot.Utilities;
 
-namespace DiscordBot.Utilities
+public enum TableFormat
 {
-    public enum TableFormat
-    {
-        CENTER_EACH_COLUMN_BASED,
-        CENTER_OVERALL_LENGTH,
-        DEFAULT
-    }
+    CENTER_EACH_COLUMN_BASED,
+    CENTER_OVERALL_LENGTH,
+    DEFAULT
 }

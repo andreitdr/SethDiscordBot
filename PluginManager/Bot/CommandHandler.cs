@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
@@ -14,9 +13,9 @@ namespace PluginManager.Bot;
 
 internal class CommandHandler
 {
-    private readonly string botPrefix;
+    private readonly string              botPrefix;
     private readonly DiscordSocketClient client;
-    private readonly CommandService commandService;
+    private readonly CommandService      commandService;
 
     /// <summary>
     ///     Command handler constructor
@@ -26,10 +25,9 @@ internal class CommandHandler
     /// <param name="botPrefix">The prefix to watch for</param>
     public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
     {
-        this.client = client;
+        this.client         = client;
         this.commandService = commandService;
-        this.botPrefix = botPrefix;
-
+        this.botPrefix      = botPrefix;
     }
 
     /// <summary>
@@ -38,7 +36,7 @@ internal class CommandHandler
     /// <returns></returns>
     public async Task InstallCommandsAsync()
     {
-        client.MessageReceived += MessageHandler;
+        client.MessageReceived      += MessageHandler;
         client.SlashCommandExecuted += Client_SlashCommandExecuted;
         await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
     }
@@ -63,7 +61,6 @@ internal class CommandHandler
         }
 
         return Task.CompletedTask;
-
     }
 
     /// <summary>
@@ -73,10 +70,9 @@ internal class CommandHandler
     /// <returns></returns>
     private async Task MessageHandler(SocketMessage Message)
     {
-
         try
         {
-            if (Message.Author.IsBot) 
+            if (Message.Author.IsBot)
                 return;
 
             if (Message as SocketUserMessage == null)
@@ -97,18 +93,22 @@ internal class CommandHandler
             await commandService.ExecuteAsync(context, argPos, null);
 
             DBCommand? plugin;
-            string cleanMessage = "";
+            var        cleanMessage = "";
 
             if (message.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
-                string mentionPrefix = "<@" + client.CurrentUser.Id + ">";
+                var mentionPrefix = "<@" + client.CurrentUser.Id + ">";
 
                 plugin = PluginLoader.Commands!
-                    .FirstOrDefault(plug => plug.Command == message.Content.Substring(mentionPrefix.Length+1).Split(' ')[0] ||
-                                            (
-                                                plug.Aliases is not null &&
-                                                plug.Aliases.Contains(message.CleanContent.Substring(mentionPrefix.Length+1).Split(' ')[0])
-                                            ));
+                                     .FirstOrDefault(plug => plug.Command ==
+                                                             message.Content.Substring(mentionPrefix.Length + 1)
+                                                                    .Split(' ')[0] ||
+                                                             (
+                                                                 plug.Aliases is not null &&
+                                                                 plug.Aliases.Contains(message.CleanContent
+                                                                     .Substring(mentionPrefix.Length + 1)
+                                                                     .Split(' ')[0])
+                                                             ));
 
                 cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
             }
@@ -116,23 +116,27 @@ internal class CommandHandler
             else
             {
                 plugin = PluginLoader.Commands!
-                    .FirstOrDefault(p => p.Command == message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
-                                         (p.Aliases is not null &&
-                                          p.Aliases.Contains(
-                                              message.Content.Split(' ')[0].Substring(botPrefix.Length))));
+                                     .FirstOrDefault(p => p.Command ==
+                                                          message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
+                                                          (p.Aliases is not null &&
+                                                           p.Aliases.Contains(
+                                                                              message.Content.Split(' ')[0]
+                                                                                  .Substring(botPrefix.Length))));
                 cleanMessage = message.Content.Substring(botPrefix.Length);
             }
-            if (plugin is null) 
-                throw new Exception($"Failed to run command ! " + message.CleanContent + " (user: " + context.Message.Author.Username + " - " + context.Message.Author.Id + ")");
+
+            if (plugin is null)
+                throw new Exception("Failed to run command ! " + message.CleanContent + " (user: " +
+                                    context.Message.Author.Username + " - " + context.Message.Author.Id + ")");
 
             if (plugin.requireAdmin && !context.Message.Author.isAdmin())
                 return;
 
-            string[] split = cleanMessage.Split(' ');
+            var split = cleanMessage.Split(' ');
 
             string[]? argsClean = null;
-            if(split.Length > 1)
-                argsClean = string.Join(' ', split, 1, split.Length-1).Split(' ');
+            if (split.Length > 1)
+                argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
 
             DBCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
 

@@ -1,13 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-
 using PluginManager.Online.Helpers;
-using PluginManager.Others;
 
 namespace PluginManager.Online;
 
@@ -21,7 +18,7 @@ public static class ServerCom
     public static async Task<List<string>> ReadTextFromURL(string link)
     {
         var response = await OnlineFunctions.DownloadStringAsync(link);
-        var lines = response.Split('\n');
+        var lines    = response.Split('\n');
         return lines.ToList();
     }
 
@@ -32,8 +29,9 @@ public static class ServerCom
     /// <param name="location">The location where to store the downloaded data</param>
     /// <param name="progress">The <see cref="IProgress{T}" /> to track the download</param>
     /// <returns></returns>
-    public static async Task DownloadFileAsync(string URL, string location, IProgress<float> progress,
-                                               IProgress<long>? downloadedBytes)
+    public static async Task DownloadFileAsync(
+        string           URL, string location, IProgress<float> progress,
+        IProgress<long>? downloadedBytes)
     {
         using (var client = new HttpClient())
         {

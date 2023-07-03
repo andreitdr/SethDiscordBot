@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-
-using PluginManager;
 
 namespace DiscordBot.Utilities;
 
 public static class Utilities
 {
-    private static Dictionary<char, ConsoleColor> Colors = new()
+    private static readonly Dictionary<char, ConsoleColor> Colors = new()
     {
-                    { 'g', ConsoleColor.Green },
-                    { 'b', ConsoleColor.Blue },
-                    { 'r', ConsoleColor.Red },
-                    { 'm', ConsoleColor.Magenta },
-                    { 'y', ConsoleColor.Yellow }
+        { 'g', ConsoleColor.Green },
+        { 'b', ConsoleColor.Blue },
+        { 'r', ConsoleColor.Red },
+        { 'm', ConsoleColor.Magenta },
+        { 'y', ConsoleColor.Yellow }
     };
 
-    private static char ColorPrefix = '&';
+    private static readonly char ColorPrefix = '&';
 
 
     private static bool CanAproximateTo(this float f, float y)
@@ -36,9 +32,9 @@ public static class Utilities
     {
         if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
         {
-            var tableLine = '-';
+            var tableLine  = '-';
             var tableCross = '+';
-            var tableWall = '|';
+            var tableWall  = '|';
 
             var len = new int[data[0].Length];
             foreach (var line in data)
@@ -144,7 +140,7 @@ public static class Utilities
 
         if (format == TableFormat.DEFAULT)
         {
-            var widths = new int[data[0].Length];
+            var widths                = new int[data[0].Length];
             var space_between_columns = 3;
             for (var i = 0; i < data.Count; i++)
                 for (var j = 0; j < data[i].Length; j++)
@@ -174,7 +170,7 @@ public static class Utilities
     public static void WriteColorText(string text, bool appendNewLineAtEnd = true)
     {
         var initialForeGround = Console.ForegroundColor;
-        var input = text.ToCharArray();
+        var input             = text.ToCharArray();
         for (var i = 0; i < input.Length; i++)
             if (input[i] == ColorPrefix)
             {
@@ -201,27 +197,27 @@ public static class Utilities
         if (appendNewLineAtEnd)
             Console.WriteLine();
     }
-    
-    
+
 
     public class Spinner
     {
-        private Thread thread;
-        private bool isRunning;
         private readonly string[] Sequence;
-        private int position;
+        private          bool     isRunning;
+        private          int      position;
+        private          Thread   thread;
 
         public Spinner()
         {
-            Sequence = new[] {"|", "/", "-", "\\"};
+            Sequence = new[] { "|", "/", "-", "\\" };
             position = 0;
         }
 
         public void Start()
         {
             Console.CursorVisible = false;
-            isRunning=true;
-            thread = new Thread(() => {
+            isRunning             = true;
+            thread = new Thread(() =>
+            {
                 while (isRunning)
                 {
                     Console.Write("\r" + Sequence[position]);
@@ -233,14 +229,12 @@ public static class Utilities
             });
 
             thread.Start();
-
         }
 
         public void Stop()
         {
-            isRunning=false;
+            isRunning             = false;
             Console.CursorVisible = true;
         }
     }
-    
 }

@@ -3,7 +3,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
 using PluginManager.Others;
 
 namespace PluginManager.Online.Helpers;
@@ -19,10 +18,11 @@ internal static class OnlineFunctions
     /// <param name="progress">The <see cref="IProgress{T}" /> that is used to track the download progress</param>
     /// <param name="cancellation">The cancellation token</param>
     /// <returns></returns>
-    internal static async Task DownloadFileAsync(this HttpClient client, string url, Stream destination,
-                                                 IProgress<float>? progress = null,
-                                                 IProgress<long>? downloadedBytes = null, int bufferSize = 81920,
-                                                 CancellationToken cancellation = default)
+    internal static async Task DownloadFileAsync(
+        this HttpClient   client, string url, Stream destination,
+        IProgress<float>? progress        = null,
+        IProgress<long>?  downloadedBytes = null, int bufferSize = 81920,
+        CancellationToken cancellation    = default)
     {
         using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellation))
         {
@@ -40,11 +40,12 @@ internal static class OnlineFunctions
 
                 // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
                 var relativeProgress = new Progress<long>(totalBytes =>
-                    {
-                        progress?.Report((float)totalBytes / contentLength.Value * 100);
-                        downloadedBytes?.Report(totalBytes);
-                    }
-                );
+                                                          {
+                                                              progress?.Report((float)totalBytes / contentLength.Value *
+                                                                               100);
+                                                              downloadedBytes?.Report(totalBytes);
+                                                          }
+                                                         );
 
                 // Use extension method to report progress while downloading
                 await download.CopyToOtherStreamAsync(destination, bufferSize, relativeProgress, cancellation);

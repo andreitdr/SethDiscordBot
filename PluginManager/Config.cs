@@ -1,27 +1,24 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.IO;
-
-using System.Collections.Generic;
-using PluginManager.Others;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using PluginManager.Bot;
+using PluginManager.Others;
 using PluginManager.Others.Logger;
 
 namespace PluginManager;
 
 public class Config
 {
-    private static bool IsLoaded = false;
-    public static DBLogger Logger;
-    public static Json<string, string> Data;
-    public static Json<string, string> Plugins;
+    private static bool                  IsLoaded;
+    public static  DBLogger              Logger;
+    public static  Json<string, string>? Data;
+    public static  Json<string, string>? Plugins;
 
-    internal static Bot.Boot? _DiscordBotClient;
+    internal static Boot? _DiscordBotClient;
 
-    public static Bot.Boot? DiscordBot
-    {
-        get => _DiscordBotClient;
-    }
+    public static Boot? DiscordBot => _DiscordBotClient;
 
     public static async Task Initialize()
     {
@@ -34,14 +31,14 @@ public class Config
         Directory.CreateDirectory("./Data/Logs/Logs");
         Directory.CreateDirectory("./Data/Logs/Errors");
 
-        Data = new Json<string, string>("./Data/Resources/config.json");
+        Data    = new Json<string, string>("./Data/Resources/config.json");
         Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
 
-        Config.Data["LogFolder"] = "./Data/Logs/Logs";
-        Config.Data["ErrorFolder"] = "./Data/Logs/Errors";
+        Data["LogFolder"]   = "./Data/Logs/Logs";
+        Data["ErrorFolder"] = "./Data/Logs/Errors";
 
         Logger = new DBLogger();
-        
+
         ArchiveManager.Initialize();
 
         IsLoaded = true;
@@ -51,11 +48,11 @@ public class Config
 
     public class Json<TKey, TValue> : IDictionary<TKey, TValue>
     {
-        protected IDictionary<TKey, TValue> _dictionary;
-        private readonly string _file = "";
-        
+        private readonly string                     _file = "";
+        private readonly IDictionary<TKey, TValue>? _dictionary;
+
         /// <summary>
-        /// Empty constructor
+        ///     Empty constructor
         /// </summary>
         public Json()
         {
@@ -65,13 +62,7 @@ public class Config
         public Json(string file)
         {
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
-            this._file = file;
-        }
-
-        public async void Save()
-        {
-            if(!string.IsNullOrEmpty(_file))
-                await Functions.SaveToJsonFile(_file, _dictionary);
+            _file       = file;
         }
 
         public virtual void Add(TKey key, TValue value)
@@ -101,9 +92,9 @@ public class Config
         {
             get
             {
-                if (_dictionary.TryGetValue(key, out TValue value)) return value;
-                throw new Exception("Key not found in dictionary " + key.ToString() + " (Json )" + this.GetType().Name + ")");
-
+                if (_dictionary.TryGetValue(key, out var value)) return value;
+                throw new Exception("Key not found in dictionary " + key + " (Json )" + GetType().Name +
+                                    ")");
             }
             set
             {
@@ -116,30 +107,6 @@ public class Config
         public virtual bool TryGetValue(TKey key, out TValue value)
         {
             return _dictionary.TryGetValue(key, out value);
-        }
-
-        private async Task<Dictionary<TKey, TValue>> PrivateReadConfig(string file)
-        {
-            if (!File.Exists(file))
-            {
-                var dictionary = new Dictionary<TKey, TValue>();
-                await Functions.SaveToJsonFile(file, _dictionary);
-                return dictionary;
-            }
-
-            try
-            {
-                var d = await Functions.ConvertFromJson<Dictionary<TKey, TValue>>(file);
-                if (d is null)
-                    throw new Exception("Failed to read config file");
-                
-                return d;
-            }catch (Exception ex)
-            {
-                File.Delete(file);
-                return new Dictionary<TKey, TValue>();
-            }
-
         }
 
         public bool Remove(TKey key)
@@ -176,6 +143,35 @@ public class Config
         {
             return ((IEnumerable)_dictionary).GetEnumerator();
         }
-    }
 
+        public async void Save()
+        {
+            if (!string.IsNullOrEmpty(_file))
+                await Functions.SaveToJsonFile(_file, _dictionary);
+        }
+
+        private async Task<Dictionary<TKey, TValue>> PrivateReadConfig(string file)
+        {
+            if (!File.Exists(file))
+            {
+                var dictionary = new Dictionary<TKey, TValue>();
+                await Functions.SaveToJsonFile(file, _dictionary);
+                return dictionary;
+            }
+
+            try
+            {
+                var d = await Functions.ConvertFromJson<Dictionary<TKey, TValue>>(file);
+                if (d is null)
+                    throw new Exception("Failed to read config file");
+
+                return d;
+            }
+            catch (Exception ex)
+            {
+                File.Delete(file);
+                return new Dictionary<TKey, TValue>();
+            }
+        }
+    }
 }

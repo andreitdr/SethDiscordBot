@@ -4,24 +4,6 @@ namespace PluginManager.Online.Helpers;
 
 public class VersionString
 {
-    private bool Equals(VersionString other)
-    {
-        return PackageCheckVersion == other.PackageCheckVersion && PackageMainVersion == other.PackageMainVersion && PackageVersionID == other.PackageVersionID;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != this.GetType()) return false;
-        return Equals((VersionString)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(PackageCheckVersion, PackageMainVersion, PackageVersionID);
-    }
-
     public int PackageCheckVersion;
     public int PackageMainVersion;
     public int PackageVersionID;
@@ -33,26 +15,46 @@ public class VersionString
         {
             if (data.Length == 3)
             {
-                PackageVersionID = int.Parse(data[0]);
-                PackageMainVersion = int.Parse(data[1]);
+                PackageVersionID    = int.Parse(data[0]);
+                PackageMainVersion  = int.Parse(data[1]);
                 PackageCheckVersion = int.Parse(data[2]);
             }
             else if (data.Length == 4)
             {
                 // ignore the first item data[0]
-                PackageVersionID = int.Parse(data[1]);
-                PackageMainVersion = int.Parse(data[2]);
+                PackageVersionID    = int.Parse(data[1]);
+                PackageMainVersion  = int.Parse(data[2]);
                 PackageCheckVersion = int.Parse(data[3]);
             }
-            else 
+            else
+            {
                 throw new Exception("Invalid version string");
-
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(version);
             throw new Exception("Failed to write Version", ex);
         }
+    }
+
+    private bool Equals(VersionString other)
+    {
+        return PackageCheckVersion == other.PackageCheckVersion && PackageMainVersion == other.PackageMainVersion &&
+               PackageVersionID == other.PackageVersionID;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((VersionString)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(PackageCheckVersion, PackageMainVersion, PackageVersionID);
     }
 
     public override string ToString()

@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <FileAlignment>512</FileAlignment>
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="BlankWindow1.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.10.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <FileAlignment>512</FileAlignment>
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="BlankWindow1.xaml"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Discord.Net" Version="3.10.0"/>
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118"/>
+    </ItemGroup>
 </Project>

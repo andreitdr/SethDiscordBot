@@ -1,26 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Linq;
-
-using PluginManager;
 using PluginManager.Bot;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-
-using DiscordBot.Utilities;
+using PluginManager.Others.Actions;
 using static PluginManager.Config;
-using PluginManager.Interfaces;
 
 namespace DiscordBot;
 
 public class Program
 {
-    public static Json<string, string> URLs;
-    public static PluginManager.Others.Actions.InternalActionManager internalActionManager;
+    public static Json<string, string>  URLs;
+    public static InternalActionManager internalActionManager;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -30,17 +26,15 @@ public class Program
     {
         PreLoadComponents(args).Wait();
 
-        if (!Config.Data.ContainsKey("ServerID") || !Config.Data.ContainsKey("token") ||
-            Config.Data["token"] == null ||
-            (Config.Data["token"]?.Length != 70 && Config.Data["token"]?.Length != 59) ||
-            !Config.Data.ContainsKey("prefix") || Config.Data["prefix"] == null ||
-            Config.Data["prefix"]?.Length != 1 ||
+        if (!Data.ContainsKey("ServerID") || !Data.ContainsKey("token") ||
+            Data["token"] == null ||
+            (Data["token"]?.Length != 70 && Data["token"]?.Length != 59) ||
+            !Data.ContainsKey("prefix") || Data["prefix"] == null ||
+            Data["prefix"]?.Length != 1 ||
             (args.Length == 1 && args[0] == "/reset"))
-        {
             Installer.GenerateStartupConfig();
-        }
-        
-        HandleInput(args.ToList()).Wait(); 
+
+        HandleInput(args.ToList()).Wait();
     }
 
     /// <summary>
@@ -55,11 +49,11 @@ public class Program
 
         while (true)
         {
-            var cmd = Console.ReadLine();
-            string[] args = cmd.Split(' ');
-            string command = args[0];
+            string   cmd     = Console.ReadLine();
+            string[] args    = cmd.Split(' ');
+            string   command = args[0];
             args = args.Skip(1).ToArray();
-            if(args.Length == 0)
+            if (args.Length == 0)
                 args = null;
 
             internalActionManager.Execute(command, args).Wait(); // Execute the command
@@ -82,40 +76,40 @@ public class Program
             Console.WriteLine(message);
 
         Console.WriteLine(
-            $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Console.WriteLine($"Git URL: {Config.Data["GitURL"]}");
+                          $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
+        Console.WriteLine($"Git URL: {Data["GitURL"]}");
 
         Utilities.Utilities.WriteColorText(
-            "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
+                                           "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
         Console.ForegroundColor = ConsoleColor.White;
 
-        if (Config.Data.ContainsKey("LaunchMessage"))
-            Utilities.Utilities.WriteColorText(Config.Data["LaunchMessage"]);
+        if (Data.ContainsKey("LaunchMessage"))
+            Utilities.Utilities.WriteColorText(Data["LaunchMessage"]);
 
 
         Utilities.Utilities.WriteColorText(
-            "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
+                                           "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
 
-        Console.WriteLine("Running on " + Functions.GetOperatingSystem().ToString());
+        Console.WriteLine("Running on " + Functions.GetOperatingSystem());
         Console.WriteLine("============================ LOG ============================");
 
         try
         {
-            string token = "";
+            var token = "";
 #if DEBUG
             if (File.Exists("./Data/Resources/token.txt")) token = File.ReadAllText("./Data/Resources/token.txt");
-            else token = Config.Data["token"];
+            else token                                           = Data["token"];
 #else
             token = Config.Data["token"];
 #endif
-            var prefix = Config.Data["prefix"];
+            var prefix        = Data["prefix"];
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
             return discordbooter;
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
+            Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             return null;
         }
     }
@@ -126,24 +120,23 @@ public class Program
     /// <param name="args">The arguments</param>
     private static async Task HandleInput(List<string> args)
     {
-
         Console.WriteLine("Loading Core ...");
-        
+
         //Handle arguments here:
-        
-        if(args.Contains("--gui"))
+
+        if (args.Contains("--gui"))
         {
             // GUI not implemented yet 
             Console.WriteLine("GUI not implemented yet");
             return;
         }
-        
+
         // Starting bot after all arguments are handled
-        
+
         var b = await StartNoGui();
         try
         {
-            internalActionManager = new PluginManager.Others.Actions.InternalActionManager("./Data/Actions", "*.dll");
+            internalActionManager = new InternalActionManager("./Data/Actions", "*.dll");
             await internalActionManager.Initialize();
 
             NoGUI();
@@ -152,42 +145,40 @@ public class Program
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                if (Config.Data.ContainsKey("LaunchMessage"))
-                    Config.Data.Add("LaunchMessage",
-                                         "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
-                Config.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", "Bot", LogLevel.ERROR);
+                if (Data.ContainsKey("LaunchMessage"))
+                    Data.Add("LaunchMessage",
+                             "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
+                Logger
+                    .Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
+                         "Bot", LogLevel.ERROR);
             }
         }
-        return;
     }
 
     private static async Task PreLoadComponents(string[] args)
     {
-
-        await Config.Initialize();
+        await Initialize();
 
         if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
-        {
             await Installer.SetupPluginDatabase();
-        }
 
 
         URLs = new Json<string, string>("./Data/Resources/URLs.json");
 
-        Config.Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
+        Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
 
 
         Console.WriteLine("Loading resources ...");
 
-        if (Config.Data.ContainsKey("DeleteLogsAtStartup"))
-            if (Config.Data["DeleteLogsAtStartup"] == "true")
+        if (Data.ContainsKey("DeleteLogsAtStartup"))
+            if (Data["DeleteLogsAtStartup"] == "true")
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
         var OnlineDefaultKeys =
             await ServerCom.ReadTextFromURL(URLs["SetupKeys"]);
 
 
-        Config.Data["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        Data["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         foreach (var key in OnlineDefaultKeys)
         {
@@ -195,11 +186,11 @@ public class Program
             var s = key.Split(' ');
             try
             {
-                Config.Data[s[0]] = s[1];
+                Data[s[0]] = s[1];
             }
             catch (Exception ex)
             {
-                Config.Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
+                Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             }
         }
 
@@ -213,27 +204,27 @@ public class Program
             switch (s[0])
             {
                 case "CurrentVersion":
-                    var currentVersion = Config.Data["Version"];
-                    var newVersion = s[1];
-                    if(new VersionString(newVersion) != new VersionString(newVersion))
+                    var currentVersion = Data["Version"];
+                    var newVersion     = s[1];
+                    if (new VersionString(newVersion) != new VersionString(newVersion))
                     {
                         Console.WriteLine("A new updated was found. Check the changelog for more information.");
-                        List<string> changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
+                        var changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
                         foreach (var item in changeLog)
                             Utilities.Utilities.WriteColorText(item);
                         Console.WriteLine("Current version: " + currentVersion);
                         Console.WriteLine("Latest version: " + newVersion);
 
-                        Console.WriteLine($"Download from here: https://github.com/andreitdr/SethDiscordBot/releases");
+                        Console.WriteLine("Download from here: https://github.com/andreitdr/SethDiscordBot/releases");
 
                         Console.WriteLine("Press any key to continue ...");
                         Console.ReadKey();
                     }
-                break;
-             }
+
+                    break;
+            }
         }
 
         Console.Clear();
-        
     }
 }

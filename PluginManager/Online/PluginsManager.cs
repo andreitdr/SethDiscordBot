@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-
 using OperatingSystem = PluginManager.Others.OperatingSystem;
 
 namespace PluginManager.Online;
@@ -18,7 +16,7 @@ public class PluginsManager
     /// <param name="vlink">The link to the file where all plugin versions are stored</param>
     public PluginsManager(string plink, string vlink)
     {
-        PluginsLink = plink;
+        PluginsLink  = plink;
         VersionsLink = vlink;
     }
 
@@ -26,7 +24,8 @@ public class PluginsManager
     ///     The URL of the server
     /// </summary>
     public string PluginsLink { get; }
-    public string VersionsLink {get; }
+
+    public string VersionsLink { get; }
 
     /// <summary>
     ///     The method to load all plugins
@@ -36,11 +35,11 @@ public class PluginsManager
     {
         try
         {
-            var list = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
 
             var data = new List<string[]>();
-            var op = Functions.GetOperatingSystem();
+            var op   = Functions.GetOperatingSystem();
 
             var len = lines.Length;
             for (var i = 0; i < len; i++)
@@ -58,7 +57,7 @@ public class PluginsManager
                         display[2] = content[2];
                         display[3] =
                             (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
-                           .ToShortString();
+                            .ToShortString();
                         data.Add(display);
                     }
                 }
@@ -71,7 +70,7 @@ public class PluginsManager
                         display[2] = content[2];
                         display[3] =
                             (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
-                           .ToShortString();
+                            .ToShortString();
                         data.Add(display);
                     }
                 }
@@ -83,7 +82,8 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, LogLevel.ERROR);
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this,
+                              LogLevel.ERROR);
         }
 
         return null;
@@ -97,14 +97,15 @@ public class PluginsManager
             if (item.StartsWith("#"))
                 continue;
 
-            string[] split = item.Split(',');
+            var split = item.Split(',');
             if (split[0] == pakName)
             {
-                Console.WriteLine("Searched for " + pakName + " and found " + split[1] + " as version.\nUsed url: " + VersionsLink);
+                Console.WriteLine("Searched for " + pakName + " and found " + split[1] + " as version.\nUsed url: " +
+                                  VersionsLink);
                 return new VersionString(split[1]);
             }
-                
         }
+
         return null;
     }
 
@@ -117,9 +118,9 @@ public class PluginsManager
     {
         try
         {
-            var list = await ServerCom.ReadTextFromURL(PluginsLink);
+            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
             var lines = list.ToArray();
-            var len = lines.Length;
+            var len   = lines.Length;
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');
@@ -135,7 +136,8 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this, LogLevel.ERROR);
+            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this,
+                              LogLevel.ERROR);
         }
 
         return null;

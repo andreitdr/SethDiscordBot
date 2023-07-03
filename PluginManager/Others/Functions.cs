@@ -19,6 +19,15 @@ public static class Functions
     /// </summary>
     public static readonly string dataFolder = @"./Data/Resources/";
 
+    public static Color RandomColor
+    {
+        get
+        {
+            var random = new Random();
+            return new Color(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+        }
+    }
+
     /// <summary>
     ///     Get the Operating system you are runnin on
     /// </summary>
@@ -43,9 +52,10 @@ public static class Functions
     /// <exception cref="ArgumentOutOfRangeException">Triggered if <paramref name="bufferSize" /> is less then or equal to 0</exception>
     /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream" /> is not readable</exception>
     /// <exception cref="ArgumentException">Triggered in <paramref name="destination" /> is not writable</exception>
-    public static async Task CopyToOtherStreamAsync(this Stream stream, Stream destination, int bufferSize,
-                                                    IProgress<long>? progress = null,
-                                                    CancellationToken cancellationToken = default)
+    public static async Task CopyToOtherStreamAsync(
+        this Stream       stream, Stream destination, int bufferSize,
+        IProgress<long>?  progress          = null,
+        CancellationToken cancellationToken = default)
     {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -54,10 +64,11 @@ public static class Functions
         if (!destination.CanWrite)
             throw new ArgumentException("Destination stream is not writable", nameof(destination));
 
-        var buffer = new byte[bufferSize];
+        var  buffer         = new byte[bufferSize];
         long totalBytesRead = 0;
-        int bytesRead;
-        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+        int  bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                                        .ConfigureAwait(false)) != 0)
         {
             await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
             totalBytesRead += bytesRead;
@@ -102,9 +113,9 @@ public static class Functions
         return (obj ?? default)!;
     }
 
-    public static T SelectRandomValueOf<T> ()
+    public static T SelectRandomValueOf<T>()
     {
-        var enums = Enum.GetValues(typeof(T));
+        var enums  = Enum.GetValues(typeof(T));
         var random = new Random();
         return (T)enums.GetValue(random.Next(enums.Length));
     }
@@ -113,14 +124,5 @@ public static class Functions
     {
         Random random = new();
         return values[random.Next(values.Length)];
-    }
-
-    public static Discord.Color RandomColor
-    {
-        get
-        {
-            Random random = new Random();
-            return new Discord.Color(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
-        }
     }
 }

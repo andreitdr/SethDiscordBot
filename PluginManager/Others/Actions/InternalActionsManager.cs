@@ -1,57 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 
-namespace PluginManager.Others.Actions
+namespace PluginManager.Others.Actions;
+
+public class InternalActionManager
 {
-    public class InternalActionManager
+    public Dictionary<string, ICommandAction> Actions = new();
+    public ActionsLoader                      loader;
+
+    public InternalActionManager(string path, string extension)
     {
-        public ActionsLoader loader;
-        public Dictionary<string, ICommandAction> Actions = new Dictionary<string, ICommandAction>();
+        loader = new ActionsLoader(path, extension);
+    }
 
-        public InternalActionManager(string path, string extension)
+    public async Task Initialize()
+    {
+        loader.ActionLoadedEvent += OnActionLoaded;
+        var m_actions = await loader.Load();
+        if (m_actions == null) return;
+        foreach (var action in m_actions)
+            Actions.Add(action.ActionName, action);
+    }
+
+    private void OnActionLoaded(string name, string typeName, bool success, Exception? e)
+    {
+        if (!success)
         {
-            loader = new ActionsLoader(path, extension);
+            Config.Logger.Error(e);
+            return;
         }
 
-        public async Task Initialize()
+        Config.Logger.Log($"Action {name} loaded successfully", typeName);
+    }
+
+    public async Task<string> Execute(string actionName, params string[]? args)
+    {
+        if (!Actions.ContainsKey(actionName))
         {
-            loader.ActionLoadedEvent += OnActionLoaded;
-            var m_actions = await loader.Load();
-            if(m_actions == null) return;
-            foreach(var action in m_actions)
-                Actions.Add(action.ActionName, action);
+            Config.Logger.Log($"Action {actionName} not found", "InternalActionManager", LogLevel.WARNING);
+            return "Action not found";
         }
 
-        private void OnActionLoaded(string name, string typeName, bool success, Exception? e)
+        try
         {
-            if (!success)
-            {
-                Config.Logger.Error(e);
-                return;
-            }
-
-            Config.Logger.Log($"Action {name} loaded successfully", typeName, LogLevel.INFO);
+            await Actions[actionName].Execute(args);
+            return "Action executed";
         }
-
-        public async Task<string> Execute(string actionName, params string[]? args)
+        catch (Exception e)
         {
-            if (!Actions.ContainsKey(actionName))
-            {
-                Config.Logger.Log($"Action {actionName} not found", "InternalActionManager", LogLevel.WARNING);
-                return "Action not found";
-            }
-
-            try{
-                await Actions[actionName].Execute(args);
-                return "Action executed";
-            }catch(Exception e){
-                Config.Logger.Log(e.Message, "InternalActionManager", LogLevel.ERROR);
-                return e.Message;
-            }
+            Config.Logger.Log(e.Message, "InternalActionManager", LogLevel.ERROR);
+            return e.Message;
         }
     }
 }

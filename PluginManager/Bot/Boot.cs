@@ -1,11 +1,9 @@
-using System.Net.Mime;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using PluginManager.Others;
 
 namespace PluginManager.Bot;
 
@@ -44,35 +42,37 @@ public class Boot
     public Boot(string botToken, string botPrefix)
     {
         this.botPrefix = botPrefix;
-        this.botToken = botToken;
+        this.botToken  = botToken;
     }
 
 
     /// <summary>
     ///     Checks if the bot is ready
     /// </summary>
-    /// <value> true if the bot is ready, othwerwise false </value>
+    /// <value> true if the bot is ready, otherwise false </value>
     public bool isReady { get; private set; }
 
     /// <summary>
     ///     The start method for the bot. This method is used to load the bot
     /// </summary>
-    /// <param name="config">The discord socket config. If null then the default one will be applied (AlwaysDownloadUsers=true, UseInteractionSnowflakeDate=false, GatewayIntents=GatewayIntents.All)</param>
+    /// <param name="config">
+    ///     The discord socket config. If null then the default one will be applied (AlwaysDownloadUsers=true,
+    ///     UseInteractionSnowflakeDate=false, GatewayIntents=GatewayIntents.All)
+    /// </param>
     /// <returns>Task</returns>
     public async Task Awake(DiscordSocketConfig? config = null)
     {
         if (config is null)
             config = new DiscordSocketConfig
             {
-
                 AlwaysDownloadUsers = true,
 
                 //Disable system clock checkup (for responses at slash commands)
                 UseInteractionSnowflakeDate = false,
-                GatewayIntents = GatewayIntents.All
+                GatewayIntents              = GatewayIntents.All
             };
 
-        client = new DiscordSocketClient(config);
+        client  = new DiscordSocketClient(config);
         service = new CommandService();
 
         CommonTasks();
@@ -86,7 +86,6 @@ public class Boot
         await commandServiceHandler.InstallCommandsAsync();
 
 
-
         await Task.Delay(2000);
 
         Config._DiscordBotClient = this;
@@ -97,10 +96,10 @@ public class Boot
     private void CommonTasks()
     {
         if (client == null) return;
-        client.LoggedOut += Client_LoggedOut;
-        client.Log += Log;
-        client.LoggedIn += LoggedIn;
-        client.Ready += Ready;
+        client.LoggedOut    += Client_LoggedOut;
+        client.Log          += Log;
+        client.LoggedIn     += LoggedIn;
+        client.Ready        += Ready;
         client.Disconnected += Client_Disconnected;
     }
 
@@ -109,7 +108,8 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.Data.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this, Others.LogLevel.ERROR);
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this,
+                              LogLevel.ERROR);
             Config.Data.Save();
             await Task.Delay(4000);
             Environment.Exit(0);
@@ -140,7 +140,7 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Config.Logger.Log(message.Message, this, Others.LogLevel.ERROR);
+                Config.Logger.Log(message.Message, this, LogLevel.ERROR);
 
                 break;
 

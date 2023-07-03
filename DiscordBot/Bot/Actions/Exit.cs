@@ -8,15 +8,16 @@ namespace DiscordBot.Bot.Actions;
 
 public class Exit : ICommandAction
 {
-    public string ActionName => "exit";
-    public string Description => "Exits the bot and saves the config. Use exit help for more info.";
-    public string Usage => "exit [help|force]";
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public string                ActionName  => "exit";
+    public string                Description => "Exits the bot and saves the config. Use exit help for more info.";
+    public string                Usage       => "exit [help|force]";
+    public InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
+
     public async Task Execute(string[] args)
     {
         if (args is null || args.Length == 0)
         {
-            Config.Logger.Log("Exiting...", "Exit", LogLevel.INFO);
+            Config.Logger.Log("Exiting...", "Exit");
             Config.Data.Save();
             Environment.Exit(0);
         }
@@ -29,12 +30,12 @@ public class Exit : ICommandAction
                     Console.WriteLine("help : Displays this message");
                     Console.WriteLine("force : Exits the bot without saving the config");
                     break;
-                
+
                 case "force":
-                    Config.Logger.Log("Exiting...", "Exit", LogLevel.INFO);
+                    Config.Logger.Log("Exiting...", "Exit");
                     Environment.Exit(0);
                     break;
-                
+
                 default:
                     Console.WriteLine("Invalid argument !");
                     break;
