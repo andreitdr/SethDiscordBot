@@ -14,7 +14,7 @@ public class Config
     private static bool                  IsLoaded;
     public static  DBLogger              Logger;
     public static  Json<string, string>? Data;
-    public static  Json<string, string>? Plugins;
+   // public static  Json<string, string>? Plugins;
 
     internal static Boot? _DiscordBotClient;
 
@@ -32,7 +32,7 @@ public class Config
         Directory.CreateDirectory("./Data/Logs/Errors");
 
         Data    = new Json<string, string>("./Data/Resources/config.json");
-        Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
+       // Plugins = new Json<string, string>("./Data/Resources/Plugins.json");
 
         Data["LogFolder"]   = "./Data/Logs/Logs";
         Data["ErrorFolder"] = "./Data/Logs/Errors";
