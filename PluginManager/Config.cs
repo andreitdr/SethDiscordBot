@@ -144,7 +144,7 @@ public class Config
             return ((IEnumerable)_dictionary).GetEnumerator();
         }
 
-        public async void Save()
+        public async Task Save()
         {
             if (!string.IsNullOrEmpty(_file))
                 await Functions.SaveToJsonFile(_file, _dictionary);

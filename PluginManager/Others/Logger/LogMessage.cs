@@ -6,20 +6,28 @@ public class LogMessage
 {
     public LogMessage(string message, LogLevel type)
     {
-        Message = message;
-        Type    = type;
-        Time    = DateTime.Now.ToString("HH:mm:ss");
+        Message    = message;
+        Type       = type;
+        Time       = DateTime.Now.ToString("HH:mm:ss");
+        isInternal = false;
     }
 
-    public LogMessage(string message, LogLevel type, string sender) : this(message, type)
+    public LogMessage(string message, LogLevel type, string sender, bool isInternal) : this(message, type)
     {
-        Sender = sender;
+        Sender          = sender;
+        this.isInternal = isInternal;
     }
 
-    public string   Message { get; set; }
-    public LogLevel Type    { get; set; }
-    public string   Time    { get; set; }
-    public string   Sender  { get; set; }
+    public LogMessage(string message, LogLevel type, string sender) : this (message, type, sender, false)
+    {
+        
+    }
+
+    public string   Message    { get; set; }
+    public LogLevel Type       { get; set; }
+    public string   Time       { get; set; }
+    public string   Sender     { get; set; }
+    public bool     isInternal { get; set; }
 
     public override string ToString()
     {

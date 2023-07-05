@@ -16,7 +16,6 @@ public enum OperatingSystem
 /// </summary>
 public enum LogLevel
 {
-    NONE,
     INFO,
     WARNING,
     ERROR,

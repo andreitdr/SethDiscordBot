@@ -17,8 +17,9 @@ public class Exit : ICommandAction
     {
         if (args is null || args.Length == 0)
         {
-            Config.Logger.Log("Exiting...", "Exit");
-            Config.Data.Save();
+            Config.Logger.Log("Exiting...", "Exit", isInternal:false);
+            await Config.Data.Save();
+            await Config.Logger.SaveToFile();
             Environment.Exit(0);
         }
         else
@@ -32,7 +33,7 @@ public class Exit : ICommandAction
                     break;
 
                 case "force":
-                    Config.Logger.Log("Exiting...", "Exit");
+                    Config.Logger.Log("Exiting (FORCE)...", "Exit", LogLevel.WARNING, false);
                     Environment.Exit(0);
                     break;
 

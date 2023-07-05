@@ -36,7 +36,7 @@ public static class Installer
             Config.Data.Add("ServerID", serverId);
         }
 
-        Config.Logger.Log("Config Saved", "Installer");
+        Config.Logger.Log("Config Saved", "Installer", isInternal:true);
 
         Config.Data.Save();
 

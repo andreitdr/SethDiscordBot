@@ -33,14 +33,14 @@ public class InternalActionManager
             return;
         }
 
-        Config.Logger.Log($"Action {name} loaded successfully", typeName);
+        Config.Logger.Log($"Action {name} loaded successfully", LogLevel.INFO, true);
     }
 
     public async Task<string> Execute(string actionName, params string[]? args)
     {
         if (!Actions.ContainsKey(actionName))
         {
-            Config.Logger.Log($"Action {actionName} not found", "InternalActionManager", LogLevel.WARNING);
+            Config.Logger.Log($"Action {actionName} not found", "InternalActionManager", LogLevel.WARNING, true);
             return "Action not found";
         }
 

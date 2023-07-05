@@ -165,7 +165,24 @@ public class Program
 
         URLs = new Json<string, string>("./Data/Resources/URLs.json");
 
-        Logger.LogEvent += (message, type) => { Console.WriteLine(message); };
+        Logger.LogEvent += (message, type, isInternal) =>
+        {
+            if (isInternal) return;
+            if (type == LogLevel.INFO)
+                Console.ForegroundColor = ConsoleColor.Green;
+            else if (type == LogLevel.WARNING)
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+            else if (type == LogLevel.ERROR)
+                Console.ForegroundColor = ConsoleColor.Red;
+            else if(type == LogLevel.CRITICAL)
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+
+            Console.WriteLine($"[{type.ToString()}] {message}");
+            Console.ResetColor();
+            
+           
+
+        };
 
 
         Console.WriteLine("Loading resources ...");
