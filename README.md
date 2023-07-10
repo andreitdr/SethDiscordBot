@@ -35,7 +35,7 @@ using PluginManager.Interfaces;
 
 namespace LevelingSystem;
 
-internal class LevelCommand : DBCommand
+public class LevelCommand : DBCommand
 {
     public string Command => "level";
 
