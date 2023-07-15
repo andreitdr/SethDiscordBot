@@ -205,6 +205,7 @@ public static class Utilities
         private          bool     isRunning;
         private          int      position;
         private          Thread   thread;
+        public string Message;
 
         public Spinner()
         {
@@ -220,7 +221,8 @@ public static class Utilities
             {
                 while (isRunning)
                 {
-                    Console.Write("\r" + Sequence[position]);
+                    Console.SetCursorPosition(0, Console.CursorTop);
+                    Console.Write(" " + Sequence[position] + " " + Message + "         ");
                     position++;
                     if (position >= Sequence.Length)
                         position = 0;

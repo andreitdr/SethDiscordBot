@@ -124,7 +124,7 @@ public class PluginsManager
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');
-                if (contents[0] == name)
+                if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
                 {
                     if (contents.Length == 6)
                         return new[] { contents[2], contents[3], contents[5] };

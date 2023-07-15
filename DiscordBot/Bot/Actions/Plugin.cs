@@ -129,7 +129,13 @@ public class Plugin : ICommandAction
                 if (string.IsNullOrEmpty(pluginName) || pluginName.Length < 2)
                 {
                     Console.WriteLine("Please specify a plugin name");
-                    break;
+                    Console.Write("Plugin name : ");
+                    pluginName = Console.ReadLine();
+                    if (string.IsNullOrEmpty(pluginName) || pluginName.Length < 2)
+                    {
+                        Console.WriteLine("Invalid plugin name");
+                        break;
+                    }
                 }
 
                 var pluginManager =
@@ -137,7 +143,7 @@ public class Plugin : ICommandAction
                 var pluginData = await pluginManager.GetPluginLinkByName(pluginName);
                 if (pluginData == null || pluginData.Length == 0)
                 {
-                    Console.WriteLine("Plugin not found");
+                    Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
                     break;
                 }
 
@@ -150,7 +156,8 @@ public class Plugin : ICommandAction
                 //download plugin progress bar for linux and windows terminals
                 var spinner = new Utilities.Utilities.Spinner();
                 spinner.Start();
-                await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", null);
+                IProgress<float> progress = new Progress<float>(p => { spinner.Message = $"Downloading {pluginName}... {Math.Round(p,2)}%  " ; });
+                await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", progress);
                 spinner.Stop();
                 Console.WriteLine();
 
