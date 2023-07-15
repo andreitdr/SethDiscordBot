@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace PluginManager.Others;
@@ -9,7 +10,7 @@ namespace PluginManager.Others;
 public static class ArchiveManager
 {
     private static string? archiveFolder;
-    public static  bool    isInitialized { get; private set; }
+    public static bool isInitialized { get; private set; }
 
     public static void Initialize()
     {
@@ -21,6 +22,41 @@ public static class ArchiveManager
         archiveFolder = Config.Data["ArchiveFolder"];
 
         isInitialized = true;
+    }
+
+    /// <summary>
+    /// Read a file from a zip archive. The output is a byte array
+    /// </summary>
+    /// <param name="fileName">The file name in the archive</param>
+    /// <param name="archName">The archive location on the disk</param>
+    /// <returns>An array of bytes that represents the Stream value from the file that was read inside the archive</returns>
+    public async static Task<byte[]?> ReadStreamFromPakAsync(string fileName, string archName)
+    {
+        if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
+
+        archName = archiveFolder + archName;
+
+        if (!File.Exists(archName))
+            throw new Exception("Failed to load file !");
+        
+        byte[]? data = null;
+        
+        using (var zip = ZipFile.OpenRead(archName))
+        {
+            var entry = zip.Entries.FirstOrDefault(entry => entry.FullName == fileName || entry.Name == fileName);
+            if (entry is null) throw new Exception("File not found in archive");
+            
+            var MemoryStream = new MemoryStream();
+            
+            var stream = entry.Open();
+            await stream.CopyToAsync(MemoryStream);
+            data = MemoryStream.ToArray();
+            
+            stream.Close();
+            MemoryStream.Close();
+        }
+        
+        return data;
     }
 
     /// <summary>
@@ -40,19 +76,19 @@ public static class ArchiveManager
         {
             string? textValue = null;
             using (var fs = new FileStream(archFile, FileMode.Open))
-                using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
-                {
-                    foreach (var entry in zip.Entries)
-                        if (entry.Name == FileName || entry.FullName == FileName)
-                            using (var s = entry.Open())
-                                using (var reader = new StreamReader(s))
-                                {
-                                    textValue = await reader.ReadToEndAsync();
-                                    reader.Close();
-                                    s.Close();
-                                    fs.Close();
-                                }
-                }
+            using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
+            {
+                foreach (var entry in zip.Entries)
+                    if (entry.Name == FileName || entry.FullName == FileName)
+                        using (var s = entry.Open())
+                        using (var reader = new StreamReader(s))
+                        {
+                            textValue = await reader.ReadToEndAsync();
+                            reader.Close();
+                            s.Close();
+                            fs.Close();
+                        }
+            }
 
             return textValue;
         }
@@ -73,7 +109,7 @@ public static class ArchiveManager
     /// <param name="type">The type of progress</param>
     /// <returns></returns>
     public static async Task ExtractArchive(
-        string            zip, string folder, IProgress<float> progress,
+        string zip, string folder, IProgress<float> progress,
         UnzipProgressType type)
     {
         if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
@@ -82,7 +118,7 @@ public static class ArchiveManager
         {
             if (type == UnzipProgressType.PERCENTAGE_FROM_NUMBER_OF_FILES)
             {
-                var totalZIPFiles  = archive.Entries.Count();
+                var totalZIPFiles = archive.Entries.Count();
                 var currentZIPFile = 0;
                 foreach (var entry in archive.Entries)
                 {
@@ -97,7 +133,7 @@ public static class ArchiveManager
                         catch (Exception ex)
                         {
                             Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}",
-                                              "Archive Manager", LogLevel.ERROR);
+                                "Archive Manager", LogLevel.ERROR);
                         }
 
                     currentZIPFile++;
@@ -130,7 +166,7 @@ public static class ArchiveManager
                     catch (Exception ex)
                     {
                         Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}",
-                                          "Archive Manager", LogLevel.ERROR);
+                            "Archive Manager", LogLevel.ERROR);
                     }
 
                     await Task.Delay(10);

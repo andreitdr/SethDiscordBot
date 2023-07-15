@@ -10,7 +10,7 @@ public class Exit : ICommandAction
 {
     public string                ActionName  => "exit";
     public string                Description => "Exits the bot and saves the config. Use exit help for more info.";
-    public string                Usage       => "exit [help|force]";
+    public string                Usage       => "exit [help|force (-f)]";
     public InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)
@@ -29,9 +29,10 @@ public class Exit : ICommandAction
                 case "help":
                     Console.WriteLine("Usage : exit [help|force]");
                     Console.WriteLine("help : Displays this message");
-                    Console.WriteLine("force : Exits the bot without saving the config");
+                    Console.WriteLine("force | -f : Exits the bot without saving the config");
                     break;
-
+                
+                case "-f":
                 case "force":
                     Config.Logger.Log("Exiting (FORCE)...", "Exit", LogLevel.WARNING, false);
                     Environment.Exit(0);
