@@ -144,31 +144,40 @@ public class PluginLoader
     {
         var types = asmb.GetTypes();
         foreach (var type in types)
-            if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+            try
             {
-                var instance = (DBEvent)Activator.CreateInstance(type);
-                instance.Start(client);
-                Events.Add(instance);
-                Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", LogLevel.INFO);
-            }
-            else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
-            {
-                var instance = (DBCommand)Activator.CreateInstance(type);
-                Commands.Add(instance);
-                Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", LogLevel.INFO);
-            }
-            else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
-            {
-                var instance = (DBSlashCommand)Activator.CreateInstance(type);
-                var builder  = new SlashCommandBuilder();
-                builder.WithName(instance.Name);
-                builder.WithDescription(instance.Description);
-                builder.WithDMPermission(instance.canUseDM);
-                builder.Options = instance.Options;
+                if (type.IsClass && typeof(DBEvent).IsAssignableFrom(type))
+                {
+                    var instance = (DBEvent)Activator.CreateInstance(type);
+                    instance.Start(client);
+                    Events.Add(instance);
+                    Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", LogLevel.INFO);
+                }
+                else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
+                {
+                    var instance = (DBCommand)Activator.CreateInstance(type);
+                    Commands.Add(instance);
+                    Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", LogLevel.INFO);
+                }
+                else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
+                {
+                    var instance = (DBSlashCommand)Activator.CreateInstance(type);
+                    var builder = new SlashCommandBuilder();
+                    builder.WithName(instance.Name);
+                    builder.WithDescription(instance.Description);
+                    builder.WithDMPermission(instance.canUseDM);
+                    builder.Options = instance.Options;
 
-                await client.CreateGlobalApplicationCommandAsync(builder.Build());
-                SlashCommands.Add(instance);
-                Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", LogLevel.INFO);
+                    await client.CreateGlobalApplicationCommandAsync(builder.Build());
+                    SlashCommands.Add(instance);
+                    Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", LogLevel.INFO);
+                }
             }
+            catch (Exception ex)
+            {
+                //Console.WriteLine(ex.Message);
+                Config.Logger.Error(ex);
+            }
+            
     }
 }
