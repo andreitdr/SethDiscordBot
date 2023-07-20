@@ -372,5 +372,5 @@ FodyWeavers.xsd
 /DiscordBot/Data/
 /DiscordBot/Updater/
 .idea/
-/DiscordBotWeb/
 DiscordBot/Launcher.exe
+DiscordBotUI/*
