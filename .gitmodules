@@ -1,0 +1,3 @@
+[submodule "SethPlugins"]
+	path = SethPlugins
+	url = https://github.com/andreitdr/SethPlugins
