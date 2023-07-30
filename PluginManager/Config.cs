@@ -51,16 +51,11 @@ public class Config
         private readonly string                     _file = "";
         private readonly IDictionary<TKey, TValue>? _dictionary;
 
-        /// <summary>
-        ///     Empty constructor
-        /// </summary>
-        public Json()
-        {
-            _dictionary = new Dictionary<TKey, TValue>();
-        }
-
         public Json(string file)
         {
+            if (file is null) throw new FileLoadException("The file can not be null");
+            if(!File.Exists(file))
+                File.Create(file).Close();
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
             _file       = file;
         }

@@ -16,6 +16,7 @@ public static class Functions
 {
     /// <summary>
     ///     The location for the Resources folder
+    ///     String: ./Data/Resources/
     /// </summary>
     public static readonly string dataFolder = @"./Data/Resources/";
 
@@ -124,5 +125,10 @@ public static class Functions
     {
         Random random = new();
         return values[random.Next(values.Length)];
+    }
+
+    public static string ToResourcesPath(this string path)
+    {
+        return Path.Combine(dataFolder, path);
     }
 }
