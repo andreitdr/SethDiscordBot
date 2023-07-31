@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManager", "PluginMana
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SethPlugins", "SethPlugins", "{78B6D390-F61A-453F-B38D-E4C054321615}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevelingSystem", "SethPlugins\LevelingSystem\LevelingSystem.csproj", "{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayer", "..\SethPlugins\MusicPlayer\MusicPlayer.csproj", "{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayer", "SethPlugins\MusicPlayer\MusicPlayer.csproj", "{AF267C51-AF51-44A7-ACF8-D83A2A90CD53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevelingSystem", "..\SethPlugins\LevelingSystem\LevelingSystem.csproj", "{BFE3491C-AC01-4252-B242-6451270FC548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,21 +27,21 @@ Global
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF267C51-AF51-44A7-ACF8-D83A2A90CD53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF267C51-AF51-44A7-ACF8-D83A2A90CD53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF267C51-AF51-44A7-ACF8-D83A2A90CD53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF267C51-AF51-44A7-ACF8-D83A2A90CD53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFE3491C-AC01-4252-B242-6451270FC548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE3491C-AC01-4252-B242-6451270FC548}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4D2648BB-B56E-4BE9-B3D5-4D6FA4A1472C} = {78B6D390-F61A-453F-B38D-E4C054321615}
-		{AF267C51-AF51-44A7-ACF8-D83A2A90CD53} = {78B6D390-F61A-453F-B38D-E4C054321615}
+		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5} = {78B6D390-F61A-453F-B38D-E4C054321615}
+		{BFE3491C-AC01-4252-B242-6451270FC548} = {78B6D390-F61A-453F-B38D-E4C054321615}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
