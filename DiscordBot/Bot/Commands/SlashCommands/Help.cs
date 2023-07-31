@@ -36,7 +36,7 @@ public class Help : DBSlashCommand
         //Console.WriteLine("Options: " + options.Count);
         if (options is null || options.Count == 0)
             foreach (var slashCommand in slashCommands)
-                embedBuilder.AddField(slashCommand.Name, slashCommand.Description, true);
+                embedBuilder.AddField(slashCommand.Name, slashCommand.Description);
 
         if (options.Count > 0)
         {
@@ -48,7 +48,7 @@ public class Help : DBSlashCommand
                 return;
             }
 
-            embedBuilder.AddField(slashCommand.Name, slashCommand.canUseDM, true)
+            embedBuilder.AddField(slashCommand.Name, slashCommand.canUseDM)
                         .WithDescription(slashCommand.Description);
         }
 
