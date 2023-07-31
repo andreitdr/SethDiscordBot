@@ -56,6 +56,7 @@ public class Config
             if (file is null) throw new FileLoadException("The file can not be null");
             if(!File.Exists(file))
                 File.Create(file).Close();
+            
             _dictionary = PrivateReadConfig(file).GetAwaiter().GetResult();
             _file       = file;
         }
