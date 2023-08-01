@@ -11,7 +11,7 @@ public class Clear : ICommandAction
     public string                Description => "Clears the console";
     public string                Usage       => "clear";
     public InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
-    
+
     public Task Execute(string[] args)
     {
         Console.Clear();

@@ -203,9 +203,9 @@ public static class Utilities
     {
         private readonly string[] Sequence;
         private          bool     isRunning;
+        public           string   Message;
         private          int      position;
         private          Thread   thread;
-        public string Message;
 
         public Spinner()
         {
@@ -218,17 +218,18 @@ public static class Utilities
             Console.CursorVisible = false;
             isRunning             = true;
             thread = new Thread(() =>
-            {
-                while (isRunning)
-                {
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Write(" " + Sequence[position] + " " + Message + "         ");
-                    position++;
-                    if (position >= Sequence.Length)
-                        position = 0;
-                    Thread.Sleep(100);
-                }
-            });
+                                {
+                                    while (isRunning)
+                                    {
+                                        Console.SetCursorPosition(0, Console.CursorTop);
+                                        Console.Write(" " + Sequence[position] + " " + Message + "         ");
+                                        position++;
+                                        if (position >= Sequence.Length)
+                                            position = 0;
+                                        Thread.Sleep(100);
+                                    }
+                                }
+                               );
 
             thread.Start();
         }

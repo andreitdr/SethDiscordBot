@@ -15,30 +15,30 @@ public static class Installer
         Console.WriteLine("The following information will be stored in the config.json file in the ./Data/Resources folder. You can change it later from there.");
         Console.WriteLine("The bot token is required to run the bot. You can get it from the Discord Developer Portal. (https://discord.com/developers/applications)");
 
-        if (!Config.Data.ContainsKey("token"))
+        if (!Config.AppSettings.ContainsKey("token"))
         {
             Console.WriteLine("Please enter the bot token :");
             var token = Console.ReadLine();
-            Config.Data.Add("token", token);
+            Config.AppSettings.Add("token", token);
         }
 
-        if (!Config.Data.ContainsKey("prefix"))
+        if (!Config.AppSettings.ContainsKey("prefix"))
         {
             Console.WriteLine("Please enter the bot prefix :");
             var prefix = Console.ReadLine();
-            Config.Data.Add("prefix", prefix);
+            Config.AppSettings.Add("prefix", prefix);
         }
 
-        if (!Config.Data.ContainsKey("ServerID"))
+        if (!Config.AppSettings.ContainsKey("ServerID"))
         {
             Console.WriteLine("Please enter the Server ID :");
             var serverId = Console.ReadLine();
-            Config.Data.Add("ServerID", serverId);
+            Config.AppSettings.Add("ServerID", serverId);
         }
 
-        Config.Logger.Log("Config Saved", "Installer", isInternal:true);
+        Config.Logger.Log("Config Saved", "Installer", isInternal: true);
 
-        Config.Data.Save();
+        Config.AppSettings.SaveToFile();
 
         Console.WriteLine("Config saved !");
     }
@@ -94,7 +94,8 @@ public static class Installer
                         ""LinuxBot"": """",
                         ""WindowsLauncher"": """",
                     }
-                    ".Replace("                    ", ""));
+                    ".Replace("                    ", "")
+                                            );
                 Environment.Exit(0);
             }
         }

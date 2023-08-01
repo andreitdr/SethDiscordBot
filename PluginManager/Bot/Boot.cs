@@ -107,10 +107,10 @@ public class Boot
     {
         if (arg.Message.Contains("401"))
         {
-            Config.Data.Remove("token");
+            Config.AppSettings.Remove("token");
             Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this,
                               LogLevel.ERROR);
-            Config.Data.Save();
+            await Config.AppSettings.SaveToFile();
             await Task.Delay(4000);
             Environment.Exit(0);
         }

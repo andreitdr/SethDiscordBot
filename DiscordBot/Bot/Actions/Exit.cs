@@ -17,21 +17,21 @@ public class Exit : ICommandAction
     {
         if (args is null || args.Length == 0)
         {
-            Config.Logger.Log("Exiting...", "Exit", isInternal:false);
-            await Config.Data.Save();
+            Config.Logger.Log("Exiting...", "Exit", isInternal: false);
+            await Config.AppSettings.SaveToFile();
             await Config.Logger.SaveToFile();
             Environment.Exit(0);
         }
         else
         {
-            switch (args[0])
+            switch ( args[0] )
             {
                 case "help":
                     Console.WriteLine("Usage : exit [help|force]");
                     Console.WriteLine("help : Displays this message");
                     Console.WriteLine("force | -f : Exits the bot without saving the config");
                     break;
-                
+
                 case "-f":
                 case "force":
                     Config.Logger.Log("Exiting (FORCE)...", "Exit", LogLevel.WARNING, false);

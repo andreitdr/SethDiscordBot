@@ -34,7 +34,8 @@ public class Help : ICommandAction
             items.Add(new[] { "-", "-", "-" });
 
             Utilities.Utilities.FormatAndAlignTable(items,
-                                                    TableFormat.CENTER_EACH_COLUMN_BASED);
+                                                    TableFormat.CENTER_EACH_COLUMN_BASED
+                                                   );
             return;
         }
 
@@ -55,6 +56,7 @@ public class Help : ICommandAction
         };
 
         Utilities.Utilities.FormatAndAlignTable(actionData,
-                                                TableFormat.CENTER_EACH_COLUMN_BASED);
+                                                TableFormat.CENTER_EACH_COLUMN_BASED
+                                               );
     }
 }

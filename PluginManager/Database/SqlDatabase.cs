@@ -10,7 +10,6 @@ namespace PluginManager.Database;
 public class SqlDatabase
 {
     private readonly SQLiteConnection Connection;
-    private readonly string           ConnectionString;
 
     /// <summary>
     ///     Initialize a SQL connection by specifing its private path
@@ -22,8 +21,8 @@ public class SqlDatabase
             fileName = Path.Combine("./Data/Resources", fileName);
         if (!File.Exists(fileName))
             SQLiteConnection.CreateFile(fileName);
-        ConnectionString = $"URI=file:{fileName}";
-        Connection       = new SQLiteConnection(ConnectionString);
+        var connectionString = $"URI=file:{fileName}";
+        Connection       = new SQLiteConnection(connectionString);
     }
 
 

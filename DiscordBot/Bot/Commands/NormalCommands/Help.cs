@@ -75,10 +75,11 @@ internal class Help : DBCommand
     {
         var embedBuilder = new EmbedBuilder();
         var cmd = PluginLoader.Commands.Find(p => p.Command == command ||
-                                                  (p.Aliases is not null && p.Aliases.Contains(command)));
+                                                  p.Aliases is not null && p.Aliases.Contains(command)
+                                            );
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Config.Data["prefix"] + cmd.Usage);
+        embedBuilder.AddField("Usage", Config.AppSettings["prefix"] + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

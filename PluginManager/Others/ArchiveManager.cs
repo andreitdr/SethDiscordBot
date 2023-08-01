@@ -16,10 +16,10 @@ public static class ArchiveManager
     {
         if (isInitialized) throw new Exception("ArchiveManager is already initialized");
 
-        if (!Config.Data.ContainsKey("ArchiveFolder"))
-            Config.Data["ArchiveFolder"] = "./Data/PAKS/";
+        if (!Config.AppSettings.ContainsKey("ArchiveFolder"))
+            Config.AppSettings["ArchiveFolder"] = "./Data/PAKS/";
 
-        archiveFolder = Config.Data["ArchiveFolder"];
+        archiveFolder = Config.AppSettings["ArchiveFolder"];
 
         isInitialized = true;
     }

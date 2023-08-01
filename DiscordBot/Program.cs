@@ -15,8 +15,8 @@ namespace DiscordBot;
 
 public class Program
 {
-    public static Json<string, string>  URLs;
-    public static InternalActionManager internalActionManager;
+    public static SettingsDictionary<string, string> URLs;
+    public static InternalActionManager              internalActionManager;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -26,12 +26,12 @@ public class Program
     {
         PreLoadComponents(args).Wait();
 
-        if (!Data.ContainsKey("ServerID") || !Data.ContainsKey("token") ||
-            Data["token"] == null ||
-            (Data["token"]?.Length != 70 && Data["token"]?.Length != 59) ||
-            !Data.ContainsKey("prefix") || Data["prefix"] == null ||
-            Data["prefix"]?.Length != 1 ||
-            (args.Length == 1 && args[0] == "/reset"))
+        if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") ||
+            AppSettings["token"] == null ||
+            AppSettings["token"]?.Length != 70 && AppSettings["token"]?.Length != 59 ||
+            !AppSettings.ContainsKey("prefix") || AppSettings["prefix"] == null ||
+            AppSettings["prefix"]?.Length != 1 ||
+            args.Length == 1 && args[0] == "/reset")
             Installer.GenerateStartupConfig();
 
         HandleInput(args.ToList()).Wait();
@@ -49,9 +49,9 @@ public class Program
 
         while (true)
         {
-            string   cmd     = Console.ReadLine();
-            string[] args    = cmd.Split(' ');
-            string   command = args[0];
+            var cmd     = Console.ReadLine();
+            var args    = cmd.Split(' ');
+            var command = args[0];
             args = args.Skip(1).ToArray();
             if (args.Length == 0)
                 args = null;
@@ -76,19 +76,22 @@ public class Program
             Console.WriteLine(message);
 
         Console.WriteLine(
-                          $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Console.WriteLine($"Git URL: {Data["GitURL"]}");
+                          $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}"
+                         );
+        Console.WriteLine($"Git URL: {AppSettings["GitURL"]}");
 
         Utilities.Utilities.WriteColorText(
-                                           "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n");
+                                           "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n"
+                                          );
         Console.ForegroundColor = ConsoleColor.White;
 
-        if (Data.ContainsKey("LaunchMessage"))
-            Utilities.Utilities.WriteColorText(Data["LaunchMessage"]);
+        if (AppSettings.ContainsKey("LaunchMessage"))
+            Utilities.Utilities.WriteColorText(AppSettings["LaunchMessage"]);
 
 
         Utilities.Utilities.WriteColorText(
-                                           "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)");
+                                           "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)"
+                                          );
 
         Console.WriteLine("Running on " + Functions.GetOperatingSystem());
         Console.WriteLine("============================ LOG ============================");
@@ -98,16 +101,16 @@ public class Program
             var token = "";
 #if DEBUG
             if (File.Exists("./Data/Resources/token.txt")) token = File.ReadAllText("./Data/Resources/token.txt");
-            else token                                           = Data["token"];
+            else token                                           = AppSettings["token"];
 #else
             token = Config.Data["token"];
 #endif
-            var prefix        = Data["prefix"];
+            var prefix        = AppSettings["prefix"];
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
             return discordbooter;
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             return null;
@@ -141,16 +144,18 @@ public class Program
 
             NoGUI();
         }
-        catch (IOException ex)
+        catch ( IOException ex )
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                if (Data.ContainsKey("LaunchMessage"))
-                    Data.Add("LaunchMessage",
-                             "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
+                if (AppSettings.ContainsKey("LaunchMessage"))
+                    AppSettings.Add("LaunchMessage",
+                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !"
+                                   );
                 Logger
                     .Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
-                         "Bot", LogLevel.ERROR);
+                         "Bot", LogLevel.ERROR
+                        );
             }
         }
     }
@@ -163,7 +168,9 @@ public class Program
             await Installer.SetupPluginDatabase();
 
 
-        URLs = new Json<string, string>("./Data/Resources/URLs.json");
+        URLs = new SettingsDictionary<string, string>("./Data/Resources/URLs.json");
+
+        File.WriteAllText("temp.txt", string.Join(" ", URLs.Keys));
 
         Logger.LogEvent += (message, type, isInternal) =>
         {
@@ -174,28 +181,25 @@ public class Program
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
             else if (type == LogLevel.ERROR)
                 Console.ForegroundColor = ConsoleColor.Red;
-            else if(type == LogLevel.CRITICAL)
+            else if (type == LogLevel.CRITICAL)
                 Console.ForegroundColor = ConsoleColor.DarkRed;
 
             Console.WriteLine($"[{type.ToString()}] {message}");
             Console.ResetColor();
-            
-           
-
         };
 
 
         Console.WriteLine("Loading resources ...");
 
-        if (Data.ContainsKey("DeleteLogsAtStartup"))
-            if (Data["DeleteLogsAtStartup"] == "true")
+        if (AppSettings.ContainsKey("DeleteLogsAtStartup"))
+            if (AppSettings["DeleteLogsAtStartup"] == "true")
                 foreach (var file in Directory.GetFiles("./Output/Logs/"))
                     File.Delete(file);
-        var OnlineDefaultKeys =
-            await ServerCom.ReadTextFromURL(URLs["SetupKeys"]);
+
+        var OnlineDefaultKeys = await ServerCom.ReadTextFromURL(URLs["SetupKeys"]);
 
 
-        Data["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         foreach (var key in OnlineDefaultKeys)
         {
@@ -203,9 +207,9 @@ public class Program
             var s = key.Split(' ');
             try
             {
-                Data[s[0]] = s[1];
+                AppSettings[s[0]] = s[1];
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             }
@@ -218,10 +222,10 @@ public class Program
             if (key.Length <= 3 || !key.Contains(' ')) continue;
 
             var s = key.Split(' ');
-            switch (s[0])
+            switch ( s[0] )
             {
                 case "CurrentVersion":
-                    var currentVersion = Data["Version"];
+                    var currentVersion = AppSettings["Version"];
                     var newVersion     = s[1];
                     if (new VersionString(newVersion) != new VersionString(newVersion))
                     {

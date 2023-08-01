@@ -31,7 +31,7 @@ public class Plugin : ICommandAction
             return;
         }
 
-        switch (args[0])
+        switch ( args[0] )
         {
             case "list":
                 var manager =
@@ -75,7 +75,8 @@ public class Plugin : ICommandAction
                             Console.WriteLine("An error occured while loading: " + name);
                         else
                             Console.WriteLine("[CMD] Failed to load command : " + name + " because " +
-                                              exception!.Message);
+                                              exception!.Message
+                                             );
                     }
 
                     Console.ForegroundColor = cc;
@@ -113,7 +114,8 @@ public class Plugin : ICommandAction
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("[SLASH] Failed to load command : " + name + " because " +
-                                          exception!.Message);
+                                          exception!.Message
+                                         );
                     }
 
                     Console.ForegroundColor = cc;
@@ -156,7 +158,7 @@ public class Plugin : ICommandAction
                 //download plugin progress bar for linux and windows terminals
                 var spinner = new Utilities.Utilities.Spinner();
                 spinner.Start();
-                IProgress<float> progress = new Progress<float>(p => { spinner.Message = $"Downloading {pluginName}... {Math.Round(p,2)}%  " ; });
+                IProgress<float> progress = new Progress<float>(p => { spinner.Message = $"Downloading {pluginName}... {Math.Round(p, 2)}%  "; });
                 await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", progress);
                 spinner.Stop();
                 Console.WriteLine();

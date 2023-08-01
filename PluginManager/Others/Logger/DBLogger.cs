@@ -16,8 +16,8 @@ public class DBLogger
 
     public DBLogger()
     {
-        _logFolder = Config.Data["LogFolder"];
-        _errFolder = Config.Data["ErrorFolder"];
+        _logFolder = Config.AppSettings["LogFolder"];
+        _errFolder = Config.AppSettings["ErrorFolder"];
     }
 
     public IReadOnlyList<LogMessage> Logs   => LogHistory;
@@ -69,9 +69,9 @@ public class DBLogger
     public async Task SaveToFile(bool ErrorsOnly = true)
     {
         if(!ErrorsOnly)
-        await Functions.SaveToJsonFile(_logFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
+        await JsonManager.SaveToJsonFile(_logFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
                                        LogHistory);
-        await Functions.SaveToJsonFile(_errFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
+        await JsonManager.SaveToJsonFile(_errFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
                                        ErrorHistory);
     }
 }

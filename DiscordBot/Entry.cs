@@ -14,7 +14,8 @@ public class Entry
         static Assembly LoadFromSameFolder(object sender, ResolveEventArgs args)
         {
             var folderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                                          "./Libraries");
+                                          "./Libraries"
+                                         );
             var assemblyPath = Path.Combine(folderPath, new AssemblyName(args.Name).Name + ".dll");
             if (!File.Exists(assemblyPath)) return null;
             var assembly = Assembly.LoadFrom(assemblyPath);
