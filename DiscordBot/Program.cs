@@ -103,7 +103,7 @@ public class Program
             if (File.Exists("./Data/Resources/token.txt")) token = File.ReadAllText("./Data/Resources/token.txt");
             else token                                           = AppSettings["token"];
 #else
-            token = Config.Data["token"];
+            token = AppSettings["token"];
 #endif
             var prefix        = AppSettings["prefix"];
             var discordbooter = new Boot(token, prefix);
