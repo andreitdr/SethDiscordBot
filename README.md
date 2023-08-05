@@ -49,7 +49,7 @@ public class LevelCommand : DBCommand
 
     public bool requireAdmin => false;
 
-    public async void ExecuteServer(CmdArgs context)
+    public async void ExecuteServer(DBCommandExecutingArguments context)
     {
         //Variables.database is a sql connection that is defined in an auxiliary file in the same napespace as this class
         object[] user = await Variables.database.ReadDataArrayAsync($"SELECT * FROM Levels WHERE UserID='{context.Message.Author.Id}'");
@@ -192,4 +192,4 @@ namespace SlashCommands
 You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
 
 
-> Updated: 7.04.2023
+> Updated: 5.08.2023
