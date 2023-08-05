@@ -170,8 +170,6 @@ public class Program
 
         URLs = new SettingsDictionary<string, string>("./Data/Resources/URLs.json");
 
-        File.WriteAllText("temp.txt", string.Join(" ", URLs.Keys));
-
         Logger.LogEvent += (message, type, isInternal) =>
         {
             if (isInternal) return;
