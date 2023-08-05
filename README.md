@@ -74,7 +74,7 @@ public class LevelCommand : DBCommand
     }
 
     //Optional method (tell the bot what should it do if the command is executed from a DM channel)
-    //public async void ExecuteDM(CmdArgs context) {
+    //public async void ExecuteDM(DBCommandExecutingArguments context) {
     //
     //}
 }
