@@ -32,13 +32,13 @@ public class JsonManager
     /// <returns></returns>
     public static async Task<T> ConvertFromJson<T>(string input)
     {
-        Console.WriteLine(input);
         Stream text;
         if (File.Exists(input))
             text = new MemoryStream(await File.ReadAllBytesAsync(input));
         else
             text = new MemoryStream(Encoding.ASCII.GetBytes(input));
         text.Position = 0;
+        
         var obj = await JsonSerializer.DeserializeAsync<T>(text);
         await text.FlushAsync();
         text.Close();

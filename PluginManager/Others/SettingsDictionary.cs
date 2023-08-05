@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,31 +8,46 @@ namespace PluginManager.Others;
 
 public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
 {
-    public string _file { get; set; }
+    public string? _file { get; }
     private IDictionary<TKey, TValue>? _dictionary;
 
-    public SettingsDictionary(string file)
+    public SettingsDictionary(string? file)
     {
-        if (file is null) 
-            throw new FileLoadException("The file can not be null");
-        
-        if (!File.Exists(file))
-            File.Create(file).Close();
-        
         _file = file;
-        LoadFromFile();
+        if (!LoadFromFile())
+        {
+            throw new Exception($"Failed to load {file}. Please check the file and try again.");
+        }
     }
-
+    
     public async Task SaveToFile()
     {
         if (!string.IsNullOrEmpty(_file))
             await JsonManager.SaveToJsonFile(_file, _dictionary);
     }
 
-    private void LoadFromFile()
+    private bool LoadFromFile()
     {
         if (!string.IsNullOrEmpty(_file))
-            _dictionary = JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file).Result;
+            try
+            {
+                if (File.Exists(_file)){
+                    if (!File.ReadAllText(_file).Contains('{') && !File.ReadAllText(_file).Contains('}'))
+                        File.WriteAllText(_file, "{}");
+                }
+                else
+                    File.WriteAllText(_file, "{}");
+                _dictionary = JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file).Result;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Config.Logger.Error(e);
+                return false;
+            }
+
+        return false;
+
     }
 
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
