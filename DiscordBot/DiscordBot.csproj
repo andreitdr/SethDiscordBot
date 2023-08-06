@@ -29,6 +29,8 @@
         <None Remove="Data\**"/>
         <None Remove="obj\**"/>
         <None Remove="Output\**"/>
+        <None Remove="builder.bat" />
+        <None Remove="builder.sh" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Discord.Net" Version="3.11.0"/>
