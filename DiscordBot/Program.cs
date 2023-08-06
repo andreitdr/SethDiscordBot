@@ -163,16 +163,9 @@ public class Program
     private static async Task PreLoadComponents(string[] args)
     {
         await Initialize();
-
-        if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
-            await Installer.SetupPluginDatabase();
-
-
-        URLs = new SettingsDictionary<string, string>("./Data/Resources/URLs.json");
-
+        
         Logger.LogEvent += (message, type, isInternal) =>
         {
-            if (isInternal) return;
             if (type == LogLevel.INFO)
                 Console.ForegroundColor = ConsoleColor.Green;
             else if (type == LogLevel.WARNING)
@@ -185,6 +178,12 @@ public class Program
             Console.WriteLine($"[{type.ToString()}] {message}");
             Console.ResetColor();
         };
+
+        if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
+            await Installer.SetupPluginDatabase();
+
+
+        URLs = new SettingsDictionary<string, string>("./Data/Resources/URLs.json");
 
 
         Console.WriteLine("Loading resources ...");
@@ -212,8 +211,7 @@ public class Program
                 Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
             }
         }
-
-
+        
         var onlineSettingsList = await ServerCom.ReadTextFromURL(URLs["Versions"]);
         foreach (var key in onlineSettingsList)
         {

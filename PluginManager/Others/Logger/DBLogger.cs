@@ -23,7 +23,7 @@ public class DBLogger
     public IReadOnlyList<LogMessage> Logs   => LogHistory;
     public IReadOnlyList<LogMessage> Errors => ErrorHistory;
 
-    public event LogHandler LogEvent;
+    public event LogHandler? LogEvent;
     
     public void Log(string message, LogLevel type = LogLevel.INFO)
     {
@@ -52,8 +52,7 @@ public class DBLogger
 
     public void Log(LogMessage message)
     {
-        if (LogEvent is not null)
-            LogEvent?.Invoke(message.Message, message.Type);
+        LogEvent?.Invoke(message.Message, message.Type);
 
         if (message.Type != LogLevel.ERROR && message.Type != LogLevel.CRITICAL)
             LogHistory.Add(message);

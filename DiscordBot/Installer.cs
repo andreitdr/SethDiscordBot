@@ -46,59 +46,8 @@ public static class Installer
     public static async Task SetupPluginDatabase()
     {
         Console.WriteLine("The plugin database is required to run the bot but there is nothing configured yet.");
-        Console.WriteLine("Please select one option : ");
-        Console.WriteLine("1. Download the official database file");
-        Console.WriteLine("2. Create a new (CUSTOM) database file");
-        var choice = 0;
-        Console.Write("Choice : ");
-        choice = int.Parse(Console.ReadLine());
-        if (choice != 1 && choice != 2)
-        {
-            Console.WriteLine("Invalid choice !");
-            Console.WriteLine("Please restart the installer !");
-            Console.ReadKey();
-            Environment.Exit(0);
-        }
-
-        if (choice == 1)
-            await DownloadPluginDatabase();
-
-        if (choice == 2)
-        {
-            Console.WriteLine("Do you have a url to a valid database file ? (y/n)");
-            var answer = Console.ReadLine();
-            if (answer == "y")
-            {
-                Console.WriteLine("Please enter the url :");
-                var url = Console.ReadLine();
-                await DownloadPluginDatabase(url);
-                return;
-            }
-
-            Console.WriteLine("Do you want to create a new database file ? (y/n)");
-            answer = Console.ReadLine();
-            if (answer == "y")
-            {
-                Console.WriteLine("A new file will be generated at ./Data/Resources/URLs.json");
-                Console.WriteLine("Please edit the file and restart the bot !");
-                Directory.CreateDirectory("./Data/Resources");
-                await File.WriteAllTextAsync("./Data/Resources/URLs.json",
-                                             @"
-                    {
-                        ""PluginList"": """",
-                        ""PluginVersions"": """",
-                        ""StartupMessage"": """",
-                        ""SetupKeys"": """",
-                        ""Versions"": """",
-                        ""Changelog"": """",
-                        ""LinuxBot"": """",
-                        ""WindowsLauncher"": """",
-                    }
-                    ".Replace("                    ", "")
-                                            );
-                Environment.Exit(0);
-            }
-        }
+        Console.WriteLine("Downloading the default database...");
+        await DownloadPluginDatabase();
     }
 
     private static async Task DownloadPluginDatabase(

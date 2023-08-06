@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using PluginManager.Others.Exceptions;
 
 namespace PluginManager.Others;
 
@@ -10,13 +10,16 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
 {
     public string? _file { get; }
     private IDictionary<TKey, TValue>? _dictionary;
-
+    
     public SettingsDictionary(string? file)
     {
         _file = file;
         if (!LoadFromFile())
         {
-            throw new Exception($"Failed to load {file}. Please check the file and try again.");
+            ConfigFailedToLoad.CreateError("Failed to load config")
+                .AppendError("The file is empty or does not exist")
+                .IsFatal()
+                .HandleException();
         }
     }
     
@@ -31,8 +34,13 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         if (!string.IsNullOrEmpty(_file))
             try
             {
-                if (File.Exists(_file)){
-                    if (!File.ReadAllText(_file).Contains('{') && !File.ReadAllText(_file).Contains('}'))
+                if (File.Exists(_file))
+                {
+                    string FileContent = File.ReadAllText(_file);
+                    if (string.IsNullOrEmpty(FileContent))
+                        File.WriteAllText(_file, "{}");
+                    
+                    if(!FileContent.Contains("{") || !FileContent.Contains("}"))
                         File.WriteAllText(_file, "{}");
                 }
                 else
@@ -40,9 +48,12 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
                 _dictionary = JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file).Result;
                 return true;
             }
-            catch (Exception e)
+            catch
             {
-                Config.Logger.Error(e);
+                ConfigFailedToLoad
+                    .CreateError("Failed to load config")
+                    .IsFatal()
+                    .HandleException();
                 return false;
             }
 
@@ -109,7 +120,19 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
 
     public TValue this[TKey key]
     {
-        get => this._dictionary![key];
+        get
+        {
+            if (this._dictionary!.ContainsKey(key))
+                if(this._dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
+                    return this._dictionary[key];
+            
+            ConfigNoKeyWasPresent.CreateError($"Key {(key is string ? key : typeof(TKey).Name)} was not present in {_file ?? "config"}")
+                .AppendError("Deleting the file may fix this issue")
+                    .IsFatal()
+                    .HandleException();
+            
+            return default!;
+        }
         set => this._dictionary![key] = value;
     }
 
