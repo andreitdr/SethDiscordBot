@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
@@ -15,6 +16,9 @@ public class Clear : ICommandAction
     public Task Execute(string[] args)
     {
         Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("===== Seth Discord Bot =====");
+        Console.ResetColor();
         return Task.CompletedTask;
     }
 }

@@ -22,7 +22,7 @@ public class Plugin : ICommandAction
     {
         if (args is null || args.Length == 0 || args[0] == "help")
         {
-            Console.WriteLine("Usage : plugin [help|list|load|install|remove|update]");
+            Console.WriteLine("Usage : plugin [help|list|load|install]");
             Console.WriteLine("help : Displays this message");
             Console.WriteLine("list : Lists all plugins");
             Console.WriteLine("load : Loads all plugins");

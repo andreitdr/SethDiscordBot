@@ -33,6 +33,7 @@ public class PluginsManager
     /// <returns></returns>
     public async Task<List<string[]>> GetAvailablePlugins()
     {
+        Config.Logger.Log("Got data from " + VersionsLink, this, LogLevel.INFO);
         try
         {
             var list  = await ServerCom.ReadTextFromURL(PluginsLink);
@@ -100,8 +101,7 @@ public class PluginsManager
             var split = item.Split(',');
             if (split[0] == pakName)
             {
-                Console.WriteLine("Searched for " + pakName + " and found " + split[1] + " as version.\nUsed url: " +
-                                  VersionsLink);
+                Config.Logger.Log("Searched for " + pakName + " and found " + split[1] + " as version.", LogLevel.INFO);
                 return new VersionString(split[1]);
             }
         }
