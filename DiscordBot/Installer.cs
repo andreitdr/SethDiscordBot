@@ -48,6 +48,7 @@ public static class Installer
         Console.WriteLine("The plugin database is required to run the bot but there is nothing configured yet.");
         Console.WriteLine("Downloading the default database...");
         await DownloadPluginDatabase();
+        
     }
 
     private static async Task DownloadPluginDatabase(
