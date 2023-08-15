@@ -124,10 +124,9 @@ internal class CommandHandler
                                                                                   .Substring(botPrefix.Length))));
                 cleanMessage = message.Content.Substring(botPrefix.Length);
             }
-
+            
             if (plugin is null)
-                throw new Exception("Failed to run command ! " + message.CleanContent + " (user: " +
-                                    context.Message.Author.Username + " - " + context.Message.Author.Id + ")");
+                return;
 
             if (plugin.requireAdmin && !context.Message.Author.isAdmin())
                 return;
