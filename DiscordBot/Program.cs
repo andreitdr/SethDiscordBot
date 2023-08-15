@@ -44,7 +44,9 @@ public class Program
     {
 #if DEBUG
         Console.WriteLine("Debug mode enabled");
+        internalActionManager.Initialize().Wait();
         internalActionManager.Execute("plugin", "load").Wait(); // Load plugins at startup
+        internalActionManager.Refresh().Wait();
 #endif
 
         while (true)
@@ -139,9 +141,7 @@ public class Program
         var b = await StartNoGui();
         try
         {
-            internalActionManager = new InternalActionManager("./Data/Actions", "*.dll");
-            await internalActionManager.Initialize();
-
+            internalActionManager = new InternalActionManager("./Data/Plugins", "*.dll");
             NoGUI();
         }
         catch ( IOException ex )

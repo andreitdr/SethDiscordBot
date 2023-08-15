@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayer", "..\SethPlugi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevelingSystem", "..\SethPlugins\LevelingSystem\LevelingSystem.csproj", "{BFE3491C-AC01-4252-B242-6451270FC548}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PythonCompatibilityLayer", "..\SethPlugins\PythonCompatibilityLayer\PythonCompatibilityLayer.csproj", "{81ED4953-13E5-4950-96A8-8CEF5FD59559}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{BFE3491C-AC01-4252-B242-6451270FC548}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5} = {78B6D390-F61A-453F-B38D-E4C054321615}
 		{BFE3491C-AC01-4252-B242-6451270FC548} = {78B6D390-F61A-453F-B38D-E4C054321615}
+		{81ED4953-13E5-4950-96A8-8CEF5FD59559} = {78B6D390-F61A-453F-B38D-E4C054321615}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}

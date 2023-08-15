@@ -18,23 +18,31 @@ public class InternalActionManager
 
     public async Task Initialize()
     {
-        loader.ActionLoadedEvent += OnActionLoaded;
+        //loader.ActionLoadedEvent += OnActionLoaded;
         var m_actions = await loader.Load();
         if (m_actions == null) return;
         foreach (var action in m_actions)
-            Actions.Add(action.ActionName, action);
-    }
-
-    private void OnActionLoaded(string name, string typeName, bool success, Exception? e)
-    {
-        if (!success)
         {
-            Config.Logger.Error(e);
-            return;
+            Actions.TryAdd(action.ActionName, action);
         }
-
-        Config.Logger.Log($"Action {name} loaded successfully", LogLevel.INFO, true);
     }
+    
+    public async Task Refresh()
+    {
+         Actions.Clear();
+        await Initialize();
+    }
+
+    // private void OnActionLoaded(string name, string typeName, bool success, Exception? e)
+    // {
+    //     if (!success)
+    //     {
+    //         Config.Logger.Error(e);
+    //         return;
+    //     }
+    //     
+    //     Config.Logger.Log($"Action {name} loaded successfully", LogLevel.INFO, true);
+    // }
 
     public async Task<string> Execute(string actionName, params string[]? args)
     {

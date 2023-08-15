@@ -15,7 +15,7 @@ public class ActionsLoader
 
     private readonly string actionExtension = "dll";
 
-    private readonly string actionFolder = @"./Data/Actions/";
+    private readonly string actionFolder = @"./Data/Plugins/";
 
     public ActionsLoader(string path, string extension)
     {
