@@ -61,6 +61,13 @@ public class Plugin : ICommandAction
                 if (pluginsLoaded)
                     break;
                 var loader = new PluginLoader(Config.DiscordBot.client);
+                if (args.Length == 2 && args[1] == "-q")
+                {
+                    loader.LoadPlugins();
+                    pluginsLoaded = true;
+                    break;
+                }
+                
                 var cc     = Console.ForegroundColor;
                 loader.onCMDLoad += (name, typeName, success, exception) =>
                 {
@@ -200,7 +207,7 @@ public class Plugin : ICommandAction
                 Console.WriteLine("Finished installing " + pluginName + " successfully");
                 
                 Console.WriteLine("Reloading plugins list...");
-                await Program.internalActionManager.Execute("plugin", "load");
+                await Program.internalActionManager.Execute("plugin", "load", "-q");
                 await Program.internalActionManager.Refresh();
                 
                 Console.WriteLine("Finished reloading plugins list");
