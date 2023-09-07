@@ -25,8 +25,8 @@ public class PluginsManager
     /// </summary>
     public PluginsManager()
     {
-        PluginsLink = "https://raw.githubusercontent.com/andreitdr/installer/discord-bot-files/Plugins.txt";
-        VersionsLink = "https://raw.githubusercontent.com/andreitdr/installer/discord-bot-files/Versions";
+        PluginsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/PluginsList";
+        VersionsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/Versions";
     }
 
     /// <summary>

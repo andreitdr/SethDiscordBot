@@ -15,7 +15,7 @@ public class Plugin : ICommandAction
     private bool                  pluginsLoaded;
     public  string                ActionName  => "plugin";
     public  string                Description => "Manages plugins. Use plugin help for more info.";
-    public  string                Usage       => "plugin [help|list|load|install]";
+    public  string                Usage       => "plugin [help|list|load|install|refresh]";
     public  InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)
@@ -27,6 +27,7 @@ public class Plugin : ICommandAction
             Console.WriteLine("list : Lists all plugins");
             Console.WriteLine("load : Loads all plugins");
             Console.WriteLine("install : Installs a plugin");
+            Console.WriteLine("refresh : Refreshes the plugin list");
 
             return;
         }
@@ -35,6 +36,9 @@ public class Plugin : ICommandAction
 
         switch ( args[0] )
         {
+            case "refresh":
+                await Program.internalActionManager.Refresh();
+                break;
             case "list":
 
                 var data = await manager.GetAvailablePlugins();
@@ -163,7 +167,12 @@ public class Plugin : ICommandAction
 
                 if (pluginRequirements == string.Empty)
                 {
-                    Console.WriteLine("Plugin installed successfully");
+                    Console.WriteLine("Finished installing " + pluginName + " successfully");
+                    Console.WriteLine("Reloading plugins list...");
+                    await Program.internalActionManager.Execute("plugin", "load");
+                    await Program.internalActionManager.Refresh();
+                
+                    Console.WriteLine("Finished reloading plugins list");
                     break;
                 }
 
@@ -179,16 +188,22 @@ public class Plugin : ICommandAction
                     var filename = reqdata[1];
 
                     Console.WriteLine($"Downloading {filename}... ");
+                    progress = new Progress<float>(p => { spinner.Message = $"Downloading {filename}... {Math.Round(p, 2)}%  "; });
                     spinner.Start();
-
-                    await ServerCom.DownloadFileAsync(url, $"./{filename}.dll", null);
+                    await ServerCom.DownloadFileAsync(url, $"./{filename}", progress);
                     spinner.Stop();
+                    progress.Report(1);
                     await Task.Delay(1000);
                     Console.WriteLine("Downloaded " + filename + " successfully");
                 }
 
                 Console.WriteLine("Finished installing " + pluginName + " successfully");
-
+                
+                Console.WriteLine("Reloading plugins list...");
+                await Program.internalActionManager.Execute("plugin", "load");
+                await Program.internalActionManager.Refresh();
+                
+                Console.WriteLine("Finished reloading plugins list");
                 break;
         }
     }
