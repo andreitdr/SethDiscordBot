@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace DiscordBot.Utilities;
 
-public static class Utilities
+public static class ConsoleUtilities
 {
     private static readonly Dictionary<char, ConsoleColor> Colors = new()
     {
@@ -16,8 +16,7 @@ public static class Utilities
     };
 
     private static readonly char ColorPrefix = '&';
-
-
+    
     private static bool CanAproximateTo(this float f, float y)
     {
         return MathF.Abs(f - y) < 0.000001;

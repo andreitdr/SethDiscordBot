@@ -42,24 +42,4 @@ public static class Installer
 
         Console.WriteLine("Config saved !");
     }
-
-    public static async Task SetupPluginDatabase()
-    {
-        Console.WriteLine("The plugin database is required to run the bot but there is nothing configured yet.");
-        Console.WriteLine("Downloading the default database...");
-        await DownloadPluginDatabase();
-        
-    }
-
-    private static async Task DownloadPluginDatabase(
-        string url = "https://raw.githubusercontent.com/andreitdr/SethDiscordBot/gh-pages/defaultURLs.json")
-    {
-        var path = "./Data/Resources/URLs.json";
-
-        Directory.CreateDirectory("./Data/Resources");
-        var spinner = new Utilities.Utilities.Spinner();
-        spinner.Start();
-        await ServerCom.DownloadFileAsync(url, path, null);
-        spinner.Stop();
-    }
 }

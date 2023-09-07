@@ -19,6 +19,15 @@ public class PluginsManager
         PluginsLink  = plink;
         VersionsLink = vlink;
     }
+    
+    /// <summary>
+    /// The default Plugin Manager constructor. It uses the default links.
+    /// </summary>
+    public PluginsManager()
+    {
+        PluginsLink = "https://raw.githubusercontent.com/andreitdr/installer/discord-bot-files/Plugins.txt";
+        VersionsLink = "https://raw.githubusercontent.com/andreitdr/installer/discord-bot-files/Versions";
+    }
 
     /// <summary>
     ///     The URL of the server

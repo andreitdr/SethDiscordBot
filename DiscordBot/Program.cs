@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DiscordBot.Utilities;
 using PluginManager.Bot;
 using PluginManager.Online;
 using PluginManager.Online.Helpers;
@@ -15,8 +16,7 @@ namespace DiscordBot;
 
 public class Program
 {
-    public static SettingsDictionary<string, string> URLs;
-    public static InternalActionManager              internalActionManager;
+    public static InternalActionManager internalActionManager;
 
     /// <summary>
     ///     The main entry point for the application.
@@ -34,7 +34,7 @@ public class Program
             args.Length == 1 && args[0] == "/reset")
             Installer.GenerateStartupConfig();
 
-        HandleInput(args.ToList()).Wait();
+        HandleInput().Wait();
     }
 
     /// <summary>
@@ -42,13 +42,11 @@ public class Program
     /// </summary>
     private static void NoGUI()
     {
-#if DEBUG
-        Console.WriteLine("Debug mode enabled");
         internalActionManager.Initialize().Wait();
-        internalActionManager.Execute("plugin", "load").Wait(); // Load plugins at startup
+        internalActionManager.Execute("plugin", "load").Wait();
         internalActionManager.Refresh().Wait();
-#endif
-
+        
+        
         while (true)
         {
             var cmd     = Console.ReadLine();
@@ -66,56 +64,30 @@ public class Program
     ///     Start the bot without user interface
     /// </summary>
     /// <returns>Returns the boot loader for the Discord Bot</returns>
-    private static async Task<Boot> StartNoGui()
+    private static async Task StartNoGui()
     {
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
-        var startupMessageList =
-            await ServerCom.ReadTextFromURL(URLs["StartupMessage"]);
+        Console.WriteLine($"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
+        Console.WriteLine("Git URL: https://github.com/andreitdr/SethDiscordBot");
 
-        foreach (var message in startupMessageList)
-            Console.WriteLine(message);
+        ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
 
-        Console.WriteLine(
-                          $"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}"
-                         );
-        Console.WriteLine($"Git URL: {AppSettings["GitURL"]}");
-
-        Utilities.Utilities.WriteColorText(
-                                           "&rRemember to close the bot using the ShutDown command (&ysd&r) or some settings won't be saved\n"
-                                          );
-        Console.ForegroundColor = ConsoleColor.White;
-
-        if (AppSettings.ContainsKey("LaunchMessage"))
-            Utilities.Utilities.WriteColorText(AppSettings["LaunchMessage"]);
-
-
-        Utilities.Utilities.WriteColorText(
-                                           "Please note that the bot saves a backup save file every time you are using the shudown command (&ysd&c)"
-                                          );
-
-        Console.WriteLine("Running on " + Functions.GetOperatingSystem());
+        ConsoleUtilities.WriteColorText($"Running on &m{Functions.GetOperatingSystem()}");
         Console.WriteLine("============================ LOG ============================");
-
+        
+        Console.ForegroundColor = ConsoleColor.White;
         try
         {
-            var token = "";
-#if DEBUG
-            if (File.Exists("./Data/Resources/token.txt")) token = File.ReadAllText("./Data/Resources/token.txt");
-            else token                                           = AppSettings["token"];
-#else
-            token = AppSettings["token"];
-#endif
+            var token = AppSettings["token"];
             var prefix        = AppSettings["prefix"];
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
-            return discordbooter;
         }
         catch ( Exception ex )
         {
             Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
-            return null;
         }
     }
 
@@ -123,22 +95,9 @@ public class Program
     ///     Handle user input arguments from the startup of the application
     /// </summary>
     /// <param name="args">The arguments</param>
-    private static async Task HandleInput(List<string> args)
+    private static async Task HandleInput()
     {
-        Console.WriteLine("Loading Core ...");
-
-        //Handle arguments here:
-
-        if (args.Contains("--gui"))
-        {
-            // GUI not implemented yet 
-            Console.WriteLine("GUI not implemented yet");
-            return;
-        }
-
-        // Starting bot after all arguments are handled
-
-        var b = await StartNoGui();
+        await StartNoGui();
         try
         {
             internalActionManager = new InternalActionManager("./Data/Plugins", "*.dll");
@@ -178,70 +137,6 @@ public class Program
             Console.WriteLine($"[{type.ToString()}] {message}");
             Console.ResetColor();
         };
-
-        if (!Directory.Exists("./Data/Resources") || !File.Exists("./Data/Resources/URLs.json"))
-            await Installer.SetupPluginDatabase();
-
-
-        URLs = new SettingsDictionary<string, string>("./Data/Resources/URLs.json");
-
-
-        Console.WriteLine("Loading resources ...");
-
-        if (AppSettings.ContainsKey("DeleteLogsAtStartup"))
-            if (AppSettings["DeleteLogsAtStartup"] == "true")
-                foreach (var file in Directory.GetFiles("./Output/Logs/"))
-                    File.Delete(file);
-
-        var OnlineDefaultKeys = await ServerCom.ReadTextFromURL(URLs["SetupKeys"]);
-
-
         AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        foreach (var key in OnlineDefaultKeys)
-        {
-            if (key.Length <= 3 || !key.Contains(' ')) continue;
-            var s = key.Split(' ');
-            try
-            {
-                AppSettings[s[0]] = s[1];
-            }
-            catch ( Exception ex )
-            {
-                Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
-            }
-        }
-        
-        var onlineSettingsList = await ServerCom.ReadTextFromURL(URLs["Versions"]);
-        foreach (var key in onlineSettingsList)
-        {
-            if (key.Length <= 3 || !key.Contains(' ')) continue;
-
-            var s = key.Split(' ');
-            switch ( s[0] )
-            {
-                case "CurrentVersion":
-                    var currentVersion = AppSettings["Version"];
-                    var newVersion     = s[1];
-                    if (new VersionString(newVersion) != new VersionString(newVersion))
-                    {
-                        Console.WriteLine("A new updated was found. Check the changelog for more information.");
-                        var changeLog = await ServerCom.ReadTextFromURL(URLs["Changelog"]);
-                        foreach (var item in changeLog)
-                            Utilities.Utilities.WriteColorText(item);
-                        Console.WriteLine("Current version: " + currentVersion);
-                        Console.WriteLine("Latest version: " + newVersion);
-
-                        Console.WriteLine("Download from here: https://github.com/andreitdr/SethDiscordBot/releases");
-
-                        Console.WriteLine("Press any key to continue ...");
-                        Console.ReadKey();
-                    }
-
-                    break;
-            }
-        }
-
-        Console.Clear();
     }
 }

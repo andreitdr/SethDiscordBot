@@ -30,12 +30,12 @@ public class Plugin : ICommandAction
 
             return;
         }
+        
+        var manager = new PluginsManager();
 
         switch ( args[0] )
         {
             case "list":
-                var manager =
-                    new PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
 
                 var data = await manager.GetAvailablePlugins();
                 var items = new List<string[]>
@@ -49,7 +49,7 @@ public class Plugin : ICommandAction
 
                 items.Add(new[] { "-", "-", "-", "-" });
 
-                Utilities.Utilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
+                ConsoleUtilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
                 break;
 
 
@@ -139,10 +139,8 @@ public class Plugin : ICommandAction
                         break;
                     }
                 }
-
-                var pluginManager =
-                    new PluginsManager(Program.URLs["PluginList"], Program.URLs["PluginVersions"]);
-                var pluginData = await pluginManager.GetPluginLinkByName(pluginName);
+                
+                var pluginData = await manager.GetPluginLinkByName(pluginName);
                 if (pluginData == null || pluginData.Length == 0)
                 {
                     Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
@@ -156,7 +154,7 @@ public class Plugin : ICommandAction
 
                 Console.WriteLine("Downloading plugin...");
                 //download plugin progress bar for linux and windows terminals
-                var spinner = new Utilities.Utilities.Spinner();
+                var spinner = new ConsoleUtilities.Spinner();
                 spinner.Start();
                 IProgress<float> progress = new Progress<float>(p => { spinner.Message = $"Downloading {pluginName}... {Math.Round(p, 2)}%  "; });
                 await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", progress);
