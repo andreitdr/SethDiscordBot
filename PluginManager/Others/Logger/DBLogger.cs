@@ -13,11 +13,17 @@ public class DBLogger
     private readonly string           _logFolder;
     private readonly List<LogMessage> ErrorHistory = new();
     private readonly List<LogMessage> LogHistory   = new();
+    
+    private readonly bool _continuousSave;
+    private readonly bool _LogErrorsOnly;
 
-    public DBLogger()
+    public DBLogger(bool continuousSave = true, bool logErrorsOnly = true)
     {
         _logFolder = Config.AppSettings["LogFolder"];
         _errFolder = Config.AppSettings["ErrorFolder"];
+        
+        _continuousSave = continuousSave;
+        _LogErrorsOnly  = logErrorsOnly;
     }
 
     public IReadOnlyList<LogMessage> Logs   => LogHistory;
@@ -50,7 +56,7 @@ public class DBLogger
         Log(e.Message, e.Source, LogLevel.ERROR);
     }
 
-    public void Log(LogMessage message)
+    private async void Log(LogMessage message)
     {
         LogEvent?.Invoke(message.Message, message.Type);
 
@@ -58,6 +64,9 @@ public class DBLogger
             LogHistory.Add(message);
         else
             ErrorHistory.Add(message);
+
+        if (_continuousSave)
+            await SaveToFile();
     }
 
     public void Log(string message, object sender, LogLevel type = LogLevel.INFO)
@@ -65,12 +74,22 @@ public class DBLogger
         Log(message, sender.GetType().Name, type);
     }
 
-    public async Task SaveToFile(bool ErrorsOnly = true)
+    public async Task SaveToFile()
+    { 
+        await SaveToTxt();
+    }
+
+    private async Task SaveToTxt()
     {
-        if(!ErrorsOnly)
-        await JsonManager.SaveToJsonFile(_logFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
-                                       LogHistory);
-        await JsonManager.SaveToJsonFile(_errFolder + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".json",
-                                       ErrorHistory);
+        if (!_LogErrorsOnly)
+        {
+            var logFile = new LogFile(_logFolder + $"/{DateTime.Today.ToShortDateString().Replace('/', '_')}_log.txt");
+            foreach (var logMessage in LogHistory)
+                logFile.Write(logMessage);
+        }
+
+        var errFile = new LogFile(_errFolder + $"/{DateTime.Today.ToShortDateString().Replace('/', '_')}_err.txt");
+        foreach (var logMessage in ErrorHistory)
+            errFile.Write(logMessage);
     }
 }

@@ -32,7 +32,7 @@ public class Config
         AppSettings["LogFolder"]   = "./Data/Logs/Logs";
         AppSettings["ErrorFolder"] = "./Data/Logs/Errors";
 
-        Logger = new DBLogger();
+        Logger = new DBLogger(true);
 
         ArchiveManager.Initialize();
 

@@ -30,8 +30,8 @@ public enum UnzipProgressType
 
 public enum SaveType
 {
-    NORMAL,
-    BACKUP
+    TXT,
+    JSON
 }
 
 public enum InternalActionRunType
