@@ -1,11 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Spectre.Console;
 
 namespace DiscordBot.Utilities;
 
+public class TableData
+{
+    public List<string> Columns;
+    public List<string[]> Rows;
+    
+    public bool IsEmpty => Rows.Count == 0;
+    public bool HasRoundBorders { get; set; } = true;
+    
+    public TableData(List<string> columns)
+    {
+        Columns = columns;
+        Rows    = new List<string[]>();
+    }
+    
+    public TableData(string[] columns)
+    {
+        Columns = columns.ToList();
+        Rows    = new List<string[]>();
+    }
+    
+    public void AddRow(string[] row)
+    {
+        Rows.Add(row);
+    }
+}
+
 public static class ConsoleUtilities
 {
+
+    public static async Task<T> ExecuteWithProgressBar<T>(Task<T> function, string message)
+    {
+        T result = default;
+        await AnsiConsole.Progress()
+            .Columns(new ProgressColumn[]
+            {
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+            })
+            .StartAsync(async ctx =>
+            {
+                var task = ctx.AddTask(message);
+                task.IsIndeterminate = true;
+                result = await function;
+                task.Increment(100);
+                
+            });
+
+        return result;
+    }
+    
     private static readonly Dictionary<char, ConsoleColor> Colors = new()
     {
         { 'g', ConsoleColor.Green },
@@ -22,13 +74,38 @@ public static class ConsoleUtilities
         return MathF.Abs(f - y) < 0.000001;
     }
 
+    public static void PrintAsTable(this TableData tableData)
+    {
+        var table = new Table();
+        table.Border(tableData.HasRoundBorders ? TableBorder.Rounded : TableBorder.Square);
+        table.AddColumns(tableData.Columns.ToArray());
+        foreach (var row in tableData.Rows)
+            table.AddRow(row);
+        
+        AnsiConsole.Write(table);
+    }
+
 
     /// <summary>
     ///     A way to create a table based on input data
     /// </summary>
-    /// <param name="data">The List of arrays of strings that represent the rows.</param>
+    /// <param name="data">The List of arrays of string that represent the rows.</param>
     public static void FormatAndAlignTable(List<string[]> data, TableFormat format)
     {
+        if (format == TableFormat.SPECTRE_CONSOLE)
+        {
+            var table = new Table();
+            table.Border(TableBorder.Rounded);
+            table.AddColumns(data[0]);
+            data.RemoveAt(0);
+            foreach (var row in data)
+                table.AddRow(row);
+            
+            AnsiConsole.Write(table);
+            
+            return;
+        }
+        
         if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
         {
             var tableLine  = '-';

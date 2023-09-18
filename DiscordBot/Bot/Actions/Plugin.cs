@@ -43,20 +43,13 @@ public class Plugin : ICommandAction
                 await Program.internalActionManager.Refresh();
                 break;
             case "list":
-
-                var data = await manager.GetAvailablePlugins();
-                var items = new List<string[]>
-                {
-                    new[] { "-", "-", "-", "-" },
-                    new[] { "Name", "Description", "Type", "Version" },
-                    new[] { "-", "-", "-", "-" }
-                };
-
-                foreach (var plugin in data) items.Add(new[] { plugin[0], plugin[1], plugin[2], plugin[3] });
-
-                items.Add(new[] { "-", "-", "-", "-" });
-
-                ConsoleUtilities.FormatAndAlignTable(items, TableFormat.DEFAULT);
+                var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetAvailablePlugins(), "Loading plugins...");
+                
+                TableData tableData = new(new List<string> { "Name", "Description", "Type", "Version" });
+                foreach (var plugin in data) tableData.AddRow(plugin);
+                tableData.HasRoundBorders = false;
+                tableData.PrintAsTable();
+                
                 break;
 
 
