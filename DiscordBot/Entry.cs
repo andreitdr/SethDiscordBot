@@ -8,6 +8,18 @@ public class Entry
 {
     public static void Main(string[] args)
     {
+        #if DEBUG
+        if (args.Length == 1 && args[0] == "/purge_plugins")
+        {
+            foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
+            {
+                File.Delete(plugin);
+            }
+        }
+        
+        #endif
+        
+        
         var currentDomain = AppDomain.CurrentDomain;
         currentDomain.AssemblyResolve += LoadFromSameFolder;
 

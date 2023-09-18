@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DiscordBot.Utilities;
 using PluginManager.Bot;
-using PluginManager.Online;
-using PluginManager.Online.Helpers;
 using PluginManager.Others;
 using PluginManager.Others.Actions;
 using static PluginManager.Config;
@@ -32,7 +29,7 @@ public class Program
             !AppSettings.ContainsKey("prefix") || AppSettings["prefix"] == null ||
             AppSettings["prefix"]?.Length != 1 ||
             args.Length == 1 && args[0] == "/reset")
-            Installer.GenerateStartupConfig();
+                Installer.GenerateStartupConfig();
 
         HandleInput().Wait();
     }
@@ -137,6 +134,7 @@ public class Program
             Console.WriteLine($"[{type.ToString()}] {message}");
             Console.ResetColor();
         };
+        
         AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 }

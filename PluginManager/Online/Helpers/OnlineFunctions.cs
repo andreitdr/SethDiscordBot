@@ -35,21 +35,25 @@ internal static class OnlineFunctions
                 if (progress == null || !contentLength.HasValue)
                 {
                     await download.CopyToAsync(destination, cancellation);
+                    if(!contentLength.HasValue)
+                        progress?.Report(100f);
                     return;
                 }
 
                 // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
-                var relativeProgress = new Progress<long>(totalBytes =>
-                                                          {
-                                                              progress?.Report((float)totalBytes / contentLength.Value *
-                                                                               100);
-                                                              downloadedBytes?.Report(totalBytes);
-                                                          }
-                                                         );
+                // total ... 100%
+                // downloaded ... x%
+                // x = downloaded * 100 / total => x = downloaded / total * 100
+                var relativeProgress = new Progress<long>(totalBytesDownloaded =>
+                    {
+                        progress?.Report(totalBytesDownloaded / (float)contentLength.Value * 100);
+                        downloadedBytes?.Report(totalBytesDownloaded);
+                    }
+                );
 
                 // Use extension method to report progress while downloading
                 await download.CopyToOtherStreamAsync(destination, bufferSize, relativeProgress, cancellation);
-                progress.Report(100);
+                progress.Report(100f);
             }
         }
     }
