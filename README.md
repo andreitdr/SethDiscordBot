@@ -94,7 +94,7 @@ public class LevelCommand : DBCommand
 
 From here on, start coding. When your plugin is done, build it as any DLL project then add it to the following path
 `{bot_executable}/Data/Plugins/<optional subfolder>/[plugin name].dll`
-Then, reload bot and execute command `lp` in the console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
+Then, reload bot and execute command `plugin load` in the console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
 there is something wrong in your command's code.
 
 ## 2. Events
