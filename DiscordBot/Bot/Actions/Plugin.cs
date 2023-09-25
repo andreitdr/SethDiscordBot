@@ -40,25 +40,33 @@ public class Plugin : ICommandAction
         switch (args[0])
         {
             case "refresh":
-                await Program.internalActionManager.Refresh();
+                await RefreshPlugins(true);
                 break;
+            
             case "list":
                 var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetAvailablePlugins(), "Loading plugins...");
                 
                 TableData tableData = new(new List<string> { "Name", "Description", "Type", "Version" });
                 foreach (var plugin in data) tableData.AddRow(plugin);
+                
                 tableData.HasRoundBorders = false;
                 tableData.PrintAsTable();
-                
                 break;
 
 
             case "load":
                 if (pluginsLoaded)
                     break;
+                if (Config.DiscordBot is null)
+                {
+                    AnsiConsole.MarkupLine("[red]Discord bot not initialized[/]");
+                    break;
+                }
+                
                 var loader = new PluginLoader(Config.DiscordBot.client);
                 if (args.Length == 2 && args[1] == "-q")
                 {
+                    Console.WriteLine("Loading plugins in quiet mode...");
                     loader.LoadPlugins();
                     pluginsLoaded = true;
                     break;
@@ -152,13 +160,10 @@ public class Plugin : ICommandAction
         }
     }
 
-    private async Task RefreshPlugins()
+    private async Task RefreshPlugins(bool quiet)
     {
-        Console.WriteLine("Reloading plugins list...");
-        await Program.internalActionManager.Execute("plugin", "load");
+        await Program.internalActionManager.Execute("plugin", "load", quiet ? "-q" : string.Empty);
         await Program.internalActionManager.Refresh();
-
-        Console.WriteLine("Finished reloading plugins list");
     }
 
 
@@ -199,7 +204,7 @@ public class Plugin : ICommandAction
         if (pluginRequirements == string.Empty)
         {
             Console.WriteLine("Finished installing " + pluginName + " successfully");
-            await RefreshPlugins();
+            await RefreshPlugins(false);
             return;
         }
 
@@ -255,7 +260,7 @@ public class Plugin : ICommandAction
                 }
                 
             });
-
-        await RefreshPlugins();
+        
+        await RefreshPlugins(false);
     }
 }

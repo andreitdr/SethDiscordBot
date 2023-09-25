@@ -22,13 +22,8 @@ public class Program
     public static void Startup(string[] args)
     {
         PreLoadComponents(args).Wait();
-
-        if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") ||
-            AppSettings["token"] == null ||
-            AppSettings["token"]?.Length != 70 && AppSettings["token"]?.Length != 59 ||
-            !AppSettings.ContainsKey("prefix") || AppSettings["prefix"] == null ||
-            AppSettings["prefix"]?.Length != 1 ||
-            args.Length == 1 && args[0] == "/reset")
+        
+        if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
                 Installer.GenerateStartupConfig();
 
         HandleInput().Wait();
@@ -67,8 +62,9 @@ public class Program
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
         Console.WriteLine($"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
-        Console.WriteLine("Git URL: https://github.com/andreitdr/SethDiscordBot");
-
+        Console.WriteLine("Git SethBot: https://github.com/andreitdr/SethDiscordBot");
+        Console.WriteLine("Git Plugins: https://github.com/andreitdr/SethPlugins");
+        
         ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
 
         ConsoleUtilities.WriteColorText($"Running on &m{Functions.GetOperatingSystem()}");
@@ -106,12 +102,12 @@ public class Program
             {
                 if (AppSettings.ContainsKey("LaunchMessage"))
                     AppSettings.Add("LaunchMessage",
-                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !"
-                                   );
-                Logger
-                    .Log("An error occured while closing the bot last time. Please consider closing the bot using the &rsd&c method !\nThere is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
-                         "Bot", LogLevel.ERROR
-                        );
+                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
+                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
+                
+                Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
+                           "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", 
+                           "Bot", LogLevel.ERROR);
             }
         }
     }

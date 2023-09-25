@@ -40,22 +40,45 @@ public static class ConsoleUtilities
     {
         T result = default;
         await AnsiConsole.Progress()
-            .Columns(new ProgressColumn[]
-            {
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn(),
-                new PercentageColumn(),
-            })
-            .StartAsync(async ctx =>
-            {
-                var task = ctx.AddTask(message);
-                task.IsIndeterminate = true;
-                result = await function;
-                task.Increment(100);
-                
-            });
+                         .Columns(
+                              new ProgressColumn[]
+                              {
+                                  new TaskDescriptionColumn(),
+                                  new ProgressBarColumn(),
+                                  new PercentageColumn(),
+                              }
+                          )
+                         .StartAsync(
+                              async ctx =>
+                              {
+                                  var task = ctx.AddTask(message);
+                                  task.IsIndeterminate = true;
+                                  result               = await function;
+                                  task.Increment(100);
+
+                              }
+                          );
 
         return result;
+    }
+
+    public static async Task ExecuteWithProgressBar(Task function, string message)
+    {
+        await AnsiConsole.Progress()
+                         .Columns(new ProgressColumn[]
+                          {
+                              new TaskDescriptionColumn(),
+                              new ProgressBarColumn(),
+                              new PercentageColumn(),
+                          })
+                         .StartAsync(async ctx =>
+                          {
+                              var task = ctx.AddTask(message);
+                              task.IsIndeterminate = true;
+                              await function;
+                              task.Increment(100);
+                
+                          });
     }
     
     private static readonly Dictionary<char, ConsoleColor> Colors = new()

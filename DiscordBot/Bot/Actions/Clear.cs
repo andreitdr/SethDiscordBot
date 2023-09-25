@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 

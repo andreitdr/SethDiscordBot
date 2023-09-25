@@ -29,7 +29,7 @@ public class InternalActionManager
     
     public async Task Refresh()
     {
-         Actions.Clear();
+        Actions.Clear();
         await Initialize();
     }
 

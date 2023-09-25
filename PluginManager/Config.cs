@@ -9,9 +9,9 @@ namespace PluginManager;
 
 public class Config
 {
-    private static bool                  IsLoaded;
-    public static  DBLogger              Logger;
-    public static  SettingsDictionary<string, string>? AppSettings;
+    private static bool                                _isLoaded;
+    public static  DBLogger?                           Logger;
+    public static  SettingsDictionary<string, string> AppSettings;
 
     internal static Boot? _DiscordBotClient;
 
@@ -19,8 +19,8 @@ public class Config
 
     public static async Task Initialize()
     {
-        if (IsLoaded) return;
-
+        if (_isLoaded) return;
+        
         Directory.CreateDirectory("./Data/Resources");
         Directory.CreateDirectory("./Data/Plugins");
         Directory.CreateDirectory("./Data/PAKS");
@@ -36,7 +36,7 @@ public class Config
 
         ArchiveManager.Initialize();
 
-        IsLoaded = true;
+        _isLoaded = true;
 
         Logger.Log("Config initialized", LogLevel.INFO);
     }
