@@ -6,13 +6,9 @@ This project is based on:
 - [.NET 6 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
 
-- Some plugins can be found [here](https://github.com/andreitdr/SethPlugins).
-
 
 ## Plugins
-#### Requirements:
-- [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
-- .NET 6 (downloaded with Visual Studio)
+- Some plugins can be found in [this repo](https://github.com/andreitdr/SethPlugins).
 
 Plugin Types:
 1. Commands
@@ -20,6 +16,10 @@ Plugin Types:
 3. Slash Commands
 
 ### How to create a plugin
+
+#### Requirements:
+- [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
+- .NET 6 (downloaded with Visual Studio)
 
 First of all, create a new project (class library) in Visual Studio.
 Then import the PluginManager as reference to your project.
@@ -94,7 +94,7 @@ public class LevelCommand : DBCommand
 
 From here on, start coding. When your plugin is done, build it as any DLL project then add it to the following path
 `{bot_executable}/Data/Plugins/<optional subfolder>/[plugin name].dll`
-Then, reload bot and execute command `lp` in bot's console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
+Then, reload bot and execute command `lp` in the console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
 there is something wrong in your command's code.
 
 ## 2. Events
@@ -192,4 +192,4 @@ namespace SlashCommands
 You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
 
 
-> Updated: 5.08.2023
+> Updated: 25.09.2023
