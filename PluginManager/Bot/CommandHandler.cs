@@ -57,7 +57,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.Message, "CommandHandler", LogLevel.ERROR);
+            Config.Logger.Log(ex.Message, type: LogType.ERROR, source: typeof(CommandHandler));
         }
 
         return Task.CompletedTask;
@@ -145,7 +145,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.Message, this, LogLevel.ERROR);
+            Config.Logger.Log(ex.Message, type: LogType.ERROR, source: typeof(CommandHandler));
         }
     }
 }

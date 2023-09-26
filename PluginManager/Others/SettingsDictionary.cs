@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using PluginManager.Others.Exceptions;
 
 namespace PluginManager.Others;
 
@@ -16,10 +15,8 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         _file = file;
         if (!LoadFromFile())
         {
-            ConfigFailedToLoad.CreateError("Failed to load config")
-                .AppendError("The file is empty or does not exist")
-                .IsFatal()
-                .HandleException();
+            _dictionary = new Dictionary<TKey, TValue>();
+            SaveToFile();
         }
     }
     
@@ -50,10 +47,6 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
             }
             catch
             {
-                ConfigFailedToLoad
-                    .CreateError("Failed to load config")
-                    .IsFatal()
-                    .HandleException();
                 return false;
             }
 
@@ -125,11 +118,6 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
             if (this._dictionary!.ContainsKey(key))
                 if(this._dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
                     return this._dictionary[key];
-            
-            ConfigNoKeyWasPresent.CreateError($"Key {(key is string ? key : typeof(TKey).Name)} was not present in {_file ?? "config"}")
-                .AppendError("Deleting the file may fix this issue")
-                    .IsFatal()
-                    .HandleException();
             
             return default!;
         }

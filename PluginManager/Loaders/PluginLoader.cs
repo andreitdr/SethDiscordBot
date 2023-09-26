@@ -88,11 +88,10 @@ public class PluginLoader
         Events        = new List<DBEvent>();
         SlashCommands = new List<DBSlashCommand>();
 
-        Config.Logger.Log("Starting plugin loader ... Client: " + _client.CurrentUser.Username, this,
-                          LogLevel.INFO);
+        Config.Logger.Log("Starting plugin loader ... Client: " + _client.CurrentUser.Username, source: typeof(PluginLoader), type: LogType.INFO);
 
         var loader = new Loader("./Data/Plugins", "dll");
-        loader.FileLoaded   += args => Config.Logger.Log($"{args.PluginName} file Loaded", this, LogLevel.INFO);
+        loader.FileLoaded   += args => Config.Logger.Log($"{args.PluginName} file Loaded", source: typeof(PluginLoader), type: LogType.INFO);
         loader.PluginLoaded += Loader_PluginLoaded;
         var res = loader.Load();
         Events        = res.Item1;
@@ -117,7 +116,7 @@ public class PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    Config.Logger.Log(ex.Message, this, LogLevel.ERROR);
+                    Config.Logger.Log(ex.Message, source: typeof(PluginLoader), type: LogType.ERROR);
                 }
 
                 break;
@@ -151,13 +150,13 @@ public class PluginLoader
                     var instance = (DBEvent)Activator.CreateInstance(type);
                     instance.Start(client);
                     Events.Add(instance);
-                    Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", LogLevel.INFO);
+                    Config.Logger.Log($"[EVENT] Loaded external {type.FullName}!", source: typeof(PluginLoader));
                 }
                 else if (type.IsClass && typeof(DBCommand).IsAssignableFrom(type))
                 {
                     var instance = (DBCommand)Activator.CreateInstance(type);
                     Commands.Add(instance);
-                    Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", LogLevel.INFO);
+                    Config.Logger.Log($"[CMD] Instance: {type.FullName} loaded !", source: typeof(PluginLoader));
                 }
                 else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
                 {
@@ -170,13 +169,13 @@ public class PluginLoader
 
                     await client.CreateGlobalApplicationCommandAsync(builder.Build());
                     SlashCommands.Add(instance);
-                    Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", LogLevel.INFO);
+                    Config.Logger.Log($"[SLASH] Instance: {type.FullName} loaded !", source: typeof(PluginLoader));
                 }
             }
             catch (Exception ex)
             {
                 //Console.WriteLine(ex.Message);
-                Config.Logger.Error(ex);
+                Config.Logger.Log(ex.Message, source: typeof(PluginLoader), type: LogType.ERROR);
             }
             
     }

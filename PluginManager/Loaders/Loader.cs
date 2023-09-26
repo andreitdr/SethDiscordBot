@@ -53,10 +53,9 @@ internal class Loader
             {
                 Assembly.LoadFrom(file);
             }
-            catch (Exception ex)
+            catch
             {
-                Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", this,
-                                  LogLevel.ERROR);
+                Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", source: typeof(Loader), type: LogType.ERROR);
                 continue;
             }
 
@@ -130,7 +129,7 @@ internal class Loader
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.Message, this, LogLevel.ERROR);
+            Config.Logger.Log(ex.Message, source: typeof(Loader), type: LogType.ERROR);
 
             return null;
         }

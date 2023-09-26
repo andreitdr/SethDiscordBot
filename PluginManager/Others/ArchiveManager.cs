@@ -2,7 +2,6 @@
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace PluginManager.Others;
@@ -94,7 +93,7 @@ public static class ArchiveManager
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(ex.Message, "Archive Manager", LogLevel.ERROR); // Write the error to a file
+            Config.Logger.Log(message: ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR); // Write the error to a file
             await Task.Delay(100);
             return await ReadFromPakAsync(FileName, archFile);
         }
@@ -132,8 +131,7 @@ public static class ArchiveManager
                         }
                         catch (Exception ex)
                         {
-                            Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}",
-                                "Archive Manager", LogLevel.ERROR);
+                            Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
                         }
 
                     currentZIPFile++;
@@ -165,8 +163,7 @@ public static class ArchiveManager
                     }
                     catch (Exception ex)
                     {
-                        Config.Logger.Log($"Failed to extract {entry.Name}. Exception: {ex.Message}",
-                            "Archive Manager", LogLevel.ERROR);
+                        Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
                     }
 
                     await Task.Delay(10);

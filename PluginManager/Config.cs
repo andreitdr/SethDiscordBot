@@ -9,8 +9,8 @@ namespace PluginManager;
 
 public class Config
 {
-    private static bool                                _isLoaded;
-    public static  DBLogger?                           Logger;
+    private static bool                               _isLoaded;
+    public static  Logger                             Logger;
     public static  SettingsDictionary<string, string> AppSettings;
 
     internal static Boot? _DiscordBotClient;
@@ -30,15 +30,14 @@ public class Config
         AppSettings = new SettingsDictionary<string, string>("./Data/Resources/config.json");
 
         AppSettings["LogFolder"]   = "./Data/Logs/Logs";
-        AppSettings["ErrorFolder"] = "./Data/Logs/Errors";
 
-        Logger = new DBLogger(true);
+        Logger = new Logger(false, true);
 
         ArchiveManager.Initialize();
 
         _isLoaded = true;
 
-        Logger.Log("Config initialized", LogLevel.INFO);
+        await Logger.Log(message: "Config initialized", source: typeof(Config));
     }
     
 }

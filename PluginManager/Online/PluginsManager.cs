@@ -89,8 +89,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this,
-                              LogLevel.ERROR);
+            Config.Logger.Log(message: "Failed to execute command: listplugs\nReason: " + exception.Message, source: typeof(PluginsManager), type: LogType.ERROR );
         }
 
         return null;
@@ -142,8 +141,7 @@ public class PluginsManager
         }
         catch (Exception exception)
         {
-            Config.Logger.Log("Failed to execute command: listplugs\nReason: " + exception.Message, this,
-                              LogLevel.ERROR);
+            Config.Logger.Log("Failed to execute command: plugin list\nReason: " + exception.Message, source: typeof(PluginsManager), type: LogType.ERROR);
         }
 
         return null;

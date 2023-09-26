@@ -7,6 +7,7 @@ using DiscordBot.Utilities;
 using PluginManager.Bot;
 using PluginManager.Others;
 using PluginManager.Others.Actions;
+using Spectre.Console;
 using static PluginManager.Config;
 
 namespace DiscordBot;
@@ -80,7 +81,7 @@ public class Program
         }
         catch ( Exception ex )
         {
-            Logger.Log(ex.ToString(), "Bot", LogLevel.ERROR);
+            Logger.Log(ex.ToString(), source: typeof(Program), type: LogType.CRITICAL);
         }
     }
 
@@ -107,7 +108,7 @@ public class Program
                 
                 Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
                            "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", 
-                           "Bot", LogLevel.ERROR);
+                           source: typeof(Program), type: LogType.ERROR);
             }
         }
     }
@@ -116,19 +117,18 @@ public class Program
     {
         await Initialize();
         
-        Logger.LogEvent += (message, type, isInternal) =>
+        Logger.OnLog += (sender, logMessage) =>
         {
-            if (type == LogLevel.INFO)
-                Console.ForegroundColor = ConsoleColor.Green;
-            else if (type == LogLevel.WARNING)
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-            else if (type == LogLevel.ERROR)
-                Console.ForegroundColor = ConsoleColor.Red;
-            else if (type == LogLevel.CRITICAL)
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-
-            Console.WriteLine($"[{type.ToString()}] {message}");
-            Console.ResetColor();
+            string messageColor = logMessage.Type switch
+            {
+                LogType.INFO     => "[green]",
+                LogType.WARNING  => "[yellow]",
+                LogType.ERROR    => "[red]",
+                LogType.CRITICAL => "[red]",
+                _                => "[white]"
+            };
+            
+            AnsiConsole.MarkupLine($"{messageColor}{logMessage.ThrowTime} {logMessage.Message} [/]");
         };
         
         AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();

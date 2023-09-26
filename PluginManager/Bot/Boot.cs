@@ -78,15 +78,12 @@ public class Boot
         CommonTasks();
 
         await client.LoginAsync(TokenType.Bot, botToken);
-
+        
         await client.StartAsync();
 
         commandServiceHandler = new CommandHandler(client, service, botPrefix);
 
         await commandServiceHandler.InstallCommandsAsync();
-
-
-        await Task.Delay(2000);
 
         Config._DiscordBotClient = this;
 
@@ -108,8 +105,7 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.AppSettings.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", this,
-                              LogLevel.ERROR);
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", source:typeof(Boot), type: LogType.CRITICAL);
             await Config.AppSettings.SaveToFile();
             await Task.Delay(4000);
             Environment.Exit(0);
@@ -118,7 +114,7 @@ public class Boot
 
     private async Task Client_LoggedOut()
     {
-        Config.Logger.Log("Successfully Logged Out", this);
+        Config.Logger.Log("Successfully Logged Out", source: typeof(Boot));
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
     }
 
@@ -130,7 +126,7 @@ public class Boot
 
     private Task LoggedIn()
     {
-        Config.Logger.Log("Successfully Logged In", this);
+        Config.Logger.Log("Successfully Logged In", source: typeof(Boot));
         return Task.CompletedTask;
     }
 
@@ -140,13 +136,12 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Config.Logger.Log(message.Message, this, LogLevel.ERROR);
-
+                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.ERROR);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Config.Logger.Log(message.Message, this);
+                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.INFO);
 
 
                 break;

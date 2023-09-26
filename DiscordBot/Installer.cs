@@ -23,6 +23,6 @@ public static class Installer
         
         AnsiConsole.MarkupLine("[bold]Config saved ![/]");
         
-        Config.Logger.Log("Config Saved", "Installer", isInternal: true);
+        Config.Logger.Log("Config Saved", source: typeof(Installer));
     }
 }

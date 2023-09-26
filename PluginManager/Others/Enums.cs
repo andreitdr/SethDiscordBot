@@ -14,7 +14,7 @@ public enum OperatingSystem
 /// <summary>
 ///     The output log type
 /// </summary>
-public enum LogLevel
+public enum LogType
 {
     INFO,
     WARNING,

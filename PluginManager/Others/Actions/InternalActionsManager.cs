@@ -48,7 +48,7 @@ public class InternalActionManager
     {
         if (!Actions.ContainsKey(actionName))
         {
-            Config.Logger.Log($"Action {actionName} not found", "InternalActionManager", LogLevel.WARNING, true);
+            Config.Logger.Log($"Action {actionName} not found", type: LogType.ERROR, source: typeof(InternalActionManager));
             return "Action not found";
         }
 
@@ -59,7 +59,7 @@ public class InternalActionManager
         }
         catch (Exception e)
         {
-            Config.Logger.Log(e.Message, "InternalActionManager", LogLevel.ERROR);
+            Config.Logger.Log(e.Message , type: LogType.ERROR, source: typeof(InternalActionManager));
             return e.Message;
         }
     }
