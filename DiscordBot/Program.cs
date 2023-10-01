@@ -19,7 +19,6 @@ public class Program
     /// <summary>
     ///     The main entry point for the application.
     /// </summary>
-    [STAThread]
     public static void Startup(string[] args)
     {
         PreLoadComponents(args).Wait();
@@ -127,6 +126,13 @@ public class Program
                 LogType.CRITICAL => "[red]",
                 _                => "[white]"
             };
+
+            if (logMessage.Message.Contains('['))
+            {
+                // If the message contains a tag, just print it as it is. No need to format it
+                Console.WriteLine(logMessage.Message);
+                return;
+            }
             
             AnsiConsole.MarkupLine($"{messageColor}{logMessage.ThrowTime} {logMessage.Message} [/]");
         };

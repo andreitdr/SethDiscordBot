@@ -138,7 +138,13 @@ internal class CommandHandler
                 argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
 
             DBCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
-
+            
+            Config.Logger.Log(
+                message: $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
+                source: typeof(CommandHandler),
+                type: LogType.INFO
+            );
+            
             if (context.Channel is SocketDMChannel)
                 plugin.ExecuteDM(cmd);
             else plugin.ExecuteServer(cmd);

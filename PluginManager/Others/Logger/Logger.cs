@@ -38,7 +38,7 @@ public sealed class Logger : ILogger
                 (UseShortVersion ? logMessage : logMessage.AsLongString()) + "\n");
     }
     
-    public async Task Log(string message = "", string outputFile = "", Type? source = default, LogType type = LogType.INFO, DateTime throwTime = default)
+    public async void Log(string message = "", string outputFile = "", Type? source = default, LogType type = LogType.INFO, DateTime throwTime = default)
     {
         if (!IsEnabled) return;
         
@@ -53,5 +53,17 @@ public sealed class Logger : ILogger
         if (source == default) source = typeof(Log);
         
         await Log(new Log(message, outputFile, source, type, throwTime));
+        
+    }
+
+    public async void Log(Exception exception, LogType logType = LogType.ERROR, Type? source = null)
+    {
+        if (!IsEnabled) return;
+        
+        if (logType < LowestLogLevel) return;
+
+        await Log(new Log(exception.Message, 
+            Config.AppSettings["LogFolder"] + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".log",
+            source, logType, DateTime.Now));
     }
 }

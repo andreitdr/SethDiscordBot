@@ -37,7 +37,7 @@ public class Config
 
         _isLoaded = true;
 
-        await Logger.Log(message: "Config initialized", source: typeof(Config));
+        Logger.Log(message: "Config initialized", source: typeof(Config));
     }
     
 }

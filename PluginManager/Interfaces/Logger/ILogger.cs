@@ -11,7 +11,7 @@ internal interface ILogger
     bool OutputToFile    { get; init; }
 
     event EventHandler<Log> OnLog;
-    Task Log(
+    void Log(
         string   message   = "", string outputFile = "", Type? source = default, LogType type = LogType.INFO,
         DateTime throwTime = default);
 }
