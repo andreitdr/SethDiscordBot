@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace DiscordBot;
 
-public class Entry
+public static class Entry
 {
     public static void Main(string[] args)
     {
