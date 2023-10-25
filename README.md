@@ -147,7 +147,7 @@ namespace SlashCommands
     {
         public string Name => "random";
 
-        public string Description => "Generates a random nunber between 2 values";
+        public string Description => "Generates a random number between 2 values";
 
         public bool canUseDM => true;
 
