@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Threading.Tasks;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
@@ -134,13 +135,23 @@ public class PluginsManager
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');
-                if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
+                if(Functions.GetOperatingSystem() == OperatingSystem.WINDOWS && contents[4].Contains("Windows"))
+                {if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
                 {
                     if (contents.Length == 6)
                         return new[] { contents[2], contents[3], contents[5] };
                     if (contents.Length == 5)
                         return new[] { contents[2], contents[3], string.Empty };
                     throw new Exception("Failed to download plugin. Invalid Argument Length");
+                }
+                }else if (Functions.GetOperatingSystem() == OperatingSystem.LINUX && contents[4].Contains("Linux"))
+                {
+                    if (contents.Length == 6)
+                        return new[] { contents[2], contents[3], contents[5] };
+                    if (contents.Length == 5)
+                        return new[] { contents[2], contents[3], string.Empty };
+                    throw new Exception("Failed to download plugin. Invalid Argument Length");
+
                 }
             }
         }
