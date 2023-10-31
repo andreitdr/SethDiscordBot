@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using DiscordBot.Utilities;
 using PluginManager;
@@ -13,11 +16,9 @@ namespace DiscordBot.Bot.Actions.Extra;
 
 internal static class PluginMethods
 {
-    private static readonly PluginsManager PluginsManager = new();
-    
-    internal static async Task List()
+    internal static async Task List(PluginsManager manager)
     {
-        var data = await ConsoleUtilities.ExecuteWithProgressBar(PluginsManager.GetAvailablePlugins(), "Loading plugins...");
+        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetAvailablePlugins(), "Loading plugins...");
                 
         TableData tableData = new(new List<string> { "Name", "Description", "Type", "Version" });
         foreach (var plugin in data) tableData.AddRow(plugin);
@@ -87,10 +88,10 @@ internal static class PluginMethods
                 var gatherInformationTask = ctx.AddTask("Gathering info...");
                 gatherInformationTask.IsIndeterminate = true;
                 requirementsUrLs = await ServerCom.ReadTextFromURL(pluginRequirements);
-                await Task.Delay(2000);
+                
                 gatherInformationTask.Increment(100);
             });
-
+        List<Tuple<ProgressTask, IProgress<float>, string, string>> downloadTasks = new();
         await AnsiConsole.Progress()
             .Columns(new ProgressColumn[]
             {
@@ -100,7 +101,7 @@ internal static class PluginMethods
             })
             .StartAsync(async ctx =>
             {
-                List<Tuple<ProgressTask, IProgress<float>, Task>> downloadTasks = new();
+                
 
                 foreach (var info in requirementsUrLs)
                 {
@@ -109,22 +110,41 @@ internal static class PluginMethods
                     string url = data[0];
                     string fileName = data[1];
                     
-                    var task = ctx.AddTask($"Downloading {fileName}...");
+                    var task = ctx.AddTask($"Downloading {fileName}: ");
                     IProgress<float> progress = new Progress<float>(p =>
                     {
                         task.Value = p;
                     });
-                    
-                    var downloadTask = ServerCom.DownloadFileAsync(url, $"./{fileName}", progress);
-                    downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, Task>(task, progress, downloadTask));
+
+                    task.IsIndeterminate = true;
+                    downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, url, fileName));
                 }
-                
-                foreach (var task in downloadTasks)
+
+                if (!int.TryParse(Config.AppSettings["MaxParallelDownloads"], out int maxParallelDownloads))
                 {
-                    await task.Item3;
+                    maxParallelDownloads = 5;
+                    Config.AppSettings.Add("MaxParallelDownloads", "5");
+                    await Config.AppSettings.SaveToFile();
                 }
                 
+                var options = new ParallelOptions()
+                {
+                    MaxDegreeOfParallelism = maxParallelDownloads,
+                    TaskScheduler = TaskScheduler.Default
+                };
+
+                await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
+                {
+                    tuple.Item1.IsIndeterminate = false;
+                    await ServerCom.DownloadFileAsync(tuple.Item3, $"./{tuple.Item4}", tuple.Item2);
+                });
+
+
+
             });
+
+        
+        
         
         await RefreshPlugins(false);
     }

@@ -49,4 +49,14 @@ public static class ServerCom
         await DownloadFileAsync(URl, location, progress, null);
     }
     
+    public static Task CreateDownloadTask(string URl, string location)
+    {
+        return DownloadFileAsync(URl, location, null, null);
+    }
+    
+    public static Task CreateDownloadTask(string URl, string location, IProgress<float> progress)
+    {
+        return DownloadFileAsync(URl, location, progress, null);
+    }
+    
 }

@@ -9,6 +9,8 @@ namespace PluginManager.Online;
 
 public class PluginsManager
 {
+    
+    #if DEBUG
     /// <summary>
     ///     The Plugin Manager constructor
     /// </summary>
@@ -20,13 +22,16 @@ public class PluginsManager
         VersionsLink = vlink;
     }
     
+    #endif
+    
     /// <summary>
-    /// The default Plugin Manager constructor. It uses the default links.
+    /// The Plugin Manager constructor. It uses the default links and the default branch.
     /// </summary>
-    public PluginsManager()
+    /// <param name="branch">The main branch from where the plugin manager gets its info</param>
+    public PluginsManager(string? branch = "releases")
     {
-        PluginsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/PluginsList";
-        VersionsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/Versions";
+        PluginsLink = $"https://raw.githubusercontent.com/andreitdr/SethPlugins/{branch}/PluginsList";
+        VersionsLink = $"https://raw.githubusercontent.com/andreitdr/SethPlugins/{branch}/Versions";
     }
 
     /// <summary>

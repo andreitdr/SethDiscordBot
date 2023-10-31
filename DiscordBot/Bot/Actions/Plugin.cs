@@ -34,7 +34,12 @@ public class Plugin : ICommandAction
             return;
         }
 
-        var manager = new PluginsManager();
+        PluginsManager manager =
+#if !DEBUG
+            new PluginsManager();
+#else
+            new PluginsManager("tests");
+#endif
 
         switch (args[0])
         {
@@ -43,7 +48,7 @@ public class Plugin : ICommandAction
                 break;
             
             case "list":
-                await PluginMethods.List();
+                await PluginMethods.List(manager);
                 break;
             case "load":
                 if (pluginsLoaded)
