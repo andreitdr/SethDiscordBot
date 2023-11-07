@@ -21,13 +21,13 @@ internal class Loader
 {
     internal Loader(string path, string extension)
     {
-        this.path      = path;
-        this.extension = extension;
+        this.Path      = path;
+        this.Extension = extension;
     }
 
 
-    private string path      { get; }
-    private string extension { get; }
+    private string Path      { get; }
+    private string Extension { get; }
 
     internal event FileLoadedEventHandler? FileLoaded;
 
@@ -40,13 +40,13 @@ internal class Loader
         List<DBSlashCommand> slashCommands = new();
         List<DBCommand>      commands      = new();
 
-        if (!Directory.Exists(path))
+        if (!Directory.Exists(Path))
         {
-            Directory.CreateDirectory(path);
+            Directory.CreateDirectory(Path);
             return (null, null, null);
         }
 
-        var files = Directory.GetFiles(path, $"*.{extension}", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(Path, $"*.{Extension}", SearchOption.AllDirectories);
         foreach (var file in files)
         {
             try

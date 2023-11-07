@@ -85,7 +85,7 @@ public class Boot
 
         await commandServiceHandler.InstallCommandsAsync();
 
-        Config._DiscordBotClient = this;
+        Config.DiscordBotClient = this;
 
         while (!isReady) ;
     }

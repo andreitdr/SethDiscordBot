@@ -13,9 +13,9 @@ public class Config
     public static  Logger                             Logger;
     public static  SettingsDictionary<string, string> AppSettings;
 
-    internal static Boot? _DiscordBotClient;
+    internal static Boot? DiscordBotClient;
 
-    public static Boot? DiscordBot => _DiscordBotClient;
+    public static Boot? DiscordBot => DiscordBotClient;
 
     public static async Task Initialize()
     {
