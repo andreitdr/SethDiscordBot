@@ -10,8 +10,8 @@ public sealed class Logger : ILogger
 {
     public bool IsEnabled       { get; init; }
     public bool OutputToFile    { get; init; }
-    
-    public  LogType LowestLogLevel  { get; set; }
+
+    private LogType LowestLogLevel  { get; }
     private bool    UseShortVersion { get; }
     
     public Logger(bool useShortVersion, bool outputToFile, LogType lowestLogLevel = LogType.INFO)
