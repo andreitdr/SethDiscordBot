@@ -8,19 +8,20 @@ namespace PluginManager.Others;
 
 public static class ArchiveManager
 {
-    private static string? archiveFolder;
-    public static bool isInitialized { get; private set; }
+    private static string? _archiveFolder;
+    private static bool IsInitialized { get; set; }
 
     public static void Initialize()
     {
-        if (isInitialized) throw new Exception("ArchiveManager is already initialized");
+        if (IsInitialized) 
+            throw new Exception("ArchiveManager is already initialized");
 
         if (!Config.AppSettings.ContainsKey("ArchiveFolder"))
-            Config.AppSettings["ArchiveFolder"] = "./Data/PAKS/";
+            Config.AppSettings["ArchiveFolder"] = "./Data/Archives/";
 
-        archiveFolder = Config.AppSettings["ArchiveFolder"];
+        _archiveFolder = Config.AppSettings["ArchiveFolder"];
 
-        isInitialized = true;
+        IsInitialized = true;
     }
 
     /// <summary>
@@ -29,31 +30,26 @@ public static class ArchiveManager
     /// <param name="fileName">The file name in the archive</param>
     /// <param name="archName">The archive location on the disk</param>
     /// <returns>An array of bytes that represents the Stream value from the file that was read inside the archive</returns>
-    public async static Task<byte[]?> ReadStreamFromPakAsync(string fileName, string archName)
+    public static async Task<byte[]?> ReadStreamFromPakAsync(string fileName, string archName)
     {
-        if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
+        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
 
-        archName = archiveFolder + archName;
+        archName = _archiveFolder + archName;
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
 
-        byte[]? data = null;
+        using var zip   = ZipFile.OpenRead(archName);
+        var       entry = zip.Entries.FirstOrDefault(entry => entry.FullName == fileName || entry.Name == fileName);
+        if (entry is null) throw new Exception("File not found in archive");
 
-        using (var zip = ZipFile.OpenRead(archName))
-        {
-            var entry = zip.Entries.FirstOrDefault(entry => entry.FullName == fileName || entry.Name == fileName);
-            if (entry is null) throw new Exception("File not found in archive");
+        await using var memoryStream = new MemoryStream();
+        var             stream       = entry.Open();
+        await stream.CopyToAsync(memoryStream);
+        var data = memoryStream.ToArray();
 
-            var MemoryStream = new MemoryStream();
-
-            var stream = entry.Open();
-            await stream.CopyToAsync(MemoryStream);
-            data = MemoryStream.ToArray();
-
-            stream.Close();
-            MemoryStream.Close();
-        }
+        stream.Close();
+        memoryStream.Close();
 
         return data;
     }
@@ -61,13 +57,13 @@ public static class ArchiveManager
     /// <summary>
     ///     Read data from a file that is inside an archive (ZIP format)
     /// </summary>
-    /// <param name="FileName">The file name that is inside the archive or its full path</param>
+    /// <param name="fileName">The file name that is inside the archive or its full path</param>
     /// <param name="archFile">The archive location from the PAKs folder</param>
     /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
-    public static async Task<string?> ReadFromPakAsync(string FileName, string archFile)
+    public static async Task<string?> ReadFromPakAsync(string fileName, string archFile)
     {
-        if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
-        archFile = archiveFolder + archFile;
+        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
+        archFile = _archiveFolder + archFile;
         if (!File.Exists(archFile))
             throw new Exception("Failed to load file !");
 
@@ -78,7 +74,7 @@ public static class ArchiveManager
             using (var zip = new ZipArchive(fs, ZipArchiveMode.Read))
             {
                 foreach (var entry in zip.Entries)
-                    if (entry.Name == FileName || entry.FullName == FileName)
+                    if (entry.Name == fileName || entry.FullName == fileName)
                         using (var s = entry.Open())
                         using (var reader = new StreamReader(s))
                         {
@@ -95,7 +91,7 @@ public static class ArchiveManager
         {
             Config.Logger.Log(message: ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR); // Write the error to a file
             await Task.Delay(100);
-            return await ReadFromPakAsync(FileName, archFile);
+            return await ReadFromPakAsync(fileName, archFile);
         }
     }
 
@@ -111,65 +107,63 @@ public static class ArchiveManager
         string zip, string folder, IProgress<float> progress,
         UnzipProgressType type)
     {
-        if (!isInitialized) throw new Exception("ArchiveManager is not initialized");
+        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
         Directory.CreateDirectory(folder);
-        using (var archive = ZipFile.OpenRead(zip))
+        using var archive       = ZipFile.OpenRead(zip);
+        var       totalZipFiles = archive.Entries.Count();
+        if (type == UnzipProgressType.PERCENTAGE_FROM_NUMBER_OF_FILES)
         {
-            if (type == UnzipProgressType.PERCENTAGE_FROM_NUMBER_OF_FILES)
+            var currentZipFile = 0;
+            foreach (var entry in archive.Entries)
             {
-                var totalZIPFiles  = archive.Entries.Count();
-                var currentZIPFile = 0;
-                foreach (var entry in archive.Entries)
-                {
-                    if (entry.FullName.EndsWith("/")) // it is a folder
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                if (entry.FullName.EndsWith("/")) // it is a folder
+                    Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
 
-                    else
-                        try
-                        {
-                            entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                        }
-                        catch (Exception ex)
-                        {
-                            Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
-                        }
-
-                    currentZIPFile++;
-                    await Task.Delay(10);
-                    if (progress != null)
-                        progress.Report((float)currentZIPFile / totalZIPFiles * 100);
-                }
-            }
-            else if (type == UnzipProgressType.PERCENTAGE_FROM_TOTAL_SIZE)
-            {
-                ulong zipSize = 0;
-
-                foreach (var entry in archive.Entries)
-                    zipSize += (ulong)entry.CompressedLength;
-
-                ulong currentSize = 0;
-                foreach (var entry in archive.Entries)
-                {
-                    if (entry.FullName.EndsWith("/"))
-                    {
-                        Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
-                        continue;
-                    }
-
+                else
                     try
                     {
                         entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                        currentSize += (ulong)entry.CompressedLength;
                     }
                     catch (Exception ex)
                     {
                         Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
                     }
 
-                    await Task.Delay(10);
-                    if (progress != null)
-                        progress.Report((float)currentSize / zipSize * 100);
+                currentZipFile++;
+                await Task.Delay(10);
+                if (progress != null)
+                    progress.Report((float)currentZipFile / totalZipFiles * 100);
+            }
+        }
+        else if (type == UnzipProgressType.PERCENTAGE_FROM_TOTAL_SIZE)
+        {
+            ulong zipSize = 0;
+
+            foreach (var entry in archive.Entries)
+                zipSize += (ulong)entry.CompressedLength;
+
+            ulong currentSize = 0;
+            foreach (var entry in archive.Entries)
+            {
+                if (entry.FullName.EndsWith("/"))
+                {
+                    Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+                    continue;
                 }
+
+                try
+                {
+                    entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                    currentSize += (ulong)entry.CompressedLength;
+                }
+                catch (Exception ex)
+                {
+                    Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
+                }
+
+                await Task.Delay(10);
+                if (progress != null)
+                    progress.Report((float)currentSize / zipSize * 100);
             }
         }
     }
