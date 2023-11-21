@@ -22,9 +22,9 @@ public class Program
     public static void Startup(string[] args)
     {
         PreLoadComponents(args).Wait();
-        
+
         if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
-                Installer.GenerateStartupConfig();
+            Installer.GenerateStartupConfig();
 
         HandleInput().Wait();
     }
@@ -37,8 +37,8 @@ public class Program
         internalActionManager.Initialize().Wait();
         internalActionManager.Execute("plugin", "load").Wait();
         internalActionManager.Refresh().Wait();
-        
-        
+
+
         while (true)
         {
             var cmd     = Console.ReadLine();
@@ -64,21 +64,21 @@ public class Program
         Console.WriteLine($"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
         Console.WriteLine("Git SethBot: https://github.com/andreitdr/SethDiscordBot");
         Console.WriteLine("Git Plugins: https://github.com/andreitdr/SethPlugins");
-        
+
         ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
 
         ConsoleUtilities.WriteColorText($"Running on &m{Functions.GetOperatingSystem()}");
         Console.WriteLine("============================ LOG ============================");
-        
+
         Console.ForegroundColor = ConsoleColor.White;
         try
         {
-            var token = AppSettings["token"];
+            var token         = AppSettings["token"];
             var prefix        = AppSettings["prefix"];
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             Logger.Log(ex.ToString(), source: typeof(Program), type: LogType.CRITICAL);
         }
@@ -96,18 +96,20 @@ public class Program
             internalActionManager = new InternalActionManager("./Data/Plugins", "*.dll");
             NoGUI();
         }
-        catch ( IOException ex )
+        catch (IOException ex)
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
                 if (AppSettings.ContainsKey("LaunchMessage"))
                     AppSettings.Add("LaunchMessage",
-                                    "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !");
-                
+                        "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
+                        "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !"
+                    );
+
                 Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                           "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", 
-                           source: typeof(Program), type: LogType.ERROR);
+                           "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
+                    source: typeof(Program), type: LogType.ERROR
+                );
             }
         }
     }
@@ -115,7 +117,7 @@ public class Program
     private static async Task PreLoadComponents(string[] args)
     {
         await Initialize();
-        
+
         Logger.OnLog += (sender, logMessage) =>
         {
             string messageColor = logMessage.Type switch
@@ -133,10 +135,10 @@ public class Program
                 Console.WriteLine(logMessage.Message);
                 return;
             }
-            
+
             AnsiConsole.MarkupLine($"{messageColor}{logMessage.ThrowTime} {logMessage.Message} [/]");
         };
-        
+
         AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 }

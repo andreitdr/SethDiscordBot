@@ -6,7 +6,7 @@ namespace PluginManager.Interfaces;
 
 public interface DBSlashCommand
 {
-    string Name        { get; }
+    string Name { get; }
     string Description { get; }
 
     bool canUseDM { get; }

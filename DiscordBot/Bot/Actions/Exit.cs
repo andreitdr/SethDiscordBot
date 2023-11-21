@@ -6,12 +6,12 @@ using PluginManager.Others;
 
 namespace DiscordBot.Bot.Actions;
 
-public class Exit : ICommandAction
+public class Exit: ICommandAction
 {
-    public string                ActionName  => "exit";
-    public string                Description => "Exits the bot and saves the config. Use exit help for more info.";
-    public string                Usage       => "exit [help|force (-f)]";
-    public InternalActionRunType RunType     => InternalActionRunType.ON_CALL;
+    public string ActionName => "exit";
+    public string Description => "Exits the bot and saves the config. Use exit help for more info.";
+    public string Usage => "exit [help|force (-f)]";
+    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)
     {
@@ -23,7 +23,7 @@ public class Exit : ICommandAction
         }
         else
         {
-            switch ( args[0] )
+            switch (args[0])
             {
                 case "help":
                     Console.WriteLine("Usage : exit [help|force]");

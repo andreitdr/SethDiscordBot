@@ -29,13 +29,13 @@
         <None Remove="Data\**"/>
         <None Remove="obj\**"/>
         <None Remove="Output\**"/>
-        <None Remove="builder.bat" />
-        <None Remove="builder.sh" />
+        <None Remove="builder.bat"/>
+        <None Remove="builder.sh"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Discord.Net" Version="3.11.0"/>
-        <PackageReference Include="pythonnet" Version="3.0.1" />
-        <PackageReference Include="Spectre.Console" Version="0.47.0" />
+        <PackageReference Include="pythonnet" Version="3.0.1"/>
+        <PackageReference Include="Spectre.Console" Version="0.47.0"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\PluginManager\PluginManager.csproj"/>

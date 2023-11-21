@@ -8,13 +8,13 @@ using PluginManager.Others;
 
 namespace PluginManager.Loaders;
 
-internal class LoaderArgs : EventArgs
+internal class LoaderArgs: EventArgs
 {
-    internal string?    PluginName { get; init; }
-    internal string?    TypeName   { get; init; }
-    internal bool       IsLoaded   { get; init; }
-    internal Exception? Exception  { get; init; }
-    internal object?    Plugin     { get; init; }
+    internal string? PluginName { get; init; }
+    internal string? TypeName { get; init; }
+    internal bool IsLoaded { get; init; }
+    internal Exception? Exception { get; init; }
+    internal object? Plugin { get; init; }
 }
 
 internal class Loader
@@ -26,7 +26,7 @@ internal class Loader
     }
 
 
-    private string Path      { get; }
+    private string Path { get; }
     private string Extension { get; }
 
     internal event FileLoadedEventHandler? FileLoaded;
@@ -101,28 +101,29 @@ internal class Loader
 
                     if (PluginLoaded != null)
                         PluginLoaded.Invoke(new LoaderArgs
-                                            {
-                                                Exception  = null,
-                                                IsLoaded   = true,
-                                                PluginName = type.FullName,
-                                                TypeName = typeof(T) == typeof(DBCommand)      ? "DBCommand" :
-                                                           typeof(T) == typeof(DBEvent)        ? "DBEvent" :
-                                                           typeof(T) == typeof(DBSlashCommand) ? "DBSlashCommand" :
-                                                               null,
-                                                Plugin = plugin
-                                            }
-                                           );
+                            {
+                                Exception  = null,
+                                IsLoaded   = true,
+                                PluginName = type.FullName,
+                                TypeName = typeof(T) == typeof(DBCommand)      ? "DBCommand" :
+                                           typeof(T) == typeof(DBEvent)        ? "DBEvent" :
+                                           typeof(T) == typeof(DBSlashCommand) ? "DBSlashCommand" :
+                                                                                 null,
+                                Plugin = plugin
+                            }
+                        );
                 }
                 catch (Exception ex)
                 {
                     if (PluginLoaded != null)
                         PluginLoaded.Invoke(new LoaderArgs
-                        {
-                            Exception  = ex,
-                            IsLoaded   = false,
-                            PluginName = type.FullName,
-                            TypeName   = nameof(T)
-                        });
+                            {
+                                Exception  = ex,
+                                IsLoaded   = false,
+                                PluginName = type.FullName,
+                                TypeName   = nameof(T)
+                            }
+                        );
                 }
 
             return list;

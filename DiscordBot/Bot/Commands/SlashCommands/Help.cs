@@ -8,11 +8,11 @@ using PluginManager.Others;
 
 namespace DiscordBot.Bot.Commands.SlashCommands;
 
-public class Help : DBSlashCommand
+public class Help: DBSlashCommand
 {
-    public string Name        => "help";
+    public string Name => "help";
     public string Description => "This command allows you to check all loaded commands";
-    public bool   canUseDM    => true;
+    public bool canUseDM => true;
 
     public List<SlashCommandOptionBuilder> Options =>
         new()

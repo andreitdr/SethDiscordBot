@@ -106,9 +106,11 @@ internal class CommandHandler
                                                              (
                                                                  plug.Aliases is not null &&
                                                                  plug.Aliases.Contains(message.CleanContent
-                                                                     .Substring(mentionPrefix.Length + 1)
-                                                                     .Split(' ')[0])
-                                                             ));
+                                                                                              .Substring(mentionPrefix.Length + 1)
+                                                                                              .Split(' ')[0]
+                                                                 )
+                                                             )
+                                     );
 
                 cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
             }
@@ -120,11 +122,13 @@ internal class CommandHandler
                                                           message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
                                                           (p.Aliases is not null &&
                                                            p.Aliases.Contains(
-                                                                              message.Content.Split(' ')[0]
-                                                                                  .Substring(botPrefix.Length))));
+                                                               message.Content.Split(' ')[0]
+                                                                      .Substring(botPrefix.Length)
+                                                           ))
+                                     );
                 cleanMessage = message.Content.Substring(botPrefix.Length);
             }
-            
+
             if (plugin is null)
                 return;
 
@@ -138,13 +142,13 @@ internal class CommandHandler
                 argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
 
             DBCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
-            
+
             Config.Logger.Log(
                 message: $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
                 source: typeof(CommandHandler),
                 type: LogType.INFO
             );
-            
+
             if (context.Channel is SocketDMChannel)
                 plugin.ExecuteDM(cmd);
             else plugin.ExecuteServer(cmd);

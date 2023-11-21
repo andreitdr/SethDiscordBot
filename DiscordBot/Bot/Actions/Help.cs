@@ -7,7 +7,7 @@ using PluginManager.Others;
 
 namespace DiscordBot.Bot.Actions;
 
-public class Help : ICommandAction
+public class Help: ICommandAction
 {
     public string ActionName => "help";
 
@@ -34,8 +34,8 @@ public class Help : ICommandAction
             items.Add(new[] { "-", "-", "-" });
 
             ConsoleUtilities.FormatAndAlignTable(items,
-                                                    TableFormat.CENTER_EACH_COLUMN_BASED
-                                                   );
+                TableFormat.CENTER_EACH_COLUMN_BASED
+            );
             return;
         }
 
@@ -56,7 +56,7 @@ public class Help : ICommandAction
         };
 
         ConsoleUtilities.FormatAndAlignTable(actionData,
-                                                TableFormat.CENTER_EACH_COLUMN_BASED
-                                               );
+            TableFormat.CENTER_EACH_COLUMN_BASED
+        );
     }
 }

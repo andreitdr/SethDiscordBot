@@ -163,7 +163,8 @@ public class SqlDatabase
             throw new Exception($"Table {tableName} does not exist");
 
         await ExecuteAsync(
-            $"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'");
+            $"UPDATE {tableName} SET {ResultColumnName}='{ResultColumnValue}' WHERE {keyName}='{KeyValue}'"
+        );
     }
 
     /// <summary>
@@ -238,7 +239,7 @@ public class SqlDatabase
     {
         var command = _connection.CreateCommand();
         command.CommandText = $"SELECT * FROM {tableName}";
-        var reader = await command.ExecuteReaderAsync();
+        var reader       = await command.ExecuteReaderAsync();
         var tableColumns = new List<string>();
         for (var i = 0; i < reader.FieldCount; i++)
             tableColumns.Add(reader.GetName(i));
@@ -262,7 +263,7 @@ public class SqlDatabase
     {
         var command = _connection.CreateCommand();
         command.CommandText = $"SELECT * FROM {tableName}";
-        var reader = command.ExecuteReader();
+        var reader       = command.ExecuteReader();
         var tableColumns = new List<string>();
         for (var i = 0; i < reader.FieldCount; i++)
             tableColumns.Add(reader.GetName(i));
@@ -343,7 +344,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
         var command = new SQLiteCommand(query, _connection);
-        var answer = await command.ExecuteNonQueryAsync();
+        var answer  = await command.ExecuteNonQueryAsync();
         return answer;
     }
 
@@ -357,7 +358,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             _connection.Open();
         var command = new SQLiteCommand(query, _connection);
-        var r = command.ExecuteNonQuery();
+        var r       = command.ExecuteNonQuery();
 
         return r;
     }
@@ -372,7 +373,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
         var command = new SQLiteCommand(query, _connection);
-        var reader = await command.ExecuteReaderAsync();
+        var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
         if (reader.Read())
@@ -394,7 +395,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             _connection.Open();
         var command = new SQLiteCommand(query, _connection);
-        var reader = command.ExecuteReader();
+        var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
         if (reader.Read())
@@ -416,7 +417,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
         var command = new SQLiteCommand(query, _connection);
-        var reader = await command.ExecuteReaderAsync();
+        var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
         if (reader.Read())
@@ -439,7 +440,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             _connection.Open();
         var command = new SQLiteCommand(query, _connection);
-        var reader = command.ExecuteReader();
+        var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
         if (reader.Read())
@@ -462,7 +463,7 @@ public class SqlDatabase
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
         var command = new SQLiteCommand(query, _connection);
-        var reader = await command.ExecuteReaderAsync();
+        var reader  = await command.ExecuteReaderAsync();
 
         if (!reader.HasRows)
             return null;
@@ -479,7 +480,7 @@ public class SqlDatabase
 
         return rows;
     }
-    
+
     /// <summary>
     /// Create a parameter for a query
     /// </summary>
@@ -490,7 +491,7 @@ public class SqlDatabase
     {
         var parameter = new SQLiteParameter(name);
         parameter.Value = value;
-        
+
         if (value is string)
             parameter.DbType = DbType.String;
         else if (value is int)
@@ -531,13 +532,13 @@ public class SqlDatabase
             parameter.DbType = DbType.StringFixedLength;
         else if (value is char[])
             parameter.DbType = DbType.StringFixedLength;
-        else 
+        else
             return null;
 
         return parameter;
     }
-    
-    
+
+
     /// <summary>
     /// Create a parameter for a query. The function automatically detects the type of the value.
     /// </summary>
@@ -545,7 +546,7 @@ public class SqlDatabase
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
     private SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues) =>
         CreateParameter(parameterValues.Key, parameterValues.Value);
-    
+
     /// <summary>
     /// Execute a query with parameters
     /// </summary>
@@ -556,7 +557,7 @@ public class SqlDatabase
     {
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
-        
+
         var command = new SQLiteCommand(query, _connection);
         foreach (var parameter in parameters)
         {
@@ -564,10 +565,10 @@ public class SqlDatabase
             if (p is not null)
                 command.Parameters.Add(p);
         }
-        
+
         return await command.ExecuteNonQueryAsync();
     }
-    
+
     /// <summary>
     /// Execute a query with parameters that returns a specific type of object. The function will return the first row of the result transformed into the specified type.
     /// </summary>
@@ -576,11 +577,11 @@ public class SqlDatabase
     /// <param name="parameters">The parameters of the query</param>
     /// <typeparam name="T">The return object type</typeparam>
     /// <returns>An object of type T that represents the output of the convertor function based on the array of objects that the first row of the result has</returns>
-    public async Task<T?> ReadObjectOfTypeAsync<T> (string query, Func<object[], T> convertor, params KeyValuePair<string, object>[] parameters)
+    public async Task<T?> ReadObjectOfTypeAsync<T>(string query, Func<object[], T> convertor, params KeyValuePair<string, object>[] parameters)
     {
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
-        
+
         var command = new SQLiteCommand(query, _connection);
         foreach (var parameter in parameters)
         {
@@ -588,7 +589,7 @@ public class SqlDatabase
             if (p is not null)
                 command.Parameters.Add(p);
         }
-        
+
         var reader = await command.ExecuteReaderAsync();
         var values = new object[reader.FieldCount];
         if (reader.Read())
@@ -599,8 +600,8 @@ public class SqlDatabase
 
         return default;
     }
-    
-    
+
+
     /// <summary>
     /// Execute a query with parameters that returns a specific type of object. The function will return a list of objects of the specified type.
     /// </summary>
@@ -614,7 +615,7 @@ public class SqlDatabase
     {
         if (!_connection.State.HasFlag(ConnectionState.Open))
             await _connection.OpenAsync();
-        
+
         var command = new SQLiteCommand(query, _connection);
         foreach (var parameter in parameters)
         {
@@ -622,12 +623,12 @@ public class SqlDatabase
             if (p is not null)
                 command.Parameters.Add(p);
         }
-        
+
         var reader = await command.ExecuteReaderAsync();
         //
         if (!reader.HasRows)
             return null;
-        
+
         List<T> rows = new();
         while (await reader.ReadAsync())
         {

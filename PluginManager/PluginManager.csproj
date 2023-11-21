@@ -9,10 +9,10 @@
         <DebugSymbols>false</DebugSymbols>
     </PropertyGroup>
     <ItemGroup>
-        <None Remove="BlankWindow1.xaml" />
+        <None Remove="BlankWindow1.xaml"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Discord.Net" Version="3.11.0" />
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
+        <PackageReference Include="Discord.Net" Version="3.11.0"/>
+        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118"/>
     </ItemGroup>
 </Project>

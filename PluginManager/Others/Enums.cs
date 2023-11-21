@@ -40,8 +40,8 @@ public enum InternalActionRunType
     ON_CALL
 }
 
-internal enum ExceptionExitCode : int
+internal enum ExceptionExitCode: int
 {
     CONFIG_FAILED_TO_LOAD = 1,
-    CONFIG_KEY_NOT_FOUND = 2,
+    CONFIG_KEY_NOT_FOUND  = 2,
 }

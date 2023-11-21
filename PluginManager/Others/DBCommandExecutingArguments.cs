@@ -29,19 +29,19 @@ public class DBCommandExecutingArguments
         {
             this.cleanContent = message.Content.Substring(Config.DiscordBot.botPrefix.Length);
         }
-        
+
         var split = this.cleanContent.Split(' ');
 
         string[]? argsClean = null;
         if (split.Length > 1)
             argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
-        
+
         this.commandUsed = split[0];
-        this.arguments = argsClean;
+        this.arguments   = argsClean;
     }
 
-    public SocketCommandContext context      { get; init; }
-    public string               cleanContent { get; init; }
-    public string               commandUsed  { get; init; }
-    public string[]?            arguments    { get; init; }
+    public SocketCommandContext context { get; init; }
+    public string cleanContent { get; init; }
+    public string commandUsed { get; init; }
+    public string[]? arguments { get; init; }
 }

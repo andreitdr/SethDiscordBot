@@ -9,24 +9,24 @@ namespace DiscordBot.Utilities;
 
 public class TableData
 {
-    public List<string> Columns;
+    public List<string>   Columns;
     public List<string[]> Rows;
-    
+
     public bool IsEmpty => Rows.Count == 0;
     public bool HasRoundBorders { get; set; } = true;
-    
+
     public TableData(List<string> columns)
     {
         Columns = columns;
         Rows    = new List<string[]>();
     }
-    
+
     public TableData(string[] columns)
     {
         Columns = columns.ToList();
         Rows    = new List<string[]>();
     }
-    
+
     public void AddRow(string[] row)
     {
         Rows.Add(row);
@@ -41,23 +41,23 @@ public static class ConsoleUtilities
         T result = default;
         await AnsiConsole.Progress()
                          .Columns(
-                              new ProgressColumn[]
-                              {
-                                  new TaskDescriptionColumn(),
-                                  new ProgressBarColumn(),
-                                  new PercentageColumn(),
-                              }
-                          )
+                             new ProgressColumn[]
+                             {
+                                 new TaskDescriptionColumn(),
+                                 new ProgressBarColumn(),
+                                 new PercentageColumn(),
+                             }
+                         )
                          .StartAsync(
-                              async ctx =>
-                              {
-                                  var task = ctx.AddTask(message);
-                                  task.IsIndeterminate = true;
-                                  result               = await function;
-                                  task.Increment(100);
+                             async ctx =>
+                             {
+                                 var task = ctx.AddTask(message);
+                                 task.IsIndeterminate = true;
+                                 result               = await function;
+                                 task.Increment(100);
 
-                              }
-                          );
+                             }
+                         );
 
         return result;
     }
@@ -66,21 +66,23 @@ public static class ConsoleUtilities
     {
         await AnsiConsole.Progress()
                          .Columns(new ProgressColumn[]
-                          {
-                              new TaskDescriptionColumn(),
-                              new ProgressBarColumn(),
-                              new PercentageColumn(),
-                          })
+                             {
+                                 new TaskDescriptionColumn(),
+                                 new ProgressBarColumn(),
+                                 new PercentageColumn(),
+                             }
+                         )
                          .StartAsync(async ctx =>
-                          {
-                              var task = ctx.AddTask(message);
-                              task.IsIndeterminate = true;
-                              await function;
-                              task.Increment(100);
-                
-                          });
+                             {
+                                 var task = ctx.AddTask(message);
+                                 task.IsIndeterminate = true;
+                                 await function;
+                                 task.Increment(100);
+
+                             }
+                         );
     }
-    
+
     private static readonly Dictionary<char, ConsoleColor> Colors = new()
     {
         { 'g', ConsoleColor.Green },
@@ -91,7 +93,7 @@ public static class ConsoleUtilities
     };
 
     private static readonly char ColorPrefix = '&';
-    
+
     private static bool CanAproximateTo(this float f, float y)
     {
         return MathF.Abs(f - y) < 0.000001;
@@ -104,7 +106,7 @@ public static class ConsoleUtilities
         table.AddColumns(tableData.Columns.ToArray());
         foreach (var row in tableData.Rows)
             table.AddRow(row);
-        
+
         AnsiConsole.Write(table);
     }
 
@@ -123,12 +125,12 @@ public static class ConsoleUtilities
             data.RemoveAt(0);
             foreach (var row in data)
                 table.AddRow(row);
-            
+
             AnsiConsole.Write(table);
-            
+
             return;
         }
-        
+
         if (format == TableFormat.CENTER_EACH_COLUMN_BASED)
         {
             var tableLine  = '-';
@@ -317,18 +319,18 @@ public static class ConsoleUtilities
             Console.CursorVisible = false;
             isRunning             = true;
             thread = new Thread(() =>
-                                {
-                                    while (isRunning)
-                                    {
-                                        Console.SetCursorPosition(0, Console.CursorTop);
-                                        Console.Write(" " + Sequence[position] + " " + Message + "         ");
-                                        position++;
-                                        if (position >= Sequence.Length)
-                                            position = 0;
-                                        Thread.Sleep(100);
-                                    }
-                                }
-                               );
+                {
+                    while (isRunning)
+                    {
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        Console.Write(" " + Sequence[position] + " " + Message + "         ");
+                        position++;
+                        if (position >= Sequence.Length)
+                            position = 0;
+                        Thread.Sleep(100);
+                    }
+                }
+            );
 
             thread.Start();
         }

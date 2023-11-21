@@ -78,7 +78,7 @@ public class Boot
         CommonTasks();
 
         await client.LoginAsync(TokenType.Bot, botToken);
-        
+
         await client.StartAsync();
 
         commandServiceHandler = new CommandHandler(client, service, botPrefix);
@@ -105,7 +105,7 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.AppSettings.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", source:typeof(Boot), type: LogType.CRITICAL);
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", source: typeof(Boot), type: LogType.CRITICAL);
             await Config.AppSettings.SaveToFile();
             await Task.Delay(4000);
             Environment.Exit(0);

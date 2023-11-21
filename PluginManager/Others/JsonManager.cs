@@ -38,7 +38,7 @@ public class JsonManager
         else
             text = new MemoryStream(Encoding.ASCII.GetBytes(input));
         text.Position = 0;
-        
+
         var obj = await JsonSerializer.DeserializeAsync<T>(text);
         await text.FlushAsync();
         text.Close();

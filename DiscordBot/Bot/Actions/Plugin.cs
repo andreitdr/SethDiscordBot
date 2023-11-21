@@ -12,7 +12,7 @@ using Spectre.Console;
 
 namespace DiscordBot.Bot.Actions;
 
-public class Plugin : ICommandAction
+public class Plugin: ICommandAction
 {
     private bool pluginsLoaded;
     public string ActionName => "plugin";
@@ -46,7 +46,7 @@ public class Plugin : ICommandAction
             case "refresh":
                 await PluginMethods.RefreshPlugins(true);
                 break;
-            
+
             case "list":
                 await PluginMethods.List(manager);
                 break;
@@ -56,7 +56,7 @@ public class Plugin : ICommandAction
                     Config.Logger.Log("Plugins already loaded", source: typeof(ICommandAction), type: LogType.WARNING);
                     break;
                 }
-                
+
                 if (Config.DiscordBot is null)
                 {
                     Config.Logger.Log("DiscordBot is null", source: typeof(ICommandAction), type: LogType.WARNING);

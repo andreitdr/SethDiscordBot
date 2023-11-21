@@ -10,7 +10,7 @@ namespace DiscordBot.Bot.Commands;
 /// <summary>
 ///     The help command
 /// </summary>
-internal class Help : DBCommand
+internal class Help: DBCommand
 {
     /// <summary>
     ///     Command name
@@ -76,7 +76,7 @@ internal class Help : DBCommand
         var embedBuilder = new EmbedBuilder();
         var cmd = PluginLoader.Commands.Find(p => p.Command == command ||
                                                   p.Aliases is not null && p.Aliases.Contains(command)
-                                            );
+        );
         if (cmd == null) return null;
 
         embedBuilder.AddField("Usage", Config.AppSettings["prefix"] + cmd.Usage);

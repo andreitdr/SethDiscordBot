@@ -131,7 +131,8 @@ public class PluginLoader
                     builder.Options = slash.Options;
 
                     onSLSHLoad?.Invoke(((DBSlashCommand)args.Plugin!).Name, args.TypeName, args.IsLoaded,
-                                       args.Exception);
+                        args.Exception
+                    );
                     await _client.CreateGlobalApplicationCommandAsync(builder.Build());
                 }
 
@@ -161,7 +162,7 @@ public class PluginLoader
                 else if (type.IsClass && typeof(DBSlashCommand).IsAssignableFrom(type))
                 {
                     var instance = (DBSlashCommand)Activator.CreateInstance(type);
-                    var builder = new SlashCommandBuilder();
+                    var builder  = new SlashCommandBuilder();
                     builder.WithName(instance.Name);
                     builder.WithDescription(instance.Description);
                     builder.WithDMPermission(instance.canUseDM);
@@ -177,6 +178,6 @@ public class PluginLoader
                 //Console.WriteLine(ex.Message);
                 Config.Logger.Log(ex.Message, source: typeof(PluginLoader), type: LogType.ERROR);
             }
-            
+
     }
 }

@@ -22,12 +22,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="DiscordBot\" />
+        <Folder Include="DiscordBot\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DiscordBot\DiscordBot.csproj" />
-      <ProjectReference Include="..\PluginManager\PluginManager.csproj" />
+        <ProjectReference Include="..\DiscordBot\DiscordBot.csproj"/>
+        <ProjectReference Include="..\PluginManager\PluginManager.csproj"/>
     </ItemGroup>
 
 </Project>

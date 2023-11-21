@@ -54,8 +54,8 @@ public static class Functions
     /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream" /> is not readable</exception>
     /// <exception cref="ArgumentException">Triggered in <paramref name="destination" /> is not writable</exception>
     public static async Task CopyToOtherStreamAsync(
-        this Stream       stream, Stream destination, int bufferSize,
-        IProgress<long>?  progress          = null,
+        this Stream stream, Stream destination, int bufferSize,
+        IProgress<long>? progress = null,
         CancellationToken cancellationToken = default)
     {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
@@ -76,7 +76,7 @@ public static class Functions
             progress?.Report(totalBytesRead);
         }
     }
-    
+
 
     public static T SelectRandomValueOf<T>()
     {

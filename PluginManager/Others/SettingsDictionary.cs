@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace PluginManager.Others;
 
-public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
 {
     public string? _file { get; }
     private IDictionary<TKey, TValue>? _dictionary;
-    
+
     public SettingsDictionary(string? file)
     {
         _file = file;
@@ -19,7 +19,7 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
             SaveToFile();
         }
     }
-    
+
     public async Task SaveToFile()
     {
         if (!string.IsNullOrEmpty(_file))
@@ -36,8 +36,8 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
                     string FileContent = File.ReadAllText(_file);
                     if (string.IsNullOrEmpty(FileContent))
                         File.WriteAllText(_file, "{}");
-                    
-                    if(!FileContent.Contains("{") || !FileContent.Contains("}"))
+
+                    if (!FileContent.Contains("{") || !FileContent.Contains("}"))
                         File.WriteAllText(_file, "{}");
                 }
                 else
@@ -61,7 +61,7 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return ((IEnumerable) _dictionary!).GetEnumerator();
+        return ((IEnumerable)_dictionary!).GetEnumerator();
     }
 
     public void Add(KeyValuePair<TKey, TValue> item)
@@ -89,7 +89,7 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         return this._dictionary!.Remove(item);
     }
 
-    public int Count  => _dictionary!.Count;
+    public int Count => _dictionary!.Count;
     public bool IsReadOnly => _dictionary!.IsReadOnly;
     public void Add(TKey key, TValue value)
     {
@@ -116,9 +116,9 @@ public class SettingsDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         get
         {
             if (this._dictionary!.ContainsKey(key))
-                if(this._dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
+                if (this._dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
                     return this._dictionary[key];
-            
+
             return default!;
         }
         set => this._dictionary![key] = value;

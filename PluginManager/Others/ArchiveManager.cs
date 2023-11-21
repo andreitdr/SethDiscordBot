@@ -37,24 +37,24 @@ public static class ArchiveManager
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
-        
+
         byte[]? data = null;
-        
+
         using (var zip = ZipFile.OpenRead(archName))
         {
             var entry = zip.Entries.FirstOrDefault(entry => entry.FullName == fileName || entry.Name == fileName);
             if (entry is null) throw new Exception("File not found in archive");
-            
+
             var MemoryStream = new MemoryStream();
-            
+
             var stream = entry.Open();
             await stream.CopyToAsync(MemoryStream);
             data = MemoryStream.ToArray();
-            
+
             stream.Close();
             MemoryStream.Close();
         }
-        
+
         return data;
     }
 
@@ -117,7 +117,7 @@ public static class ArchiveManager
         {
             if (type == UnzipProgressType.PERCENTAGE_FROM_NUMBER_OF_FILES)
             {
-                var totalZIPFiles = archive.Entries.Count();
+                var totalZIPFiles  = archive.Entries.Count();
                 var currentZIPFile = 0;
                 foreach (var entry in archive.Entries)
                 {

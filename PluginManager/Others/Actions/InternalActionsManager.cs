@@ -26,7 +26,7 @@ public class InternalActionManager
             Actions.TryAdd(action.ActionName, action);
         }
     }
-    
+
     public async Task Refresh()
     {
         Actions.Clear();
@@ -59,7 +59,7 @@ public class InternalActionManager
         }
         catch (Exception e)
         {
-            Config.Logger.Log(e.Message , type: LogType.ERROR, source: typeof(InternalActionManager));
+            Config.Logger.Log(e.Message, type: LogType.ERROR, source: typeof(InternalActionManager));
             return e.Message;
         }
     }

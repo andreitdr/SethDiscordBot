@@ -19,10 +19,10 @@ internal static class OnlineFunctions
     /// <param name="cancellation">The cancellation token</param>
     /// <returns></returns>
     internal static async Task DownloadFileAsync(
-        this HttpClient   client, string url, Stream destination,
-        IProgress<float>? progress        = null,
-        IProgress<long>?  downloadedBytes = null, int bufferSize = 81920,
-        CancellationToken cancellation    = default)
+        this HttpClient client, string url, Stream destination,
+        IProgress<float>? progress = null,
+        IProgress<long>? downloadedBytes = null, int bufferSize = 81920,
+        CancellationToken cancellation = default)
     {
         using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellation))
         {
@@ -35,7 +35,7 @@ internal static class OnlineFunctions
                 if (progress == null || !contentLength.HasValue)
                 {
                     await download.CopyToAsync(destination, cancellation);
-                    if(!contentLength.HasValue)
+                    if (!contentLength.HasValue)
                         progress?.Report(100f);
                     return;
                 }
