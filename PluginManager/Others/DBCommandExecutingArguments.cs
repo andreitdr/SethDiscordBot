@@ -44,4 +44,5 @@ public class DBCommandExecutingArguments
     public string cleanContent { get; init; }
     public string commandUsed { get; init; }
     public string[]? arguments { get; init; }
+    public ISocketMessageChannel Channel => context.Channel;
 }

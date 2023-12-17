@@ -36,10 +36,10 @@ public class Plugin: ICommandAction
 
         PluginsManager manager =
 #if !DEBUG
-            new PluginsManager();
+            new PluginsManager("releases");
 #else
             // new PluginsManager("tests");
-            new PluginsManager();
+            new PluginsManager("releases");
 #endif
 
         switch (args[0])

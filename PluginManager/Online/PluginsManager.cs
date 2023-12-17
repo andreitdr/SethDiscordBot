@@ -10,26 +10,11 @@ namespace PluginManager.Online;
 
 public class PluginsManager
 {
-
-    #if DEBUG
-    /// <summary>
-    ///     The Plugin Manager constructor
-    /// </summary>
-    /// <param name="plink">The link to the file where all plugins are stored</param>
-    /// <param name="vlink">The link to the file where all plugin versions are stored</param>
-    public PluginsManager(string plink, string vlink)
-    {
-        PluginsLink  = plink;
-        VersionsLink = vlink;
-    }
-
-    #endif
-
     /// <summary>
     /// The Plugin Manager constructor. It uses the default links and the default branch.
     /// </summary>
     /// <param name="branch">The main branch from where the plugin manager gets its info</param>
-    public PluginsManager(string? branch = "releases")
+    public PluginsManager(string? branch)
     {
         PluginsLink  = $"https://raw.githubusercontent.com/andreitdr/SethPlugins/{branch}/PluginsList";
         VersionsLink = $"https://raw.githubusercontent.com/andreitdr/SethPlugins/{branch}/Versions";
@@ -101,7 +86,7 @@ public class PluginsManager
         return null;
     }
 
-    public async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
+    private async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
     {
         var data = await ServerCom.ReadTextFromURL(VersionsLink);
         foreach (var item in data)
@@ -135,28 +120,41 @@ public class PluginsManager
             for (var i = 0; i < len; i++)
             {
                 var contents = lines[i].Split(',');
-                if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS && contents[4].Contains("Windows"))
+                if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
                 {
-                    if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
+                    if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS && contents[4].Contains("Windows"))
                     {
                         if (contents.Length == 6)
-                            return new[] { contents[2], contents[3], contents[5] };
+                            return new[]
+                            {
+                                contents[2], contents[3], contents[5]
+                            };
                         if (contents.Length == 5)
-                            return new[] { contents[2], contents[3], string.Empty };
+                            return new[]
+                            {
+                                contents[2], contents[3], string.Empty
+                            };
                         throw new Exception("Failed to download plugin. Invalid Argument Length");
+
                     }
-                }
-                else if (Functions.GetOperatingSystem() == OperatingSystem.LINUX && contents[4].Contains("Linux"))
-                {
-                    if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
+
+                    if (Functions.GetOperatingSystem() == OperatingSystem.LINUX && contents[4].Contains("Linux"))
                     {
                         if (contents.Length == 6)
-                            return new[] { contents[2], contents[3], contents[5] };
+                            return new[]
+                            {
+                                contents[2], contents[3], contents[5]
+                            };
                         if (contents.Length == 5)
-                            return new[] { contents[2], contents[3], string.Empty };
+                            return new[]
+                            {
+                                contents[2], contents[3], string.Empty
+                            };
                         throw new Exception("Failed to download plugin. Invalid Argument Length");
+
                     }
                 }
+
             }
         }
         catch (Exception exception)
