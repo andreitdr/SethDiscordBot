@@ -148,12 +148,14 @@ public class PluginsManager
                 }
                 else if (Functions.GetOperatingSystem() == OperatingSystem.LINUX && contents[4].Contains("Linux"))
                 {
-                    if (contents.Length == 6)
-                        return new[] { contents[2], contents[3], contents[5] };
-                    if (contents.Length == 5)
-                        return new[] { contents[2], contents[3], string.Empty };
-                    throw new Exception("Failed to download plugin. Invalid Argument Length");
-
+                    if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
+                    {
+                        if (contents.Length == 6)
+                            return new[] { contents[2], contents[3], contents[5] };
+                        if (contents.Length == 5)
+                            return new[] { contents[2], contents[3], string.Empty };
+                        throw new Exception("Failed to download plugin. Invalid Argument Length");
+                    }
                 }
             }
         }

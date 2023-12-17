@@ -38,7 +38,8 @@ public class Plugin: ICommandAction
 #if !DEBUG
             new PluginsManager();
 #else
-            new PluginsManager("tests");
+            // new PluginsManager("tests");
+            new PluginsManager();
 #endif
 
         switch (args[0])
