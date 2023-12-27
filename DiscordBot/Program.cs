@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using DiscordBot.Utilities;
 using PluginManager.Bot;
 using PluginManager.Others;
 using PluginManager.Others.Actions;
+using PluginManager.UX;
 using Spectre.Console;
 using static PluginManager.Config;
 
@@ -24,7 +26,7 @@ public class Program
         PreLoadComponents(args).Wait();
 
         if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
-            Installer.GenerateStartupConfig();
+            Installer.GenerateStartupConfig().Wait();
 
         HandleInput().Wait();
     }
@@ -87,7 +89,6 @@ public class Program
     /// <summary>
     ///     Handle user input arguments from the startup of the application
     /// </summary>
-    /// <param name="args">The arguments</param>
     private static async Task HandleInput()
     {
         await StartNoGui();
@@ -100,12 +101,10 @@ public class Program
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                if (AppSettings.ContainsKey("LaunchMessage"))
-                    AppSettings.Add("LaunchMessage",
-                        "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                        "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !"
-                    );
-
+                UxHandler.ShowMessageBox("SethBot", "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
+                                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", MessageBoxType.Error).Wait();
+                
+                
                 Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
                            "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
                     source: typeof(Program), type: LogType.ERROR

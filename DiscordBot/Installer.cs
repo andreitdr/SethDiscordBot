@@ -1,28 +1,33 @@
+using System;
 using PluginManager;
 using Spectre.Console;
+
+using System.Threading.Tasks;
 
 namespace DiscordBot;
 
 public static class Installer
 {
-    public static void GenerateStartupConfig()
+    public static async Task GenerateStartupConfig()
     {
-        AnsiConsole.MarkupLine("Welcome to the [bold]SethBot[/] installer !");
-        AnsiConsole.MarkupLine("First, we need to configure the bot. Don't worry, it will be quick !");
-
-        var token    = AnsiConsole.Ask<string>("Please enter the bot [yellow]token[/]:");
-        var prefix   = AnsiConsole.Ask<string>("Please enter the bot [yellow]prefix[/]:");
-        var serverId = AnsiConsole.Ask<string>("Please enter the [yellow]Server ID[/]:");
-
+        string token     = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the bot token:");
+        string botPrefix = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the bot prefix:");
+        string serverId  = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the Server ID:");
+            
         if (string.IsNullOrWhiteSpace(serverId)) serverId = "NULL";
+
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(botPrefix))
+        {
+            await PluginManager.UX.UxHandler.ShowMessageBox("SethBot", "Invalid token or prefix !", PluginManager.UX.MessageBoxType.Error);
+            Environment.Exit(-20);
+        }
+            
         Config.AppSettings.Add("token", token);
-        Config.AppSettings.Add("prefix", prefix);
+        Config.AppSettings.Add("prefix", botPrefix);
         Config.AppSettings.Add("ServerID", serverId);
-
-        Config.AppSettings.SaveToFile();
-
-        AnsiConsole.MarkupLine("[bold]Config saved ![/]");
-
+            
+        await Config.AppSettings.SaveToFile();
+        
         Config.Logger.Log("Config Saved", source: typeof(Installer));
     }
 }

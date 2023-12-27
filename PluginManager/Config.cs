@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Controls.Notifications;
 using PluginManager.Bot;
 using PluginManager.Others;
 using PluginManager.Others.Logger;
+using OperatingSystem = System.OperatingSystem;
 
 namespace PluginManager;
 
@@ -30,15 +32,30 @@ public class Config
 
         AppSettings["LogFolder"] = "./Data/Logs";
 
+        if (OperatingSystem.IsLinux())
+        {
+            var windowManager = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
+            AppSettings["UI"] = windowManager switch
+            {
+                "KDE"   => "KDE",
+                "GNOME" => "GNOME",
+                _       => "CONSOLE"
+            };
+        } else AppSettings["UI"] = "CONSOLE";
+
         Logger = new Logger(false, true,
             AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log"
         );
 
         ArchiveManager.Initialize();
-
+        
+        UX.UxHandler.Init();
         _isLoaded = true;
-
+        
+        
         Logger.Log(message: "Config initialized", source: typeof(Config));
+        
+        
     }
 
 }

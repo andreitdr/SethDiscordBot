@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -12,7 +12,16 @@
         <None Remove="BlankWindow1.xaml"/>
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.6" />
         <PackageReference Include="Discord.Net" Version="3.11.0"/>
         <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118"/>
+    </ItemGroup>
+    <ItemGroup>
+      <UpToDateCheckInput Remove="UI\Controls\MessageBox.axaml" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Spectre.Console">
+        <HintPath>..\..\..\.nuget\packages\spectre.console\0.47.0\lib\net7.0\Spectre.Console.dll</HintPath>
+      </Reference>
     </ItemGroup>
 </Project>
