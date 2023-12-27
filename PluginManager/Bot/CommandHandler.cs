@@ -13,9 +13,9 @@ namespace PluginManager.Bot;
 
 internal class CommandHandler
 {
-    private readonly string              botPrefix;
-    private readonly DiscordSocketClient client;
-    private readonly CommandService      commandService;
+    private readonly string              _botPrefix;
+    private readonly DiscordSocketClient _client;
+    private readonly CommandService      _commandService;
 
     /// <summary>
     ///     Command handler constructor
@@ -25,9 +25,9 @@ internal class CommandHandler
     /// <param name="botPrefix">The prefix to watch for</param>
     public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
     {
-        this.client         = client;
-        this.commandService = commandService;
-        this.botPrefix      = botPrefix;
+        this._client         = client;
+        this._commandService = commandService;
+        this._botPrefix      = botPrefix;
     }
 
     /// <summary>
@@ -36,9 +36,9 @@ internal class CommandHandler
     /// <returns></returns>
     public async Task InstallCommandsAsync()
     {
-        client.MessageReceived      += MessageHandler;
-        client.SlashCommandExecuted += Client_SlashCommandExecuted;
-        await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+        _client.MessageReceived      += MessageHandler;
+        _client.SlashCommandExecuted += Client_SlashCommandExecuted;
+        await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
     }
 
     private Task Client_SlashCommandExecuted(SocketSlashCommand arg)
@@ -85,19 +85,19 @@ internal class CommandHandler
 
             var argPos = 0;
 
-            if (!message.Content.StartsWith(botPrefix) && !message.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (!message.Content.StartsWith(_botPrefix) && !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 return;
 
-            var context = new SocketCommandContext(client, message);
+            var context = new SocketCommandContext(_client, message);
 
-            await commandService.ExecuteAsync(context, argPos, null);
+            await _commandService.ExecuteAsync(context, argPos, null);
 
             DBCommand? plugin;
             var        cleanMessage = "";
 
-            if (message.HasMentionPrefix(client.CurrentUser, ref argPos))
+            if (message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
-                var mentionPrefix = "<@" + client.CurrentUser.Id + ">";
+                var mentionPrefix = "<@" + _client.CurrentUser.Id + ">";
 
                 plugin = PluginLoader.Commands!
                                      .FirstOrDefault(plug => plug.Command ==
@@ -119,14 +119,14 @@ internal class CommandHandler
             {
                 plugin = PluginLoader.Commands!
                                      .FirstOrDefault(p => p.Command ==
-                                                          message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
+                                                          message.Content.Split(' ')[0].Substring(_botPrefix.Length) ||
                                                           (p.Aliases is not null &&
                                                            p.Aliases.Contains(
                                                                message.Content.Split(' ')[0]
-                                                                      .Substring(botPrefix.Length)
+                                                                      .Substring(_botPrefix.Length)
                                                            ))
                                      );
-                cleanMessage = message.Content.Substring(botPrefix.Length);
+                cleanMessage = message.Content.Substring(_botPrefix.Length);
             }
 
             if (plugin is null)

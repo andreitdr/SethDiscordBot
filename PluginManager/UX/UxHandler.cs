@@ -8,10 +8,13 @@ public static class UxHandler
     
     public static void Init()
     {
-        if (Config.AppSettings["UI"] == "KDE")
-            _model = new Linux.KDE();
-        else
-            _model = new Other.Console();
+        _model = Config.AppSettings["UI"] switch
+        {
+            "KDE"     => new Linux.KDE(),
+            "Console" => new Other.Console(),
+            _         => _model
+        };
+        
     }
     
     public static async Task ShowMessageBox(string title, string message, MessageBoxType type = MessageBoxType.Info)
