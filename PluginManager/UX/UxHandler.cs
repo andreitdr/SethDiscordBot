@@ -4,15 +4,15 @@ namespace PluginManager.UX;
 
 public static class UxHandler 
 {
-    private static IOutputModel _model;
+    private static IOutputModel? _model;
     
     public static void Init()
     {
         _model = Config.AppSettings["UI"] switch
         {
             "KDE"     => new Linux.KDE(),
-            "Console" => new Other.Console(),
-            _         => _model
+            "CONSOLE" => new Other.Console(),
+            _         => null
         };
         
     }

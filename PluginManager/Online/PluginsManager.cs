@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading.Tasks;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
-using OperatingSystem = PluginManager.Others.OperatingSystem;
-
 namespace PluginManager.Online;
 
 public class PluginsManager
@@ -40,7 +37,6 @@ public class PluginsManager
             var lines = list.ToArray();
 
             var data = new List<string[]>();
-            var op   = Functions.GetOperatingSystem();
 
             var len = lines.Length;
             for (var i = 0; i < len; i++)
@@ -49,7 +45,7 @@ public class PluginsManager
                     continue;
                 var content = lines[i].Split(',');
                 var display = new string[4]; // 4 columns
-                if (op == OperatingSystem.WINDOWS)
+                if (System.OperatingSystem.IsWindows())
                 {
                     if (content[4].Contains("Windows"))
                     {
@@ -62,7 +58,7 @@ public class PluginsManager
                         data.Add(display);
                     }
                 }
-                else if (op == OperatingSystem.LINUX)
+                else if (System.OperatingSystem.IsLinux())
                 {
                     if (content[4].Contains("Linux"))
                     {
@@ -122,7 +118,7 @@ public class PluginsManager
                 var contents = lines[i].Split(',');
                 if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
                 {
-                    if (Functions.GetOperatingSystem() == OperatingSystem.WINDOWS && contents[4].Contains("Windows"))
+                    if (System.OperatingSystem.IsWindows() && contents[4].Contains("Windows"))
                     {
                         if (contents.Length == 6)
                             return new[]
@@ -138,7 +134,7 @@ public class PluginsManager
 
                     }
 
-                    if (Functions.GetOperatingSystem() == OperatingSystem.LINUX && contents[4].Contains("Linux"))
+                    if (System.OperatingSystem.IsLinux() && contents[4].Contains("Linux"))
                     {
                         if (contents.Length == 6)
                             return new[]

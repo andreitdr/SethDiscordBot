@@ -30,18 +30,6 @@ public static class Functions
     }
 
     /// <summary>
-    ///     Get the Operating system you are runnin on
-    /// </summary>
-    /// <returns>An Operating system</returns>
-    public static OperatingSystem GetOperatingSystem()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.WINDOWS;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.LINUX;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.MAC_OS;
-        return OperatingSystem.UNKNOWN;
-    }
-
-    /// <summary>
     ///     Copy one Stream to another <see langword="async" />
     /// </summary>
     /// <param name="stream">The base stream</param>

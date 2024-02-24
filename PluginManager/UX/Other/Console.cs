@@ -19,33 +19,29 @@ internal class Console : IOutputModel
 
     public Task<string> ShowInputBox(string title, string message)
     {
-        AnsiConsole.Markup(title);
-        AnsiConsole.Markup(message);
+        AnsiConsole.MarkupLine(title);
         
-        string input = AnsiConsole.Ask<string>("Please enter the value:");
+        string input = AnsiConsole.Ask<string>(message);
         
         return Task.FromResult(input);
     }
     
     public Task ShowMessageBox(string message)
     {
-        AnsiConsole.Markup(message);
+        AnsiConsole.MarkupLine(message);
         return Task.CompletedTask;
     }
     
     public Task<int> ShowMessageBox(string title, string message,MessageBoxButtons buttons, bool isWarning)
     {
-        AnsiConsole.Markup(title);
-        AnsiConsole.Markup(message);
+        AnsiConsole.MarkupLine(title);
+        AnsiConsole.MarkupLine(message);
         
         return Task.FromResult(0);
     }
     
     public Task ShowNotification(string title, string message, int timeout_seconds = 5)
     {
-        AnsiConsole.Markup(title);
-        AnsiConsole.Markup(message);
-        
         return Task.CompletedTask;
     }
 }

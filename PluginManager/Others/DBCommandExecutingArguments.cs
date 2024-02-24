@@ -1,13 +1,12 @@
-﻿using System.Linq;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using PluginManager.Bot;
+
 
 namespace PluginManager.Others;
 
-public class DBCommandExecutingArguments
+public class DbCommandExecutingArguments
 {
-    public DBCommandExecutingArguments(
+    public DbCommandExecutingArguments(
         SocketCommandContext context, string cleanContent, string commandUsed, string[]? arguments)
     {
         this.context      = context;
@@ -16,7 +15,7 @@ public class DBCommandExecutingArguments
         this.arguments    = arguments;
     }
 
-    public DBCommandExecutingArguments(SocketUserMessage? message, DiscordSocketClient client)
+    public DbCommandExecutingArguments(SocketUserMessage? message, DiscordSocketClient client)
     {
         this.context = new SocketCommandContext(client, message);
         int pos = 0;

@@ -69,7 +69,7 @@ public class Program
 
         ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
 
-        ConsoleUtilities.WriteColorText($"Running on &m{Functions.GetOperatingSystem()}");
+        ConsoleUtilities.WriteColorText($"Running on &m{(System.OperatingSystem.IsWindows() ? "Windows" : "Linux")}");
         Console.WriteLine("============================ LOG ============================");
 
         Console.ForegroundColor = ConsoleColor.White;

@@ -5,11 +5,12 @@ namespace PluginManager.UX.Linux;
 
 internal class KDE : IOutputModel
 {
+    internal string KdeDialogApplication { get; } = "kdialog";
 
     public async Task ShowMessageBox(string title, string message, MessageBoxType type)
     {
         var process = new Process();
-        process.StartInfo.FileName = "kdialog";
+        process.StartInfo.FileName = KdeDialogApplication;
         
         string typeStr = type switch
         {
@@ -27,9 +28,10 @@ internal class KDE : IOutputModel
     public async Task<string> ShowInputBox(string title, string message)
     {
         var process = new Process();
-        process.StartInfo.FileName = "kdialog";
+        process.StartInfo.FileName = KdeDialogApplication;
         process.StartInfo.Arguments = $"--title \"{title}\" --inputbox \"{message}\"";
         process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardInput = true;
         process.Start();
         
         await process.WaitForExitAsync();
@@ -39,7 +41,7 @@ internal class KDE : IOutputModel
     public async Task ShowMessageBox(string message)
     {
         var process = new Process();
-        process.StartInfo.FileName = "kdialog";
+        process.StartInfo.FileName = KdeDialogApplication;
         process.StartInfo.Arguments = $"--msgbox \"{message}\"";
         process.Start();
         await process.WaitForExitAsync();
@@ -48,7 +50,7 @@ internal class KDE : IOutputModel
     public async Task<int> ShowMessageBox(string title, string message, MessageBoxButtons buttons, bool isWarning)
     {
         var process = new Process();
-        process.StartInfo.FileName = "kdialog";
+        process.StartInfo.FileName = KdeDialogApplication;
         
         string buttonsStr = buttons switch
         {
@@ -67,7 +69,7 @@ internal class KDE : IOutputModel
     public async Task ShowNotification(string title, string message, int timeout_seconds = 5)
     {
         var process = new Process();
-        process.StartInfo.FileName = "kdialog";
+        process.StartInfo.FileName = KdeDialogApplication;
         process.StartInfo.Arguments = $"--title \"{title}\" --passivepopup \"{message}\" {timeout_seconds}";
         process.Start();
         await process.WaitForExitAsync();

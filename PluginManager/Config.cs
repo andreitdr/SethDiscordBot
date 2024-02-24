@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Controls.Notifications;
 using PluginManager.Bot;
 using PluginManager.Others;
 using PluginManager.Others.Logger;

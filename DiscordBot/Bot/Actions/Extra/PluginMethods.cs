@@ -151,9 +151,7 @@ internal static class PluginMethods
                              }
                          );
 
-
-
-
+        
         await RefreshPlugins(false);
     }
 
