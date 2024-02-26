@@ -30,6 +30,8 @@ public class Config
         AppSettings = new SettingsDictionary<string, string>("./Data/Resources/config.json");
 
         AppSettings["LogFolder"] = "./Data/Logs";
+        AppSettings["PluginFolder"] = "./Data/Plugins";
+        AppSettings["ArchiveFolder"] = "./Data/Archives";
 
         if (OperatingSystem.IsLinux())
         {

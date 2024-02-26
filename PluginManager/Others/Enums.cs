@@ -1,4 +1,6 @@
-﻿namespace PluginManager.Others;
+﻿using System;
+
+namespace PluginManager.Others;
 
 /// <summary>
 ///     The output log type
@@ -27,4 +29,13 @@ public enum InternalActionRunType
 {
     ON_STARTUP,
     ON_CALL
+}
+
+[Flags]
+public enum OSType : byte
+{
+    NONE = 0,
+    WINDOWS = 1 << 0,
+    LINUX = 2 << 1,
+    MACOSX = 3 << 2,
 }

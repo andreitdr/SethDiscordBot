@@ -10,6 +10,7 @@ using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
+using PluginManager.Plugin;
 using Spectre.Console;
 
 namespace DiscordBot.Bot.Actions.Extra;
@@ -18,10 +19,10 @@ internal static class PluginMethods
 {
     internal static async Task List(PluginsManager manager)
     {
-        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetAvailablePlugins(), "Loading plugins...");
+        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Loading plugins...");
 
-        TableData tableData = new(new List<string> { "Name", "Description", "Type", "Version" });
-        foreach (var plugin in data) tableData.AddRow(plugin);
+        TableData tableData = new(new List<string> { "Name", "Description", "Version", "Has Dependencies" });
+        foreach (var plugin in data) tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), plugin.HasDependencies ? "Yes" : "No"]);
 
         tableData.HasRoundBorders = false;
         tableData.PrintAsTable();
@@ -35,16 +36,14 @@ internal static class PluginMethods
 
     internal static async Task DownloadPlugin(PluginsManager manager, string pluginName)
     {
-        var pluginData = await manager.GetPluginLinkByName(pluginName);
-        if (pluginData.Length == 0)
+        var pluginData = await manager.GetPluginDataByName(pluginName);
+        if (pluginData is null)
         {
             Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
             return;
         }
-
-        var pluginType         = pluginData[0];
-        var pluginLink         = pluginData[1];
-        var pluginRequirements = pluginData[2];
+        
+        var pluginLink = pluginData.DownLoadLink;
 
 
         await AnsiConsole.Progress()
@@ -61,7 +60,7 @@ internal static class PluginMethods
 
                                  IProgress<float> progress = new Progress<float>(p => { downloadTask.Value = p; });
 
-                                 await ServerCom.DownloadFileAsync(pluginLink, $"./Data/{pluginType}s/{pluginName}.dll", progress);
+                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Config.AppSettings["PluginFolder"]}/{pluginName}.dll", progress);
 
                                  downloadTask.Increment(100);
 
@@ -69,32 +68,13 @@ internal static class PluginMethods
                              }
                          );
 
-        if (pluginRequirements == string.Empty)
+        if (!pluginData.HasDependencies)
         {
             Console.WriteLine("Finished installing " + pluginName + " successfully");
             await RefreshPlugins(false);
             return;
         }
-
-        List<string> requirementsUrLs = new();
-
-        await AnsiConsole.Progress()
-                         .Columns(new ProgressColumn[]
-                             {
-                                 new TaskDescriptionColumn(),
-                                 new ProgressBarColumn(),
-                                 new PercentageColumn()
-                             }
-                         )
-                         .StartAsync(async ctx =>
-                             {
-                                 var gatherInformationTask = ctx.AddTask("Gathering info...");
-                                 gatherInformationTask.IsIndeterminate = true;
-                                 requirementsUrLs                      = await ServerCom.ReadTextFromURL(pluginRequirements);
-
-                                 gatherInformationTask.Increment(100);
-                             }
-                         );
+        
         List<Tuple<ProgressTask, IProgress<float>, string, string>> downloadTasks = new();
         await AnsiConsole.Progress()
                          .Columns(new ProgressColumn[]
@@ -108,14 +88,9 @@ internal static class PluginMethods
                              {
 
 
-                                 foreach (var info in requirementsUrLs)
+                                 foreach (OnlineDependencyInfo dependency in pluginData.Dependencies)
                                  {
-                                     if (info.Length < 2) continue;
-                                     string[] data     = info.Split(',');
-                                     string   url      = data[0];
-                                     string   fileName = data[1];
-
-                                     var task = ctx.AddTask($"Downloading {fileName}: ");
+                                     var task = ctx.AddTask($"Downloading {dependency.DownloadLocation}: ");
                                      IProgress<float> progress = new Progress<float>(p =>
                                          {
                                              task.Value = p;
@@ -123,7 +98,7 @@ internal static class PluginMethods
                                      );
 
                                      task.IsIndeterminate = true;
-                                     downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, url, fileName));
+                                     downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, dependency.DownloadLink, dependency.DownloadLocation));
                                  }
 
                                  if (!int.TryParse(Config.AppSettings["MaxParallelDownloads"], out int maxParallelDownloads))

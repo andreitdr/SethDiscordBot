@@ -21,6 +21,17 @@ public static class ServerCom
         var lines    = response.Split('\n');
         return lines.ToList();
     }
+    
+    /// <summary>
+    ///     Get all text from a file async
+    /// </summary>
+    /// <param name="link">The link of the file</param>
+    /// <returns></returns>
+    public static async Task<string> GetAllTextFromUrl(string link)
+    {
+        var response = await OnlineFunctions.DownloadStringAsync(link);
+        return response;
+    }
 
     /// <summary>
     ///     Download file from url
