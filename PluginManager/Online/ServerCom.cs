@@ -21,7 +21,7 @@ public static class ServerCom
         var lines    = response.Split('\n');
         return lines.ToList();
     }
-    
+
     /// <summary>
     ///     Get all text from a file async
     /// </summary>

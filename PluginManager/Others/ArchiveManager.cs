@@ -13,7 +13,7 @@ public static class ArchiveManager
 
     public static void Initialize()
     {
-        if (IsInitialized) 
+        if (IsInitialized)
             throw new Exception("ArchiveManager is already initialized");
 
         if (!Config.AppSettings.ContainsKey("ArchiveFolder"))
@@ -89,7 +89,7 @@ public static class ArchiveManager
         }
         catch (Exception ex)
         {
-            Config.Logger.Log(message: ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR); // Write the error to a file
+            Config.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.ERROR); // Write the error to a file
             await Task.Delay(100);
             return await ReadFromPakAsync(fileName, archFile);
         }
@@ -126,7 +126,7 @@ public static class ArchiveManager
                     }
                     catch (Exception ex)
                     {
-                        Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
+                        Config.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.ERROR);
                     }
 
                 currentZipFile++;
@@ -158,7 +158,7 @@ public static class ArchiveManager
                 }
                 catch (Exception ex)
                 {
-                    Config.Logger.Log(ex.Message, source: typeof(ArchiveManager), type: LogType.ERROR);
+                    Config.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.ERROR);
                 }
 
                 await Task.Delay(10);

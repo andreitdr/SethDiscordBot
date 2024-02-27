@@ -25,9 +25,9 @@ internal class CommandHandler
     /// <param name="botPrefix">The prefix to watch for</param>
     public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
     {
-        this._client         = client;
-        this._commandService = commandService;
-        this._botPrefix      = botPrefix;
+        _client         = client;
+        _commandService = commandService;
+        _botPrefix      = botPrefix;
     }
 
     /// <summary>
@@ -103,12 +103,10 @@ internal class CommandHandler
                                      .FirstOrDefault(plug => plug.Command ==
                                                              message.Content.Substring(mentionPrefix.Length + 1)
                                                                     .Split(' ')[0] ||
-                                                             (
-                                                                 plug.Aliases is not null &&
-                                                                 plug.Aliases.Contains(message.CleanContent
-                                                                                              .Substring(mentionPrefix.Length + 1)
-                                                                                              .Split(' ')[0]
-                                                                 )
+                                                             plug.Aliases is not null &&
+                                                             plug.Aliases.Contains(message.CleanContent
+                                                                                          .Substring(mentionPrefix.Length + 1)
+                                                                                          .Split(' ')[0]
                                                              )
                                      );
 
@@ -120,11 +118,11 @@ internal class CommandHandler
                 plugin = PluginLoader.Commands!
                                      .FirstOrDefault(p => p.Command ==
                                                           message.Content.Split(' ')[0].Substring(_botPrefix.Length) ||
-                                                          (p.Aliases is not null &&
-                                                           p.Aliases.Contains(
-                                                               message.Content.Split(' ')[0]
-                                                                      .Substring(_botPrefix.Length)
-                                                           ))
+                                                          p.Aliases is not null &&
+                                                          p.Aliases.Contains(
+                                                              message.Content.Split(' ')[0]
+                                                                     .Substring(_botPrefix.Length)
+                                                          )
                                      );
                 cleanMessage = message.Content.Substring(_botPrefix.Length);
             }
@@ -144,9 +142,9 @@ internal class CommandHandler
             DbCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
 
             Config.Logger.Log(
-                message: $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
-                source: typeof(CommandHandler),
-                type: LogType.INFO
+                $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
+                typeof(CommandHandler),
+                LogType.INFO
             );
 
             if (context.Channel is SocketDMChannel)

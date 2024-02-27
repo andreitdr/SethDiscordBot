@@ -3,7 +3,7 @@ using PluginManager.Interfaces.Updater;
 
 namespace PluginManager.Online.Helpers;
 
-public class PluginVersion : Version
+public class PluginVersion: Version
 {
     [JsonConstructor]
     public PluginVersion(int major, int minor, int patch): base(major, minor, patch)

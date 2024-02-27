@@ -32,10 +32,18 @@ public enum InternalActionRunType
 }
 
 [Flags]
-public enum OSType : byte
+public enum OSType: byte
 {
-    NONE = 0,
+    NONE    = 0,
     WINDOWS = 1 << 0,
-    LINUX = 2 << 1,
-    MACOSX = 3 << 2,
+    LINUX   = 2 << 1,
+    MACOSX  = 3 << 2
+}
+
+public enum PluginType
+{
+    UNKNOWN,
+    COMMAND,
+    EVENT,
+    SLASH_COMMAND
 }

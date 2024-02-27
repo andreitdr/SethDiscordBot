@@ -6,13 +6,15 @@ using PluginManager.Plugin;
 
 if (args.Length == 1)
 {
-    PluginOnlineInfo? result = await JsonManager.ConvertFromJson<PluginOnlineInfo>(args[0]);
+    var result = await JsonManager.ConvertFromJson<PluginOnlineInfo>(args[0]);
     // print all rows
     Console.WriteLine($"Name: {result.Name}");
     Console.WriteLine($"Version: {result.Version.ToShortString()}");
     Console.WriteLine($"Description: {result.Description}");
     Console.WriteLine($"Download link: {result.DownLoadLink}");
-    Console.WriteLine($"Supported OS: {((result.SupportedOS & OSType.WINDOWS) != 0 ? "Windows" : "")} {((result.SupportedOS & OSType.LINUX) != 0 ? "Linux" : "")} {((result.SupportedOS & OSType.MACOSX) != 0 ? "MacOSX" : "")}");
+    Console.WriteLine(
+        $"Supported OS: {((result.SupportedOS & OSType.WINDOWS) != 0 ? "Windows" : "")} {((result.SupportedOS & OSType.LINUX) != 0 ? "Linux" : "")} {((result.SupportedOS & OSType.MACOSX) != 0 ? "MacOSX" : "")}"
+    );
     Console.WriteLine($"Has dependencies: {result.HasDependencies}");
     Console.WriteLine($"Dependencies: {result.Dependencies.Count}");
 

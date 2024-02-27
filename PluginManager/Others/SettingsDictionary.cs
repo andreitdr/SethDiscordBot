@@ -33,7 +33,7 @@ public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
             {
                 if (File.Exists(_file))
                 {
-                    string FileContent = File.ReadAllText(_file);
+                    var FileContent = File.ReadAllText(_file);
                     if (string.IsNullOrEmpty(FileContent))
                         File.WriteAllText(_file, "{}");
 
@@ -66,62 +66,62 @@ public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
 
     public void Add(KeyValuePair<TKey, TValue> item)
     {
-        this._dictionary!.Add(item);
+        _dictionary!.Add(item);
     }
 
     public void Clear()
     {
-        this._dictionary!.Clear();
+        _dictionary!.Clear();
     }
 
     public bool Contains(KeyValuePair<TKey, TValue> item)
     {
-        return this._dictionary!.Contains(item);
+        return _dictionary!.Contains(item);
     }
 
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        this._dictionary!.CopyTo(array, arrayIndex);
+        _dictionary!.CopyTo(array, arrayIndex);
     }
 
     public bool Remove(KeyValuePair<TKey, TValue> item)
     {
-        return this._dictionary!.Remove(item);
+        return _dictionary!.Remove(item);
     }
 
     public int Count => _dictionary!.Count;
     public bool IsReadOnly => _dictionary!.IsReadOnly;
     public void Add(TKey key, TValue value)
     {
-        this._dictionary!.Add(key, value);
+        _dictionary!.Add(key, value);
     }
 
     public bool ContainsKey(TKey key)
     {
-        return this._dictionary!.ContainsKey(key);
+        return _dictionary!.ContainsKey(key);
     }
 
     public bool Remove(TKey key)
     {
-        return this._dictionary!.Remove(key);
+        return _dictionary!.Remove(key);
     }
 
     public bool TryGetValue(TKey key, out TValue value)
     {
-        return this._dictionary!.TryGetValue(key, out value);
+        return _dictionary!.TryGetValue(key, out value);
     }
 
     public TValue this[TKey key]
     {
         get
         {
-            if (this._dictionary!.ContainsKey(key))
-                if (this._dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
-                    return this._dictionary[key];
+            if (_dictionary!.ContainsKey(key))
+                if (_dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
+                    return _dictionary[key];
 
             return default!;
         }
-        set => this._dictionary![key] = value;
+        set => _dictionary![key] = value;
     }
 
     public ICollection<TKey> Keys => _dictionary!.Keys;

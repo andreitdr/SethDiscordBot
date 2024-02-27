@@ -43,9 +43,7 @@ public static class ConsoleUtilities
                          .Columns(
                              new ProgressColumn[]
                              {
-                                 new TaskDescriptionColumn(),
-                                 new ProgressBarColumn(),
-                                 new PercentageColumn(),
+                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
                              }
                          )
                          .StartAsync(
@@ -67,9 +65,7 @@ public static class ConsoleUtilities
         await AnsiConsole.Progress()
                          .Columns(new ProgressColumn[]
                              {
-                                 new TaskDescriptionColumn(),
-                                 new ProgressBarColumn(),
-                                 new PercentageColumn(),
+                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
                              }
                          )
                          .StartAsync(async ctx =>
@@ -85,11 +81,21 @@ public static class ConsoleUtilities
 
     private static readonly Dictionary<char, ConsoleColor> Colors = new()
     {
-        { 'g', ConsoleColor.Green },
-        { 'b', ConsoleColor.Blue },
-        { 'r', ConsoleColor.Red },
-        { 'm', ConsoleColor.Magenta },
-        { 'y', ConsoleColor.Yellow }
+        {
+            'g', ConsoleColor.Green
+        },
+        {
+            'b', ConsoleColor.Blue
+        },
+        {
+            'r', ConsoleColor.Red
+        },
+        {
+            'm', ConsoleColor.Magenta
+        },
+        {
+            'y', ConsoleColor.Yellow
+        }
     };
 
     private static readonly char ColorPrefix = '&';
@@ -310,7 +316,10 @@ public static class ConsoleUtilities
 
         public Spinner()
         {
-            Sequence = new[] { "|", "/", "-", "\\" };
+            Sequence = new[]
+            {
+                "|", "/", "-", "\\"
+            };
             position = 0;
         }
 

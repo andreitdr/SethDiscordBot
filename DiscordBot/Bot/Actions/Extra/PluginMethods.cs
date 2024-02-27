@@ -21,7 +21,14 @@ internal static class PluginMethods
     {
         var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Loading plugins...");
 
-        TableData tableData = new(new List<string> { "Name", "Description", "Version", "Has Dependencies" });
+        TableData tableData = new(new List<string>
+            {
+                "Name",
+                "Description",
+                "Version",
+                "Has Dependencies"
+            }
+        );
         foreach (var plugin in data) tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), plugin.HasDependencies ? "Yes" : "No"]);
 
         tableData.HasRoundBorders = false;
@@ -42,16 +49,14 @@ internal static class PluginMethods
             Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
             return;
         }
-        
+
         var pluginLink = pluginData.DownLoadLink;
 
 
         await AnsiConsole.Progress()
                          .Columns(new ProgressColumn[]
                              {
-                                 new TaskDescriptionColumn(),
-                                 new ProgressBarColumn(),
-                                 new PercentageColumn()
+                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
                              }
                          )
                          .StartAsync(async ctx =>
@@ -74,21 +79,19 @@ internal static class PluginMethods
             await RefreshPlugins(false);
             return;
         }
-        
+
         List<Tuple<ProgressTask, IProgress<float>, string, string>> downloadTasks = new();
         await AnsiConsole.Progress()
                          .Columns(new ProgressColumn[]
                              {
-                                 new TaskDescriptionColumn(),
-                                 new ProgressBarColumn(),
-                                 new PercentageColumn()
+                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
                              }
                          )
                          .StartAsync(async ctx =>
                              {
 
 
-                                 foreach (OnlineDependencyInfo dependency in pluginData.Dependencies)
+                                 foreach (var dependency in pluginData.Dependencies)
                                  {
                                      var task = ctx.AddTask($"Downloading {dependency.DownloadLocation}: ");
                                      IProgress<float> progress = new Progress<float>(p =>
@@ -101,7 +104,7 @@ internal static class PluginMethods
                                      downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, dependency.DownloadLink, dependency.DownloadLocation));
                                  }
 
-                                 if (!int.TryParse(Config.AppSettings["MaxParallelDownloads"], out int maxParallelDownloads))
+                                 if (!int.TryParse(Config.AppSettings["MaxParallelDownloads"], out var maxParallelDownloads))
                                  {
                                      maxParallelDownloads = 5;
                                      Config.AppSettings.Add("MaxParallelDownloads", "5");
@@ -126,7 +129,7 @@ internal static class PluginMethods
                              }
                          );
 
-        
+
         await RefreshPlugins(false);
     }
 
@@ -135,74 +138,66 @@ internal static class PluginMethods
         var loader = new PluginLoader(Config.DiscordBot.client);
         if (args.Length == 2 && args[1] == "-q")
         {
-            loader.LoadPlugins();
+            await loader.LoadPlugins();
             return true;
         }
 
         var cc = Console.ForegroundColor;
-        loader.onCMDLoad += (name, typeName, success, exception) =>
+        loader.OnCommandLoaded += (data) =>
         {
-            if (name == null || name.Length < 2)
-                name = typeName;
-            if (success)
+            if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded command : " + name, source: typeof(ICommandAction),
-                    type: LogType.INFO
+                Config.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
+                    LogType.INFO
                 );
             }
 
             else
             {
-                Config.Logger.Log("Failed to load command : " + name + " because " + exception?.Message,
-                    source: typeof(ICommandAction), type: LogType.ERROR
+                Config.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
+                    typeof(ICommandAction), LogType.ERROR
                 );
             }
 
             Console.ForegroundColor = cc;
         };
-        loader.onEVELoad += (name, typeName, success, exception) =>
+        loader.OnEventLoaded += (data) =>
         {
-            if (name == null || name.Length < 2)
-                name = typeName;
-
-            if (success)
+            if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded event : " + name, source: typeof(ICommandAction),
-                    type: LogType.INFO
+                Config.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
+                    LogType.INFO
                 );
             }
             else
             {
-                Config.Logger.Log("Failed to load event : " + name + " because " + exception?.Message,
-                    source: typeof(ICommandAction), type: LogType.ERROR
+                Config.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
+                    typeof(ICommandAction), LogType.ERROR
                 );
             }
 
             Console.ForegroundColor = cc;
         };
 
-        loader.onSLSHLoad += (name, typeName, success, exception) =>
+        loader.OnSlashCommandLoaded += (data) =>
         {
-            if (name == null || name.Length < 2)
-                name = typeName;
-
-            if (success)
+            if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded slash command : " + name, source: typeof(ICommandAction),
-                    type: LogType.INFO
+                Config.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
+                    LogType.INFO
                 );
             }
             else
             {
-                Config.Logger.Log("Failed to load slash command : " + name + " because " + exception?.Message,
-                    source: typeof(ICommandAction), type: LogType.ERROR
+                Config.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
+                    typeof(ICommandAction), LogType.ERROR
                 );
             }
 
             Console.ForegroundColor = cc;
         };
 
-        loader.LoadPlugins();
+        await loader.LoadPlugins();
         Console.ForegroundColor = cc;
         return true;
     }

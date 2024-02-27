@@ -2,7 +2,7 @@ using System;
 
 namespace PluginManager.Interfaces.Updater;
 
-public abstract class Version : IVersion
+public abstract class Version: IVersion
 {
     public int Major { get; }
     public int Minor { get; }
@@ -12,34 +12,34 @@ public abstract class Version : IVersion
 
     protected Version(int major, int minor, int patch)
     {
-        this.Major = major;
-        this.Minor = minor;
-        this.Patch = patch;
+        Major = major;
+        Minor = minor;
+        Patch = patch;
     }
 
     protected Version(string versionAsString)
     {
         string[] versionParts = versionAsString.Split(_Separator);
-        
+
         if (versionParts.Length != 3)
         {
             throw new ArgumentException("Invalid version string");
         }
-        
-        this.Major = int.Parse(versionParts[0]);
-        this.Minor = int.Parse(versionParts[1]);
-        this.Patch = int.Parse(versionParts[2]);
+
+        Major = int.Parse(versionParts[0]);
+        Minor = int.Parse(versionParts[1]);
+        Patch = int.Parse(versionParts[2]);
     }
-    
+
     public bool IsNewerThan(IVersion version)
     {
-        if (this.Major > version.Major)
+        if (Major > version.Major)
             return true;
 
-        if (this.Major == version.Major && this.Minor > version.Minor)
+        if (Major == version.Major && Minor > version.Minor)
             return true;
 
-        if (this.Major == version.Major && this.Minor == version.Minor && this.Patch > version.Patch)
+        if (Major == version.Major && Minor == version.Minor && Patch > version.Patch)
             return true;
 
         return false;
@@ -47,13 +47,13 @@ public abstract class Version : IVersion
 
     public bool IsOlderThan(IVersion version)
     {
-        if (this.Major < version.Major)
+        if (Major < version.Major)
             return true;
 
-        if (this.Major == version.Major && this.Minor < version.Minor)
+        if (Major == version.Major && Minor < version.Minor)
             return true;
 
-        if (this.Major == version.Major && this.Minor == version.Minor && this.Patch < version.Patch)
+        if (Major == version.Major && Minor == version.Minor && Patch < version.Patch)
             return true;
 
         return false;
@@ -61,9 +61,9 @@ public abstract class Version : IVersion
 
     public bool IsEqualTo(IVersion version)
     {
-        return this.Major == version.Major && this.Minor == version.Minor && this.Patch == version.Patch;
+        return Major == version.Major && Minor == version.Minor && Patch == version.Patch;
     }
-    
+
     public string ToShortString()
     {
         return $"{Major}.{Minor}.{Patch}";

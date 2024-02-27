@@ -106,7 +106,7 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.AppSettings.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", source: typeof(Boot), type: LogType.CRITICAL);
+            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", typeof(Boot), LogType.CRITICAL);
             await Config.AppSettings.SaveToFile();
             await Task.Delay(4000);
             Environment.Exit(0);
@@ -115,7 +115,7 @@ public class Boot
 
     private async Task Client_LoggedOut()
     {
-        Config.Logger.Log("Successfully Logged Out", source: typeof(Boot));
+        Config.Logger.Log("Successfully Logged Out", typeof(Boot));
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
     }
 
@@ -128,7 +128,7 @@ public class Boot
 
     private Task LoggedIn()
     {
-        Config.Logger.Log("Successfully Logged In", source: typeof(Boot));
+        Config.Logger.Log("Successfully Logged In", typeof(Boot));
         return Task.CompletedTask;
     }
 
@@ -138,12 +138,12 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.ERROR);
+                Config.Logger.Log(message.Message, typeof(Boot), LogType.ERROR);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.INFO);
+                Config.Logger.Log(message.Message, typeof(Boot), LogType.INFO);
 
 
                 break;

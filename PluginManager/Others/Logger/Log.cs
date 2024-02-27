@@ -43,9 +43,15 @@ public class Log: ILog
         ThrowTime = DateTime.Now;
     }
 
-    public static implicit operator Log(string message) => new(message);
+    public static implicit operator Log(string message)
+    {
+        return new Log(message);
+    }
 
-    public static implicit operator string(Log log) => $"[{log.ThrowTime}] {log.Message}";
+    public static implicit operator string(Log log)
+    {
+        return $"[{log.ThrowTime}] {log.Message}";
+    }
 
     public string AsLongString()
     {

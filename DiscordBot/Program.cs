@@ -69,7 +69,7 @@ public class Program
 
         ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
 
-        ConsoleUtilities.WriteColorText($"Running on &m{(System.OperatingSystem.IsWindows() ? "Windows" : "Linux")}");
+        ConsoleUtilities.WriteColorText($"Running on &m{(OperatingSystem.IsWindows() ? "Windows" : "Linux")}");
         Console.WriteLine("============================ LOG ============================");
 
         Console.ForegroundColor = ConsoleColor.White;
@@ -82,7 +82,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Logger.Log(ex.ToString(), source: typeof(Program), type: LogType.CRITICAL);
+            Logger.Log(ex.ToString(), typeof(Program), LogType.CRITICAL);
         }
     }
 
@@ -102,12 +102,13 @@ public class Program
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
                 UxHandler.ShowMessageBox("SethBot", "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", MessageBoxType.Error).Wait();
-                
-                
+                                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", MessageBoxType.Error
+                ).Wait();
+
+
                 Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
                            "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
-                    source: typeof(Program), type: LogType.ERROR
+                    typeof(Program), LogType.ERROR
                 );
             }
         }
@@ -119,7 +120,7 @@ public class Program
 
         Logger.OnLog += (sender, logMessage) =>
         {
-            string messageColor = logMessage.Type switch
+            var messageColor = logMessage.Type switch
             {
                 LogType.INFO     => "[green]",
                 LogType.WARNING  => "[yellow]",

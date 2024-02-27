@@ -544,8 +544,10 @@ public class SqlDatabase
     /// </summary>
     /// <param name="parameterValues">The parameter raw inputs. The Key is name and the Value is the value of the parameter</param>
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
-    private SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues) =>
-        CreateParameter(parameterValues.Key, parameterValues.Value);
+    private SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues)
+    {
+        return CreateParameter(parameterValues.Key, parameterValues.Value);
+    }
 
     /// <summary>
     /// Execute a query with parameters

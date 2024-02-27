@@ -29,8 +29,8 @@ public class Config
 
         AppSettings = new SettingsDictionary<string, string>("./Data/Resources/config.json");
 
-        AppSettings["LogFolder"] = "./Data/Logs";
-        AppSettings["PluginFolder"] = "./Data/Plugins";
+        AppSettings["LogFolder"]     = "./Data/Logs";
+        AppSettings["PluginFolder"]  = "./Data/Plugins";
         AppSettings["ArchiveFolder"] = "./Data/Archives";
 
         if (OperatingSystem.IsLinux())
@@ -42,21 +42,22 @@ public class Config
                 "GNOME" => "GNOME",
                 _       => "CONSOLE"
             };
-        } else AppSettings["UI"] = "CONSOLE";
+        }
+        else AppSettings["UI"] = "CONSOLE";
 
         Logger = new Logger(false, true,
             AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log"
         );
 
         ArchiveManager.Initialize();
-        
+
         UX.UxHandler.Init();
         _isLoaded = true;
-        
-        
-        Logger.Log(message: "Config initialized", source: typeof(Config));
-        
-        
+
+
+        Logger.Log("Config initialized", typeof(Config));
+
+
     }
 
 }

@@ -34,7 +34,7 @@ public class Plugin: ICommandAction
             return;
         }
 
-        PluginsManager manager =
+        var manager =
 #if !DEBUG
             new PluginsManager("releases");
 #else
@@ -54,13 +54,13 @@ public class Plugin: ICommandAction
             case "load":
                 if (pluginsLoaded)
                 {
-                    Config.Logger.Log("Plugins already loaded", source: typeof(ICommandAction), type: LogType.WARNING);
+                    Config.Logger.Log("Plugins already loaded", typeof(ICommandAction), LogType.WARNING);
                     break;
                 }
 
                 if (Config.DiscordBot is null)
                 {
-                    Config.Logger.Log("DiscordBot is null", source: typeof(ICommandAction), type: LogType.WARNING);
+                    Config.Logger.Log("DiscordBot is null", typeof(ICommandAction), LogType.WARNING);
                     break;
                 }
 

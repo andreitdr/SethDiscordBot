@@ -40,15 +40,15 @@ public class Help: DBSlashCommand
 
         if (options.Count > 0)
         {
-            var commandName  = options.First().Name;
-            var slashCommand = slashCommands.FirstOrDefault(x => x.Name == commandName);
+            var commandName  = options.First().Value;
+            var slashCommand = slashCommands.FirstOrDefault(x => x.Name.TrimEnd() == commandName.ToString());
             if (slashCommand is null)
             {
                 await context.RespondAsync("Unknown Command " + commandName);
                 return;
             }
 
-            embedBuilder.AddField(slashCommand.Name, slashCommand.canUseDM)
+            embedBuilder.AddField("DM Usable:", slashCommand.canUseDM, true)
                         .WithDescription(slashCommand.Description);
         }
 

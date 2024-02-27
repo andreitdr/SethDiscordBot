@@ -13,17 +13,19 @@ public enum MessageBoxButtons
 {
     YesNo,
     YesNoCancel,
-    ContinueCancel,
+    ContinueCancel
 }
 
 internal interface IOutputModel
 {
-    
+
     internal Task ShowMessageBox(string title, string message, MessageBoxType type);
+
     internal Task<string> ShowInputBox(string title, string message);
 
     internal Task ShowMessageBox(string message);
+
     internal Task<int> ShowMessageBox(string title, string message, MessageBoxButtons buttons, bool isWarning);
-    
+
     internal Task ShowNotification(string title, string message, int timeout_seconds = 5);
 }

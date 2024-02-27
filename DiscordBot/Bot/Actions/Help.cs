@@ -23,15 +23,32 @@ public class Help: ICommandAction
         {
             var items = new List<string[]>
             {
-                new[] { "-", "-", "-" },
-                new[] { "Command", "Usage", "Description" },
-                new[] { "-", "-", "-" }
+                new[]
+                {
+                    "-", "-", "-"
+                },
+                new[]
+                {
+                    "Command", "Usage", "Description"
+                },
+                new[]
+                {
+                    "-", "-", "-"
+                }
             };
 
             foreach (var a in Program.internalActionManager.Actions)
-                items.Add(new[] { a.Key, a.Value.Usage, a.Value.Description });
+                items.Add(new[]
+                    {
+                        a.Key, a.Value.Usage, a.Value.Description
+                    }
+                );
 
-            items.Add(new[] { "-", "-", "-" });
+            items.Add(new[]
+                {
+                    "-", "-", "-"
+                }
+            );
 
             ConsoleUtilities.FormatAndAlignTable(items,
                 TableFormat.CENTER_EACH_COLUMN_BASED
@@ -48,11 +65,26 @@ public class Help: ICommandAction
         var action = Program.internalActionManager.Actions[args[0]];
         var actionData = new List<string[]>
         {
-            new[] { "-", "-", "-" },
-            new[] { "Command", "Usage", "Description" },
-            new[] { "-", "-", "-" },
-            new[] { action.ActionName, action.Usage, action.Description },
-            new[] { "-", "-", "-" }
+            new[]
+            {
+                "-", "-", "-"
+            },
+            new[]
+            {
+                "Command", "Usage", "Description"
+            },
+            new[]
+            {
+                "-", "-", "-"
+            },
+            new[]
+            {
+                action.ActionName, action.Usage, action.Description
+            },
+            new[]
+            {
+                "-", "-", "-"
+            }
         };
 
         ConsoleUtilities.FormatAndAlignTable(actionData,

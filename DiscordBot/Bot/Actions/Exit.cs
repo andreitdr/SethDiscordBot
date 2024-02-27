@@ -17,7 +17,7 @@ public class Exit: ICommandAction
     {
         if (args is null || args.Length == 0)
         {
-            Config.Logger.Log("Exiting...", source: typeof(ICommandAction), type: LogType.WARNING);
+            Config.Logger.Log("Exiting...", typeof(ICommandAction), LogType.WARNING);
             await Config.AppSettings.SaveToFile();
             Environment.Exit(0);
         }
@@ -33,7 +33,7 @@ public class Exit: ICommandAction
 
                 case "-f":
                 case "force":
-                    Config.Logger.Log("Exiting (FORCE)...", source: typeof(ICommandAction), type: LogType.WARNING);
+                    Config.Logger.Log("Exiting (FORCE)...", typeof(ICommandAction), LogType.WARNING);
                     Environment.Exit(0);
                     break;
 
