@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using PluginManager.Bot;
+using PluginManager.Online;
 using PluginManager.Others;
 using PluginManager.Others.Logger;
+using PluginManager.Plugin;
 using OperatingSystem = System.OperatingSystem;
 
 namespace PluginManager;
@@ -13,6 +16,8 @@ public class Config
     private static bool                               _isLoaded;
     public static  Logger                             Logger;
     public static  SettingsDictionary<string, string> AppSettings;
+
+    public static PluginsManager PluginsManager;
 
     internal static Boot? DiscordBotClient;
 
@@ -32,6 +37,14 @@ public class Config
         AppSettings["LogFolder"]     = "./Data/Logs";
         AppSettings["PluginFolder"]  = "./Data/Plugins";
         AppSettings["ArchiveFolder"] = "./Data/Archives";
+        
+        AppSettings["PluginDatabase"] = "./Data/Resources/plugins.json";
+
+        if (!File.Exists(AppSettings["PluginDatabase"]))
+        {
+            List<PluginInfo> plugins = new();
+            await JsonManager.SaveToJsonFile(AppSettings["PluginDatabase"], plugins);
+        }
 
         if (OperatingSystem.IsLinux())
         {
@@ -54,9 +67,11 @@ public class Config
         UX.UxHandler.Init();
         _isLoaded = true;
 
+        PluginsManager = new PluginsManager("releases");
+
+        await PluginsManager.CheckForUpdates();
 
         Logger.Log("Config initialized", typeof(Config));
-
 
     }
 

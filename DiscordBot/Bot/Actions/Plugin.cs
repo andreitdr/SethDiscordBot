@@ -34,14 +34,6 @@ public class Plugin: ICommandAction
             return;
         }
 
-        var manager =
-#if !DEBUG
-            new PluginsManager("releases");
-#else
-            // new PluginsManager("tests");
-            new PluginsManager("releases");
-#endif
-
         switch (args[0])
         {
             case "refresh":
@@ -49,7 +41,7 @@ public class Plugin: ICommandAction
                 break;
 
             case "list":
-                await PluginMethods.List(manager);
+                await PluginMethods.List(Config.PluginsManager);
                 break;
             case "load":
                 if (pluginsLoaded)
@@ -81,7 +73,7 @@ public class Plugin: ICommandAction
                     }
                 }
 
-                await PluginMethods.DownloadPlugin(manager, pluginName);
+                await PluginMethods.DownloadPlugin(Config.PluginsManager, pluginName);
                 break;
         }
     }

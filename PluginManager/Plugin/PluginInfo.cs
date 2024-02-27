@@ -1,20 +1,21 @@
 using System.IO;
 using PluginManager.Interfaces.Updater;
+using PluginManager.Online.Helpers;
 
 namespace PluginManager.Plugin;
 
 public class PluginInfo
 {
     public string PluginName { get; private set; }
-    public IVersion PluginVersion { get; private set; }
-    public FileInfo FileData { get; private set; }
+    public PluginVersion PluginVersion { get; private set; }
+    public string FilePath { get; private set; }
 
-    public PluginInfo(string pluginName, IVersion pluginVersion)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion)
     {
         PluginName    = pluginName;
         PluginVersion = pluginVersion;
 
-        FileData = new FileInfo($"{Config.AppSettings["PluginFolder"]}/{pluginName}.dll");
+        FilePath = $"{Config.AppSettings["PluginFolder"]}/{pluginName}.dll";
     }
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)

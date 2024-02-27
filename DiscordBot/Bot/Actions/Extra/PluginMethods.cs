@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using DiscordBot.Utilities;
 using PluginManager;
@@ -10,7 +7,6 @@ using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
-using PluginManager.Plugin;
 using Spectre.Console;
 
 namespace DiscordBot.Bot.Actions.Extra;
@@ -75,6 +71,7 @@ internal static class PluginMethods
 
         if (!pluginData.HasDependencies)
         {
+            await manager.AppendPluginToDatabase(pluginName, pluginData.Version);
             Console.WriteLine("Finished installing " + pluginName + " successfully");
             await RefreshPlugins(false);
             return;
@@ -129,7 +126,7 @@ internal static class PluginMethods
                              }
                          );
 
-
+        await manager.AppendPluginToDatabase(pluginName, pluginData.Version);
         await RefreshPlugins(false);
     }
 
@@ -197,7 +194,7 @@ internal static class PluginMethods
             Console.ForegroundColor = cc;
         };
 
-        await loader.LoadPlugins();
+        await loader. LoadPlugins();
         Console.ForegroundColor = cc;
         return true;
     }

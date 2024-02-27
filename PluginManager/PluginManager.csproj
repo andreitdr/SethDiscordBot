@@ -25,4 +25,7 @@
             <HintPath>..\..\..\.nuget\packages\spectre.console\0.47.0\lib\net7.0\Spectre.Console.dll</HintPath>
         </Reference>
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Updater\Application\" />
+    </ItemGroup>
 </Project>

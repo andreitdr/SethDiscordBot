@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
 using PluginManager.Plugin;
+using PluginManager.Updater.Plugins;
 
 namespace PluginManager.Online;
 
@@ -57,6 +59,43 @@ public class PluginsManager
 
         return result;
     }
+    
+    public async Task RemovePluginFromDatabase(string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        
+        installedPlugins.RemoveAll(p => p.PluginName == pluginName);
+        await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
+    }
 
+    public async Task AppendPluginToDatabase(string pluginName, PluginVersion version)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        
+        installedPlugins.Add(new PluginInfo(pluginName, version));
+        await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
+    }
+    
+    public async Task<List<PluginInfo>> GetInstalledPlugins()
+    {
+        return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+    }
+
+    public async Task CheckForUpdates()
+    {
+        var pluginUpdater = new PluginUpdater(this);
+        
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        
+        foreach (var plugin in installedPlugins)
+        {
+            if (await pluginUpdater.HasUpdate(plugin.PluginName))
+            {
+                Console.WriteLine($"Updating {plugin.PluginName}...");
+                await pluginUpdater.UpdatePlugin(plugin.PluginName);
+            }
+        }
+    }
+    
 
 }

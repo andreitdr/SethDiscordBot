@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 using PluginManager.Others;
+using PluginManager.Updater.Plugins;
 
 namespace PluginManager.Loaders;
 
@@ -31,13 +32,12 @@ public class PluginLoader
 
     public async Task LoadPlugins()
     {
-
         Commands      = new List<DBCommand>();
         Events        = new List<DBEvent>();
         SlashCommands = new List<DBSlashCommand>();
 
         Config.Logger.Log("Loading plugins...", typeof(PluginLoader));
-
+        
         var loader = new Loader(Config.AppSettings["PluginFolder"], "dll");
 
         loader.OnFileLoadedException += FileLoadedException;

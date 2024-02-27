@@ -43,7 +43,7 @@ internal class Loader
             }
             catch
             {
-                OnFileLoadedException?.Invoke(new FileLoaderResult(file, "Failed to load file"));
+                OnFileLoadedException?.Invoke(new FileLoaderResult(file, $"Failed to load file {file}"));
             }
         }
 
