@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using PluginManager.Interfaces.Logger;
 
@@ -31,6 +32,7 @@ public sealed class Logger: ILogger
         IsEnabled       = true;
         LowestLogLevel  = lowestLogLevel;
         OutputFile      = null;
+
     }
 
     public event EventHandler<Log>? OnLog;

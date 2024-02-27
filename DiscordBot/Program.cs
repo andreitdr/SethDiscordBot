@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -94,7 +93,7 @@ public class Program
         await StartNoGui();
         try
         {
-            internalActionManager = new InternalActionManager("./Data/Plugins", "*.dll");
+            internalActionManager = new InternalActionManager(AppSettings["PluginFolder"], "*.dll");
             NoGUI();
         }
         catch (IOException ex)

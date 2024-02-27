@@ -23,6 +23,24 @@ public static class ArchiveManager
 
         IsInitialized = true;
     }
+    
+
+    public static async Task CreateFromFile(string file, string folder)
+    {
+        if(!IsInitialized) throw new Exception("ArchiveManager is not initialized");
+
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        var archiveName = folder + Path.GetFileNameWithoutExtension(file) + ".zip";
+        if (File.Exists(archiveName))
+            File.Delete(archiveName);
+
+        using(ZipArchive archive = ZipFile.Open(archiveName, ZipArchiveMode.Create))
+        {
+            archive.CreateEntryFromFile(file, Path.GetFileName(file));
+        }
+    }
 
     /// <summary>
     /// Read a file from a zip archive. The output is a byte array

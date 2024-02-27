@@ -40,6 +40,8 @@ public class Config
         
         AppSettings["PluginDatabase"] = "./Data/Resources/plugins.json";
 
+        ArchiveManager.Initialize();
+
         if (!File.Exists(AppSettings["PluginDatabase"]))
         {
             List<PluginInfo> plugins = new();
@@ -62,7 +64,7 @@ public class Config
             AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log"
         );
 
-        ArchiveManager.Initialize();
+        
 
         UX.UxHandler.Init();
         _isLoaded = true;
