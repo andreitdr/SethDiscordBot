@@ -7,7 +7,6 @@ using DiscordBot.Utilities;
 using PluginManager.Bot;
 using PluginManager.Others;
 using PluginManager.Others.Actions;
-using PluginManager.UX;
 using Spectre.Console;
 using static PluginManager.Config;
 
@@ -100,11 +99,6 @@ public class Program
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                UxHandler.ShowMessageBox("SethBot", "An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                                                    "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !", MessageBoxType.Error
-                ).Wait();
-
-
                 Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
                            "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
                     typeof(Program), LogType.ERROR
@@ -130,7 +124,6 @@ public class Program
 
             if (logMessage.Message.Contains('['))
             {
-                // If the message contains a tag, just print it as it is. No need to format it
                 Console.WriteLine(logMessage.Message);
                 return;
             }

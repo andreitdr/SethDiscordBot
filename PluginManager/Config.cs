@@ -7,15 +7,14 @@ using PluginManager.Online;
 using PluginManager.Others;
 using PluginManager.Others.Logger;
 using PluginManager.Plugin;
-using OperatingSystem = System.OperatingSystem;
 
 namespace PluginManager;
 
 public class Config
 {
-    private static bool                               _isLoaded;
-    public static  Logger                             Logger;
-    public static  SettingsDictionary<string, string> AppSettings;
+    private static bool _isLoaded;
+    public static Logger Logger;
+    public static SettingsDictionary<string, string> AppSettings;
 
     public static PluginsManager PluginsManager;
 
@@ -48,28 +47,14 @@ public class Config
             await JsonManager.SaveToJsonFile(AppSettings["PluginDatabase"], plugins);
         }
 
-        if (OperatingSystem.IsLinux())
-        {
-            var windowManager = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
-            AppSettings["UI"] = windowManager switch
-            {
-                "KDE"   => "KDE",
-                "GNOME" => "GNOME",
-                _       => "CONSOLE"
-            };
-        }
-        else AppSettings["UI"] = "CONSOLE";
-
-        Logger = new Logger(false, true,
-            AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log"
-        );
+        Logger = new Logger(false, true, AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log");
 
         
-
-        UX.UxHandler.Init();
         _isLoaded = true;
 
         PluginsManager = new PluginsManager("releases");
+
+        await PluginsManager.UninstallMarkedPlugins();
 
         await PluginsManager.CheckForUpdates();
 

@@ -40,6 +40,13 @@ public class Plugin: ICommandAction
                 await PluginMethods.RefreshPlugins(true);
                 break;
 
+            case "uninstall":
+                string plugName = string.Join(' ', args, 1, args.Length-1);
+                bool result = await Config.PluginsManager.MarkPluginToUninstall(plugName);
+                if(result)
+                    Console.WriteLine($"Marked to uninstall plugin {plugName}. Please restart the bot");
+                break;
+
             case "list":
                 await PluginMethods.List(Config.PluginsManager);
                 break;

@@ -4,7 +4,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Others;
-using PluginManager.UX;
+
 
 namespace PluginManager.Bot;
 
@@ -91,6 +91,7 @@ public class Boot
         while (!isReady) ;
     }
 
+    
     private void CommonTasks()
     {
         if (client == null) return;
@@ -122,7 +123,7 @@ public class Boot
     private Task Ready()
     {
         isReady = true;
-        UxHandler.ShowNotification("SethBot", "Seth Discord Bot is now up and running !").Wait();
+        // UxHandler.ShowNotification("SethBot", "Seth Discord Bot is now up and running !").Wait();
         return Task.CompletedTask;
     }
 

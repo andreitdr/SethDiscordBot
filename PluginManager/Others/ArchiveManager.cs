@@ -8,7 +8,7 @@ namespace PluginManager.Others;
 
 public static class ArchiveManager
 {
-    private static string? _archiveFolder;
+    private static string? _ArchiveFolder;
     private static bool IsInitialized { get; set; }
 
     public static void Initialize()
@@ -19,7 +19,7 @@ public static class ArchiveManager
         if (!Config.AppSettings.ContainsKey("ArchiveFolder"))
             Config.AppSettings["ArchiveFolder"] = "./Data/Archives/";
 
-        _archiveFolder = Config.AppSettings["ArchiveFolder"];
+        _ArchiveFolder = Config.AppSettings["ArchiveFolder"];
 
         IsInitialized = true;
     }
@@ -52,7 +52,7 @@ public static class ArchiveManager
     {
         if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
 
-        archName = _archiveFolder + archName;
+        archName = _ArchiveFolder + archName;
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
@@ -81,7 +81,7 @@ public static class ArchiveManager
     public static async Task<string?> ReadFromPakAsync(string fileName, string archFile)
     {
         if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
-        archFile = _archiveFolder + archFile;
+        archFile = _ArchiveFolder + archFile;
         if (!File.Exists(archFile))
             throw new Exception("Failed to load file !");
 

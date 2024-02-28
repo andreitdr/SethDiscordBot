@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using PluginManager.Online;
 using PluginManager.Plugin;
@@ -41,7 +42,7 @@ public class PluginUpdater
             await ServerCom.DownloadFileAsync(dependency.DownloadLocation, dependency.DownloadLocation, progressMeter);
 
         await _PluginManager.RemovePluginFromDatabase(pluginName);
-        await _PluginManager.AppendPluginToDatabase(pluginName, pluginInfo.Version);
+        await _PluginManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginInfo));
     }
 
     public async Task<bool> HasUpdate(string pluginName)

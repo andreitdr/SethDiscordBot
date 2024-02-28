@@ -18,13 +18,12 @@ public class InternalActionManager
 
     public async Task Initialize()
     {
-        //loader.ActionLoadedEvent += OnActionLoaded;
         var m_actions = await loader.Load();
-        if (m_actions == null) return;
+        if (m_actions == null) 
+            return;
         foreach (var action in m_actions)
-        {
             Actions.TryAdd(action.ActionName, action);
-        }
+        
     }
 
     public async Task Refresh()
@@ -33,34 +32,23 @@ public class InternalActionManager
         await Initialize();
     }
 
-    // private void OnActionLoaded(string name, string typeName, bool success, Exception? e)
-    // {
-    //     if (!success)
-    //     {
-    //         Config.Logger.Error(e);
-    //         return;
-    //     }
-    //     
-    //     Config.Logger.Log($"Action {name} loaded successfully", LogLevel.INFO, true);
-    // }
-
-    public async Task<string> Execute(string actionName, params string[]? args)
+    public async Task<bool> Execute(string actionName, params string[]? args)
     {
         if (!Actions.ContainsKey(actionName))
         {
             Config.Logger.Log($"Action {actionName} not found", type: LogType.ERROR, source: typeof(InternalActionManager));
-            return "Action not found";
+            return false;
         }
 
         try
         {
             await Actions[actionName].Execute(args);
-            return "Action executed";
+            return true;
         }
         catch (Exception e)
         {
             Config.Logger.Log(e.Message, type: LogType.ERROR, source: typeof(InternalActionManager));
-            return e.Message;
+            return false;
         }
     }
 }

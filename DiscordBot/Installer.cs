@@ -1,7 +1,7 @@
 using System;
 using PluginManager;
-using Spectre.Console;
 using System.Threading.Tasks;
+using Spectre.Console;
 
 namespace DiscordBot;
 
@@ -9,15 +9,16 @@ public static class Installer
 {
     public static async Task GenerateStartupConfig()
     {
-        var token     = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the bot token:");
-        var botPrefix = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the bot prefix:");
-        var serverId  = await PluginManager.UX.UxHandler.ShowInputBox("SethBot", "Please enter the Server ID:");
+        var token     = AnsiConsole.Ask<string>("[green]Token:[/]");
+        var botPrefix = AnsiConsole.Ask<string>("[yellow]Prefix:[/]");
+        var serverId  = AnsiConsole.Ask<string>("[deeppink1]Server ID:[/]");
 
-        if (string.IsNullOrWhiteSpace(serverId)) serverId = "NULL";
+        if (string.IsNullOrWhiteSpace(serverId)) serverId = string.Empty;
 
         if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(botPrefix))
         {
-            await PluginManager.UX.UxHandler.ShowMessageBox("SethBot", "Invalid token or prefix !", PluginManager.UX.MessageBoxType.Error);
+            AnsiConsole.MarkupLine("Invalid token or prefix !");
+
             Environment.Exit(-20);
         }
 

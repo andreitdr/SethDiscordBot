@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using PluginManager.UX;
 
 
 namespace DiscordBot;
@@ -13,7 +10,7 @@ public static class Entry
     public static void Main(string[] args)
     {
         #if DEBUG
-        if (args.Length == 1 && args[0] == "/purge_plugins")
+        if (args.Length == 1 && args[0] == "/purge_plugins" )
         {
             foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
             {

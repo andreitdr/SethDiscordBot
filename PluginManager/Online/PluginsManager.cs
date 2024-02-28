@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using PluginManager.Online.Helpers;
 using PluginManager.Others;
@@ -68,11 +70,11 @@ public class PluginsManager
         await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
     }
 
-    public async Task AppendPluginToDatabase(string pluginName, PluginVersion version)
+    public async Task AppendPluginToDatabase(PluginInfo pluginData)
     {
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
         
-        installedPlugins.Add(new PluginInfo(pluginName, version));
+        installedPlugins.Add(pluginData);
         await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
     }
     
@@ -95,6 +97,43 @@ public class PluginsManager
                 await pluginUpdater.UpdatePlugin(plugin.PluginName);
             }
         }
+    }
+
+    public async Task<bool> MarkPluginToUninstall(string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        PluginInfo? info = installedPlugins.Find(info => info.PluginName == pluginName);
+
+        if(info == null)
+            return false;
+
+        await RemovePluginFromDatabase(pluginName);
+        info.IsMarkedToUninstall = true;
+        await AppendPluginToDatabase(info);
+
+        return true;
+
+    }
+
+    public async Task UninstallMarkedPlugins()
+    {
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        foreach(PluginInfo plugin in installedPlugins)
+        {
+            if(!plugin.IsMarkedToUninstall) continue;
+
+            await UninstallPlugin(plugin);
+        }
+    }
+
+    private async Task UninstallPlugin(PluginInfo pluginInfo)
+    {
+        File.Delete(pluginInfo.FilePath);
+
+        foreach(string dependency in pluginInfo.ListOfDependancies)
+            File.Delete(dependency);
+
+        await RemovePluginFromDatabase(pluginInfo.PluginName);
     }
     
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.Utilities;
 using PluginManager;
@@ -71,7 +72,7 @@ internal static class PluginMethods
 
         if (!pluginData.HasDependencies)
         {
-            await manager.AppendPluginToDatabase(pluginName, pluginData.Version);
+            await manager.AppendPluginToDatabase(new PluginManager.Plugin.PluginInfo(pluginName, pluginData.Version, []));
             Console.WriteLine("Finished installing " + pluginName + " successfully");
             await RefreshPlugins(false);
             return;
@@ -126,7 +127,7 @@ internal static class PluginMethods
                              }
                          );
 
-        await manager.AppendPluginToDatabase(pluginName, pluginData.Version);
+        await manager.AppendPluginToDatabase(new PluginManager.Plugin.PluginInfo(pluginName, pluginData.Version, pluginData.Dependencies.Select(sep => sep.DownloadLocation).ToList()));
         await RefreshPlugins(false);
     }
 
