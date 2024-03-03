@@ -13,11 +13,6 @@ public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
     public SettingsDictionary(string? file)
     {
         _file = file;
-        if (!LoadFromFile())
-        {
-            _dictionary = new Dictionary<TKey, TValue>();
-            SaveToFile();
-        }
     }
 
     public async Task SaveToFile()
@@ -26,7 +21,7 @@ public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
             await JsonManager.SaveToJsonFile(_file, _dictionary);
     }
 
-    private bool LoadFromFile()
+    public async Task<bool> LoadFromFile()
     {
         if (!string.IsNullOrEmpty(_file))
             try
@@ -42,7 +37,9 @@ public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
                 }
                 else
                     File.WriteAllText(_file, "{}");
-                _dictionary = JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file).Result;
+
+
+                _dictionary = await JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file);
                 return true;
             }
             catch
