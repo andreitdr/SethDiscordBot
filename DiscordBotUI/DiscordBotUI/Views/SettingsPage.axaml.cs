@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 using PluginManager;
 
-namespace DiscordBotUI;
+namespace DiscordBotUI.Views;
 
 public partial class SettingsPage : Window
 {

@@ -2,22 +2,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:windows="clr-namespace:DiscordBotUI.Windows"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="DiscordBotUI.Windows.PluginsPage"
-        Title="PluginsPage"
-        x:DataType="windows:PluginsPage">
-    <DataGrid Name="dataGridPlugins" Margin="20" ItemsSource="{Binding _Plugins}"
-              IsReadOnly="True"
-              CanUserReorderColumns="True"
-              CanUserResizeColumns="True"
+		xmlns:model ="clr-namespace:DiscordBotUI.Views;assembly=DiscordBotUI"
+        x:Class="DiscordBotUI.Views.PluginsPage"
+        Title="Plugins Page"
+		x:DataType="model:PluginsPage">
+	
+	
+    <DataGrid Name="dataGridPlugins" Margin="20" ItemsSource="{Binding Plugins}"
+              IsReadOnly="False"
               CanUserSortColumns="False"
               GridLinesVisibility="All"
-              BorderThickness="1" BorderBrush="Gray"
-              Foreground="Aqua">
+			  AutoGenerateColumns="False"
+              BorderThickness="1" BorderBrush="Gray">
         <DataGrid.Columns>
             <DataGridTextColumn Header="Plugin Name" Foreground="Aquamarine" Binding="{Binding Name}"/>
-            <DataGridTextColumn Header="Plugin Version" Binding="{Binding Version}" />
+            <DataGridTextColumn Header="Plugin Version" Binding="{Binding Version}"/>
             <DataGridCheckBoxColumn Header="Is Marked for Uninstall" Binding="{Binding IsMarkedToUninstall}"/>
         </DataGrid.Columns>
     </DataGrid>

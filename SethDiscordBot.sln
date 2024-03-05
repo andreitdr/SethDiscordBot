@@ -14,7 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelingSystem", "..\SethPl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PythonCompatibilityLayer", "..\SethPlugins\PythonCompatibilityLayer\PythonCompatibilityLayer.csproj", "{81ED4953-13E5-4950-96A8-8CEF5FD59559}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI.csproj", "{1E781CB6-3EAF-425D-9913-4FE879B1D633}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI\DiscordBotUI.csproj", "{71293BF7-79D0-4707-AB4B-FDD16800FA81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI.Desktop", "DiscordBotUI\DiscordBotUI.Desktop\DiscordBotUI.Desktop.csproj", "{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,10 +44,14 @@ Global
 		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E781CB6-3EAF-425D-9913-4FE879B1D633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E781CB6-3EAF-425D-9913-4FE879B1D633}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E781CB6-3EAF-425D-9913-4FE879B1D633}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E781CB6-3EAF-425D-9913-4FE879B1D633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

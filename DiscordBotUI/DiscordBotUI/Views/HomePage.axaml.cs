@@ -6,12 +6,11 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
 using DiscordBotUI.Bot;
-using DiscordBotUI.Windows;
+
 using PluginManager;
-using PluginManager.Others;
 using PluginManager.Others.Logger;
 
-namespace DiscordBotUI;
+namespace DiscordBotUI.Views;
 
 public partial class HomePage : Window
 {
@@ -63,8 +62,8 @@ public partial class HomePage : Window
         await new SettingsPage().ShowDialog(this);
     }
 
-    private void PluginsMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void PluginsMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        new PluginsPage().Show();
+        await new PluginsPage().ShowDialog(this);
     }
 }
