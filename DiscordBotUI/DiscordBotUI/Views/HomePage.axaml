@@ -9,7 +9,8 @@
 	<DockPanel LastChildFill="True">
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="Settings" Click="SettingsMenuClick"></MenuItem>
-			<MenuItem Header="Plugins" Click="PluginsMenuClick"></MenuItem>
+			<MenuItem Header="Installed Plugins" Click="PluginsMenuClick"></MenuItem>
+			<MenuItem Header="New Plugins" Click="NewPluginsMenuClick"></MenuItem>
 		</Menu>
 
 		<Border Width="500" BorderBrush="Black" BorderThickness="1" DockPanel.Dock="Right">

@@ -41,7 +41,7 @@ public static class ServerCom
     /// <param name="progress">The <see cref="IProgress{T}" /> to track the download</param>
     /// <returns></returns>
     public static async Task DownloadFileAsync(
-        string URL, string location, IProgress<float> progress,
+        string URL, string location, IProgress<float>? progress,
         IProgress<long>? downloadedBytes)
     {
         using (var client = new HttpClient())
@@ -58,6 +58,11 @@ public static class ServerCom
     public static async Task DownloadFileAsync(string URl, string location, IProgress<float> progress)
     {
         await DownloadFileAsync(URl, location, progress, null);
+    }
+
+    public static async Task DownloadFileAsync(string url, string location)
+    {
+        await DownloadFileAsync(url, location, null, null);
     }
 
     public static Task CreateDownloadTask(string URl, string location)

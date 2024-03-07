@@ -15,6 +15,7 @@
               GridLinesVisibility="All"
 			  AutoGenerateColumns="False"
               BorderThickness="1" BorderBrush="Gray">
+		
         <DataGrid.Columns>
             <DataGridTextColumn Header="Plugin Name" Foreground="Aquamarine" Binding="{Binding Name}"/>
             <DataGridTextColumn Header="Plugin Version" Binding="{Binding Version}"/>

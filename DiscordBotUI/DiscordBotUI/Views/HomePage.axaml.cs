@@ -59,11 +59,18 @@ public partial class HomePage : Window
 
     private async void SettingsMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await new SettingsPage().ShowDialog(this);
+        //await new SettingsPage().ShowDialog(this);
+        new SettingsPage().Show();
     }
 
     private async void PluginsMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await new PluginsPage().ShowDialog(this);
+        //await new PluginsPage().ShowDialog(this);
+        new PluginsPage().Show();
+    }
+
+    private void NewPluginsMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        new PluginInstaller().Show();
     }
 }

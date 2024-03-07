@@ -43,10 +43,10 @@ public class PluginsManager
         Branch  = _DefaultBranch;
     }
 
-    public async Task<List<PluginOnlineInfo?>> GetPluginsList()
+    public async Task<List<PluginOnlineInfo>?> GetPluginsList()
     {
-        var                     jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
-        List<PluginOnlineInfo?> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo?>>(jsonText);
+        var                    jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
+        List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
 
         var currentOS = OperatingSystem.IsWindows() ? OSType.WINDOWS :
                         OperatingSystem.IsLinux()   ? OSType.LINUX : OSType.MACOSX;
@@ -56,8 +56,8 @@ public class PluginsManager
 
     public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)
     {
-        List<PluginOnlineInfo?> plugins = await GetPluginsList();
-        var                     result  = plugins.Find(p => p.Name == pluginName);
+        List<PluginOnlineInfo>? plugins = await GetPluginsList();
+        var                     result  = plugins?.Find(p => p.Name == pluginName);
 
         return result;
     }
@@ -135,6 +135,30 @@ public class PluginsManager
 
         await RemovePluginFromDatabase(pluginInfo.PluginName);
     }
-    
+
+    public async Task InstallPlugin(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
+    {
+        installProgress?.Report(0f);
+
+        int totalSteps = pluginData.HasDependencies ? pluginData.Dependencies.Count + 1 : 1;
+
+        float stepProgress = 1f / totalSteps; 
+
+        float currentProgress = 0f;
+
+        IProgress<float> progress = new Progress<float>((p) => {
+            installProgress?.Report(currentProgress + stepProgress * p);
+        });
+
+        await ServerCom.DownloadFileAsync(pluginData.DownLoadLink, $"{Config.AppSettings["PluginFolder"]}/{pluginData.Name}.dll", progress);
+
+        foreach (var dependency in pluginData.Dependencies)
+        {
+            await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
+            currentProgress += stepProgress;
+        }
+    }
+
+
 
 }
