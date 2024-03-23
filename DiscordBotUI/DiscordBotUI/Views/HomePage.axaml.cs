@@ -27,11 +27,15 @@ public partial class HomePage : Window
     private async void HomePage_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         await Config.Initialize();
-        
-        while(string.IsNullOrWhiteSpace(Config.AppSettings["token"]) || string.IsNullOrWhiteSpace(Config.AppSettings["prefix"]))
+
+        if(string.IsNullOrWhiteSpace(Config.AppSettings["token"]) || string.IsNullOrWhiteSpace(Config.AppSettings["prefix"]))
         {
             await new SettingsPage().ShowDialog(this);
+
+            if (string.IsNullOrWhiteSpace(Config.AppSettings["token"]) || string.IsNullOrWhiteSpace(Config.AppSettings["prefix"]))
+                Environment.Exit(-1);
         }
+
         
         textBoxToken.Text    = Config.AppSettings["token"];
         textBoxPrefix.Text   = Config.AppSettings["prefix"];
