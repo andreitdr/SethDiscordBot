@@ -8,15 +8,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManager", "PluginMana
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SethPlugins", "SethPlugins", "{78B6D390-F61A-453F-B38D-E4C054321615}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayer", "..\SethPlugins\MusicPlayer\MusicPlayer.csproj", "{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI\DiscordBotUI.csproj", "{71293BF7-79D0-4707-AB4B-FDD16800FA81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelingSystem", "..\SethPlugins\LevelingSystem\LevelingSystem.csproj", "{BFE3491C-AC01-4252-B242-6451270FC548}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PythonCompatibilityLayer", "..\SethPlugins\PythonCompatibilityLayer\PythonCompatibilityLayer.csproj", "{81ED4953-13E5-4950-96A8-8CEF5FD59559}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI\DiscordBotUI.csproj", "{71293BF7-79D0-4707-AB4B-FDD16800FA81}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotUI.Desktop", "DiscordBotUI\DiscordBotUI.Desktop\DiscordBotUI.Desktop.csproj", "{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI.Desktop", "DiscordBotUI\DiscordBotUI.Desktop\DiscordBotUI.Desktop.csproj", "{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,18 +26,6 @@ Global
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BFE3491C-AC01-4252-B242-6451270FC548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BFE3491C-AC01-4252-B242-6451270FC548}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BFE3491C-AC01-4252-B242-6451270FC548}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81ED4953-13E5-4950-96A8-8CEF5FD59559}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,11 +37,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{1690CBBC-BDC0-4DD8-B701-F8817189D9D5} = {78B6D390-F61A-453F-B38D-E4C054321615}
-		{BFE3491C-AC01-4252-B242-6451270FC548} = {78B6D390-F61A-453F-B38D-E4C054321615}
-		{81ED4953-13E5-4950-96A8-8CEF5FD59559} = {78B6D390-F61A-453F-B38D-E4C054321615}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
