@@ -9,19 +9,19 @@ namespace PluginManager.Others.Actions;
 public class InternalActionManager
 {
     public Dictionary<string, ICommandAction> Actions = new();
-    public ActionsLoader                      loader;
+    private readonly ActionsLoader _loader;
 
     public InternalActionManager(string path, string extension)
     {
-        loader = new ActionsLoader(path, extension);
+        _loader = new ActionsLoader(path, extension);
     }
 
     public async Task Initialize()
     {
-        var m_actions = await loader.Load();
-        if (m_actions == null) 
+        var loadedActions = await _loader.Load();
+        if (loadedActions == null)
             return;
-        foreach (var action in m_actions)
+        foreach (var action in loadedActions)
             Actions.TryAdd(action.ActionName, action);
         
     }

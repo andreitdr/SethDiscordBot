@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 using PluginManager;
 using PluginManager.Interfaces;
@@ -26,7 +26,7 @@ namespace DiscordBotUI.Bot
 
         public async Task LoadPlugins()
         {
-            var loader = new PluginLoader(Config.DiscordBot.client);
+            var loader = new PluginLoader(Config.DiscordBot.Client);
 
             loader.OnCommandLoaded += (data) =>
             {

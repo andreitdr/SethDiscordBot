@@ -8,27 +8,9 @@ namespace PluginManager.Others;
 
 public static class ArchiveManager
 {
-    private static string? _ArchiveFolder;
-    private static bool IsInitialized { get; set; }
 
-    public static void Initialize()
+    public static void CreateFromFile(string file, string folder)
     {
-        if (IsInitialized)
-            throw new Exception("ArchiveManager is already initialized");
-
-        if (!Config.AppSettings.ContainsKey("ArchiveFolder"))
-            Config.AppSettings["ArchiveFolder"] = "./Data/Archives/";
-
-        _ArchiveFolder = Config.AppSettings["ArchiveFolder"];
-
-        IsInitialized = true;
-    }
-    
-
-    public static async Task CreateFromFile(string file, string folder)
-    {
-        if(!IsInitialized) throw new Exception("ArchiveManager is not initialized");
-
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
@@ -50,9 +32,8 @@ public static class ArchiveManager
     /// <returns>An array of bytes that represents the Stream value from the file that was read inside the archive</returns>
     public static async Task<byte[]?> ReadStreamFromPakAsync(string fileName, string archName)
     {
-        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
 
-        archName = _ArchiveFolder + archName;
+        archName = Config.AppSettings["ArchiveFolder"] + archName;
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
@@ -80,8 +61,7 @@ public static class ArchiveManager
     /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
     public static async Task<string?> ReadFromPakAsync(string fileName, string archFile)
     {
-        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
-        archFile = _ArchiveFolder + archFile;
+        archFile = Config.AppSettings["ArchiveFolder"] + archFile;
         if (!File.Exists(archFile))
             throw new Exception("Failed to load file !");
 
@@ -125,7 +105,6 @@ public static class ArchiveManager
         string zip, string folder, IProgress<float> progress,
         UnzipProgressType type)
     {
-        if (!IsInitialized) throw new Exception("ArchiveManager is not initialized");
         Directory.CreateDirectory(folder);
         using var archive       = ZipFile.OpenRead(zip);
         var       totalZipFiles = archive.Entries.Count();

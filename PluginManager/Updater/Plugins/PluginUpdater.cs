@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using PluginManager.Online;
 using PluginManager.Plugin;
@@ -10,16 +9,16 @@ namespace PluginManager.Updater.Plugins;
 
 public class PluginUpdater
 {
-    private readonly PluginsManager _PluginManager;
+    private readonly PluginsManager _PluginsManager;
     
     public PluginUpdater(PluginsManager pluginManager)
     {
-        _PluginManager = pluginManager;
+        _PluginsManager = pluginManager;
     }
     
     public async Task<PluginOnlineInfo> GetPluginInfo(string pluginName)
     {
-        var result = await _PluginManager.GetPluginDataByName(pluginName);
+        var result = await _PluginsManager.GetPluginDataByName(pluginName);
         return result;
     }
     
@@ -41,8 +40,8 @@ public class PluginUpdater
         foreach(OnlineDependencyInfo dependency in pluginInfo.Dependencies)
             await ServerCom.DownloadFileAsync(dependency.DownloadLocation, dependency.DownloadLocation, progressMeter);
 
-        await _PluginManager.RemovePluginFromDatabase(pluginName);
-        await _PluginManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginInfo));
+        await _PluginsManager.RemovePluginFromDatabase(pluginName);
+        await _PluginsManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginInfo));
     }
 
     public async Task<bool> HasUpdate(string pluginName)

@@ -13,27 +13,27 @@ public class Boot
     /// <summary>
     ///     The bot prefix
     /// </summary>
-    public readonly string botPrefix;
+    public readonly string BotPrefix;
 
     /// <summary>
     ///     The bot token
     /// </summary>
-    public readonly string botToken;
+    public readonly string BotToken;
 
     /// <summary>
     ///     The bot client
     /// </summary>
-    public DiscordSocketClient client;
+    public DiscordSocketClient Client;
 
     /// <summary>
     ///     The bot command handler
     /// </summary>
-    private CommandHandler commandServiceHandler;
+    private CommandHandler _commandServiceHandler;
 
     /// <summary>
     ///     The command service
     /// </summary>
-    private CommandService service;
+    private CommandService _service;
 
     /// <summary>
     ///     The main Boot constructor
@@ -42,8 +42,8 @@ public class Boot
     /// <param name="botPrefix">The bot prefix</param>
     public Boot(string botToken, string botPrefix)
     {
-        this.botPrefix = botPrefix;
-        this.botToken  = botToken;
+        this.BotPrefix = botPrefix;
+        this.BotToken  = botToken;
     }
 
 
@@ -51,7 +51,7 @@ public class Boot
     ///     Checks if the bot is ready
     /// </summary>
     /// <value> true if the bot is ready, otherwise false </value>
-    public bool isReady { get; private set; }
+    public bool IsReady { get; private set; }
 
     /// <summary>
     ///     The start method for the bot. This method is used to load the bot
@@ -73,33 +73,33 @@ public class Boot
                 GatewayIntents              = GatewayIntents.All
             };
 
-        client  = new DiscordSocketClient(config);
-        service = new CommandService();
+        Client  = new DiscordSocketClient(config);
+        _service = new CommandService();
 
         CommonTasks();
 
-        await client.LoginAsync(TokenType.Bot, botToken);
+        await Client.LoginAsync(TokenType.Bot, BotToken);
 
-        await client.StartAsync();
+        await Client.StartAsync();
 
-        commandServiceHandler = new CommandHandler(client, service, botPrefix);
+        _commandServiceHandler = new CommandHandler(Client, _service, BotPrefix);
 
-        await commandServiceHandler.InstallCommandsAsync();
+        await _commandServiceHandler.InstallCommandsAsync();
 
         Config.DiscordBotClient = this;
 
-        while (!isReady) ;
+        while (!IsReady) ;
     }
 
     
     private void CommonTasks()
     {
-        if (client == null) return;
-        client.LoggedOut    += Client_LoggedOut;
-        client.Log          += Log;
-        client.LoggedIn     += LoggedIn;
-        client.Ready        += Ready;
-        client.Disconnected += Client_Disconnected;
+        if (Client == null) return;
+        Client.LoggedOut    += Client_LoggedOut;
+        Client.Log          += Log;
+        Client.LoggedIn     += LoggedIn;
+        Client.Ready        += Ready;
+        Client.Disconnected += Client_Disconnected;
     }
 
     private async Task Client_Disconnected(Exception arg)
@@ -122,7 +122,7 @@ public class Boot
 
     private Task Ready()
     {
-        isReady = true;
+        IsReady = true;
         // UxHandler.ShowNotification("SethBot", "Seth Discord Bot is now up and running !").Wait();
         return Task.CompletedTask;
     }

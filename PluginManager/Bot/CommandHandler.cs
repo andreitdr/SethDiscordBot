@@ -130,7 +130,7 @@ internal class CommandHandler
             if (plugin is null)
                 return;
 
-            if (plugin.requireAdmin && !context.Message.Author.isAdmin())
+            if (plugin.requireAdmin && !context.Message.Author.IsAdmin())
                 return;
 
             var split = cleanMessage.Split(' ');

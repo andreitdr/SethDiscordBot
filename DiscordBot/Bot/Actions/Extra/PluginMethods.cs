@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,10 +23,17 @@ internal static class PluginMethods
                 "Name",
                 "Description",
                 "Version",
-                "Has Dependencies"
+                "Is Installed"
             }
         );
-        foreach (var plugin in data) tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), plugin.HasDependencies ? "Yes" : "No"]);
+        
+        var installedPlugins = await manager.GetInstalledPlugins();
+
+        foreach (var plugin in data)
+        {
+            bool isInstalled = installedPlugins.Any(p => p.PluginName == plugin.Name);
+            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No"]);
+        }
 
         tableData.HasRoundBorders = false;
         tableData.PrintAsTable();
@@ -133,7 +140,7 @@ internal static class PluginMethods
 
     internal static async Task<bool> LoadPlugins(string[] args)
     {
-        var loader = new PluginLoader(Config.DiscordBot.client);
+        var loader = new PluginLoader(Config.DiscordBot.Client);
         if (args.Length == 2 && args[1] == "-q")
         {
             await loader.LoadPlugins();

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using PluginManager.Online.Helpers;
 using PluginManager.Others;
 using PluginManager.Plugin;
 using PluginManager.Updater.Plugins;
@@ -81,6 +79,13 @@ public class PluginsManager
     public async Task<List<PluginInfo>> GetInstalledPlugins()
     {
         return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+    }
+
+    public async Task<bool> IsPluginInstalled(string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+
+        return installedPlugins.Any(plugin => plugin.PluginName == pluginName);
     }
 
     public async Task CheckForUpdates()

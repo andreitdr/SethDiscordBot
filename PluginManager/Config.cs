@@ -12,6 +12,16 @@ namespace PluginManager;
 
 public class Config
 {
+
+    private static readonly string _DefaultBranchForPlugins = "releases";
+
+    private static readonly string _ConfigFile = "./Data/Resources/config.json";
+    private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
+    private static readonly string _ResourcesFolder = "./Data/Resources";
+    private static readonly string _PluginsFolder = "./Data/Plugins";
+    private static readonly string _ArchivesFolder = "./Data/Archives";
+    private static readonly string _LogsFolder = "./Data/Logs";
+
     private static bool _isLoaded;
     public static Logger Logger;
     public static SettingsDictionary<string, string> AppSettings;
@@ -26,38 +36,33 @@ public class Config
     {
         if (_isLoaded) return;
 
-        Directory.CreateDirectory("./Data/Resources");
-        Directory.CreateDirectory("./Data/Plugins");
-        Directory.CreateDirectory("./Data/Archives");
-        Directory.CreateDirectory("./Data/Logs");
+        Directory.CreateDirectory(_ResourcesFolder);
+        Directory.CreateDirectory(_PluginsFolder);
+        Directory.CreateDirectory(_ArchivesFolder);
+        Directory.CreateDirectory(_LogsFolder);
 
-        AppSettings = new SettingsDictionary<string, string>("./Data/Resources/config.json");
+        AppSettings = new SettingsDictionary<string, string>(_ConfigFile);
         bool response = await AppSettings.LoadFromFile();
 
         if (!response)
             throw new Exception("Invalid config file");
 
-        AppSettings["LogFolder"]     = "./Data/Logs";
-        AppSettings["PluginFolder"]  = "./Data/Plugins";
-        AppSettings["ArchiveFolder"] = "./Data/Archives";
-        
-        AppSettings["PluginDatabase"] = "./Data/Resources/plugins.json";
-        
+        AppSettings["LogFolder"] = _LogsFolder;
+        AppSettings["PluginFolder"]  = _PluginsFolder;
+        AppSettings["ArchiveFolder"] = _ArchivesFolder;
 
-        ArchiveManager.Initialize();
+        AppSettings["PluginDatabase"] = _PluginsDatabaseFile;
 
-        
-
-        if (!File.Exists(AppSettings["PluginDatabase"]))
+        if (!File.Exists(_PluginsDatabaseFile))
         {
             List<PluginInfo> plugins = new();
-            await JsonManager.SaveToJsonFile(AppSettings["PluginDatabase"], plugins);
+            await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);
         }
 
-        Logger = new Logger(false, true, AppSettings["LogFolder"] + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log");
+        Logger = new Logger(false, true, _LogsFolder + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log");
 
        
-        PluginsManager = new PluginsManager("releases");
+        PluginsManager = new PluginsManager(_DefaultBranchForPlugins);
 
         await PluginsManager.UninstallMarkedPlugins();
 

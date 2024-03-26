@@ -6,6 +6,13 @@ namespace PluginManager.Others;
 
 public class DbCommandExecutingArguments
 {
+
+    public SocketCommandContext context { get; init; }
+    public string cleanContent { get; init; }
+    public string commandUsed { get; init; }
+    public string[]? arguments { get; init; }
+    public ISocketMessageChannel Channel => context.Channel;
+
     public DbCommandExecutingArguments(
         SocketCommandContext context, string cleanContent, string commandUsed, string[]? arguments)
     {
@@ -26,7 +33,7 @@ public class DbCommandExecutingArguments
         }
         else
         {
-            cleanContent = message.Content.Substring(Config.DiscordBot.botPrefix.Length);
+            cleanContent = message.Content.Substring(Config.DiscordBot.BotPrefix.Length);
         }
 
         var split = cleanContent.Split(' ');
@@ -38,10 +45,4 @@ public class DbCommandExecutingArguments
         commandUsed = split[0];
         arguments   = argsClean;
     }
-
-    public SocketCommandContext context { get; init; }
-    public string cleanContent { get; init; }
-    public string commandUsed { get; init; }
-    public string[]? arguments { get; init; }
-    public ISocketMessageChannel Channel => context.Channel;
 }

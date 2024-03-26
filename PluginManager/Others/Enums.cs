@@ -19,12 +19,6 @@ public enum UnzipProgressType
     PERCENTAGE_FROM_TOTAL_SIZE
 }
 
-public enum SaveType
-{
-    TXT,
-    JSON
-}
-
 public enum InternalActionRunType
 {
     ON_STARTUP,
