@@ -19,7 +19,7 @@ Plugin Types:
 
 #### Requirements:
 - [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
-- .NET 6 (downloaded with Visual Studio)
+- .NET 8 (downloaded with Visual Studio)
 
 First of all, create a new project (class library) in Visual Studio.
 Then import the PluginManager as reference to your project.
@@ -237,6 +237,6 @@ After the build succeeds, check the `/bin/Debug` folders for each project to see
 
 Follow the on-screen prompts to make the bot run.
 
-> Updated: 23.03.2024
+> Updated: 01.04.2024
 
 
