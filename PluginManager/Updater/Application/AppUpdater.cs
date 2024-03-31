@@ -17,7 +17,7 @@ namespace PluginManager.Updater.Application
         private async Task<AppVersion> GetOnlineVersion()
         {
             HttpClient client = new HttpClient();
-            var response = await client.GetAsync("https://github.com/andreitdr/SethDiscordBot/releases/latest");
+            var response = await client.GetAsync(_DefaultUpdateUrl);
 
             if (response.IsSuccessStatusCode)
             {
@@ -44,7 +44,7 @@ namespace PluginManager.Updater.Application
         private async Task<string> GetUpdateNotes()
         {
             HttpClient client = new HttpClient();
-            var response = await client.GetAsync("https://github.com/andreitdr/SethDiscordBot/releases/latest");
+            var response = await client.GetAsync(_DefaultUpdateUrl);
 
             if (!response.IsSuccessStatusCode)
             {
