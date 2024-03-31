@@ -19,7 +19,7 @@ Plugin Types:
 
 #### Requirements:
 - [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
-- .NET 6 (downloaded with Visual Studio)
+- .NET 8 (downloaded with Visual Studio)
 
 First of all, create a new project (class library) in Visual Studio.
 Then import the PluginManager as reference to your project.
