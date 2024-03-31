@@ -1,14 +1,14 @@
+# Seth Discord Bot
+
 This is a Discord Bot made with C# that accepts plugins as extensions for more commands and events. All basic commands are built in already in the PluginManager class library. 
 This project is based on:
 
-- [.NET 6 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [.NET 8 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
 
 
 ## Plugins
-#### Requirements:
-- [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
-- .NET 6 (downloaded with Visual Studio)
+- Some plugins can be found in [this repo](https://github.com/andreitdr/SethPlugins).
 
 Plugin Types:
 1. Commands
@@ -17,12 +17,16 @@ Plugin Types:
 
 ### How to create a plugin
 
-First of all, Create a new project (class library) in Visual Studio.
-Then import the PluginManager.dll as project to your project.
+#### Requirements:
+- [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
+- .NET 6 (downloaded with Visual Studio)
+
+First of all, create a new project (class library) in Visual Studio.
+Then import the PluginManager as reference to your project.
 
 ## 1. Commands
 
-Commands are loaded when all plugins are loaded into memory. When an user executes the command, only then the Execute function is called.
+Commands are loaded when all plugins are loaded into memory. The Execute method is called whenever any user (that respects the `requireAdmin` propery) calls the command using the bot prefix and the `Command`.
 Commands are plugins that allow users to interact with them. 
 Here is an example:
 ```cs
@@ -33,20 +37,21 @@ using PluginManager.Interfaces;
 
 namespace LevelingSystem;
 
-internal class LevelCommand : DBCommand
+public class LevelCommand : DBCommand
 {
     public string Command => "level";
 
     public List<string> Aliases => new() { "lvl" };
 
-    public string Description => "Display tour current level";
+    public string Description => "Display your current level";
 
     public string Usage => "level";
 
     public bool requireAdmin => false;
 
-    public async void ExecuteServer(SocketCommandContext context)
+    public async void ExecuteServer(DBCommandExecutingArguments context)
     {
+        //Variables.database is a sql connection that is defined in an auxiliary file in the same napespace as this class
         object[] user = await Variables.database.ReadDataArrayAsync($"SELECT * FROM Levels WHERE UserID='{context.Message.Author.Id}'");
         if (user is null)
         {
@@ -67,6 +72,11 @@ internal class LevelCommand : DBCommand
         builder.WithAuthor(context.Message.Author.Mention);
         await context.Channel.SendMessageAsync(embed: builder.Build());
     }
+
+    //Optional method (tell the bot what should it do if the command is executed from a DM channel)
+    //public async void ExecuteDM(DBCommandExecutingArguments context) {
+    //
+    //}
 }
 
 
@@ -83,8 +93,8 @@ internal class LevelCommand : DBCommand
   - context - the command context
 
 From here on, start coding. When your plugin is done, build it as any DLL project then add it to the following path
-`{bot_executable}/Data/Plugins/<optional subfolder>/[your dll name].dll`
-Then, reload bot and execute command `lp` in bot's console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
+`{bot_executable}/Data/Plugins/<optional subfolder>/[plugin name].dll`
+Then, reload bot and execute command `plugin load` in the console. The plugin should be loaded into memory or an error is thrown if not. If an error is thrown, then
 there is something wrong in your command's code.
 
 ## 2. Events
@@ -105,8 +115,6 @@ public class OnUserJoin : DBEvent
 
     public async void Start(Discord.WebSocket.DiscordSocketClient client)
     {
-        Console.WriteLine($"Hello World from {name}");
-        
         client.UserJoined += async (user) => {
             await (await user.CreateDMChannelAsync()).SendMessageAsync("Welcome to server !");
         };
@@ -139,14 +147,14 @@ namespace SlashCommands
     {
         public string Name => "random";
 
-        public string Description => "Generates a random nunber between 2 values";
+        public string Description => "Generates a random number between 2 values";
 
         public bool canUseDM => true;
 
         public List<SlashCommandOptionBuilder> Options => new List<SlashCommandOptionBuilder>()
         {
             new SlashCommandOptionBuilder() {Name = "min-value", Description = "Minimum value", IsRequired=true, Type = ApplicationCommandOptionType.Integer, MinValue = 0, MaxValue = int.MaxValue-1},
-            new SlashCommandOptionBuilder() {Name="max-value", Description = "Maximum value", IsRequired=true, Type=ApplicationCommandOptionType.Integer,MinValue = 0, MaxValue = int.MaxValue-1}
+            new SlashCommandOptionBuilder() {Name = "max-value", Description = "Maximum value", IsRequired=true, Type=ApplicationCommandOptionType.Integer,MinValue = 0, MaxValue = int.MaxValue-1}
         };
 
         public async void ExecuteServer(SocketSlashCommand command)
@@ -178,3 +186,57 @@ namespace SlashCommands
   - context - the command context
 - ExecuteDM() - this function will be called if the command is invoked in a DM channel  (optional)
   - context - the command context
+
+
+## Note: 
+You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
+
+
+# Building from source
+
+## Required tools
+You must have dotnet 8 installed in order to compile.
+You might run this commands with sudo in order to install dotnet successfully.
+### On Linux
+#### Arch
+```sh
+pacman -S dotnet-sdk-8.0
+```
+
+#### Debian / Ubuntu
+```sh
+apt install dotnet-sdk-8.0
+```
+
+#### Fedora / RHEL
+```sh
+dnf install dotnet-sdk-8.0
+```
+
+### On Windows
+#### Default method
+Download and install dotnet 8 from the official Microsoft website using [this](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) link.
+
+#### Using Visual Studio
+Download and install Visual Studio 2022 and select .NET Desktop Development while installing Visual Studio 2022.
+Open Visual Studio and select Clone a repo and paste the following link: `https://github.com/andreitdr/SethDiscordBot`.
+
+Open the solution in Visual Studio and build it.
+
+> Note: You might need to manually restore the NuGet packages, but VS2022 should take care of them automatically for you.
+> If not then you will need to click on Dependencies -> Packages for each project that has a yellow sign over the Dependancies tab and click Update.
+
+## Cloning the repository
+```sh
+git clone https://github.com/andreitdr/SethDiscordBot
+cd SethDiscordBot
+dotnet build
+```
+
+After the build succeeds, check the `/bin/Debug` folders for each project to see the built items.
+
+Follow the on-screen prompts to make the bot run.
+
+> Updated: 23.03.2024
+
+
