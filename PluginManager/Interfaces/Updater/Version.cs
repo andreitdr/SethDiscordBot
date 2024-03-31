@@ -68,4 +68,9 @@ public abstract class Version: IVersion
     {
         return $"{Major}.{Minor}.{Patch}";
     }
+
+    public override string ToString()
+    {
+        return ToShortString();
+    }
 }

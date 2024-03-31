@@ -23,6 +23,8 @@ public class Program
     {
         PreLoadComponents(args).Wait();
 
+
+
         if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
             Installer.GenerateStartupConfig().Wait();
 
@@ -37,7 +39,6 @@ public class Program
         internalActionManager.Initialize().Wait();
         internalActionManager.Execute("plugin", "load").Wait();
         internalActionManager.Refresh().Wait();
-
 
         while (true)
         {
@@ -61,7 +62,7 @@ public class Program
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.DarkYellow;
 
-        Console.WriteLine($"Running on version: {Assembly.GetExecutingAssembly().GetName().Version}");
+        Console.WriteLine($"Running on version: {AppSettings["Version"]}");
         Console.WriteLine("Git SethBot: https://github.com/andreitdr/SethDiscordBot");
         Console.WriteLine("Git Plugins: https://github.com/andreitdr/SethPlugins");
 
@@ -111,6 +112,20 @@ public class Program
     {
         await Initialize();
 
+        AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+        PluginManager.Updater.Application.AppUpdater updater = new();
+        var update = await updater.CheckForUpdates();
+
+        if (update != PluginManager.Updater.Application.Update.None)
+        {
+            Console.WriteLine($"New update available: {update.UpdateVersion}");
+            Console.WriteLine($"Download link: {update.UpdateUrl}");
+            Console.WriteLine($"Update notes: {update.UpdateNotes}\n\n");
+
+            Environment.Exit(0);
+        }
+
         Logger.OnLog += (sender, logMessage) =>
         {
             var messageColor = logMessage.Type switch
@@ -130,7 +145,5 @@ public class Program
 
             AnsiConsole.MarkupLine($"{messageColor}{logMessage.ThrowTime} {logMessage.Message} [/]");
         };
-
-        AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 }

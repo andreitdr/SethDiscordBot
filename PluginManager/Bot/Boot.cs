@@ -107,9 +107,8 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.AppSettings.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", typeof(Boot), LogType.CRITICAL);
+            Config.Logger.Log("The token is invalid. Please restart the bot and follow the instructions", typeof(Boot), LogType.CRITICAL);
             await Config.AppSettings.SaveToFile();
-            await Task.Delay(4000);
             Environment.Exit(0);
         }
     }
@@ -123,7 +122,6 @@ public class Boot
     private Task Ready()
     {
         IsReady = true;
-        // UxHandler.ShowNotification("SethBot", "Seth Discord Bot is now up and running !").Wait();
         return Task.CompletedTask;
     }
 

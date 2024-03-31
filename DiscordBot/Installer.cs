@@ -7,24 +7,30 @@ namespace DiscordBot;
 
 public static class Installer
 {
-    public static async Task GenerateStartupConfig()
+    private static async Task AskForConfig(string key, string message)
     {
-        var token     = AnsiConsole.Ask<string>("[green]Token:[/]");
-        var botPrefix = AnsiConsole.Ask<string>("[yellow]Prefix:[/]");
-        var serverId  = AnsiConsole.Ask<string>("[deeppink1]Server ID:[/]");
+        var value = AnsiConsole.Ask<string>($"[green]{message}[/]");
 
-        if (string.IsNullOrWhiteSpace(serverId)) serverId = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(botPrefix))
+        if (string.IsNullOrWhiteSpace(value))
         {
-            AnsiConsole.MarkupLine("Invalid token or prefix !");
+            AnsiConsole.MarkupLine($"Invalid {key} !");
 
             Environment.Exit(-20);
         }
 
-        Config.AppSettings.Add("token", token);
-        Config.AppSettings.Add("prefix", botPrefix);
-        Config.AppSettings.Add("ServerID", serverId);
+        Config.AppSettings.Add(key, value);
+    }
+    public static async Task GenerateStartupConfig()
+    {
+
+        if(!Config.AppSettings.ContainsKey("token"))
+            await AskForConfig("token", "Token:");
+
+        if(!Config.AppSettings.ContainsKey("prefix"))
+            await AskForConfig("prefix", "Prefix:");
+
+        if(!Config.AppSettings.ContainsKey("ServerID"))
+            await AskForConfig("ServerID", "Server ID:");
 
         await Config.AppSettings.SaveToFile();
 

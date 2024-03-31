@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using PluginManager.Bot;
+using PluginManager.Interfaces.Updater;
 using PluginManager.Online;
 using PluginManager.Others;
+using PluginManager.Others.Actions;
 using PluginManager.Others.Logger;
 using PluginManager.Plugin;
+using PluginManager.Updater.Application;
 
 namespace PluginManager;
 
@@ -25,6 +29,8 @@ public class Config
     private static bool _isLoaded;
     public static Logger Logger;
     public static SettingsDictionary<string, string> AppSettings;
+
+    public static InternalActionManager InternalActionManager;
 
     public static PluginsManager PluginsManager;
 
@@ -61,7 +67,6 @@ public class Config
 
         Logger = new Logger(false, true, _LogsFolder + $"/{DateTime.Today.ToShortDateString().Replace("/", "")}.log");
 
-       
         PluginsManager = new PluginsManager(_DefaultBranchForPlugins);
 
         await PluginsManager.UninstallMarkedPlugins();
