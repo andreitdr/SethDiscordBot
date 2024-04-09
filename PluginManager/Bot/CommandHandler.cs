@@ -6,6 +6,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
+using PluginManager.Online;
 using PluginManager.Others;
 using PluginManager.Others.Permissions;
 
@@ -13,9 +14,9 @@ namespace PluginManager.Bot;
 
 internal class CommandHandler
 {
-    private readonly string              _botPrefix;
-    private readonly DiscordSocketClient _client;
-    private readonly CommandService      _commandService;
+    private readonly string                _botPrefix;
+    private readonly DiscordSocketClient   _client;
+    private readonly CommandService        _commandService;
 
     /// <summary>
     ///     Command handler constructor
@@ -45,10 +46,10 @@ internal class CommandHandler
     {
         try
         {
-            var plugin = PluginLoader.SlashCommands!.FirstOrDefault(p => p.Name == arg.Data.Name);
+            var plugin = PluginLoader.SlashCommands.FirstOrDefault(p => p.Name == arg.Data.Name);
 
             if (plugin is null)
-                throw new Exception("Failed to run command. !");
+                throw new Exception("Failed to run command !");
 
 
             if (arg.Channel is SocketDMChannel)

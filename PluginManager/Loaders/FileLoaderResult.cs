@@ -2,9 +2,9 @@ namespace PluginManager.Loaders;
 
 public class FileLoaderResult
 {
-    public string PluginName { get; init; }
+    public string PluginName { get; private set; }
 
-    public string? ErrorMessage { get; init; }
+    public string ErrorMessage { get; private set; }
 
 
     public FileLoaderResult(string pluginName, string errorMessage)
@@ -16,5 +16,6 @@ public class FileLoaderResult
     public FileLoaderResult(string pluginName)
     {
         PluginName = pluginName;
+        ErrorMessage = string.Empty;
     }
 }

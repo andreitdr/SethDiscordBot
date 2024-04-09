@@ -9,14 +9,15 @@ public class PluginLoadResultData
     public string? ErrorMessage { get; init; }
     public bool IsSuccess { get; init; }
 
-    public object? Plugin { get; init; }
+    public object Plugin { get; init; }
 
-    public PluginLoadResultData(string pluginName, PluginType pluginType, bool isSuccess, string? errorMessage = null, object plugin = null)
+    public PluginLoadResultData(string pluginName, PluginType pluginType, bool isSuccess, string? errorMessage = null,
+        object? plugin = null)
     {
         PluginName   = pluginName;
         PluginType   = pluginType;
         IsSuccess    = isSuccess;
         ErrorMessage = errorMessage;
-        Plugin       = plugin;
+        Plugin       = plugin is null ? new() : plugin;
     }
 }
