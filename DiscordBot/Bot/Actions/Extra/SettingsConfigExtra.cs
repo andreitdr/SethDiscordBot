@@ -1,10 +1,12 @@
 using System.Linq;
 using PluginManager;
+using PluginManager.Loaders;
 
 namespace DiscordBot.Bot.Actions.Extra;
 
 internal static class SettingsConfigExtra
 {
+
     internal static void SetSettings(string key, params string[] value)
     {
         if (key is null) return;

@@ -14,6 +14,8 @@ public class Help: DBSlashCommand
     public string Description => "This command allows you to check all loaded commands";
     public bool canUseDM => true;
 
+    public bool HasInteraction => false;
+
     public List<SlashCommandOptionBuilder> Options =>
         new()
         {
@@ -31,7 +33,7 @@ public class Help: DBSlashCommand
         embedBuilder.WithTitle("Help Command");
         embedBuilder.WithColor(Functions.RandomColor);
         var slashCommands = PluginLoader.SlashCommands;
-        var options       = context.Data.Options;
+        var options = context.Data.Options;
 
         //Console.WriteLine("Options: " + options.Count);
         if (options is null || options.Count == 0)
@@ -40,7 +42,7 @@ public class Help: DBSlashCommand
 
         if (options.Count > 0)
         {
-            var commandName  = options.First().Value;
+            var commandName = options.First().Value;
             var slashCommand = slashCommands.FirstOrDefault(x => x.Name.TrimEnd() == commandName.ToString());
             if (slashCommand is null)
             {

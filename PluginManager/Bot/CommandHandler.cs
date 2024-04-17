@@ -51,7 +51,6 @@ internal class CommandHandler
             if (plugin is null)
                 throw new Exception("Failed to run command !");
 
-
             if (arg.Channel is SocketDMChannel)
                 plugin.ExecuteDM(arg);
             else plugin.ExecuteServer(arg);

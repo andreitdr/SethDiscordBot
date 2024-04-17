@@ -62,28 +62,28 @@ public class PluginsManager
     
     public async Task RemovePluginFromDatabase(string pluginName)
     {
-        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
         
         installedPlugins.RemoveAll(p => p.PluginName == pluginName);
-        await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
+        await JsonManager.SaveToJsonFile( Config.PluginDatabase,installedPlugins);
     }
 
     public async Task AppendPluginToDatabase(PluginInfo pluginData)
     {
-        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
         
         installedPlugins.Add(pluginData);
-        await JsonManager.SaveToJsonFile( Config.AppSettings["PluginDatabase"],installedPlugins);
+        await JsonManager.SaveToJsonFile( Config.PluginDatabase, installedPlugins);
     }
     
     public async Task<List<PluginInfo>> GetInstalledPlugins()
     {
-        return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
     }
 
     public async Task<bool> IsPluginInstalled(string pluginName)
     {
-        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.AppSettings["PluginDatabase"]));
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
 
         return installedPlugins.Any(plugin => plugin.PluginName == pluginName);
     }

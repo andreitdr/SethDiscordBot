@@ -30,6 +30,9 @@ public class Config
     public static Logger Logger;
     public static SettingsDictionary<string, string> AppSettings;
 
+    internal static string PluginDatabase => AppSettings["PluginDatabase"];
+    internal static string ServerID => AppSettings["ServerID"]; 
+
     public static InternalActionManager InternalActionManager;
 
     public static PluginsManager PluginsManager;

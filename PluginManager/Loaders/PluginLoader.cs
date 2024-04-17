@@ -36,6 +36,8 @@ public class PluginLoader
         
         var loader = new Loader(Config.AppSettings["PluginFolder"], "dll");
 
+        //await this.ResetSlashCommands();
+
         loader.OnFileLoadedException += FileLoadedException;
         loader.OnPluginLoaded        += OnPluginLoaded;
 
@@ -47,7 +49,7 @@ public class PluginLoader
         Config.Logger.Log(result.ErrorMessage, typeof(PluginLoader), LogType.ERROR);
     }
 
-    private void OnPluginLoaded(PluginLoadResultData result)
+    private async void OnPluginLoaded(PluginLoadResultData result)
     {
         switch (result.PluginType)
         {
@@ -64,11 +66,15 @@ public class PluginLoader
 
                 break;
             case PluginType.SLASH_COMMAND:
-                if (this.TryStartSlashCommand((DBSlashCommand)result.Plugin))
+                if (await this.TryStartSlashCommand((DBSlashCommand)result.Plugin))
                 {
+                    if(((DBSlashCommand)result.Plugin).HasInteraction)
+                        _Client.InteractionCreated += ((DBSlashCommand)result.Plugin).ExecuteInteraction;
                     SlashCommands.Add((DBSlashCommand)result.Plugin);
                     OnSlashCommandLoaded?.Invoke(result);
-                }
+                } 
+                else 
+                    Config.Logger.Log($"Failed to start slash command {result.PluginName}", typeof(PluginLoader), LogType.ERROR);
                 break;
             case PluginType.UNKNOWN:
             default:
@@ -76,6 +82,4 @@ public class PluginLoader
                 break;
         }
     }
-
-
 }
