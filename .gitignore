@@ -375,3 +375,4 @@ FodyWeavers.xsd
 DiscordBot/Launcher.exe
 DiscordBotUI/bin
 DiscordBotUI/obj
+/.vscode
