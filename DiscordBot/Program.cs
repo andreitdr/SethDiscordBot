@@ -23,8 +23,6 @@ public class Program
     {
         PreLoadComponents(args).Wait();
 
-
-
         if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
             Installer.GenerateStartupConfig().Wait();
 

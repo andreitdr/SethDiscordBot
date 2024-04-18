@@ -47,7 +47,8 @@ public class PluginsManager
         List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
 
         var currentOS = OperatingSystem.IsWindows() ? OSType.WINDOWS :
-                        OperatingSystem.IsLinux()   ? OSType.LINUX : OSType.MACOSX;
+                        OperatingSystem.IsLinux()   ? OSType.LINUX : 
+                        OperatingSystem.IsMacOS()   ? OSType.MACOSX : OSType.NONE;
 
         return result.FindAll(pl => (pl.SupportedOS & currentOS) != 0);
     }

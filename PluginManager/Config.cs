@@ -59,7 +59,6 @@ public class Config
         AppSettings["LogFolder"] = _LogsFolder;
         AppSettings["PluginFolder"]  = _PluginsFolder;
         AppSettings["ArchiveFolder"] = _ArchivesFolder;
-
         AppSettings["PluginDatabase"] = _PluginsDatabaseFile;
 
         if (!File.Exists(_PluginsDatabaseFile))

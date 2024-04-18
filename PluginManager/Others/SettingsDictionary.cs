@@ -1,126 +1,83 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PluginManager.Others;
 
-public class SettingsDictionary<TKey, TValue>: IDictionary<TKey, TValue>
+public class SettingsDictionary<TKey, TValue>
 {
-    public string? _file { get; }
-    private IDictionary<TKey, TValue>? _dictionary;
+    private string _File { get; }
+    private IDictionary<TKey, TValue> _Dictionary;
 
-    public SettingsDictionary(string? file)
+    public SettingsDictionary(string file)
     {
-        _file = file;
+        this._File = file;
+        _Dictionary = null!;
     }
 
     public async Task SaveToFile()
     {
-        if (!string.IsNullOrEmpty(_file))
-            await JsonManager.SaveToJsonFile(_file, _dictionary);
-    }
-
-    public async Task<bool> LoadFromFile()
-    {
-        if (!string.IsNullOrEmpty(_file))
-            try
-            {
-                if (File.Exists(_file))
-                {
-                    var FileContent = File.ReadAllText(_file);
-                    if (string.IsNullOrEmpty(FileContent))
-                        File.WriteAllText(_file, "{}");
-
-                    if (!FileContent.Contains("{") || !FileContent.Contains("}"))
-                        File.WriteAllText(_file, "{}");
-                }
-                else
-                    File.WriteAllText(_file, "{}");
-
-
-                _dictionary = await JsonManager.ConvertFromJson<IDictionary<TKey, TValue>>(_file);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-
-        return false;
-
+        if (!string.IsNullOrEmpty(_File))
+            await JsonManager.SaveToJsonFile(_File, _Dictionary);
     }
 
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
     {
-        return _dictionary!.GetEnumerator();
-    }
+        return _Dictionary.GetEnumerator();
+    }   
 
-    IEnumerator IEnumerable.GetEnumerator()
+    public async Task<bool> LoadFromFile()
     {
-        return ((IEnumerable)_dictionary!).GetEnumerator();
+        if (string.IsNullOrEmpty(_File))
+            return false;
+
+        if(!File.Exists(_File))
+        {
+            _Dictionary = new Dictionary<TKey, TValue>();
+            return true;
+        }
+
+        string fileAsText = await File.ReadAllTextAsync(_File);
+        if(string.IsNullOrEmpty(fileAsText) || string.IsNullOrWhiteSpace(fileAsText))
+        {
+            _Dictionary = new Dictionary<TKey, TValue>();
+            return true;
+        }
+
+        _Dictionary = await JsonManager.ConvertFromJson<IDictionary<TKey,TValue>>(fileAsText);
+
+        return true;
     }
 
-    public void Add(KeyValuePair<TKey, TValue> item)
-    {
-        _dictionary!.Add(item);
-    }
-
-    public void Clear()
-    {
-        _dictionary!.Clear();
-    }
-
-    public bool Contains(KeyValuePair<TKey, TValue> item)
-    {
-        return _dictionary!.Contains(item);
-    }
-
-    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-    {
-        _dictionary!.CopyTo(array, arrayIndex);
-    }
-
-    public bool Remove(KeyValuePair<TKey, TValue> item)
-    {
-        return _dictionary!.Remove(item);
-    }
-
-    public int Count => _dictionary!.Count;
-    public bool IsReadOnly => _dictionary!.IsReadOnly;
     public void Add(TKey key, TValue value)
     {
-        _dictionary!.Add(key, value);
+        _Dictionary.Add(key, value);
     }
 
     public bool ContainsKey(TKey key)
     {
-        return _dictionary!.ContainsKey(key);
+        return _Dictionary.ContainsKey(key);
     }
 
     public bool Remove(TKey key)
     {
-        return _dictionary!.Remove(key);
-    }
-
-    public bool TryGetValue(TKey key, out TValue value)
-    {
-        return _dictionary!.TryGetValue(key, out value);
+        return _Dictionary.Remove(key);
     }
 
     public TValue this[TKey key]
     {
         get
         {
-            if (_dictionary!.ContainsKey(key))
-                if (_dictionary[key] is string s && !string.IsNullOrEmpty(s) && !string.IsNullOrWhiteSpace(s))
-                    return _dictionary[key];
+            if(!_Dictionary.ContainsKey(key))
+                throw new System.Exception($"The key {key} ({typeof(TKey)}) was not present in the dictionary");
 
-            return default!;
+            if(_Dictionary[key] is not TValue)
+                throw new System.Exception("The dictionary is corrupted. This error is critical !");
+
+            return _Dictionary[key];
         }
-        set => _dictionary![key] = value;
+        set => _Dictionary[key] = value;
     }
-
-    public ICollection<TKey> Keys => _dictionary!.Keys;
-    public ICollection<TValue> Values => _dictionary!.Values;
 }
