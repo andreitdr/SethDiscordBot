@@ -56,6 +56,11 @@ public class SettingsDictionary<TKey, TValue>
         _Dictionary.Add(key, value);
     }
 
+    public bool ContainsAllKeys(params TKey[] keys) 
+    {
+        return keys.All(key => _Dictionary.ContainsKey(key));
+    }
+
     public bool ContainsKey(TKey key)
     {
         return _Dictionary.ContainsKey(key);

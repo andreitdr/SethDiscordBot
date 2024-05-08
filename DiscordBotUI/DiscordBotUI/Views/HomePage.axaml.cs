@@ -28,7 +28,7 @@ public partial class HomePage : Window
     {
         await Config.Initialize();
 
-        if(string.IsNullOrWhiteSpace(Config.AppSettings["token"]) || string.IsNullOrWhiteSpace(Config.AppSettings["prefix"]))
+        if(!Config.AppSettings.ContainsAllKeys("token", "prefix"))
         {
             await new SettingsPage().ShowDialog(this);
 
