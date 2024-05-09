@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using DiscordBot.Utilities;
+
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Loaders;
 using PluginManager.Online;
 using PluginManager.Others;
+
 using Spectre.Console;
 
 namespace DiscordBot.Bot.Actions.Extra;
@@ -26,7 +29,7 @@ internal static class PluginMethods
                 "Is Installed"
             }
         );
-        
+
         var installedPlugins = await manager.GetInstalledPlugins();
 
         foreach (var plugin in data)
@@ -109,17 +112,15 @@ internal static class PluginMethods
                                      downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, dependency.DownloadLink, dependency.DownloadLocation));
                                  }
 
-                                 if (!int.TryParse(Config.AppSettings["MaxParallelDownloads"], out var maxParallelDownloads))
-                                 {
-                                     maxParallelDownloads = 5;
-                                     Config.AppSettings.Add("MaxParallelDownloads", "5");
-                                     await Config.AppSettings.SaveToFile();
-                                 }
+                                 int maxParallelDownloads = 5;
+
+                                 if (Config.AppSettings.ContainsKey("MaxParallelDownloads"))
+                                     maxParallelDownloads = int.Parse(Config.AppSettings["MaxParallelDownloads"]);
 
                                  var options = new ParallelOptions()
                                  {
                                      MaxDegreeOfParallelism = maxParallelDownloads,
-                                     TaskScheduler          = TaskScheduler.Default
+                                     TaskScheduler = TaskScheduler.Default
                                  };
 
                                  await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
@@ -202,7 +203,7 @@ internal static class PluginMethods
             Console.ForegroundColor = cc;
         };
 
-        await loader. LoadPlugins();
+        await loader.LoadPlugins();
         Console.ForegroundColor = cc;
         return true;
     }
