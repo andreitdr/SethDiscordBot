@@ -8,11 +8,13 @@ using PluginManager.Others;
 
 namespace DiscordBot.Bot.Commands.SlashCommands;
 
-public class Help : DBSlashCommand
+public class Help: DBSlashCommand
 {
-    public string Name        => "help";
+    public string Name => "help";
     public string Description => "This command allows you to check all loaded commands";
-    public bool   canUseDM    => true;
+    public bool canUseDM => true;
+
+    public bool HasInteraction => false;
 
     public List<SlashCommandOptionBuilder> Options =>
         new()
@@ -31,7 +33,7 @@ public class Help : DBSlashCommand
         embedBuilder.WithTitle("Help Command");
         embedBuilder.WithColor(Functions.RandomColor);
         var slashCommands = PluginLoader.SlashCommands;
-        var options       = context.Data.Options;
+        var options = context.Data.Options;
 
         //Console.WriteLine("Options: " + options.Count);
         if (options is null || options.Count == 0)
@@ -40,15 +42,15 @@ public class Help : DBSlashCommand
 
         if (options.Count > 0)
         {
-            var commandName  = options.First().Name;
-            var slashCommand = slashCommands.FirstOrDefault(x => x.Name == commandName);
+            var commandName = options.First().Value;
+            var slashCommand = slashCommands.FirstOrDefault(x => x.Name.TrimEnd() == commandName.ToString());
             if (slashCommand is null)
             {
                 await context.RespondAsync("Unknown Command " + commandName);
                 return;
             }
 
-            embedBuilder.AddField(slashCommand.Name, slashCommand.canUseDM)
+            embedBuilder.AddField("DM Usable:", slashCommand.canUseDM, true)
                         .WithDescription(slashCommand.Description);
         }
 

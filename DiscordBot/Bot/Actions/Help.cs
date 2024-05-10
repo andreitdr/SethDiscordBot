@@ -1,41 +1,70 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.Utilities;
 using PluginManager.Interfaces;
 using PluginManager.Others;
+using PluginManager.Others.Actions;
+using Spectre.Console;
 
 namespace DiscordBot.Bot.Actions;
 
-public class Help : ICommandAction
+public class Help: ICommandAction
 {
     public string ActionName => "help";
 
     public string Description => "Shows the list of commands and their usage";
 
-    public string Usage => "help [command]";
+    public string Usage => "help <command?>";
+
+    public IEnumerable<InternalActionOption> ListOfOptions => [];
 
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)
     {
+        TableData tableData = new TableData();
         if (args == null || args.Length == 0)
         {
-            var items = new List<string[]>
-            {
-                new[] { "-", "-", "-" },
-                new[] { "Command", "Usage", "Description" },
-                new[] { "-", "-", "-" }
-            };
+
+            tableData.Columns = ["Command", "Usage", "Description", "Options"];
 
             foreach (var a in Program.internalActionManager.Actions)
-                items.Add(new[] { a.Key, a.Value.Usage, a.Value.Description });
+            {
+                Markup actionName = new Markup($"[bold]{a.Key}[/]");
+                Markup usage = new Markup($"[italic]{a.Value.Usage}[/]");
+                Markup description = new Markup($"[dim]{a.Value.Description}[/]");
 
-            items.Add(new[] { "-", "-", "-" });
+                if (a.Value.ListOfOptions.Any())
+                {
 
-            ConsoleUtilities.FormatAndAlignTable(items,
-                                                    TableFormat.CENTER_EACH_COLUMN_BASED
-                                                   );
+                    var optionsTable = new Table();
+                    optionsTable.AddColumn("Option");
+                    optionsTable.AddColumn("Description");
+
+                    foreach (var option in a.Value.ListOfOptions)
+                    {
+
+                        optionsTable.AddRow(option.OptionName, option.OptionDescription);
+                    }
+
+                    tableData.AddRow([actionName, usage, description, optionsTable]);
+                }
+                else
+                {
+                    tableData.AddRow([actionName, usage, description]);
+                }
+
+
+            }
+
+            // render the table
+            tableData.HasRoundBorders = true;
+            tableData.DisplayLinesBetweenRows = true;
+            tableData.PrintTable();
+
+
             return;
         }
 
@@ -46,17 +75,10 @@ public class Help : ICommandAction
         }
 
         var action = Program.internalActionManager.Actions[args[0]];
-        var actionData = new List<string[]>
-        {
-            new[] { "-", "-", "-" },
-            new[] { "Command", "Usage", "Description" },
-            new[] { "-", "-", "-" },
-            new[] { action.ActionName, action.Usage, action.Description },
-            new[] { "-", "-", "-" }
-        };
+        tableData.Columns = ["Command", "Usage", "Description"];
+        tableData.AddRow([action.ActionName, action.Usage, action.Description]);
 
-        ConsoleUtilities.FormatAndAlignTable(actionData,
-                                                TableFormat.CENTER_EACH_COLUMN_BASED
-                                               );
+
+        tableData.PrintTable();
     }
 }

@@ -13,22 +13,22 @@ public class ActionsLoader
 {
     public delegate void ActionLoaded(string name, string typeName, bool success, Exception? e = null);
 
-    private readonly string actionExtension = "dll";
+    private readonly string _actionExtension = "dll";
 
-    private readonly string actionFolder = @"./Data/Plugins/";
+    private readonly string _actionFolder = @"./Data/Plugins/";
 
     public ActionsLoader(string path, string extension)
     {
-        actionFolder    = path;
-        actionExtension = extension;
+        _actionFolder    = path;
+        _actionExtension = extension;
     }
 
     public event ActionLoaded? ActionLoadedEvent;
 
     public async Task<List<ICommandAction>?> Load()
     {
-        Directory.CreateDirectory(actionFolder);
-        var files = Directory.GetFiles(actionFolder, $"*.{actionExtension}", SearchOption.AllDirectories);
+        Directory.CreateDirectory(_actionFolder);
+        var files = Directory.GetFiles(_actionFolder, $"*.{_actionExtension}", SearchOption.AllDirectories);
 
         var actions = new List<ICommandAction>();
 

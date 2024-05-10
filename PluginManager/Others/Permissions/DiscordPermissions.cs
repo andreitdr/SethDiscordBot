@@ -26,7 +26,7 @@ public static class DiscordPermissions
     /// <param name="user">The user</param>
     /// <param name="role">The role</param>
     /// <returns></returns>
-    public static bool hasRole(this SocketGuildUser user, IRole role)
+    public static bool HasRole(this SocketGuildUser user, IRole role)
     {
         return user.Roles.Contains(role);
     }
@@ -37,7 +37,7 @@ public static class DiscordPermissions
     /// <param name="user">The user</param>
     /// <param name="permission">The permission</param>
     /// <returns></returns>
-    public static bool hasPermission(this SocketGuildUser user, GuildPermission permission)
+    public static bool HasPermission(this SocketGuildUser user, GuildPermission permission)
     {
         return user.Roles.Where(role => role.hasPermission(permission)).Any() || user.Guild.Owner == user;
     }
@@ -47,9 +47,9 @@ public static class DiscordPermissions
     /// </summary>
     /// <param name="user">The user</param>
     /// <returns></returns>
-    public static bool isAdmin(this SocketGuildUser user)
+    public static bool IsAdmin(this SocketGuildUser user)
     {
-        return user.hasPermission(GuildPermission.Administrator);
+        return user.HasPermission(GuildPermission.Administrator);
     }
 
     /// <summary>
@@ -57,8 +57,8 @@ public static class DiscordPermissions
     /// </summary>
     /// <param name="user">The user</param>
     /// <returns></returns>
-    public static bool isAdmin(this SocketUser user)
+    public static bool IsAdmin(this SocketUser user)
     {
-        return isAdmin((SocketGuildUser)user);
+        return IsAdmin((SocketGuildUser)user);
     }
 }

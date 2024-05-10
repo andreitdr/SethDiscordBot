@@ -1,149 +1,172 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using PluginManager.Online.Helpers;
 using PluginManager.Others;
-using OperatingSystem = PluginManager.Others.OperatingSystem;
+using PluginManager.Plugin;
+using PluginManager.Updater.Plugins;
 
 namespace PluginManager.Online;
 
 public class PluginsManager
 {
-    /// <summary>
-    ///     The Plugin Manager constructor
-    /// </summary>
-    /// <param name="plink">The link to the file where all plugins are stored</param>
-    /// <param name="vlink">The link to the file where all plugin versions are stored</param>
-    public PluginsManager(string plink, string vlink)
+    private static readonly string _DefaultBranch  = "releases";
+    private static readonly string _DefaultBaseUrl = "https://raw.githubusercontent.com/andreitdr/SethPlugins";
+
+    private static readonly string _DefaultPluginsLink = "PluginsList.json";
+
+
+    public string Branch { get; init; }
+    public string BaseUrl { get; init; }
+
+
+    private string PluginsLink => $"{BaseUrl}/{Branch}/{_DefaultPluginsLink}";
+
+    public PluginsManager(Uri baseUrl, string branch)
     {
-        PluginsLink  = plink;
-        VersionsLink = vlink;
+        BaseUrl = baseUrl.ToString();
+        Branch  = branch;
     }
-    
-    /// <summary>
-    /// The default Plugin Manager constructor. It uses the default links.
-    /// </summary>
+
+    public PluginsManager(string branch)
+    {
+        BaseUrl = _DefaultBaseUrl;
+        Branch  = branch;
+    }
+
     public PluginsManager()
     {
-        PluginsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/PluginsList";
-        VersionsLink = "https://raw.githubusercontent.com/andreitdr/SethPlugins/releases/Versions";
+        BaseUrl = _DefaultBaseUrl;
+        Branch  = _DefaultBranch;
     }
 
-    /// <summary>
-    ///     The URL of the server
-    /// </summary>
-    public string PluginsLink { get; }
-
-    public string VersionsLink { get; }
-
-    /// <summary>
-    ///     The method to load all plugins
-    /// </summary>
-    /// <returns></returns>
-    public async Task<List<string[]>> GetAvailablePlugins()
+    public async Task<List<PluginOnlineInfo>?> GetPluginsList()
     {
-        // Config.Logger.Log("Got data from " + VersionsLink, this, LogLevel.INFO);
-        try
-        {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
-            var lines = list.ToArray();
+        var                    jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
+        List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
 
-            var data = new List<string[]>();
-            var op   = Functions.GetOperatingSystem();
+        var currentOS = OperatingSystem.IsWindows() ? OSType.WINDOWS :
+                        OperatingSystem.IsLinux()   ? OSType.LINUX : 
+                        OperatingSystem.IsMacOS()   ? OSType.MACOSX : OSType.NONE;
 
-            var len = lines.Length;
-            for (var i = 0; i < len; i++)
-            {
-                if (lines[i].Length <= 2)
-                    continue;
-                var content = lines[i].Split(',');
-                var display = new string[4]; // 4 columns
-                if (op == OperatingSystem.WINDOWS)
-                {
-                    if (content[4].Contains("Windows"))
-                    {
-                        display[0] = content[0];
-                        display[1] = content[1];
-                        display[2] = content[2];
-                        display[3] =
-                            (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
-                            .ToShortString();
-                        data.Add(display);
-                    }
-                }
-                else if (op == OperatingSystem.LINUX)
-                {
-                    if (content[4].Contains("Linux"))
-                    {
-                        display[0] = content[0];
-                        display[1] = content[1];
-                        display[2] = content[2];
-                        display[3] =
-                            (await GetVersionOfPackageFromWeb(content[0]) ?? new VersionString("0.0.0"))
-                            .ToShortString();
-                        data.Add(display);
-                    }
-                }
-            }
-            return data;
-        }
-        catch (Exception exception)
-        {
-            Config.Logger.Log(message: "Failed to execute command: listplugs\nReason: " + exception.Message, source: typeof(PluginsManager), type: LogType.ERROR );
-        }
+        return result.FindAll(pl => (pl.SupportedOS & currentOS) != 0);
 
-        return null;
+
     }
 
-    public async Task<VersionString?> GetVersionOfPackageFromWeb(string pakName)
+    public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)
     {
-        var data = await ServerCom.ReadTextFromURL(VersionsLink);
-        foreach (var item in data)
-        {
-            if (item.StartsWith("#"))
-                continue;
+        List<PluginOnlineInfo>? plugins = await GetPluginsList();
+        var                     result  = plugins?.Find(p => p.Name == pluginName);
 
-            var split = item.Split(',');
-            if (split[0] == pakName)
+        return result;
+    }
+    
+    public async Task RemovePluginFromDatabase(string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
+        
+        installedPlugins.RemoveAll(p => p.PluginName == pluginName);
+        await JsonManager.SaveToJsonFile( Config.PluginDatabase,installedPlugins);
+    }
+
+    public async Task AppendPluginToDatabase(PluginInfo pluginData)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
+        
+        installedPlugins.Add(pluginData);
+        await JsonManager.SaveToJsonFile( Config.PluginDatabase, installedPlugins);
+    }
+    
+    public async Task<List<PluginInfo>> GetInstalledPlugins()
+    {
+        return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
+    }
+
+    public async Task<bool> IsPluginInstalled(string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Config.PluginDatabase));
+
+        return installedPlugins.Any(plugin => plugin.PluginName == pluginName);
+    }
+
+    public async Task CheckForUpdates()
+    {
+        var pluginUpdater = new PluginUpdater(this);
+        
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        
+        foreach (var plugin in installedPlugins)
+        {
+            if (await pluginUpdater.HasUpdate(plugin.PluginName))
             {
-                // Config.Logger.Log("Searched for " + pakName + " and found " + split[1] + " as version.", LogLevel.INFO);
-                return new VersionString(split[1]);
+                Config.Logger.Log("Updating plugin: " + plugin.PluginName, typeof(PluginsManager), LogType.INFO);
+                await pluginUpdater.UpdatePlugin(plugin.PluginName);
             }
         }
-
-        return null;
     }
 
-    /// <summary>
-    ///     The method to get plugin information by its name
-    /// </summary>
-    /// <param name="name">The plugin name</param>
-    /// <returns></returns>
-    public async Task<string[]> GetPluginLinkByName(string name)
+    public async Task<bool> MarkPluginToUninstall(string pluginName)
     {
-        try
-        {
-            var list  = await ServerCom.ReadTextFromURL(PluginsLink);
-            var lines = list.ToArray();
-            var len   = lines.Length;
-            for (var i = 0; i < len; i++)
-            {
-                var contents = lines[i].Split(',');
-                if (contents[0].ToLowerInvariant() == name.ToLowerInvariant())
-                {
-                    if (contents.Length == 6)
-                        return new[] { contents[2], contents[3], contents[5] };
-                    if (contents.Length == 5)
-                        return new[] { contents[2], contents[3], string.Empty };
-                    throw new Exception("Failed to download plugin. Invalid Argument Length");
-                }
-            }
-        }
-        catch (Exception exception)
-        {
-            Config.Logger.Log("Failed to execute command: plugin list\nReason: " + exception.Message, source: typeof(PluginsManager), type: LogType.ERROR);
-        }
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        PluginInfo? info = installedPlugins.Find(info => info.PluginName == pluginName);
 
-        return null;
+        if(info == null)
+            return false;
+
+        await RemovePluginFromDatabase(pluginName);
+        info.IsMarkedToUninstall = true;
+        await AppendPluginToDatabase(info);
+
+        return true;
+
     }
+
+    public async Task UninstallMarkedPlugins()
+    {
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        foreach(PluginInfo plugin in installedPlugins)
+        {
+            if(!plugin.IsMarkedToUninstall) continue;
+
+            await UninstallPlugin(plugin);
+        }
+    }
+
+    private async Task UninstallPlugin(PluginInfo pluginInfo)
+    {
+        File.Delete(pluginInfo.FilePath);
+
+        foreach(string dependency in pluginInfo.ListOfDependancies)
+            File.Delete(dependency);
+
+        await RemovePluginFromDatabase(pluginInfo.PluginName);
+    }
+
+    public async Task InstallPlugin(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
+    {
+        installProgress?.Report(0f);
+
+        int totalSteps = pluginData.HasDependencies ? pluginData.Dependencies.Count + 1 : 1;
+
+        float stepProgress = 1f / totalSteps; 
+
+        float currentProgress = 0f;
+
+        IProgress<float> progress = new Progress<float>((p) => {
+            installProgress?.Report(currentProgress + stepProgress * p);
+        });
+
+        await ServerCom.DownloadFileAsync(pluginData.DownLoadLink, $"{Config.AppSettings["PluginFolder"]}/{pluginData.Name}.dll", progress);
+
+        foreach (var dependency in pluginData.Dependencies)
+        {
+            await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
+            currentProgress += stepProgress;
+        }
+    }
+
+
+
 }

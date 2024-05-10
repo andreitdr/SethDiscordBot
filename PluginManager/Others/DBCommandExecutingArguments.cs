@@ -1,13 +1,19 @@
-﻿using System.Linq;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using PluginManager.Bot;
+
 
 namespace PluginManager.Others;
 
-public class DBCommandExecutingArguments
+public class DbCommandExecutingArguments
 {
-    public DBCommandExecutingArguments(
+
+    public SocketCommandContext context { get; init; }
+    public string cleanContent { get; init; }
+    public string commandUsed { get; init; }
+    public string[]? arguments { get; init; }
+    public ISocketMessageChannel Channel => context.Channel;
+
+    public DbCommandExecutingArguments(
         SocketCommandContext context, string cleanContent, string commandUsed, string[]? arguments)
     {
         this.context      = context;
@@ -16,32 +22,27 @@ public class DBCommandExecutingArguments
         this.arguments    = arguments;
     }
 
-    public DBCommandExecutingArguments(SocketUserMessage? message, DiscordSocketClient client)
+    public DbCommandExecutingArguments(SocketUserMessage? message, DiscordSocketClient client)
     {
-        this.context = new SocketCommandContext(client, message);
-        int pos = 0;
+        context = new SocketCommandContext(client, message);
+        var pos = 0;
         if (message.HasMentionPrefix(client.CurrentUser, ref pos))
         {
             var mentionPrefix = "<@" + client.CurrentUser.Id + ">";
-            this.cleanContent = message.Content.Substring(mentionPrefix.Length + 1);
+            cleanContent = message.Content.Substring(mentionPrefix.Length + 1);
         }
         else
         {
-            this.cleanContent = message.Content.Substring(Config.DiscordBot.botPrefix.Length);
+            cleanContent = message.Content.Substring(Config.DiscordBot.BotPrefix.Length);
         }
-        
-        var split = this.cleanContent.Split(' ');
+
+        var split = cleanContent.Split(' ');
 
         string[]? argsClean = null;
         if (split.Length > 1)
             argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
-        
-        this.commandUsed = split[0];
-        this.arguments = argsClean;
-    }
 
-    public SocketCommandContext context      { get; init; }
-    public string               cleanContent { get; init; }
-    public string               commandUsed  { get; init; }
-    public string[]?            arguments    { get; init; }
+        commandUsed = split[0];
+        arguments   = argsClean;
+    }
 }

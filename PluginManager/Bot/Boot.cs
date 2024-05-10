@@ -5,6 +5,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using PluginManager.Others;
 
+
 namespace PluginManager.Bot;
 
 public class Boot
@@ -12,27 +13,27 @@ public class Boot
     /// <summary>
     ///     The bot prefix
     /// </summary>
-    public readonly string botPrefix;
+    public readonly string BotPrefix;
 
     /// <summary>
     ///     The bot token
     /// </summary>
-    public readonly string botToken;
+    public readonly string BotToken;
 
     /// <summary>
     ///     The bot client
     /// </summary>
-    public DiscordSocketClient client;
+    public DiscordSocketClient Client;
 
     /// <summary>
     ///     The bot command handler
     /// </summary>
-    private CommandHandler commandServiceHandler;
+    private CommandHandler _commandServiceHandler;
 
     /// <summary>
     ///     The command service
     /// </summary>
-    private CommandService service;
+    private CommandService _service;
 
     /// <summary>
     ///     The main Boot constructor
@@ -41,8 +42,8 @@ public class Boot
     /// <param name="botPrefix">The bot prefix</param>
     public Boot(string botToken, string botPrefix)
     {
-        this.botPrefix = botPrefix;
-        this.botToken  = botToken;
+        this.BotPrefix = botPrefix;
+        this.BotToken  = botToken;
     }
 
 
@@ -50,7 +51,7 @@ public class Boot
     ///     Checks if the bot is ready
     /// </summary>
     /// <value> true if the bot is ready, otherwise false </value>
-    public bool isReady { get; private set; }
+    public bool IsReady { get; private set; }
 
     /// <summary>
     ///     The start method for the bot. This method is used to load the bot
@@ -72,32 +73,33 @@ public class Boot
                 GatewayIntents              = GatewayIntents.All
             };
 
-        client  = new DiscordSocketClient(config);
-        service = new CommandService();
+        Client  = new DiscordSocketClient(config);
+        _service = new CommandService();
 
         CommonTasks();
 
-        await client.LoginAsync(TokenType.Bot, botToken);
-        
-        await client.StartAsync();
+        await Client.LoginAsync(TokenType.Bot, BotToken);
 
-        commandServiceHandler = new CommandHandler(client, service, botPrefix);
+        await Client.StartAsync();
 
-        await commandServiceHandler.InstallCommandsAsync();
+        _commandServiceHandler = new CommandHandler(Client, _service, BotPrefix);
 
-        Config._DiscordBotClient = this;
+        await _commandServiceHandler.InstallCommandsAsync();
 
-        while (!isReady) ;
+        Config.DiscordBotClient = this;
+
+        while (!IsReady) ;
     }
 
+    
     private void CommonTasks()
     {
-        if (client == null) return;
-        client.LoggedOut    += Client_LoggedOut;
-        client.Log          += Log;
-        client.LoggedIn     += LoggedIn;
-        client.Ready        += Ready;
-        client.Disconnected += Client_Disconnected;
+        if (Client == null) return;
+        Client.LoggedOut    += Client_LoggedOut;
+        Client.Log          += Log;
+        Client.LoggedIn     += LoggedIn;
+        Client.Ready        += Ready;
+        Client.Disconnected += Client_Disconnected;
     }
 
     private async Task Client_Disconnected(Exception arg)
@@ -105,28 +107,27 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Config.AppSettings.Remove("token");
-            Config.Logger.Log("The token is invalid. Please restart the bot and enter a valid token.", source:typeof(Boot), type: LogType.CRITICAL);
+            Config.Logger.Log("The token is invalid. Please restart the bot and follow the instructions", typeof(Boot), LogType.CRITICAL);
             await Config.AppSettings.SaveToFile();
-            await Task.Delay(4000);
             Environment.Exit(0);
         }
     }
 
     private async Task Client_LoggedOut()
     {
-        Config.Logger.Log("Successfully Logged Out", source: typeof(Boot));
+        Config.Logger.Log("Successfully Logged Out", typeof(Boot));
         await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
     }
 
     private Task Ready()
     {
-        isReady = true;
+        IsReady = true;
         return Task.CompletedTask;
     }
 
     private Task LoggedIn()
     {
-        Config.Logger.Log("Successfully Logged In", source: typeof(Boot));
+        Config.Logger.Log("Successfully Logged In", typeof(Boot));
         return Task.CompletedTask;
     }
 
@@ -136,12 +137,12 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.ERROR);
+                Config.Logger.Log(message.Message, typeof(Boot), LogType.ERROR);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Config.Logger.Log(message.Message, source: typeof(Boot), type: LogType.INFO);
+                Config.Logger.Log(message.Message, typeof(Boot), LogType.INFO);
 
 
                 break;

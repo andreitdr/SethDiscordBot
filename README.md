@@ -3,7 +3,7 @@
 This is a Discord Bot made with C# that accepts plugins as extensions for more commands and events. All basic commands are built in already in the PluginManager class library. 
 This project is based on:
 
-- [.NET 6 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [.NET 8 (C#)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
 
 
@@ -19,7 +19,7 @@ Plugin Types:
 
 #### Requirements:
 - [Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
-- .NET 6 (downloaded with Visual Studio)
+- .NET 8 (downloaded with Visual Studio)
 
 First of all, create a new project (class library) in Visual Studio.
 Then import the PluginManager as reference to your project.
@@ -147,7 +147,7 @@ namespace SlashCommands
     {
         public string Name => "random";
 
-        public string Description => "Generates a random nunber between 2 values";
+        public string Description => "Generates a random number between 2 values";
 
         public bool canUseDM => true;
 
@@ -192,4 +192,51 @@ namespace SlashCommands
 You can create multiple commands, events and slash commands into one single plugin (class library). The PluginManager will detect the classes and load them individualy. If there are more commands (normal commands, events or slash commands) into a single project (class library) they can use the same resources (a class for example) that is contained within the plugin. 
 
 
-> Updated: 25.09.2023
+# Building from source
+
+## Required tools
+You must have dotnet 8 installed in order to compile.
+You might run this commands with sudo in order to install dotnet successfully.
+### On Linux
+#### Arch
+```sh
+pacman -S dotnet-sdk-8.0
+```
+
+#### Debian / Ubuntu
+```sh
+apt install dotnet-sdk-8.0
+```
+
+#### Fedora / RHEL
+```sh
+dnf install dotnet-sdk-8.0
+```
+
+### On Windows
+#### Default method
+Download and install dotnet 8 from the official Microsoft website using [this](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) link.
+
+#### Using Visual Studio
+Download and install Visual Studio 2022 and select .NET Desktop Development while installing Visual Studio 2022.
+Open Visual Studio and select Clone a repo and paste the following link: `https://github.com/andreitdr/SethDiscordBot`.
+
+Open the solution in Visual Studio and build it.
+
+> Note: You might need to manually restore the NuGet packages, but VS2022 should take care of them automatically for you.
+> If not then you will need to click on Dependencies -> Packages for each project that has a yellow sign over the Dependancies tab and click Update.
+
+## Cloning the repository
+```sh
+git clone https://github.com/andreitdr/SethDiscordBot
+cd SethDiscordBot
+dotnet build
+```
+
+After the build succeeds, check the `/bin/Debug` folders for each project to see the built items.
+
+Follow the on-screen prompts to make the bot run.
+
+> Updated: 01.04.2024
+
+

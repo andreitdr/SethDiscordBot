@@ -1,52 +1,40 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using PluginManager.Interfaces;
 using PluginManager.Others;
 
 namespace PluginManager.Loaders;
 
-internal class LoaderArgs : EventArgs
-{
-    internal string?    PluginName { get; init; }
-    internal string?    TypeName   { get; init; }
-    internal bool       IsLoaded   { get; init; }
-    internal Exception? Exception  { get; init; }
-    internal object?    Plugin     { get; init; }
-}
-
 internal class Loader
 {
-    internal Loader(string path, string extension)
+    private readonly string _SearchPath;
+    private readonly string _FileExtension;
+
+    internal delegate void FileLoadedHandler(FileLoaderResult result);
+
+    internal delegate void PluginLoadedHandler(PluginLoadResultData result);
+
+    internal event FileLoadedHandler? OnFileLoadedException;
+    internal event PluginLoadedHandler? OnPluginLoaded;
+
+    internal Loader(string searchPath, string fileExtension)
     {
-        this.path      = path;
-        this.extension = extension;
+        _SearchPath    = searchPath;
+        _FileExtension = fileExtension;
     }
 
-
-    private string path      { get; }
-    private string extension { get; }
-
-    internal event FileLoadedEventHandler? FileLoaded;
-
-    internal event PluginLoadedEventHandler? PluginLoaded;
-
-
-    internal (List<DBEvent>?, List<DBCommand>?, List<DBSlashCommand>?) Load()
+    internal async Task Load()
     {
-        List<DBEvent>        events        = new();
-        List<DBSlashCommand> slashCommands = new();
-        List<DBCommand>      commands      = new();
-
-        if (!Directory.Exists(path))
+        if (!Directory.Exists(_SearchPath))
         {
-            Directory.CreateDirectory(path);
-            return (null, null, null);
+            Directory.CreateDirectory(_SearchPath);
+            return;
         }
 
-        var files = Directory.GetFiles(path, $"*.{extension}", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(_SearchPath, $"*.{_FileExtension}", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
             try
@@ -55,90 +43,47 @@ internal class Loader
             }
             catch
             {
-                Config.Logger.Log("PluginName: " + new FileInfo(file).Name.Split('.')[0] + " not loaded", source: typeof(Loader), type: LogType.ERROR);
-                continue;
-            }
-
-            if (FileLoaded != null)
-            {
-                var args = new LoaderArgs
-                {
-                    Exception  = null,
-                    TypeName   = null,
-                    IsLoaded   = false,
-                    PluginName = new FileInfo(file).Name.Split('.')[0],
-                    Plugin     = null
-                };
-                FileLoaded.Invoke(args);
+                OnFileLoadedException?.Invoke(new FileLoaderResult(file, $"Failed to load file {file}"));
             }
         }
 
-
-        return (LoadItems<DBEvent>(), LoadItems<DBCommand>(), LoadItems<DBSlashCommand>());
+        await LoadEverythingOfType<DBEvent>();
+        await LoadEverythingOfType<DBCommand>();
+        await LoadEverythingOfType<DBSlashCommand>();
     }
 
-    internal List<T> LoadItems<T>()
+    private async Task LoadEverythingOfType<T>()
     {
-        List<T> list = new();
+        var types = AppDomain.CurrentDomain.GetAssemblies()
+                             .SelectMany(s => s.GetTypes())
+                             .Where(p => typeof(T).IsAssignableFrom(p) && !p.IsInterface);
 
-
-        try
+        foreach (var type in types)
         {
-            var interfaceType = typeof(T);
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                                 .SelectMany(a => a.GetTypes())
-                                 .Where(p => interfaceType.IsAssignableFrom(p) && p.IsClass)
-                                 .ToArray();
+            try
+            {
+                var plugin = (T?)Activator.CreateInstance(type);
 
-
-            list.Clear();
-            foreach (var type in types)
-                try
+                if (plugin is null)
                 {
-                    var plugin = (T)Activator.CreateInstance(type)!;
-                    list.Add(plugin);
-
-
-                    if (PluginLoaded != null)
-                        PluginLoaded.Invoke(new LoaderArgs
-                                            {
-                                                Exception  = null,
-                                                IsLoaded   = true,
-                                                PluginName = type.FullName,
-                                                TypeName = typeof(T) == typeof(DBCommand)      ? "DBCommand" :
-                                                           typeof(T) == typeof(DBEvent)        ? "DBEvent" :
-                                                           typeof(T) == typeof(DBSlashCommand) ? "DBSlashCommand" :
-                                                               null,
-                                                Plugin = plugin
-                                            }
-                                           );
-                }
-                catch (Exception ex)
-                {
-                    if (PluginLoaded != null)
-                        PluginLoaded.Invoke(new LoaderArgs
-                        {
-                            Exception  = ex,
-                            IsLoaded   = false,
-                            PluginName = type.FullName,
-                            TypeName   = nameof(T)
-                        });
+                    throw new Exception($"Failed to create instance of plugin with type {type.FullName} [{type.Assembly}]");
                 }
 
-            return list;
-        }
-        catch (Exception ex)
-        {
-            Config.Logger.Log(ex.Message, source: typeof(Loader), type: LogType.ERROR);
+                var pluginType = plugin switch
+                {
+                    DBEvent        => PluginType.EVENT,
+                    DBCommand      => PluginType.COMMAND,
+                    DBSlashCommand => PluginType.SLASH_COMMAND,
+                    _              => PluginType.UNKNOWN
+                };
 
-            return null;
+                OnPluginLoaded?.Invoke(new PluginLoadResultData(type.FullName, pluginType, true, plugin: plugin));
+            }
+            catch (Exception ex)
+            {
+                OnPluginLoaded?.Invoke(new PluginLoadResultData(type.FullName, PluginType.UNKNOWN, false, ex.Message));
+            }
         }
-
-        return null;
     }
 
-
-    internal delegate void FileLoadedEventHandler(LoaderArgs args);
-
-    internal delegate void PluginLoadedEventHandler(LoaderArgs args);
 }

@@ -1,28 +1,39 @@
+using System;
 using PluginManager;
+using System.Threading.Tasks;
 using Spectre.Console;
 
 namespace DiscordBot;
 
 public static class Installer
 {
-    public static void GenerateStartupConfig()
+    private static async Task AskForConfig(string key, string message)
     {
-        AnsiConsole.MarkupLine("Welcome to the [bold]SethBot[/] installer !");
-        AnsiConsole.MarkupLine("First, we need to configure the bot. Don't worry, it will be quick !");
-        
-        var token = AnsiConsole.Ask<string>("Please enter the bot [yellow]token[/]:");
-        var prefix = AnsiConsole.Ask<string>("Please enter the bot [yellow]prefix[/]:");
-        var serverId = AnsiConsole.Ask<string>("Please enter the [yellow]Server ID[/]:");
+        var value = AnsiConsole.Ask<string>($"[green]{message}[/]");
 
-        if (string.IsNullOrWhiteSpace(serverId)) serverId = "NULL";
-        Config.AppSettings.Add("token", token);
-        Config.AppSettings.Add("prefix", prefix);
-        Config.AppSettings.Add("ServerID", serverId);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            AnsiConsole.MarkupLine($"Invalid {key} !");
 
-        Config.AppSettings.SaveToFile();
-        
-        AnsiConsole.MarkupLine("[bold]Config saved ![/]");
-        
-        Config.Logger.Log("Config Saved", source: typeof(Installer));
+            Environment.Exit(-20);
+        }
+
+        Config.AppSettings.Add(key, value);
+    }
+    public static async Task GenerateStartupConfig()
+    {
+
+        if(!Config.AppSettings.ContainsKey("token"))
+            await AskForConfig("token", "Token:");
+
+        if(!Config.AppSettings.ContainsKey("prefix"))
+            await AskForConfig("prefix", "Prefix:");
+
+        if(!Config.AppSettings.ContainsKey("ServerID"))
+            await AskForConfig("ServerID", "Server ID:");
+
+        await Config.AppSettings.SaveToFile();
+
+        Config.Logger.Log("Config Saved", typeof(Installer));
     }
 }

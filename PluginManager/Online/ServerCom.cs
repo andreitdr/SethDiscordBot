@@ -23,6 +23,17 @@ public static class ServerCom
     }
 
     /// <summary>
+    ///     Get all text from a file async
+    /// </summary>
+    /// <param name="link">The link of the file</param>
+    /// <returns></returns>
+    public static async Task<string> GetAllTextFromUrl(string link)
+    {
+        var response = await OnlineFunctions.DownloadStringAsync(link);
+        return response;
+    }
+
+    /// <summary>
     ///     Download file from url
     /// </summary>
     /// <param name="URL">The url to the file</param>
@@ -30,7 +41,7 @@ public static class ServerCom
     /// <param name="progress">The <see cref="IProgress{T}" /> to track the download</param>
     /// <returns></returns>
     public static async Task DownloadFileAsync(
-        string           URL, string location, IProgress<float> progress,
+        string URL, string location, IProgress<float>? progress,
         IProgress<long>? downloadedBytes)
     {
         using (var client = new HttpClient())
@@ -48,5 +59,20 @@ public static class ServerCom
     {
         await DownloadFileAsync(URl, location, progress, null);
     }
-    
+
+    public static async Task DownloadFileAsync(string url, string location)
+    {
+        await DownloadFileAsync(url, location, null, null);
+    }
+
+    public static Task CreateDownloadTask(string URl, string location)
+    {
+        return DownloadFileAsync(URl, location, null, null);
+    }
+
+    public static Task CreateDownloadTask(string URl, string location, IProgress<float> progress)
+    {
+        return DownloadFileAsync(URl, location, progress, null);
+    }
+
 }

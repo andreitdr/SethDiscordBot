@@ -373,4 +373,6 @@ FodyWeavers.xsd
 /DiscordBot/Updater/
 .idea/
 DiscordBot/Launcher.exe
-DiscordBotUI/*
+DiscordBotUI/bin
+DiscordBotUI/obj
+/.vscode

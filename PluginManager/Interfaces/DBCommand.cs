@@ -36,7 +36,7 @@ public interface DBCommand
     ///     The main body of the command. This is what is executed when user calls the command in Server
     /// </summary>
     /// <param name="args">The disocrd Context</param>
-    void ExecuteServer(DBCommandExecutingArguments args)
+    void ExecuteServer(DbCommandExecutingArguments args)
     {
     }
 
@@ -44,7 +44,7 @@ public interface DBCommand
     ///     The main body of the command. This is what is executed when user calls the command in DM
     /// </summary>
     /// <param name="args">The disocrd Context</param>
-    void ExecuteDM(DBCommandExecutingArguments args)
+    void ExecuteDM(DbCommandExecutingArguments args)
     {
     }
 }

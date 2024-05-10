@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+        x:Class="DiscordBotUI.Views.SettingsPage"
+        Title="SettingsPage" Width="500" Height="200" MinWidth="500" MaxWidth="500" MinHeight="200" MaxHeight="200">
+	<RelativePanel Margin="10,10,10,0">
+		<Label Content="Bot Token: " Name="labelToken" RelativePanel.AlignTopWithPanel="True"/>
+		<TextBox Name="textBoxToken" Text="" IsReadOnly="False" RelativePanel.AlignRightWithPanel="True" Width="350" />
+
+		<Label Content="Bot Prefix: " Name="labelPrefix" RelativePanel.Below="labelToken" Margin="0,20,0,0"/>
+		<TextBox Name="textBoxPrefix" Text="" RelativePanel.AlignRightWithPanel="True" RelativePanel.Below="textBoxToken"
+				 IsReadOnly="False" Margin="0,10,0,0" Width="350" />
+
+		<Label Content="Server Id: " Name="labelServerId" RelativePanel.Below="labelPrefix" Margin="0,20,0,0"/>
+		<TextBox Name="textBoxServerId" Text=""  RelativePanel.AlignRightWithPanel="True"
+				 IsReadOnly="False" RelativePanel.Below="textBoxPrefix" Margin="0,10,0,0" Width="350" />
+
+		<Label Name="labelErrorMessage" Foreground="Red" RelativePanel.Below="textBoxServerId" />
+
+		<Button Name="buttonSaveSettings" Click="ButtonSaveSettingsClick" Content="Save" RelativePanel.AlignBottomWithPanel="True" Margin="0,-50,0,0"
+				Width="120" Height="40" Background="#FF008CFF" Foreground="White" BorderThickness="0" CornerRadius="5" FontWeight="Bold"
+				RelativePanel.AlignHorizontalCenterWithPanel="True" />
+	</RelativePanel>
+</Window>

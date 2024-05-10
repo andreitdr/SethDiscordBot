@@ -1,15 +1,6 @@
-﻿namespace PluginManager.Others;
+﻿using System;
 
-/// <summary>
-///     A list of operating systems
-/// </summary>
-public enum OperatingSystem
-{
-    WINDOWS,
-    LINUX,
-    MAC_OS,
-    UNKNOWN
-}
+namespace PluginManager.Others;
 
 /// <summary>
 ///     The output log type
@@ -28,20 +19,25 @@ public enum UnzipProgressType
     PERCENTAGE_FROM_TOTAL_SIZE
 }
 
-public enum SaveType
-{
-    TXT,
-    JSON
-}
-
 public enum InternalActionRunType
 {
     ON_STARTUP,
     ON_CALL
 }
 
-internal enum ExceptionExitCode : int
+[Flags]
+public enum OSType: byte
 {
-    CONFIG_FAILED_TO_LOAD = 1,
-    CONFIG_KEY_NOT_FOUND = 2,
+    NONE    = 0,
+    WINDOWS = 1 << 0,
+    LINUX   = 2 << 1,
+    MACOSX  = 3 << 2
+}
+
+public enum PluginType
+{
+    UNKNOWN,
+    COMMAND,
+    EVENT,
+    SLASH_COMMAND
 }

@@ -30,18 +30,6 @@ public static class Functions
     }
 
     /// <summary>
-    ///     Get the Operating system you are runnin on
-    /// </summary>
-    /// <returns>An Operating system</returns>
-    public static OperatingSystem GetOperatingSystem()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return OperatingSystem.WINDOWS;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return OperatingSystem.LINUX;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return OperatingSystem.MAC_OS;
-        return OperatingSystem.UNKNOWN;
-    }
-
-    /// <summary>
     ///     Copy one Stream to another <see langword="async" />
     /// </summary>
     /// <param name="stream">The base stream</param>
@@ -54,8 +42,8 @@ public static class Functions
     /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream" /> is not readable</exception>
     /// <exception cref="ArgumentException">Triggered in <paramref name="destination" /> is not writable</exception>
     public static async Task CopyToOtherStreamAsync(
-        this Stream       stream, Stream destination, int bufferSize,
-        IProgress<long>?  progress          = null,
+        this Stream stream, Stream destination, int bufferSize,
+        IProgress<long>? progress = null,
         CancellationToken cancellationToken = default)
     {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
@@ -76,7 +64,7 @@ public static class Functions
             progress?.Report(totalBytesRead);
         }
     }
-    
+
 
     public static T SelectRandomValueOf<T>()
     {

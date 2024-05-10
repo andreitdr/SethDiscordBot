@@ -7,11 +7,13 @@ namespace PluginManager.Interfaces.Logger;
 
 internal interface ILogger
 {
-    bool IsEnabled       { get; init; }
-    bool OutputToFile    { get; init; }
+    bool IsEnabled { get; init; }
+    bool OutputToFile { get; init; }
+
+    string OutputFile { get; init; }
 
     event EventHandler<Log> OnLog;
     void Log(
-        string   message   = "", string outputFile = "", Type? source = default, LogType type = LogType.INFO,
+        string message = "", Type? source = default, LogType type = LogType.INFO,
         DateTime throwTime = default);
 }
