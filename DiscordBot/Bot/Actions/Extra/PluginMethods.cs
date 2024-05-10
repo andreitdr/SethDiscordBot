@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using DiscordBot.Utilities;
@@ -19,18 +20,11 @@ internal static class PluginMethods
 {
     internal static async Task List(PluginsManager manager)
     {
-        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Loading plugins...");
+        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Reading remote database");
 
-        TableData tableData = new(new List<string>
-            {
-                "Name",
-                "Description",
-                "Version",
-                "Is Installed"
-            }
-        );
+        TableData tableData = new(["Name", "Description", "Version", "Is Installed"]);
 
-        var installedPlugins = await manager.GetInstalledPlugins();
+        var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetInstalledPlugins(), "Reading local database ");
 
         foreach (var plugin in data)
         {
@@ -39,7 +33,7 @@ internal static class PluginMethods
         }
 
         tableData.HasRoundBorders = false;
-        tableData.PrintAsTable();
+        tableData.PrintTable();
     }
 
     internal static async Task RefreshPlugins(bool quiet)

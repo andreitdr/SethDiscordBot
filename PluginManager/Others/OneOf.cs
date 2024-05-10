@@ -11,6 +11,8 @@ namespace PluginManager.Others
         public T0 Item0 { get; }
         public T1 Item1 { get; }
 
+        public object? Value => Item0 != null ? Item0 : Item1;
+
         public OneOf(T0 item0)
         {
             Item0 = item0;
@@ -35,6 +37,11 @@ namespace PluginManager.Others
         public TResult Match<TResult>(Func<T0, TResult> item0, Func<T1, TResult> item1)
         {
             return Item0 != null ? item0(Item0) : item1(Item1);
+        }
+
+        public Type GetActualType()
+        {
+            return Item0 != null ? Item0.GetType() : Item1.GetType();
         }
     }
 

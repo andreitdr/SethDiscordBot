@@ -51,6 +51,8 @@ public class PluginsManager
                         OperatingSystem.IsMacOS()   ? OSType.MACOSX : OSType.NONE;
 
         return result.FindAll(pl => (pl.SupportedOS & currentOS) != 0);
+
+
     }
 
     public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)

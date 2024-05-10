@@ -18,9 +18,4 @@
   <ItemGroup>
     <UpToDateCheckInput Remove="UI\Controls\MessageBox.axaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Spectre.Console">
-      <HintPath>..\..\..\.nuget\packages\spectre.console\0.47.0\lib\net7.0\Spectre.Console.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

@@ -62,7 +62,13 @@ internal class Loader
         {
             try
             {
-                var plugin = (T)Activator.CreateInstance(type);
+                var plugin = (T?)Activator.CreateInstance(type);
+
+                if (plugin is null)
+                {
+                    throw new Exception($"Failed to create instance of plugin with type {type.FullName} [{type.Assembly}]");
+                }
+
                 var pluginType = plugin switch
                 {
                     DBEvent        => PluginType.EVENT,
@@ -70,6 +76,7 @@ internal class Loader
                     DBSlashCommand => PluginType.SLASH_COMMAND,
                     _              => PluginType.UNKNOWN
                 };
+
                 OnPluginLoaded?.Invoke(new PluginLoadResultData(type.FullName, pluginType, true, plugin: plugin));
             }
             catch (Exception ex)

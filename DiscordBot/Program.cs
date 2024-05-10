@@ -54,22 +54,19 @@ public class Program
     /// <summary>
     ///     Start the bot without user interface
     /// </summary>
-    /// <returns>Returns the boot loader for the Discord Bot</returns>
+    /// <returns>Returns the bootloader for the Discord Bot</returns>
     private static async Task StartNoGui()
     {
-        Console.Clear();
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
 
-        Console.WriteLine($"Running on version: {AppSettings["Version"]}");
-        Console.WriteLine("Git SethBot: https://github.com/andreitdr/SethDiscordBot");
-        Console.WriteLine("Git Plugins: https://github.com/andreitdr/SethPlugins");
+        AnsiConsole.MarkupLine($"[yellow]Running on version: {AppSettings["Version"]}[/]");
+        AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
+        AnsiConsole.MarkupLine("[yellow]Git Plugins: https://github.com/andreitdr/SethPlugins [/]");
 
-        ConsoleUtilities.WriteColorText("&rRemember to close the bot using the ShutDown command (&yexit&r) or some settings won't be saved");
+        AnsiConsole.MarkupLine("[yellow]Remember to close the bot using the shutdown command ([/][red]exit[/][yellow]) or some settings won't be saved[/]");
+        AnsiConsole.MarkupLine($"[yellow]Running on [/][magenta]{(OperatingSystem.IsWindows() ? "Windows" : "Linux")}[/]");
 
-        ConsoleUtilities.WriteColorText($"Running on &m{(OperatingSystem.IsWindows() ? "Windows" : "Linux")}");
-        Console.WriteLine("============================ LOG ============================");
+        AnsiConsole.MarkupLine("[yellow]===== Seth Discord Bot =====[/]");
 
-        Console.ForegroundColor = ConsoleColor.White;
         try
         {
             var token         = AppSettings["token"];

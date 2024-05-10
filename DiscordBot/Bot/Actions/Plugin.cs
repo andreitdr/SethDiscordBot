@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using DiscordBot.Bot.Actions.Extra;
 using PluginManager;
 using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Online;
 using PluginManager.Others;
-using Spectre.Console;
+using PluginManager.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -17,7 +14,18 @@ public class Plugin: ICommandAction
     private bool pluginsLoaded;
     public string ActionName => "plugin";
     public string Description => "Manages plugins. Use plugin help for more info.";
-    public string Usage => "plugin [help|list|load|install|refresh]";
+    public string Usage => "plugin <option!>";
+
+    public IEnumerable<InternalActionOption> ListOfOptions => new List<InternalActionOption>
+    {
+        new InternalActionOption("help", "Displays this message"),
+        new InternalActionOption("list", "Lists all plugins"),
+        new InternalActionOption("load", "Loads all plugins"),
+        new InternalActionOption("install", "Installs a plugin"),
+        new InternalActionOption("refresh", "Refreshes the plugin list"),
+        new InternalActionOption("uninstall", "Uninstalls a plugin")
+    };
+
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
 
     public async Task Execute(string[] args)

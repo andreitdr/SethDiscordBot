@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBot.Bot.Actions.Extra;
 using PluginManager;
 using PluginManager.Interfaces;
 using PluginManager.Others;
+using PluginManager.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -11,7 +13,14 @@ public class SettingsConfig: ICommandAction
 {
     public string ActionName => "config";
     public string Description => "Change the settings of the bot";
-    public string Usage => "config [options] <setting?> <value?>";
+    public string Usage => "config <options!>";
+    public IEnumerable<InternalActionOption> ListOfOptions => new List<InternalActionOption>
+    {
+        new InternalActionOption("help", "Displays this message"),
+        new InternalActionOption("set", "Set a setting"),
+        new InternalActionOption("remove", "Remove a setting"),
+        new InternalActionOption("add", "Add a setting")
+    };
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
     public Task Execute(string[] args)
     {
