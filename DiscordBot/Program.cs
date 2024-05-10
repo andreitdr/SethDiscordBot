@@ -118,7 +118,8 @@ public class Program
             Console.WriteLine($"Download link: {update.UpdateUrl}");
             Console.WriteLine($"Update notes: {update.UpdateNotes}\n\n");
 
-            Environment.Exit(0);
+            Console.WriteLine("Waiting 5 seconds ...");
+            await Task.Delay(5000);
         }
 
         Logger.OnLog += (sender, logMessage) =>
