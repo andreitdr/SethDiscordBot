@@ -14,9 +14,9 @@ namespace DiscordBotCore
 {
     public class Application
     {
-        public static Application CurrentApplication { get; private set; } = null;
+        public static Application CurrentApplication { get; private set; } = null!;
 
-        private static readonly string _DefaultLogMessageFormat = "{SenderName} {Message}";
+        private static readonly string _DefaultLogMessageFormat = "{ThrowTime} {SenderName} {Message}";
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
         private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
 
@@ -30,7 +30,7 @@ namespace DiscordBotCore
         public string ServerID => ApplicationEnvironmentVariables["ServerID"];
         public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"];
         public string LogFile => $"{ApplicationEnvironmentVariables["LogFolder"]}/{DateTime.Now.ToLongDateString().Replace(" / ", "")}.log";
-        
+        public string DataFolder => _ResourcesFolder;
 
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
@@ -69,7 +69,12 @@ namespace DiscordBotCore
                 await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);
             }
 
+            
+#if DEBUG
+            CurrentApplication.PluginManager = new PluginManager("tests");
+#else
             CurrentApplication.PluginManager = new PluginManager();
+#endif
             await CurrentApplication.PluginManager.UninstallMarkedPlugins();
             await CurrentApplication.PluginManager.CheckForUpdates();
 

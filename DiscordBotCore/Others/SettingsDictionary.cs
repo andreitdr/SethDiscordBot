@@ -8,7 +8,7 @@ namespace DiscordBotCore.Others;
 public class SettingsDictionary<TKey, TValue>
 {
     private string _File { get; }
-    private IDictionary<TKey, TValue> _Dictionary;
+    protected IDictionary<TKey, TValue> _Dictionary;
 
     public SettingsDictionary(string file)
     {
@@ -84,4 +84,6 @@ public class SettingsDictionary<TKey, TValue>
         }
         set => _Dictionary[key] = value;
     }
+
+
 }

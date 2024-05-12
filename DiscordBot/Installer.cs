@@ -7,7 +7,7 @@ namespace DiscordBot;
 
 public static class Installer
 {
-    private static async Task AskForConfig(string key, string message)
+    private static void AskForConfig(string key, string message)
     {
         var value = AnsiConsole.Ask<string>($"[green]{message}[/]");
 
@@ -24,13 +24,13 @@ public static class Installer
     {
 
         if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token"))
-            await AskForConfig("token", "Token:");
+            AskForConfig("token", "Token:");
 
         if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
-            await AskForConfig("prefix", "Prefix:");
+            AskForConfig("prefix", "Prefix:");
 
         if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID"))
-            await AskForConfig("ServerID", "Server ID:");
+            AskForConfig("ServerID", "Server ID:");
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 

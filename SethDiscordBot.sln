@@ -4,8 +4,6 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{087E64F4-1E1C-4899-8223-295356C9894A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SethPlugins", "SethPlugins", "{78B6D390-F61A-453F-B38D-E4C054321615}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI\DiscordBotUI.csproj", "{71293BF7-79D0-4707-AB4B-FDD16800FA81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI.Desktop", "DiscordBotUI\DiscordBotUI.Desktop\DiscordBotUI.Desktop.csproj", "{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}"

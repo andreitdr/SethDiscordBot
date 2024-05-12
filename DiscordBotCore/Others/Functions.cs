@@ -15,7 +15,7 @@ public static class Functions
     ///     The location for the Resources folder
     ///     String: ./Data/Resources/
     /// </summary>
-    public static readonly string dataFolder = @"./Data/Resources/";
+    public static string dataFolder => Application.CurrentApplication.DataFolder;
 
     public static Color RandomColor
     {

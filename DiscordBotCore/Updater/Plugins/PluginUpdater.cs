@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using DiscordBotCore.Online;
 using DiscordBotCore.Others;
+using DiscordBotCore.Others.Exceptions;
 using DiscordBotCore.Plugin;
 
 namespace DiscordBotCore.Updater.Plugins;
@@ -20,6 +21,8 @@ public class PluginUpdater
     public async Task<PluginOnlineInfo> GetPluginInfo(string pluginName)
     {
         var result = await _PluginsManager.GetPluginDataByName(pluginName);
+        if(result is null)
+            throw new PluginNotFoundException(pluginName, _PluginsManager.BaseUrl, _PluginsManager.Branch);
         return result;
     }
     
@@ -29,7 +32,8 @@ public class PluginUpdater
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(pluginsDatabase);
         
         var result = installedPlugins.Find(p => p.PluginName == pluginName);
-        
+        if (result is null)
+            throw new PluginNotFoundException(pluginName);
         return result;
     }
 

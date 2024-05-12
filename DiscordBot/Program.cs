@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
-using DiscordBotCore.Others.Actions;
 using DiscordBotCore.Updater.Application;
 
 using Spectre.Console;
@@ -19,25 +18,18 @@ public class Program
     /// <summary>
     ///     The main entry point for the application.
     /// </summary>
-    public static void Startup(string[] args)
+    public static async Task Startup(string[] args)
     {
-        PreLoadComponents(args).Wait();
+        await LoadComponents(args);
 
-        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
-            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
-            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix")
-            )
-            Installer.GenerateStartupConfig().Wait();
-
-
-        
-        HandleInput().Wait();
+        await PrepareConsole();
+        await ConsoleInputHandler();
     }
 
     /// <summary>
     ///     The main loop for the discord bot
     /// </summary>
-    private static void NoGUI()
+    private static async Task ConsoleInputHandler()
     {
         Application.CurrentApplication.InternalActionManager.Execute("plugin", "load").Wait();
 
@@ -50,7 +42,7 @@ public class Program
             if (args.Length == 0)
                 args = null;
 
-            Application.CurrentApplication.InternalActionManager.Execute(command, args).Wait(); 
+            await Application.CurrentApplication.InternalActionManager.Execute(command, args); 
         }
     }
 
@@ -58,7 +50,7 @@ public class Program
     ///     Start the bot without user interface
     /// </summary>
     /// <returns>Returns the bootloader for the Discord Bot</returns>
-    private static async Task StartNoGui()
+    private static async Task PrepareConsole()
     {
 
         AnsiConsole.MarkupLine($"[yellow]Running on version: {Application.CurrentApplication.ApplicationEnvironmentVariables["Version"]}[/]");
@@ -83,29 +75,7 @@ public class Program
         }
     }
 
-    /// <summary>
-    ///     Handle user input arguments from the startup of the application
-    /// </summary>
-    private static async Task HandleInput()
-    {
-        await StartNoGui();
-        try
-        {
-            NoGUI();
-        }
-        catch (IOException ex)
-        {
-            if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
-            {
-                Application.CurrentApplication.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
-                           "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
-                    typeof(Program), LogType.ERROR
-                );
-            }
-        }
-    }
-
-    private static async Task PreLoadComponents(string[] args)
+    private static async Task LoadComponents(string[] args)
     {
         await Application.CreateApplication();
 
@@ -145,5 +115,12 @@ public class Program
             string messageToPrint = $"{messageColor}{logMessage.Message}[/]";
             AnsiConsole.MarkupLine(messageToPrint);
         };
+
+
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
+            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
+            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix")
+        )
+            Installer.GenerateStartupConfig().Wait();
     }
 }
