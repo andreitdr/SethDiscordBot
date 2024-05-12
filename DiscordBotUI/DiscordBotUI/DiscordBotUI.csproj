@@ -20,6 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\PluginManager\PluginManager.csproj" />
+    <ProjectReference Include="..\..\PluginManager\DiscordBotCore.csproj" />
   </ItemGroup>
 </Project>

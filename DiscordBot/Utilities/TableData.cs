@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
-using PluginManager.Others;
+using DiscordBotCore.Others;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 

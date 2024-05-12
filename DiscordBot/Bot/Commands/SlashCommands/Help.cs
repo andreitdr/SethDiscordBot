@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
-using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Others;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Loaders;
+using DiscordBotCore.Others;
 
 namespace DiscordBot.Bot.Commands.SlashCommands;
 

@@ -18,8 +18,8 @@ namespace DiscordBotUI.Bot
 
         public async Task InitializeBot()
         {
-            string token = Config.AppSettings["token"];
-            string prefix = Config.AppSettings["prefix"];
+            string token = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+            string prefix = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
             PluginManager.Bot.Boot discordBooter = new PluginManager.Bot.Boot(token, prefix);
             await discordBooter.Awake();
         }
@@ -32,14 +32,14 @@ namespace DiscordBotUI.Bot
             {
                 if (data.IsSuccess)
                 {
-                    Config.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
+                    Application.CurrentApplication.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
                         LogType.INFO
                     );
                 }
 
                 else
                 {
-                    Config.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
+                    Application.CurrentApplication.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
                         typeof(ICommandAction), LogType.ERROR
                     );
                 }
@@ -48,13 +48,13 @@ namespace DiscordBotUI.Bot
             {
                 if (data.IsSuccess)
                 {
-                    Config.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
+                    Application.CurrentApplication.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
                         LogType.INFO
                     );
                 }
                 else
                 {
-                    Config.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
+                    Application.CurrentApplication.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
                         typeof(ICommandAction), LogType.ERROR
                     );
                 }
@@ -64,13 +64,13 @@ namespace DiscordBotUI.Bot
             {
                 if (data.IsSuccess)
                 {
-                    Config.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
+                    Application.CurrentApplication.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
                         LogType.INFO
                     );
                 }
                 else
                 {
-                    Config.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
+                    Application.CurrentApplication.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
                         typeof(ICommandAction), LogType.ERROR
                     );
                 }

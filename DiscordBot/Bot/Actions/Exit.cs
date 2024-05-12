@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Others;
-using PluginManager.Others.Actions;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Others;
+using DiscordBotCore.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -24,8 +24,8 @@ public class Exit: ICommandAction
     {
         if (args is null || args.Length == 0)
         {
-            Config.Logger.Log("Exiting...", typeof(ICommandAction), LogType.WARNING);
-            await Config.AppSettings.SaveToFile();
+            Application.CurrentApplication.Logger.Log("Exiting...", typeof(ICommandAction), LogType.WARNING);
+            await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             Environment.Exit(0);
         }
         else
@@ -40,7 +40,7 @@ public class Exit: ICommandAction
 
                 case "-f":
                 case "force":
-                    Config.Logger.Log("Exiting (FORCE)...", typeof(ICommandAction), LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("Exiting (FORCE)...", typeof(ICommandAction), LogType.WARNING);
                     Environment.Exit(0);
                     break;
 

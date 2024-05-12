@@ -1,5 +1,5 @@
 using System;
-using PluginManager;
+using DiscordBotCore;
 using System.Threading.Tasks;
 using Spectre.Console;
 
@@ -18,22 +18,22 @@ public static class Installer
             Environment.Exit(-20);
         }
 
-        Config.AppSettings.Add(key, value);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add(key, value);
     }
     public static async Task GenerateStartupConfig()
     {
 
-        if(!Config.AppSettings.ContainsKey("token"))
+        if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token"))
             await AskForConfig("token", "Token:");
 
-        if(!Config.AppSettings.ContainsKey("prefix"))
+        if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
             await AskForConfig("prefix", "Prefix:");
 
-        if(!Config.AppSettings.ContainsKey("ServerID"))
+        if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID"))
             await AskForConfig("ServerID", "Server ID:");
 
-        await Config.AppSettings.SaveToFile();
+        await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 
-        Config.Logger.Log("Config Saved", typeof(Installer));
+        Application.CurrentApplication.Logger.Log("Config Saved", typeof(Installer));
     }
 }

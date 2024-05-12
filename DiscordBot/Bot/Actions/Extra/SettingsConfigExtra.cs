@@ -1,6 +1,5 @@
 using System.Linq;
-using PluginManager;
-using PluginManager.Loaders;
+using DiscordBotCore;
 
 namespace DiscordBot.Bot.Actions.Extra;
 
@@ -13,21 +12,21 @@ internal static class SettingsConfigExtra
 
         if (value is null) return;
 
-        if (!Config.AppSettings.ContainsKey(key))
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey(key))
             return;
 
-        Config.AppSettings[key] = string.Join(' ', value);
-        // Config.AppSettings.SaveToFile().Wait();
+        Application.CurrentApplication.ApplicationEnvironmentVariables[key] = string.Join(' ', value);
+        // Config.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile().Wait();
     }
 
     internal static void RemoveSettings(string key)
     {
         if (key is null) return;
 
-        if (!Config.AppSettings.ContainsKey(key))
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey(key))
             return;
 
-        Config.AppSettings.Remove(key);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Remove(key);
     }
 
     internal static void AddSettings(string key, params string[] value)
@@ -36,10 +35,10 @@ internal static class SettingsConfigExtra
 
         if (value is null) return;
 
-        if (Config.AppSettings.ContainsKey(key))
+        if (Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey(key))
             return;
 
-        Config.AppSettings.Add(key, string.Join(' ', value));
-        // Config.AppSettings.SaveToFile().Wait();
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add(key, string.Join(' ', value));
+        // Config.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile().Wait();
     }
 }

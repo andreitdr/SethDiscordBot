@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBot.Bot.Actions.Extra;
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Others;
-using PluginManager.Others.Actions;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Others;
+using DiscordBotCore.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -50,24 +50,24 @@ public class Plugin: ICommandAction
 
             case "uninstall":
                 string plugName = string.Join(' ', args, 1, args.Length-1);
-                bool result = await Config.PluginsManager.MarkPluginToUninstall(plugName);
+                bool result = await Application.CurrentApplication.PluginManager.MarkPluginToUninstall(plugName);
                 if(result)
                     Console.WriteLine($"Marked to uninstall plugin {plugName}. Please restart the bot");
                 break;
 
             case "list":
-                await PluginMethods.List(Config.PluginsManager);
+                await PluginMethods.List(Application.CurrentApplication.PluginManager);
                 break;
             case "load":
                 if (pluginsLoaded)
                 {
-                    Config.Logger.Log("Plugins already loaded", typeof(ICommandAction), LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("Plugins already loaded", typeof(ICommandAction), LogType.WARNING);
                     break;
                 }
 
-                if (Config.DiscordBot is null)
+                if (Application.CurrentApplication.DiscordBotClient is null)
                 {
-                    Config.Logger.Log("DiscordBot is null", typeof(ICommandAction), LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("DiscordBot is null", typeof(ICommandAction), LogType.WARNING);
                     break;
                 }
 
@@ -88,7 +88,7 @@ public class Plugin: ICommandAction
                     }
                 }
 
-                await PluginMethods.DownloadPlugin(Config.PluginsManager, pluginName);
+                await PluginMethods.DownloadPlugin(Application.CurrentApplication.PluginManager, pluginName);
                 break;
         }
     }

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Discord;
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Others;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Loaders;
+using DiscordBotCore.Others;
 
 namespace DiscordBot.Bot.Commands;
 
@@ -79,7 +79,7 @@ internal class Help: DBCommand
         );
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Config.AppSettings["prefix"] + cmd.Usage);
+        embedBuilder.AddField("Usage", Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"] + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

@@ -3,19 +3,19 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using DiscordBot.Utilities;
-using PluginManager.Bot;
-using PluginManager.Others;
-using PluginManager.Others.Actions;
+
+using DiscordBotCore;
+using DiscordBotCore.Bot;
+using DiscordBotCore.Others;
+using DiscordBotCore.Others.Actions;
+using DiscordBotCore.Updater.Application;
+
 using Spectre.Console;
-using static PluginManager.Config;
 
 namespace DiscordBot;
 
 public class Program
 {
-    public static InternalActionManager internalActionManager;
-
     /// <summary>
     ///     The main entry point for the application.
     /// </summary>
@@ -23,9 +23,14 @@ public class Program
     {
         PreLoadComponents(args).Wait();
 
-        if (!AppSettings.ContainsKey("ServerID") || !AppSettings.ContainsKey("token") || !AppSettings.ContainsKey("prefix"))
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
+            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
+            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix")
+            )
             Installer.GenerateStartupConfig().Wait();
 
+
+        
         HandleInput().Wait();
     }
 
@@ -34,9 +39,7 @@ public class Program
     /// </summary>
     private static void NoGUI()
     {
-        internalActionManager.Initialize().Wait();
-        internalActionManager.Execute("plugin", "load").Wait();
-        internalActionManager.Refresh().Wait();
+        Application.CurrentApplication.InternalActionManager.Execute("plugin", "load").Wait();
 
         while (true)
         {
@@ -47,7 +50,7 @@ public class Program
             if (args.Length == 0)
                 args = null;
 
-            internalActionManager.Execute(command, args).Wait(); // Execute the command
+            Application.CurrentApplication.InternalActionManager.Execute(command, args).Wait(); 
         }
     }
 
@@ -58,7 +61,7 @@ public class Program
     private static async Task StartNoGui()
     {
 
-        AnsiConsole.MarkupLine($"[yellow]Running on version: {AppSettings["Version"]}[/]");
+        AnsiConsole.MarkupLine($"[yellow]Running on version: {Application.CurrentApplication.ApplicationEnvironmentVariables["Version"]}[/]");
         AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
         AnsiConsole.MarkupLine("[yellow]Git Plugins: https://github.com/andreitdr/SethPlugins [/]");
 
@@ -69,14 +72,14 @@ public class Program
 
         try
         {
-            var token         = AppSettings["token"];
-            var prefix        = AppSettings["prefix"];
+            var token         = Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+            var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
             var discordbooter = new Boot(token, prefix);
             await discordbooter.Awake();
         }
         catch (Exception ex)
         {
-            Logger.Log(ex.ToString(), typeof(Program), LogType.CRITICAL);
+            Application.CurrentApplication.Logger.Log(ex.ToString(), typeof(Program), LogType.CRITICAL);
         }
     }
 
@@ -88,14 +91,13 @@ public class Program
         await StartNoGui();
         try
         {
-            internalActionManager = new InternalActionManager(AppSettings["PluginFolder"], "*.dll");
             NoGUI();
         }
         catch (IOException ex)
         {
             if (ex.Message == "No process is on the other end of the pipe." || (uint)ex.HResult == 0x800700E9)
             {
-                Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
+                Application.CurrentApplication.Logger.Log("An error occured while closing the bot last time. Please consider closing the bot using the &rexit&c method !\n" +
                            "There is a risk of losing all data or corruption of the save file, which in some cases requires to reinstall the bot !",
                     typeof(Program), LogType.ERROR
                 );
@@ -105,14 +107,14 @@ public class Program
 
     private static async Task PreLoadComponents(string[] args)
     {
-        await Initialize();
+        await Application.CreateApplication();
 
-        AppSettings["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        Application.CurrentApplication.ApplicationEnvironmentVariables["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        PluginManager.Updater.Application.AppUpdater updater = new();
+        AppUpdater updater = new();
         var update = await updater.CheckForUpdates();
 
-        if (update != PluginManager.Updater.Application.Update.None)
+        if (update != Update.None)
         {
             Console.WriteLine($"New update available: {update.UpdateVersion}");
             Console.WriteLine($"Download link: {update.UpdateUrl}");
@@ -122,15 +124,16 @@ public class Program
             await Task.Delay(5000);
         }
 
-        Logger.OnLog += (sender, logMessage) =>
+        Application.CurrentApplication.Logger.OnFormattedLog += async (sender, logMessage) =>
         {
+            await File.AppendAllTextAsync(Application.CurrentApplication.LogFile, logMessage.Message + "\n");
             var messageColor = logMessage.Type switch
             {
-                LogType.INFO     => "[green]",
-                LogType.WARNING  => "[yellow]",
-                LogType.ERROR    => "[red]",
+                LogType.INFO => "[green]",
+                LogType.WARNING => "[yellow]",
+                LogType.ERROR => "[red]",
                 LogType.CRITICAL => "[red]",
-                _                => "[white]"
+                _ => "[white]"
             };
 
             if (logMessage.Message.Contains('['))
@@ -139,7 +142,8 @@ public class Program
                 return;
             }
 
-            AnsiConsole.MarkupLine($"{messageColor}{logMessage.ThrowTime} {logMessage.Message} [/]");
+            string messageToPrint = $"{messageColor}{logMessage.Message}[/]";
+            AnsiConsole.MarkupLine(messageToPrint);
         };
     }
 }

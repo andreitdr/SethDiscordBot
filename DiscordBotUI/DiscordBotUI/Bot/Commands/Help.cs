@@ -79,7 +79,7 @@ internal class Help: DBCommand
         );
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Config.AppSettings["prefix"] + cmd.Usage);
+        embedBuilder.AddField("Usage", Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"] + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

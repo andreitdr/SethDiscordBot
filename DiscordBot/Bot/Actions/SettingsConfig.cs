@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBot.Bot.Actions.Extra;
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Others;
-using PluginManager.Others.Actions;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Others;
+using DiscordBotCore.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -26,7 +26,7 @@ public class SettingsConfig: ICommandAction
     {
         if (args is null)
         {
-            foreach (var settings in Config.AppSettings)
+            foreach (var settings in Application.CurrentApplication.ApplicationEnvironmentVariables)
                 Console.WriteLine(settings.Key + ": " + settings.Value);
 
             return Task.CompletedTask;

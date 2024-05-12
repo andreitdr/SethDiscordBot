@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 using DiscordBot.Utilities;
 
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Online;
-using PluginManager.Others;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Loaders;
+using DiscordBotCore.Online;
+using DiscordBotCore.Others;
+using DiscordBotCore.Plugin;
 
 using Spectre.Console;
 
@@ -18,7 +19,7 @@ namespace DiscordBot.Bot.Actions.Extra;
 
 internal static class PluginMethods
 {
-    internal static async Task List(PluginsManager manager)
+    internal static async Task List(PluginManager manager)
     {
         var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Reading remote database");
 
@@ -38,11 +39,11 @@ internal static class PluginMethods
 
     internal static async Task RefreshPlugins(bool quiet)
     {
-        await Program.internalActionManager.Execute("plugin", "load", quiet ? "-q" : string.Empty);
-        await Program.internalActionManager.Refresh();
+        await Application.CurrentApplication.InternalActionManager.Execute("plugin", "load", quiet ? "-q" : string.Empty);
+        await Application.CurrentApplication.InternalActionManager.Refresh();
     }
 
-    internal static async Task DownloadPlugin(PluginsManager manager, string pluginName)
+    internal static async Task DownloadPlugin(PluginManager manager, string pluginName)
     {
         var pluginData = await manager.GetPluginDataByName(pluginName);
         if (pluginData is null)
@@ -66,7 +67,7 @@ internal static class PluginMethods
 
                                  IProgress<float> progress = new Progress<float>(p => { downloadTask.Value = p; });
 
-                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Config.AppSettings["PluginFolder"]}/{pluginName}.dll", progress);
+                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll", progress);
 
                                  downloadTask.Increment(100);
 
@@ -76,7 +77,7 @@ internal static class PluginMethods
 
         if (!pluginData.HasDependencies)
         {
-            await manager.AppendPluginToDatabase(new PluginManager.Plugin.PluginInfo(pluginName, pluginData.Version, []));
+            await manager.AppendPluginToDatabase(new PluginInfo(pluginName, pluginData.Version, []));
             Console.WriteLine("Finished installing " + pluginName + " successfully");
             await RefreshPlugins(false);
             return;
@@ -108,8 +109,8 @@ internal static class PluginMethods
 
                                  int maxParallelDownloads = 5;
 
-                                 if (Config.AppSettings.ContainsKey("MaxParallelDownloads"))
-                                     maxParallelDownloads = int.Parse(Config.AppSettings["MaxParallelDownloads"]);
+                                 if (Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("MaxParallelDownloads"))
+                                     maxParallelDownloads = int.Parse(Application.CurrentApplication.ApplicationEnvironmentVariables["MaxParallelDownloads"]);
 
                                  var options = new ParallelOptions()
                                  {
@@ -129,13 +130,13 @@ internal static class PluginMethods
                              }
                          );
 
-        await manager.AppendPluginToDatabase(new PluginManager.Plugin.PluginInfo(pluginName, pluginData.Version, pluginData.Dependencies.Select(sep => sep.DownloadLocation).ToList()));
+        await manager.AppendPluginToDatabase(new PluginInfo(pluginName, pluginData.Version, pluginData.Dependencies.Select(sep => sep.DownloadLocation).ToList()));
         await RefreshPlugins(false);
     }
 
     internal static async Task<bool> LoadPlugins(string[] args)
     {
-        var loader = new PluginLoader(Config.DiscordBot.Client);
+        var loader = new PluginLoader(Application.CurrentApplication.DiscordBotClient.Client);
         if (args.Length == 2 && args[1] == "-q")
         {
             await loader.LoadPlugins();
@@ -147,14 +148,14 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
+                Application.CurrentApplication.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
                     LogType.INFO
                 );
             }
 
             else
             {
-                Config.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.CurrentApplication.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(ICommandAction), LogType.ERROR
                 );
             }
@@ -165,13 +166,13 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
+                Application.CurrentApplication.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
                     LogType.INFO
                 );
             }
             else
             {
-                Config.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.CurrentApplication.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(ICommandAction), LogType.ERROR
                 );
             }
@@ -183,13 +184,13 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Config.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
+                Application.CurrentApplication.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
                     LogType.INFO
                 );
             }
             else
             {
-                Config.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.CurrentApplication.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(ICommandAction), LogType.ERROR
                 );
             }

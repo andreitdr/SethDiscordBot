@@ -30,13 +30,13 @@ public partial class SettingsPage : Window
             return;
         }
 
-        Config.AppSettings.Add("token", token);
-        Config.AppSettings.Add("prefix", botPrefix);
-        Config.AppSettings.Add("ServerID", serverId);
+        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("token", token);
+        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("prefix", botPrefix);
+        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", serverId);
 
-        await Config.AppSettings.SaveToFile();
+        await Config.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 
-        Config.Logger.Log("Config Saved");
+        Application.CurrentApplication.Logger.Log("Config Saved");
 
         Close();
 

@@ -28,18 +28,18 @@ public partial class HomePage : Window
     {
         await Config.Initialize();
 
-        if(!Config.AppSettings.ContainsAllKeys("token", "prefix"))
+        if(!Config.Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsAllKeys("token", "prefix"))
         {
             await new SettingsPage().ShowDialog(this);
 
-            if (string.IsNullOrWhiteSpace(Config.AppSettings["token"]) || string.IsNullOrWhiteSpace(Config.AppSettings["prefix"]))
+            if (string.IsNullOrWhiteSpace(Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"]) || string.IsNullOrWhiteSpace(Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"]))
                 Environment.Exit(-1);
         }
 
         
-        textBoxToken.Text    = Config.AppSettings["token"];
-        textBoxPrefix.Text   = Config.AppSettings["prefix"];
-        textBoxServerId.Text = Config.AppSettings["ServerID"];
+        textBoxToken.Text    = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+        textBoxPrefix.Text   = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
+        textBoxServerId.Text = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["ServerID"];
     }
 
     private void SetTextToTB(Log logMessage)
@@ -50,7 +50,7 @@ public partial class HomePage : Window
     private async void ButtonStartBotClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
 
-        Config.Logger.OnLog += async (sender, logMessage) =>
+        Application.CurrentApplication.Logger.OnLog += async (sender, logMessage) =>
         {
             await Dispatcher.UIThread.InvokeAsync(() => SetTextToTB(logMessage), DispatcherPriority.Background);
         };

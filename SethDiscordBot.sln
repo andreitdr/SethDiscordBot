@@ -4,13 +4,13 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{087E64F4-1E1C-4899-8223-295356C9894A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManager", "PluginManager\PluginManager.csproj", "{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SethPlugins", "SethPlugins", "{78B6D390-F61A-453F-B38D-E4C054321615}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI", "DiscordBotUI\DiscordBotUI\DiscordBotUI.csproj", "{71293BF7-79D0-4707-AB4B-FDD16800FA81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI.Desktop", "DiscordBotUI\DiscordBotUI.Desktop\DiscordBotUI.Desktop.csproj", "{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotCore", "DiscordBotCore\DiscordBotCore.csproj", "{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +22,6 @@ Global
 		{087E64F4-1E1C-4899-8223-295356C9894A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{087E64F4-1E1C-4899-8223-295356C9894A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{087E64F4-1E1C-4899-8223-295356C9894A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDD4D9B3-98DD-4367-A09F-D1C5ACB61132}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71293BF7-79D0-4707-AB4B-FDD16800FA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -34,6 +30,10 @@ Global
 		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F23CF852-2042-4BDE-ABFE-D4F5BD9B991D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

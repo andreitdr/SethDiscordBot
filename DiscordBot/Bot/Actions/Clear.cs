@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PluginManager.Interfaces;
-using PluginManager.Others;
-using PluginManager.Others.Actions;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Others;
+using DiscordBotCore.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 
