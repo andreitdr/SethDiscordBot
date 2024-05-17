@@ -7,8 +7,9 @@ using Avalonia.Threading;
 
 using DiscordBotUI.Bot;
 
-using PluginManager;
-using PluginManager.Others.Logger;
+using DiscordBotCore;
+using DiscordBotCore.Others.Logger;
+using DiscordBotCore.Interfaces.Logger;
 
 namespace DiscordBotUI.Views;
 
@@ -26,31 +27,31 @@ public partial class HomePage : Window
 
     private async void HomePage_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Config.Initialize();
+        await DiscordBotCore.Application.CreateApplication();
 
-        if(!Config.Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsAllKeys("token", "prefix"))
+        if(!DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsAllKeys("token", "prefix"))
         {
             await new SettingsPage().ShowDialog(this);
 
-            if (string.IsNullOrWhiteSpace(Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"]) || string.IsNullOrWhiteSpace(Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"]))
+            if (string.IsNullOrWhiteSpace(DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["token"]) || string.IsNullOrWhiteSpace(DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"]))
                 Environment.Exit(-1);
         }
 
         
-        textBoxToken.Text    = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
-        textBoxPrefix.Text   = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
-        textBoxServerId.Text = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["ServerID"];
+        textBoxToken.Text    = DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+        textBoxPrefix.Text   = DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
+        textBoxServerId.Text = DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["ServerID"];
     }
 
-    private void SetTextToTB(Log logMessage)
+    private void SetTextToTB(ILogMessage logMessage)
     {
-        logTextBlock.Text += $"[{logMessage.Type}] [{logMessage.ThrowTime.ToShortTimeString()}] {logMessage.Message}\n";
+        logTextBlock.Text += $"[{logMessage.LogMessageType}] [{logMessage.ThrowTime.ToShortTimeString()}] {logMessage.Message}\n";
     }
 
     private async void ButtonStartBotClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
 
-        Application.CurrentApplication.Logger.OnLog += async (sender, logMessage) =>
+        DiscordBotCore.Application.CurrentApplication.Logger.OnRawLog += async (sender, logMessage) =>
         {
             await Dispatcher.UIThread.InvokeAsync(() => SetTextToTB(logMessage), DispatcherPriority.Background);
         };

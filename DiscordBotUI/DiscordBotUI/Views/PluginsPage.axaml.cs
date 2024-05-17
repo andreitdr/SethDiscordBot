@@ -6,7 +6,7 @@ using Avalonia.Interactivity;
 
 using DiscordBotUI.ViewModels;
 
-using PluginManager;
+using DiscordBotCore;
 
 namespace DiscordBotUI.Views;
 
@@ -24,9 +24,9 @@ public partial class PluginsPage: Window
 
     private async void OnPageLoaded(object? sender, RoutedEventArgs e)
     {
-        if (Config.PluginsManager is null) return;
+        if (DiscordBotCore.Application.CurrentApplication.PluginManager is null) return;
 
-        var plugins = await Config.PluginsManager.GetInstalledPlugins();
+        var plugins = await DiscordBotCore.Application.CurrentApplication.PluginManager.GetInstalledPlugins();
         var localList = new List<Plugin>();
         foreach (var plugin in plugins)
         {

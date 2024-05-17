@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-using PluginManager;
+using DiscordBotCore;
 
 namespace DiscordBotUI.Views;
 
@@ -30,13 +30,13 @@ public partial class SettingsPage : Window
             return;
         }
 
-        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("token", token);
-        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("prefix", botPrefix);
-        Config.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", serverId);
+        DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("token", token);
+        DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("prefix", botPrefix);
+        DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", serverId);
 
-        await Config.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
+        await DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 
-        Application.CurrentApplication.Logger.Log("Config Saved");
+        DiscordBotCore.Application.CurrentApplication.Logger.Log("Config Saved", this);
 
         Close();
 

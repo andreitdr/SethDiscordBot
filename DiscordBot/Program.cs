@@ -78,7 +78,6 @@ public class Program
     private static async Task LoadComponents(string[] args)
     {
         await Application.CreateApplication();
-
         Application.CurrentApplication.ApplicationEnvironmentVariables["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         AppUpdater updater = new();

@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 
-using PluginManager;
-using PluginManager.Interfaces;
-using PluginManager.Loaders;
-using PluginManager.Others;
+using DiscordBotCore;
+using DiscordBotCore.Interfaces;
+using DiscordBotCore.Loaders;
+using DiscordBotCore.Others;
 
 namespace DiscordBotUI.Bot
 {
@@ -18,15 +18,15 @@ namespace DiscordBotUI.Bot
 
         public async Task InitializeBot()
         {
-            string token = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
-            string prefix = Config.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
-            PluginManager.Bot.Boot discordBooter = new PluginManager.Bot.Boot(token, prefix);
+            string token = DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+            string prefix = DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
+            DiscordBotCore.Bot.Boot discordBooter = new DiscordBotCore.Bot.Boot(token, prefix);
             await discordBooter.Awake();
         }
 
         public async Task LoadPlugins()
         {
-            var loader = new PluginLoader(Config.DiscordBot.Client);
+            var loader = new PluginLoader(DiscordBotCore.Application.CurrentApplication.DiscordBotClient.Client);
 
             loader.OnCommandLoaded += (data) =>
             {

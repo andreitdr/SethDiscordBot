@@ -11,8 +11,8 @@ using Avalonia.Media;
 
 using DiscordBotUI.ViewModels;
 
-using PluginManager;
-using PluginManager.Plugin;
+using DiscordBotCore;
+using DiscordBotCore.Plugin;
 
 namespace DiscordBotUI.Views;
 
@@ -30,9 +30,9 @@ public partial class PluginInstaller : Window
 
     private async void OnPageLoaded(object? sender, RoutedEventArgs e)
     {
-        if (Config.PluginsManager is null) return;
+        if (DiscordBotCore.Application.CurrentApplication.PluginManager is null) return;
 
-        List<PluginOnlineInfo>? onlineInfos = await Config.PluginsManager.GetPluginsList();
+        List<PluginOnlineInfo>? onlineInfos = await DiscordBotCore.Application.CurrentApplication.PluginManager.GetPluginsList();
 
         if(onlineInfos is null) return;
 
@@ -52,11 +52,11 @@ public partial class PluginInstaller : Window
     public async void InstallPlugin(string name)
     {
         
-        PluginOnlineInfo? info = await Config.PluginsManager.GetPluginDataByName(name);
+        PluginOnlineInfo? info = await DiscordBotCore.Application.CurrentApplication.PluginManager.GetPluginDataByName(name);
         if(info is null) return;
 
         
 
-        await Config.PluginsManager.InstallPlugin(info, null);
+        await DiscordBotCore.Application.CurrentApplication.PluginManager.InstallPlugin(info, null);
     }
 }

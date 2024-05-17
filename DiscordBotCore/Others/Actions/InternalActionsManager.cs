@@ -9,6 +9,7 @@ namespace DiscordBotCore.Others.Actions;
 public class InternalActionManager
 {
     public Dictionary<string, ICommandAction> Actions = new();
+
     private readonly ActionsLoader _loader;
 
     public InternalActionManager(string path, string extension)
@@ -19,6 +20,7 @@ public class InternalActionManager
     public async Task Initialize()
     {
         var loadedActions = await _loader.Load();
+
         if (loadedActions == null)
             return;
         foreach (var action in loadedActions)
