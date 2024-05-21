@@ -46,6 +46,8 @@ public static class Entry
 
 #endif
 
+        Console.Clear();
+
         Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine(logo);
         Console.ResetColor();

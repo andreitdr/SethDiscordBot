@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -106,8 +107,11 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.CurrentApplication.Logger.Log("The token is invalid. Please restart the bot and follow the instructions", this, LogType.CRITICAL);
+            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.CRITICAL);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
+            await Task.Delay(3000);
+            
+            Process.Start(Environment.ProcessPath);
             Environment.Exit(0);
         }
     }

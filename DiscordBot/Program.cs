@@ -21,7 +21,6 @@ public class Program
     public static async Task Startup(string[] args)
     {
         await LoadComponents(args);
-
         await PrepareConsole();
         await ConsoleInputHandler();
     }
