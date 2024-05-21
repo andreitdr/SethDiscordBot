@@ -11,6 +11,14 @@ namespace DiscordBotCore.Others.Logger
         public string SenderName { get; set; }
         public LogType LogMessageType { get; set; }
 
+        public LogMessage(string message, LogType logMessageType)
+        {
+            Message = message;
+            LogMessageType = logMessageType;
+            ThrowTime = DateTime.Now;
+            SenderName = string.Empty;
+        }
+
         public LogMessage(string message, object sender)
         {
             Message = message;

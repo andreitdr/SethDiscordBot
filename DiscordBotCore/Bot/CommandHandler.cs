@@ -142,7 +142,7 @@ internal class CommandHandler
 
             Application.CurrentApplication.Logger.Log(
                 $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
-                typeof(CommandHandler),
+                this,
                 LogType.INFO
             );
 

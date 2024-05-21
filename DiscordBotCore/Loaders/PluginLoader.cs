@@ -32,7 +32,7 @@ public class PluginLoader
 
     public async Task LoadPlugins()
     {
-        Application.CurrentApplication.Logger.Log("Loading plugins...", typeof(PluginLoader));
+        Application.CurrentApplication.Logger.Log("Loading plugins...", this);
         
         var loader = new Loader(Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"], "dll");
 
@@ -46,7 +46,7 @@ public class PluginLoader
 
     private void FileLoadedException(FileLoaderResult result)
     {
-        Application.CurrentApplication.Logger.Log(result.ErrorMessage, typeof(PluginLoader), LogType.ERROR);
+        Application.CurrentApplication.Logger.Log(result.ErrorMessage, this, LogType.ERROR);
     }
 
     private async void OnPluginLoaded(PluginLoadResultData result)
@@ -74,11 +74,11 @@ public class PluginLoader
                     OnSlashCommandLoaded?.Invoke(result);
                 } 
                 else 
-                    Application.CurrentApplication.Logger.Log($"Failed to start slash command {result.PluginName}", typeof(PluginLoader), LogType.ERROR);
+                    Application.CurrentApplication.Logger.Log($"Failed to start slash command {result.PluginName}", this, LogType.ERROR);
                 break;
             case PluginType.UNKNOWN:
             default:
-                Application.CurrentApplication.Logger.Log("Unknown plugin type", typeof(PluginLoader), LogType.ERROR);
+                Application.CurrentApplication.Logger.Log("Unknown plugin type", this, LogType.ERROR);
                 break;
         }
     }

@@ -37,6 +37,25 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
+    private string GenerateLogMessage(ILogMessage message, string customFormat)
+    {
+        string messageAsString = customFormat;
+        foreach (var prop in LogMessageProperties)
+        {
+            Type messageType = typeof(ILogMessage);
+            messageAsString = messageAsString.Replace("{" + prop + "}", messageType?.GetProperty(prop)?.GetValue(message)?.ToString());
+        }
+
+        return messageAsString;
+    }
+
+    public void Log(ILogMessage message, string format)
+    {
+        OnRawLog?.Invoke(this, message);
+        string messageAsString = GenerateLogMessage(message, format);
+        OnFormattedLog?.Invoke(this, new ILogger.FormattedMessage() { Message = messageAsString, Type = message.LogMessageType });
+    }
+
     public void Log(ILogMessage message)
     {
         OnRawLog?.Invoke(this, message);
@@ -44,6 +63,8 @@ public sealed class Logger : ILogger
         OnFormattedLog?.Invoke(this, new ILogger.FormattedMessage() { Message = messageAsString, Type = message.LogMessageType }) ;
     }
 
+    public void Log(string message, LogType logType, string format) => Log(new LogMessage(message, logType), format);
+    public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
     public void Log(string message, object Sender) => Log(new LogMessage(message, Sender));
     public void Log(string message, object Sender, LogType type) => Log(new LogMessage(message, Sender, type));
     public void LogException(Exception exception, object Sender) => Log(LogMessage.CreateFromException(exception, Sender));

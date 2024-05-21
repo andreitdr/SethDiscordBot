@@ -95,7 +95,6 @@ public class Boot
     private void CommonTasks()
     {
         if (Client == null) return;
-        Client.LoggedOut    += Client_LoggedOut;
         Client.Log          += Log;
         Client.LoggedIn     += LoggedIn;
         Client.Ready        += Ready;
@@ -107,16 +106,10 @@ public class Boot
         if (arg.Message.Contains("401"))
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.CurrentApplication.Logger.Log("The token is invalid. Please restart the bot and follow the instructions", typeof(Boot), LogType.CRITICAL);
+            Application.CurrentApplication.Logger.Log("The token is invalid. Please restart the bot and follow the instructions", this, LogType.CRITICAL);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             Environment.Exit(0);
         }
-    }
-
-    private async Task Client_LoggedOut()
-    {
-        Application.CurrentApplication.Logger.Log("Successfully Logged Out", typeof(Boot));
-        await Log(new LogMessage(LogSeverity.Info, "Boot", "Successfully logged out from discord !"));
     }
 
     private Task Ready()
@@ -127,7 +120,7 @@ public class Boot
 
     private Task LoggedIn()
     {
-        Application.CurrentApplication.Logger.Log("Successfully Logged In", typeof(Boot));
+        Application.CurrentApplication.Logger.Log("Successfully Logged In", this);
         return Task.CompletedTask;
     }
 
@@ -137,12 +130,12 @@ public class Boot
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Application.CurrentApplication.Logger.Log(message.Message, typeof(Boot), LogType.ERROR);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.ERROR);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Application.CurrentApplication.Logger.Log(message.Message, typeof(Boot), LogType.INFO);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.INFO);
 
 
                 break;

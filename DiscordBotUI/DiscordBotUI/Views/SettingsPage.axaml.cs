@@ -1,7 +1,5 @@
 using Avalonia.Controls;
 
-using DiscordBotCore;
-
 namespace DiscordBotUI.Views;
 
 public partial class SettingsPage : Window

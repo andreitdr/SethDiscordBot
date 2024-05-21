@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -148,15 +149,13 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded command : " + data.PluginName, typeof(ICommandAction),
-                    LogType.INFO
-                );
+                Application.CurrentApplication.Logger.Log("Successfully loaded command : " + data.PluginName, LogType.INFO, "\t\t  > {Message}");
             }
 
             else
             {
                 Application.CurrentApplication.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(ICommandAction), LogType.ERROR
+                    typeof(PluginMethods), LogType.ERROR
                 );
             }
 
@@ -166,14 +165,12 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded event : " + data.PluginName, typeof(ICommandAction),
-                    LogType.INFO
-                );
+                Application.CurrentApplication.Logger.Log("Successfully loaded event : " + data.PluginName, LogType.INFO, "\t\t  > {Message}");
             }
             else
             {
                 Application.CurrentApplication.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(ICommandAction), LogType.ERROR
+                    typeof(PluginMethods), LogType.ERROR
                 );
             }
 
@@ -184,14 +181,12 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded slash command : " + data.PluginName, typeof(ICommandAction),
-                    LogType.INFO
-                );
+                Application.CurrentApplication.Logger.Log("Successfully loaded slash command : " + data.PluginName, LogType.INFO, "\t\t  > {Message}");
             }
             else
             {
                 Application.CurrentApplication.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(ICommandAction), LogType.ERROR
+                    typeof(PluginMethods), LogType.ERROR
                 );
             }
 
