@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 
@@ -7,6 +9,18 @@ namespace DiscordBot;
 
 public static class Entry
 {
+    /// <summary>
+    /// Some startup actions that can are executed when the console first starts. This actions are invoked externally at application launch
+    /// </summary>
+    private static readonly List<IStartupAction> StartupActions = [
+        new StartupAction("/purge_plugins", (args) => {
+            foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
+            {
+                File.Delete(plugin);
+            }
+        })
+    ];
+
     private static readonly string logo =
 #if DEBUG
 @"
@@ -36,12 +50,9 @@ public static class Entry
     public static void Main(string[] args)
     {
 #if DEBUG
-        if (args.Length == 1 && args[0] == "/purge_plugins" )
+        if (args.Length > 0)
         {
-            foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
-            {
-                File.Delete(plugin);
-            }
+            StartupActions.FirstOrDefault(action => action.Command == args[0], null)?.RunAction(args[..1]);
         }
 
 #endif
