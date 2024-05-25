@@ -23,6 +23,7 @@ public class InternalActionManager
 
         if (loadedActions == null)
             return;
+
         foreach (var action in loadedActions)
             Actions.TryAdd(action.ActionName, action);
         

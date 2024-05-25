@@ -165,6 +165,12 @@ public class PluginManager
             await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
             currentProgress += stepProgress;
         }
+
+        PluginInfo pluginInfo = new PluginInfo(pluginData.Name,
+            pluginData.Version,
+            pluginData.Dependencies.Select(dep => dep.DownloadLocation).ToList());
+
+        await AppendPluginToDatabase(pluginInfo);
     }
 
 
