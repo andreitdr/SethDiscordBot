@@ -13,9 +13,9 @@ public class ActionsLoader
 {
     public delegate void ActionLoaded(string name, string typeName, bool success, Exception? e = null);
 
-    private readonly string _actionExtension = "dll";
+    private readonly string _actionExtension;
 
-    private readonly string _actionFolder = @"./Data/Plugins/";
+    private readonly string _actionFolder;
 
     public ActionsLoader(string path, string extension)
     {

@@ -78,8 +78,9 @@ namespace DiscordBotCore
             await CurrentApplication.PluginManager.UninstallMarkedPlugins();
             await CurrentApplication.PluginManager.CheckForUpdates();
 
-            CurrentApplication.InternalActionManager = new InternalActionManager(CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"], "*.dll");
+            CurrentApplication.InternalActionManager = new InternalActionManager(CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"], "dll");
             await CurrentApplication.InternalActionManager.Initialize();
+
         }
 
 

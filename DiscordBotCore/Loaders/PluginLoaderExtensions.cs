@@ -21,13 +21,13 @@ internal static class PluginLoaderExtensions
                 throw new ArgumentNullException(nameof(dbEvent));
             }
 
-
             dbEvent.Start(pluginLoader._Client);
             return true;
         }
         catch (Exception e)
         {
             Application.CurrentApplication.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.ERROR);
+            Application.CurrentApplication.Logger.LogException(e, typeof(PluginLoader));
             return false;
         }
     }

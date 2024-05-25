@@ -30,7 +30,7 @@ public class Program
     /// </summary>
     private static async Task ConsoleInputHandler()
     {
-        Application.CurrentApplication.InternalActionManager.Execute("plugin", "load").Wait();
+        await Application.CurrentApplication.InternalActionManager.Execute("plugin", "load");
 
         while (true)
         {
@@ -92,9 +92,8 @@ public class Program
             await Task.Delay(5000);
         }
 
-        Application.CurrentApplication.Logger.OnFormattedLog += async (sender, logMessage) =>
+        Application.CurrentApplication.Logger.OnFormattedLog += (sender, logMessage) =>
         {
-            await File.AppendAllTextAsync(Application.CurrentApplication.LogFile, logMessage.Message + "\n");
             var messageColor = logMessage.Type switch
             {
                 LogType.INFO => "[green]",
@@ -117,8 +116,8 @@ public class Program
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
-            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix")
-        )
-            Installer.GenerateStartupConfig().Wait();
+            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
+                await Installer.GenerateStartupConfig();
     }
+    
 }

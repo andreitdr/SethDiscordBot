@@ -72,7 +72,7 @@ namespace DiscordBotCore.Others.Logger
 
         public static LogMessage CreateFromException(Exception exception, object Sender)
         {
-            LogMessage message = new LogMessage(exception.Message, Sender, LogType.ERROR);
+            LogMessage message = new LogMessage(exception.ToString(), Sender, LogType.ERROR);
             return message;
         }
     }

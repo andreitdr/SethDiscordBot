@@ -37,6 +37,11 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
+    private void LogToFile(string message)
+    {
+        System.IO.File.AppendAllText(Application.CurrentApplication.LogFile, message);
+    }
+
     private string GenerateLogMessage(ILogMessage message, string customFormat)
     {
         string messageAsString = customFormat;
@@ -54,6 +59,7 @@ public sealed class Logger : ILogger
         OnRawLog?.Invoke(this, message);
         string messageAsString = GenerateLogMessage(message, format);
         OnFormattedLog?.Invoke(this, new ILogger.FormattedMessage() { Message = messageAsString, Type = message.LogMessageType });
+        LogToFile(messageAsString);
     }
 
     public void Log(ILogMessage message)
@@ -61,6 +67,7 @@ public sealed class Logger : ILogger
         OnRawLog?.Invoke(this, message);
         string messageAsString = GenerateLogMessage(message);
         OnFormattedLog?.Invoke(this, new ILogger.FormattedMessage() { Message = messageAsString, Type = message.LogMessageType }) ;
+        LogToFile(messageAsString);
     }
 
     public void Log(string message, LogType logType, string format) => Log(new LogMessage(message, logType), format);
