@@ -30,12 +30,13 @@
         {
             menuStrip1 = new MenuStrip();
             pluginListToolStripMenuItem = new ToolStripMenuItem();
+            themesToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { pluginListToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { pluginListToolStripMenuItem, themesToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(800, 24);
@@ -47,6 +48,12 @@
             pluginListToolStripMenuItem.Name = "pluginListToolStripMenuItem";
             pluginListToolStripMenuItem.Size = new Size(74, 20);
             pluginListToolStripMenuItem.Text = "Plugin List";
+            // 
+            // themesToolStripMenuItem
+            // 
+            themesToolStripMenuItem.Name = "themesToolStripMenuItem";
+            themesToolStripMenuItem.Size = new Size(60, 20);
+            themesToolStripMenuItem.Text = "Themes";
             // 
             // MainWindow
             // 
@@ -67,5 +74,6 @@
 
         private MenuStrip menuStrip1;
         private ToolStripMenuItem pluginListToolStripMenuItem;
+        private ToolStripMenuItem themesToolStripMenuItem;
     }
 }

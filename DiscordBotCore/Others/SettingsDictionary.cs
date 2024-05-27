@@ -35,7 +35,8 @@ public class SettingsDictionary<TKey, TValue>
         if(!File.Exists(_File))
         {
             _Dictionary = new Dictionary<TKey, TValue>();
-            return false;
+            await SaveToFile();
+            return true;
         }
 
         string fileAsText = await File.ReadAllTextAsync(_File);
