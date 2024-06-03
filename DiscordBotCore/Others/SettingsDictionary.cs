@@ -36,17 +36,21 @@ public class SettingsDictionary<TKey, TValue>
         {
             _Dictionary = new Dictionary<TKey, TValue>();
             await SaveToFile();
-            return true;
+            return false;
         }
 
         string fileAsText = await File.ReadAllTextAsync(_File);
         if(string.IsNullOrEmpty(fileAsText) || string.IsNullOrWhiteSpace(fileAsText))
         {
             _Dictionary = new Dictionary<TKey, TValue>();
+            await SaveToFile();
             return false;
         }
 
         _Dictionary = await JsonManager.ConvertFromJson<IDictionary<TKey,TValue>>(fileAsText);
+
+        if (_Dictionary.Keys.Count == 0)
+            return false;
 
         return true;
     }

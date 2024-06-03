@@ -28,7 +28,7 @@ namespace DiscordBotCore
         private static readonly string _MaxParallelDownloads = "3";
 
         public string ServerID => ApplicationEnvironmentVariables["ServerID"];
-        public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"];
+        public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"] ?? _PluginsDatabaseFile;
         public string LogFile => $"{ApplicationEnvironmentVariables["LogFolder"]}/{DateTime.Now.ToLongDateString().Replace(" / ", "")}.log";
         public string DataFolder => _ResourcesFolder;
 
