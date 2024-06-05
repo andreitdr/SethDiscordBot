@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -73,6 +74,17 @@ public static class ServerCom
     public static Task CreateDownloadTask(string URl, string location, IProgress<float> progress)
     {
         return DownloadFileAsync(URl, location, progress, null);
+    }
+
+    public static async Task<string> RunConsoleCommand(string console, string command)
+    {
+        Process process = new();
+        process.StartInfo.FileName = console;
+        process.StartInfo.Arguments = command;
+        process.Start();
+        await process.WaitForExitAsync();
+        return await process.StandardOutput.ReadToEndAsync();
+
     }
 
 }

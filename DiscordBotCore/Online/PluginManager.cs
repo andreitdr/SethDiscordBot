@@ -148,7 +148,7 @@ public class PluginManager
     {
         installProgress?.Report(0f);
 
-        int totalSteps = pluginData.HasDependencies ? pluginData.Dependencies.Count + 1 : 1;
+        int totalSteps = pluginData.HasDependencies ? pluginData.Dependencies.Count + pluginData.ScriptDependencies.Count + 1: 1;
 
         float stepProgress = 1f / totalSteps; 
 
@@ -166,9 +166,21 @@ public class PluginManager
             currentProgress += stepProgress;
         }
 
-        PluginInfo pluginInfo = new PluginInfo(pluginData.Name,
+        foreach(var scriptDependency in pluginData.ScriptDependencies)
+        {
+
+            string console = OperatingSystem.IsWindows() ? "cmd" : "bash";
+            string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
+
+            await ServerCom.RunConsoleCommand(console, arguments);
+            currentProgress += stepProgress;
+        }
+
+        PluginInfo pluginInfo = new PluginInfo(
+            pluginData.Name,
             pluginData.Version,
-            pluginData.Dependencies.Select(dep => dep.DownloadLocation).ToList());
+            pluginData.Dependencies.Select(dep => dep.DownloadLocation).ToList()
+        );
 
         await AppendPluginToDatabase(pluginInfo);
     }
