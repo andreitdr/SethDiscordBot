@@ -36,6 +36,24 @@ namespace DiscordBot.Utilities
             Rows.Add(row);
         }
 
+        public Table AsTable()
+        {
+
+           var table = new Table();
+            table.Border(this.HasRoundBorders ? TableBorder.Rounded : TableBorder.Square);
+            table.AddColumns(this.Columns.ToArray());
+            table.ShowRowSeparators = DisplayLinesBetweenRows;
+            foreach (var row in this.Rows)
+            {
+                table.AddRow(row.Select(element => element.Match(
+                    (data) => new Markup(data),
+                    (data) => data
+                )));
+            }
+
+            return table;
+        }
+
         public void PrintTable()
         {
             var table = new Table();

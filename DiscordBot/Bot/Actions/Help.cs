@@ -9,6 +9,7 @@ using DiscordBotCore.Interfaces;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace DiscordBot.Bot.Actions;
 
@@ -27,9 +28,12 @@ public class Help: ICommandAction
     public async Task Execute(string[] args)
     {
         TableData tableData = new TableData();
+        
         if (args == null || args.Length == 0)
         {
 
+            AnsiConsole.MarkupLine("[bold][green]Please make this window full screen to check all the commands.[/][/]");
+         
             tableData.Columns = ["Command", "Usage", "Description", "Options"];
 
             foreach (var a in Application.CurrentApplication.InternalActionManager.Actions)
@@ -40,24 +44,12 @@ public class Help: ICommandAction
 
                 if (a.Value.ListOfOptions.Any())
                 {
-
-                    var optionsTable = new Table();
-                    optionsTable.AddColumn("Option");
-                    optionsTable.AddColumn("Description");
-
-                    foreach (var option in a.Value.ListOfOptions)
-                    {
-
-                        optionsTable.AddRow(option.OptionName, option.OptionDescription);
-                    }
-
-                    tableData.AddRow([actionName, usage, description, optionsTable]);
+                    tableData.AddRow([actionName, usage, description, CreateTableWithSubOptions(a.Value.ListOfOptions)]);
                 }
                 else
                 {
                     tableData.AddRow([actionName, usage, description]);
                 }
-
 
             }
 
@@ -82,5 +74,29 @@ public class Help: ICommandAction
 
 
         tableData.PrintTable();
+    }
+
+    private Table CreateTableWithSubOptions(IEnumerable<InternalActionOption> options)
+    {
+        var tableData = new TableData();
+        tableData.Columns = ["Option", "Description", "SubOptions"];
+
+        foreach (var option in options)
+        {
+
+            Markup optionName = new Markup($"{option.OptionName}");
+            Markup description = new Markup($"{option.OptionDescription}");
+
+            if(option.SubOptions.Any())
+            {
+                tableData.AddRow([optionName, description, CreateTableWithSubOptions(option.SubOptions)]);
+
+            }else {
+                tableData.AddRow([optionName, description]);
+            }
+
+        }
+
+        return tableData.AsTable();
     }
 }

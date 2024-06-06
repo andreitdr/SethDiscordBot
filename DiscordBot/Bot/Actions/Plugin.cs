@@ -21,10 +21,15 @@ public class Plugin: ICommandAction
         new InternalActionOption("help", "Displays this message"),
         new InternalActionOption("list", "Lists all plugins"),
         new InternalActionOption("load", "Loads all plugins"),
-        new InternalActionOption("install", "Installs a plugin"),
+        new InternalActionOption("install", "Installs a plugin", [
+            new InternalActionOption("name", "The name of the plugin to install")
+        ]),
         new InternalActionOption("refresh", "Refreshes the plugin list"),
         new InternalActionOption("uninstall", "Uninstalls a plugin"),
-        new InternalActionOption("branch", "Sets a plugin option")
+        new InternalActionOption("branch", "Sets a plugin option", [
+            new InternalActionOption("set", "Sets the branch"),
+            new InternalActionOption("get", "Gets the branch")
+        ])
     };
 
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
