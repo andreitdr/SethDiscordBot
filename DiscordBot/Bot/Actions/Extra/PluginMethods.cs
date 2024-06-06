@@ -17,8 +17,11 @@ namespace DiscordBot.Bot.Actions.Extra;
 
 internal static class PluginMethods
 {
+
     internal static async Task List(PluginManager manager)
     {
+        Console.WriteLine($"Fetching plugin list from branch {manager.Branch} ...");
+
         var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Reading remote database");
 
         TableData tableData = new(["Name", "Description", "Version", "Is Installed"]);
@@ -73,10 +76,17 @@ internal static class PluginMethods
                              }
                          );
 
-        if (!pluginData.HasDependencies)
+        if (!pluginData.HasFileDependencies)
         {
-            await manager.AppendPluginToDatabase(new PluginInfo(pluginName, pluginData.Version, []));
+            if (pluginData.HasScriptDependencies)
+            {
+                Console.WriteLine("Executing post install scripts ...");
+                await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
+            }
+
+            PluginInfo pluginInfo = new(pluginName, pluginData.Version, new List<string>());
             Console.WriteLine("Finished installing " + pluginName + " successfully");
+            await manager.AppendPluginToDatabase(pluginInfo);
             await RefreshPlugins(false);
             return;
         }
@@ -127,6 +137,13 @@ internal static class PluginMethods
 
                              }
                          );
+
+        
+        if(pluginData.HasScriptDependencies)
+        {
+            Console.WriteLine("Executing post install scripts ...");
+            await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
+        }
 
         await manager.AppendPluginToDatabase(new PluginInfo(pluginName, pluginData.Version, pluginData.Dependencies.Select(sep => sep.DownloadLocation).ToList()));
         await RefreshPlugins(false);

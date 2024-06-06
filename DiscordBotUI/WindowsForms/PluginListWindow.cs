@@ -32,7 +32,7 @@ namespace DiscordBotUI_Windows.WindowsForms
             {
                 bool isInstalled = await DiscordBotCore.Application.CurrentApplication.PluginManager.IsPluginInstalled(plugin.Name);
                 string isInstalledMessage = isInstalled ? "Installed" : "Not Installed";
-                int rowIndex = dataGridView1.Rows.Add(plugin.Name, plugin.Description, plugin.HasDependencies, plugin.Version, isInstalledMessage);
+                int rowIndex = dataGridView1.Rows.Add(plugin.Name, plugin.Description, plugin.HasFileDependencies, plugin.Version, isInstalledMessage);
                 dataGridView1.Rows[rowIndex].Cells["Install"] = new DataGridViewButtonCell()
                 {
                     Value = isInstalled ? "Remove" : "Install",

@@ -76,14 +76,13 @@ public static class ServerCom
         return DownloadFileAsync(URl, location, progress, null);
     }
 
-    public static async Task<string> RunConsoleCommand(string console, string command)
+    public static async Task RunConsoleCommand(string console, string command)
     {
         Process process = new();
         process.StartInfo.FileName = console;
         process.StartInfo.Arguments = command;
         process.Start();
         await process.WaitForExitAsync();
-        return await process.StandardOutput.ReadToEndAsync();
 
     }
 

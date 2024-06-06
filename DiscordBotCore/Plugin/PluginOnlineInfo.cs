@@ -15,7 +15,8 @@ public class PluginOnlineInfo
     public List<OnlineDependencyInfo> Dependencies { get; private set; }
     public List<OnlineScriptDependencyInfo> ScriptDependencies { get; private set; }
     public OSType SupportedOS { get; private set; }
-    public bool HasDependencies { get; init; }
+    public bool HasFileDependencies => Dependencies is not null && Dependencies.Count > 0;
+    public bool HasScriptDependencies => ScriptDependencies is not null && ScriptDependencies.Count > 0;
 
     [JsonConstructor]
     public PluginOnlineInfo(string name, PluginVersion version, string description, string downLoadLink, OSType supportedOS, List<OnlineDependencyInfo> dependencies, List<OnlineScriptDependencyInfo> scriptDependencies)
@@ -26,7 +27,6 @@ public class PluginOnlineInfo
         DownLoadLink = downLoadLink;
         SupportedOS = supportedOS;
         Dependencies = dependencies;
-        HasDependencies = dependencies.Count > 0;
         ScriptDependencies = scriptDependencies;
     }
 
@@ -39,7 +39,6 @@ public class PluginOnlineInfo
         SupportedOS     = supportedOS;
         Dependencies    = new List<OnlineDependencyInfo>();
         ScriptDependencies = new List<OnlineScriptDependencyInfo>();
-        HasDependencies = false;
     }
 
     public static async Task<PluginOnlineInfo> FromRawData(string jsonText)

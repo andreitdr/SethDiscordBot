@@ -20,8 +20,8 @@ public class JsonManager
         var str = new MemoryStream();
         await JsonSerializer.SerializeAsync(str, Data, typeof(T), new JsonSerializerOptions
             {
-                WriteIndented = true
-            }
+                WriteIndented = true,
+        }
         );
         await File.WriteAllBytesAsync(file, str.ToArray());
         await str.FlushAsync();

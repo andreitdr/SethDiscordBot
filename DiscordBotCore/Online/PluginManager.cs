@@ -17,8 +17,8 @@ public class PluginManager
     private static readonly string _DefaultPluginsLink = "PluginsList.json";
 
 
-    public string Branch { get; init; }
-    public string BaseUrl { get; init; }
+    public string Branch { get; set; }
+    public string BaseUrl { get; set; }
 
 
     private string PluginsLink => $"{BaseUrl}/{Branch}/{_DefaultPluginsLink}";
@@ -69,6 +69,13 @@ public class PluginManager
         
         installedPlugins.RemoveAll(p => p.PluginName == pluginName);
         await JsonManager.SaveToJsonFile(Application.CurrentApplication.PluginDatabase,installedPlugins);
+    }
+
+    public async Task ExecutePluginInstallScripts(List<OnlineScriptDependencyInfo> listOfDependencies)
+    {
+        string consoleType = OperatingSystem.IsWindows() ? "cmd.exe" : "bash";
+        foreach(var script in listOfDependencies)
+            await ServerCom.RunConsoleCommand(consoleType, "/c " + script.ScriptContent);
     }
 
     public async Task AppendPluginToDatabase(PluginInfo pluginData)
@@ -148,7 +155,8 @@ public class PluginManager
     {
         installProgress?.Report(0f);
 
-        int totalSteps = pluginData.HasDependencies ? pluginData.Dependencies.Count + pluginData.ScriptDependencies.Count + 1: 1;
+        int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1: 1;
+        totalSteps += pluginData.HasScriptDependencies ? pluginData.ScriptDependencies.Count : 0;
 
         float stepProgress = 1f / totalSteps; 
 
@@ -160,26 +168,29 @@ public class PluginManager
 
         await ServerCom.DownloadFileAsync(pluginData.DownLoadLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginData.Name}.dll", progress);
 
-        foreach (var dependency in pluginData.Dependencies)
-        {
-            await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
-            currentProgress += stepProgress;
-        }
+        if (pluginData.HasFileDependencies)
+            foreach (var dependency in pluginData.Dependencies)
+            {
+                await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
+                currentProgress += stepProgress;
+            }
 
-        foreach(var scriptDependency in pluginData.ScriptDependencies)
-        {
+        if (pluginData.HasScriptDependencies)
+            foreach (var scriptDependency in pluginData.ScriptDependencies)
+            {
 
-            string console = OperatingSystem.IsWindows() ? "cmd" : "bash";
-            string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
+                string console = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
+                string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
 
-            await ServerCom.RunConsoleCommand(console, arguments);
-            currentProgress += stepProgress;
-        }
+                await ServerCom.RunConsoleCommand(console, arguments);
+                currentProgress += stepProgress;
+            }
 
         PluginInfo pluginInfo = new PluginInfo(
             pluginData.Name,
             pluginData.Version,
-            pluginData.Dependencies.Select(dep => dep.DownloadLocation).ToList()
+            pluginData.Dependencies.Select(dep => dep.DownloadLocation)
+                                   .ToList()
         );
 
         await AppendPluginToDatabase(pluginInfo);

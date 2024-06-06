@@ -23,7 +23,8 @@ public class Plugin: ICommandAction
         new InternalActionOption("load", "Loads all plugins"),
         new InternalActionOption("install", "Installs a plugin"),
         new InternalActionOption("refresh", "Refreshes the plugin list"),
-        new InternalActionOption("uninstall", "Uninstalls a plugin")
+        new InternalActionOption("uninstall", "Uninstalls a plugin"),
+        new InternalActionOption("branch", "Sets a plugin option")
     };
 
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
@@ -44,6 +45,38 @@ public class Plugin: ICommandAction
 
         switch (args[0])
         {
+            case "branch":
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Usage : plugin branch <option> <value>");
+                    return;
+                }
+
+                string option = args[1];
+                switch (option)
+                {
+                    case "set":
+                    {
+                        if (args.Length < 3)
+                        {
+                            Console.WriteLine("Usage : plugin branch set <value>");
+                            return;
+                        }
+
+                        string value = string.Join(' ', args, 2, args.Length - 2);
+                        Application.CurrentApplication.PluginManager.Branch = value;
+                        Console.WriteLine($"Branch set to {value}");
+                    }
+                        break;
+                    case "get":
+                        Console.WriteLine($"Branch is set to {Application.CurrentApplication.PluginManager.Branch}");
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid option");
+                        break;
+                }
+                break;
             case "refresh":
                 await PluginMethods.RefreshPlugins(true);
                 break;
@@ -54,7 +87,7 @@ public class Plugin: ICommandAction
                 if(result)
                     Console.WriteLine($"Marked to uninstall plugin {plugName}. Please restart the bot");
                 break;
-
+                
             case "list":
                 await PluginMethods.List(Application.CurrentApplication.PluginManager);
                 break;

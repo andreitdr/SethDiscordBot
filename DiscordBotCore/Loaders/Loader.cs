@@ -34,7 +34,10 @@ internal class Loader
             return;
         }
 
-        var files = Directory.GetFiles(_SearchPath, $"*.{_FileExtension}", SearchOption.TopDirectoryOnly);
+        var installedPlugins = await Application.CurrentApplication.PluginManager.GetInstalledPlugins();
+        var files = installedPlugins.Select(plugin => plugin.FilePath).ToArray();
+        
+        //var files = Directory.GetFiles(_SearchPath, $"*.{_FileExtension}", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
             try
