@@ -21,7 +21,9 @@ public class Help: ICommandAction
 
     public string Usage => "help <command?>";
 
-    public IEnumerable<InternalActionOption> ListOfOptions => [];
+    public IEnumerable<InternalActionOption> ListOfOptions => [
+        new InternalActionOption("command", "The command to get help for")
+        ];
 
     public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
 

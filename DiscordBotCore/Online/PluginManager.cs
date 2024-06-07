@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using DiscordBotCore.Others;
 using DiscordBotCore.Plugin;
@@ -58,7 +59,13 @@ public class PluginManager
     public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)
     {
         List<PluginOnlineInfo>? plugins = await GetPluginsList();
-        var                     result  = plugins?.Find(p => p.Name == pluginName);
+        
+        if(plugins == null)
+            return null;
+
+        // try to get the best matching plugin using the pluginName as a search query
+        PluginOnlineInfo? result = plugins.Find(pl => pl.Name.ToLower().Contains(pluginName.ToLower()));
+        if(result == null) return null;
 
         return result;
     }
@@ -145,10 +152,43 @@ public class PluginManager
     {
         File.Delete(pluginInfo.FilePath);
 
-        foreach(string dependency in pluginInfo.ListOfDependancies)
-            File.Delete(dependency);
+        foreach (var dependency in pluginInfo.ListOfDependancies)
+            File.Delete(dependency.Value);
 
         await RemovePluginFromDatabase(pluginInfo.PluginName);
+    }
+
+    public async Task<string> GetDependencyLocation(string dependencyName)
+    {
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+
+        foreach (var plugin in installedPlugins)
+        {
+            if (plugin.ListOfDependancies.ContainsKey(dependencyName))
+                return plugin.ListOfDependancies[dependencyName];
+        }
+
+        throw new Exception("Dependency not found");
+    }
+
+    public async Task<string> GetDependencyLocation(string pluginName, string dependencyName)
+    {
+        PluginOnlineInfo? pluginData = await GetPluginDataByName(pluginName);
+
+        if(pluginData == null)
+            throw new Exception("Plugin not found");
+
+        var dependency = pluginData.Dependencies.Find(dep => dep.DependencyName == dependencyName);
+
+        if(dependency == null)
+            throw new Exception("Dependency not found");
+
+        return dependency.DownloadLocation;
+    }
+
+    public string GenerateDependencyLocation(string pluginName, string dependencyName)
+    {
+        return Path.Combine(Environment.CurrentDirectory, $"Libraries/{pluginName}/{dependencyName}");
     }
 
     public async Task InstallPlugin(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
@@ -171,7 +211,9 @@ public class PluginManager
         if (pluginData.HasFileDependencies)
             foreach (var dependency in pluginData.Dependencies)
             {
-                await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progress);
+                string dependencyLocation = GenerateDependencyLocation(pluginData.Name, dependency.DownloadLocation);
+                await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependencyLocation, progress);
+                
                 currentProgress += stepProgress;
             }
 
@@ -186,12 +228,7 @@ public class PluginManager
                 currentProgress += stepProgress;
             }
 
-        PluginInfo pluginInfo = new PluginInfo(
-            pluginData.Name,
-            pluginData.Version,
-            pluginData.Dependencies.Select(dep => dep.DownloadLocation)
-                                   .ToList()
-        );
+        PluginInfo pluginInfo = PluginInfo.FromOnlineInfo(pluginData);
 
         await AppendPluginToDatabase(pluginInfo);
     }

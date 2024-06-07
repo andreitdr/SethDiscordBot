@@ -53,6 +53,9 @@ internal static class PluginMethods
             return;
         }
 
+        // rename the plugin to the name of the plugin
+        pluginName = pluginData.Name;
+
         var pluginLink = pluginData.DownLoadLink;
 
 
@@ -68,7 +71,7 @@ internal static class PluginMethods
 
                                  IProgress<float> progress = new Progress<float>(p => { downloadTask.Value = p; });
 
-                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll", progress);
+                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginData.Name}.dll", progress);
 
                                  downloadTask.Increment(100);
 
@@ -84,7 +87,7 @@ internal static class PluginMethods
                 await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
             }
 
-            PluginInfo pluginInfo = new(pluginName, pluginData.Version, new List<string>());
+            PluginInfo pluginInfo = new(pluginName, pluginData.Version, []);
             Console.WriteLine("Finished installing " + pluginName + " successfully");
             await manager.AppendPluginToDatabase(pluginInfo);
             await RefreshPlugins(false);
@@ -129,7 +132,8 @@ internal static class PluginMethods
                                  await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
                                      {
                                          tuple.Item1.IsIndeterminate = false;
-                                         await ServerCom.DownloadFileAsync(tuple.Item3, $"./{tuple.Item4}", tuple.Item2);
+                                         string downloadLocation = manager.GenerateDependencyLocation(pluginName, tuple.Item4);
+                                         await ServerCom.DownloadFileAsync(tuple.Item3, downloadLocation, tuple.Item2);
                                      }
                                  );
 
@@ -145,7 +149,7 @@ internal static class PluginMethods
             await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
         }
 
-        await manager.AppendPluginToDatabase(new PluginInfo(pluginName, pluginData.Version, pluginData.Dependencies.Select(sep => sep.DownloadLocation).ToList()));
+        await manager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginData));
         await RefreshPlugins(false);
     }
 

@@ -45,6 +45,12 @@ public class InternalActionManager
 
         try
         {
+            if (Actions[actionName].RunType == InternalActionRunType.ON_STARTUP)
+            {
+                Application.CurrentApplication.Logger.Log($"Action {actionName} is not executable", this, LogType.ERROR);
+                return false;
+            }    
+
             await Actions[actionName].Execute(args);
             return true;
         }

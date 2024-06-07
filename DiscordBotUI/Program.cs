@@ -9,38 +9,7 @@ using DiscordBotUI_Windows.WindowsForms;
 
 namespace DiscordBotUI
 {
-
-    public class DiscordEventUI : DBEvent
-    {
-        public string Name => "DiscordUI";
-
-        public bool RequireOtherThread => true;
-        public string Description => "Discord UI desc";
-
-        public async void Start(DiscordSocketClient client)
-        {
-            await Config.ApplicationSettings.LoadFromFile();
-
-            await Config.ThemeManager.LoadThemesFromThemesFolder();
-
-            if (Config.ApplicationSettings.ContainsKey("AppTheme"))
-            {
-                Config.ThemeManager.SetTheme(Config.ApplicationSettings["AppTheme"]);
-            } else Config.ApplicationSettings.Add("AppTheme", "Default");
-
-            Thread thread = new Thread(() =>
-            {
-                MainWindow mainWindow = new MainWindow();
-                Config.ThemeManager.SetFormTheme(Config.ThemeManager.CurrentTheme, mainWindow);
-                Application.Run(mainWindow);
-                
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-        }
-    }
-
-    public class ConsoleStartAction : ICommandAction
+    public class DiscordUICommand : ICommandAction
     {
         public string ActionName => "ui";
 
@@ -51,18 +20,22 @@ namespace DiscordBotUI
         public IEnumerable<InternalActionOption> ListOfOptions => [
                 new InternalActionOption("start", "Starts the UI")
         ];
+         
+        public InternalActionRunType RunType => InternalActionRunType.BOTH;
 
-        public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+        public async void ExecuteStartup()
+        {
+            Directory.CreateDirectory(Path.Combine(DiscordBotCore.Application.CurrentApplication.DataFolder, "DiscordBotUI"));
+            await Execute(["start"]);
+        }
 
         public async Task Execute(string[]? args)
         {
-            if(args == null || args.Length == 0)
+            if (args == null || args.Length == 0)
             {
                 Console.WriteLine("Please provide an option");
                 return;
             }
-
-
 
             if (args[0] == "theme")
             {
@@ -72,7 +45,7 @@ namespace DiscordBotUI
                     return;
                 }
 
-                if(args[1] == "save")
+                if (args[1] == "save")
                 {
                     if (args.Length == 2)
                     {
@@ -84,7 +57,7 @@ namespace DiscordBotUI
                     Console.WriteLine("Theme saved");
                 }
 
-                if(args[1] == "set")
+                if (args[1] == "set")
                 {
                     if (args.Length == 2)
                     {
@@ -106,26 +79,47 @@ namespace DiscordBotUI
                 return;
             }
 
-            if(args[0] == "start")
+            if (args[0] == "start")
             {
-                await Config.ApplicationSettings.LoadFromFile();
-
-                await Config.ThemeManager.LoadThemesFromThemesFolder();
-
-                if (Config.ApplicationSettings.ContainsKey("AppTheme"))
-                {
-                    Config.ThemeManager.SetTheme(Config.ApplicationSettings["AppTheme"]);
-                }
-
-                Thread thread = new Thread(() =>
-                {
-                    MainWindow mainWindow = new MainWindow();
-                    Config.ThemeManager.SetFormTheme(Config.ThemeManager.CurrentTheme, mainWindow);
-                    Application.Run(mainWindow);
-                });
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
+                await StartUI();
             }
+        }
+
+
+        private async Task StartUI()
+        {
+            await Config.ApplicationSettings.LoadFromFile();
+
+            await Config.ThemeManager.LoadThemesFromThemesFolder();
+
+            if (Config.ApplicationSettings.ContainsKey("AppTheme"))
+            {
+                Config.ThemeManager.SetTheme(Config.ApplicationSettings["AppTheme"]);
+            }
+            else Config.ApplicationSettings.Add("AppTheme", "Default");
+
+            await Config.ApplicationSettings.SaveToFile();
+
+            Thread thread = new Thread(() =>
+            {
+                MainWindow mainWindow = new MainWindow();
+                Config.ThemeManager.SetFormTheme(Config.ThemeManager.CurrentTheme, mainWindow);
+                Application.Run(mainWindow);
+
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+    }
+    public class DiscordEventUI2 : DBEvent
+    {
+        public string Name => "DiscordUI";
+
+        public bool RequireOtherThread => true;
+        public string Description => "Discord UI desc";
+
+        public async void Start(DiscordSocketClient client)
+        {
 
         }
     }

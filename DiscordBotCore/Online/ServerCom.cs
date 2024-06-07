@@ -48,7 +48,10 @@ public static class ServerCom
         using (var client = new HttpClient())
         {
             client.Timeout = TimeSpan.FromMinutes(5);
-
+            if(Directory.Exists(Path.GetDirectoryName(location)) == false)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(location));
+            }
             using (var file = new FileStream(location, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 await client.DownloadFileAsync(URL, file, progress, downloadedBytes);

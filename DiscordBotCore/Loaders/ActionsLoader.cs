@@ -56,8 +56,8 @@ public class ActionsLoader
                     continue;
                 }
 
-                if (action.RunType == InternalActionRunType.ON_STARTUP)
-                    await action.Execute(null);
+                if (action.RunType != InternalActionRunType.ON_CALL)
+                    action.ExecuteStartup();
 
                 ActionLoadedEvent?.Invoke(action.ActionName, type.Name, true);
                 actions.Add(action);

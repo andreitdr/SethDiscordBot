@@ -22,7 +22,8 @@ public enum UnzipProgressType
 public enum InternalActionRunType
 {
     ON_STARTUP,
-    ON_CALL
+    ON_CALL,
+    BOTH
 }
 
 [Flags]

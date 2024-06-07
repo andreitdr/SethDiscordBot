@@ -11,11 +11,11 @@ public class PluginInfo
     public string PluginName { get; private set; }
     public PluginVersion PluginVersion { get; private set; }
     public string FilePath { get; private set; }
-    public List<string> ListOfDependancies {get; private set;}
+    public Dictionary<string, string> ListOfDependancies {get; private set;}
     public bool IsMarkedToUninstall {get; internal set;}
 
     [JsonConstructor]
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, List<string> listOfDependancies, bool isMarkedToUninstall)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
@@ -24,7 +24,7 @@ public class PluginInfo
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
     }
 
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, List<string> listOfDependancies)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies)
     {
         PluginName    = pluginName;
         PluginVersion = pluginVersion;
@@ -35,6 +35,6 @@ public class PluginInfo
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)
     {
-        return new PluginInfo(onlineInfo.Name, onlineInfo.Version, onlineInfo.Dependencies.Select(dep => dep.DownloadLocation).ToList());
+        return new PluginInfo(onlineInfo.Name, onlineInfo.Version, onlineInfo.Dependencies.Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation)).ToDictionary());
     }
 }

@@ -19,4 +19,6 @@ public interface ICommandAction
     public InternalActionRunType RunType { get; }
 
     public Task Execute(string[]? args);
+
+    public void ExecuteStartup() {  }
 }
