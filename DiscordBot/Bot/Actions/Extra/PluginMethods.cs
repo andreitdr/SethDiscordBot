@@ -40,8 +40,9 @@ internal static class PluginMethods
 
     internal static async Task RefreshPlugins(bool quiet)
     {
-        await Application.CurrentApplication.InternalActionManager.Execute("plugin", "load", quiet ? "-q" : string.Empty);
-        await Application.CurrentApplication.InternalActionManager.Refresh();
+
+        await LoadPlugins(quiet ? ["-q"] : null);
+        await Application.CurrentApplication.InternalActionManager.Initialize();
     }
 
     internal static async Task DownloadPlugin(PluginManager manager, string pluginName)
@@ -156,7 +157,7 @@ internal static class PluginMethods
     internal static async Task<bool> LoadPlugins(string[] args)
     {
         var loader = new PluginLoader(Application.CurrentApplication.DiscordBotClient.Client);
-        if (args.Length == 2 && args[1] == "-q")
+        if (args != null && (args.Length == 2 && args[1] == "-q"))
         {
             await loader.LoadPlugins();
             return true;
@@ -204,6 +205,22 @@ internal static class PluginMethods
             else
             {
                 Application.CurrentApplication.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
+                    typeof(PluginMethods), LogType.ERROR
+                );
+            }
+
+            Console.ForegroundColor = cc;
+        };
+
+        loader.OnActionLoaded += (data) =>
+        {
+            if (data.IsSuccess)
+            {
+                Application.CurrentApplication.Logger.Log("Successfully loaded action : " + data.PluginName, LogType.INFO, "\t\t  > {Message}");
+            }
+            else
+            {
+                Application.CurrentApplication.Logger.Log("Failed to load action : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(PluginMethods), LogType.ERROR
                 );
             }

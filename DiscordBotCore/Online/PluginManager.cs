@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -88,7 +89,11 @@ public class PluginManager
     public async Task AppendPluginToDatabase(PluginInfo pluginData)
     {
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Application.CurrentApplication.PluginDatabase));
-        
+        foreach (var dependency in pluginData.ListOfDependancies)
+        {
+            pluginData.ListOfDependancies[dependency.Key] = GenerateDependencyLocation(pluginData.PluginName, dependency.Value);
+        }
+
         installedPlugins.Add(pluginData);
         await JsonManager.SaveToJsonFile(Application.CurrentApplication.PluginDatabase, installedPlugins);
     }
@@ -123,15 +128,19 @@ public class PluginManager
 
     public async Task<bool> MarkPluginToUninstall(string pluginName)
     {
-        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
-        PluginInfo? info = installedPlugins.Find(info => info.PluginName == pluginName);
+        IEnumerable<PluginInfo> installedPlugins = await GetInstalledPlugins();
+        IEnumerable<PluginInfo> info = installedPlugins.Where(info => info.PluginName == pluginName).AsEnumerable();
 
-        if(info == null)
+        if(!info.Any())
             return false;
 
-        await RemovePluginFromDatabase(pluginName);
-        info.IsMarkedToUninstall = true;
-        await AppendPluginToDatabase(info);
+        foreach (var item in info)
+        {
+            await RemovePluginFromDatabase(item.PluginName);
+            item.IsMarkedToUninstall = true;
+            await AppendPluginToDatabase(item);
+        }
+
 
         return true;
 
@@ -139,11 +148,11 @@ public class PluginManager
 
     public async Task UninstallMarkedPlugins()
     {
-        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
-        foreach(PluginInfo plugin in installedPlugins)
-        {
-            if(!plugin.IsMarkedToUninstall) continue;
+        IEnumerable<PluginInfo> installedPlugins = (await GetInstalledPlugins()).AsEnumerable();
+        IEnumerable<PluginInfo> pluginsToRemove = installedPlugins.Where(plugin => plugin.IsMarkedToUninstall).AsEnumerable();
 
+        foreach (var plugin in pluginsToRemove)
+        {
             await UninstallPlugin(plugin);
         }
     }
@@ -169,21 +178,6 @@ public class PluginManager
         }
 
         throw new Exception("Dependency not found");
-    }
-
-    public async Task<string> GetDependencyLocation(string pluginName, string dependencyName)
-    {
-        PluginOnlineInfo? pluginData = await GetPluginDataByName(pluginName);
-
-        if(pluginData == null)
-            throw new Exception("Plugin not found");
-
-        var dependency = pluginData.Dependencies.Find(dep => dep.DependencyName == dependencyName);
-
-        if(dependency == null)
-            throw new Exception("Dependency not found");
-
-        return dependency.DownloadLocation;
     }
 
     public string GenerateDependencyLocation(string pluginName, string dependencyName)

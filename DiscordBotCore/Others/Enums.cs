@@ -40,5 +40,6 @@ public enum PluginType
     UNKNOWN,
     COMMAND,
     EVENT,
-    SLASH_COMMAND
+    SLASH_COMMAND,
+    ACTION
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using DiscordBot.Bot.Actions.Extra;
+
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
@@ -22,6 +24,8 @@ public class Program
     {
         await LoadComponents(args);
         await PrepareConsole();
+        await PluginMethods.LoadPlugins(null);
+        await Application.CurrentApplication.InternalActionManager.Initialize();
         await ConsoleInputHandler();
     }
 
@@ -30,7 +34,6 @@ public class Program
     /// </summary>
     private static async Task ConsoleInputHandler()
     {
-        await Application.CurrentApplication.InternalActionManager.Execute("plugin", "load");
 
         while (true)
         {
@@ -65,7 +68,7 @@ public class Program
         {
             var token         = Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
             var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
-            var discordbooter = new Boot(token, prefix);
+            var discordbooter = new App(token, prefix);
             await discordbooter.Awake();
         }
         catch (Exception ex)
@@ -118,6 +121,8 @@ public class Program
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
                 await Installer.GenerateStartupConfig();
+
+        
     }
     
 }

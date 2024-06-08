@@ -10,8 +10,6 @@ namespace DiscordBotCore.Loaders;
 
 internal class Loader
 {
-    private readonly string _SearchPath;
-    private readonly string _FileExtension;
 
     internal delegate void FileLoadedHandler(FileLoaderResult result);
 
@@ -20,24 +18,11 @@ internal class Loader
     internal event FileLoadedHandler? OnFileLoadedException;
     internal event PluginLoadedHandler? OnPluginLoaded;
 
-    internal Loader(string searchPath, string fileExtension)
-    {
-        _SearchPath    = searchPath;
-        _FileExtension = fileExtension;
-    }
-
     internal async Task Load()
     {
-        if (!Directory.Exists(_SearchPath))
-        {
-            Directory.CreateDirectory(_SearchPath);
-            return;
-        }
-
         var installedPlugins = await Application.CurrentApplication.PluginManager.GetInstalledPlugins();
         var files = installedPlugins.Select(plugin => plugin.FilePath).ToArray();
         
-        //var files = Directory.GetFiles(_SearchPath, $"*.{_FileExtension}", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
             try
@@ -53,6 +38,7 @@ internal class Loader
         await LoadEverythingOfType<DBEvent>();
         await LoadEverythingOfType<DBCommand>();
         await LoadEverythingOfType<DBSlashCommand>();
+        await LoadEverythingOfType<ICommandAction>();
     }
 
     private async Task LoadEverythingOfType<T>()
@@ -77,6 +63,7 @@ internal class Loader
                     DBEvent        => PluginType.EVENT,
                     DBCommand      => PluginType.COMMAND,
                     DBSlashCommand => PluginType.SLASH_COMMAND,
+                    ICommandAction => PluginType.ACTION,
                     _              => PluginType.UNKNOWN
                 };
 

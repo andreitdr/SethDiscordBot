@@ -36,7 +36,7 @@ namespace DiscordBotCore
         public InternalActionManager InternalActionManager { get; private set; }
         public PluginManager PluginManager { get; private set; }
         public Logger Logger { get; private set; }
-        public Bot.Boot DiscordBotClient { get; internal set; }
+        public Bot.App DiscordBotClient { get; internal set; }
 
         public static async Task CreateApplication()
         {
@@ -78,7 +78,7 @@ namespace DiscordBotCore
             await CurrentApplication.PluginManager.UninstallMarkedPlugins();
             await CurrentApplication.PluginManager.CheckForUpdates();
 
-            CurrentApplication.InternalActionManager = new InternalActionManager(CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"], "dll");
+            CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
 
         }

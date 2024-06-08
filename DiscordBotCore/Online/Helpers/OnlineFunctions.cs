@@ -9,6 +9,44 @@ namespace DiscordBotCore.Online.Helpers;
 
 internal static class OnlineFunctions
 {
+
+    /// <summary>
+    ///     Copy one Stream to another <see langword="async" />
+    /// </summary>
+    /// <param name="stream">The base stream</param>
+    /// <param name="destination">The destination stream</param>
+    /// <param name="bufferSize">The buffer to read</param>
+    /// <param name="progress">The progress</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <exception cref="ArgumentNullException">Triggered if any <see cref="Stream" /> is empty</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Triggered if <paramref name="bufferSize" /> is less then or equal to 0</exception>
+    /// <exception cref="InvalidOperationException">Triggered if <paramref name="stream" /> is not readable</exception>
+    /// <exception cref="ArgumentException">Triggered in <paramref name="destination" /> is not writable</exception>
+    public static async Task CopyToOtherStreamAsync(
+        this Stream stream, Stream destination, int bufferSize,
+        IProgress<long>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (destination == null) throw new ArgumentNullException(nameof(destination));
+        if (bufferSize <= 0) throw new ArgumentOutOfRangeException(nameof(bufferSize));
+        if (!stream.CanRead) throw new InvalidOperationException("The stream is not readable.");
+        if (!destination.CanWrite)
+            throw new ArgumentException("Destination stream is not writable", nameof(destination));
+
+        var buffer = new byte[bufferSize];
+        long totalBytesRead = 0;
+        int bytesRead;
+        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                                        .ConfigureAwait(false)) != 0)
+        {
+            await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+            totalBytesRead += bytesRead;
+            progress?.Report(totalBytesRead);
+        }
+    }
+
+
     /// <summary>
     ///     Downloads a <see cref="Stream" /> and saves it to another <see cref="Stream" />.
     /// </summary>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Discord;
@@ -31,7 +32,11 @@ public class Help: DBSlashCommand
         EmbedBuilder embedBuilder = new();
 
         embedBuilder.WithTitle("Help Command");
-        embedBuilder.WithColor(Functions.RandomColor);
+
+        var random = new Random();
+        Color c = new Color(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+
+        embedBuilder.WithColor(c);
         var slashCommands = PluginLoader.SlashCommands;
         var options = context.Data.Options;
 

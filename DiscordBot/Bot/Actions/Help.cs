@@ -38,15 +38,15 @@ public class Help: ICommandAction
          
             tableData.Columns = ["Command", "Usage", "Description", "Options"];
 
-            foreach (var a in Application.CurrentApplication.InternalActionManager.Actions)
+            foreach (var a in Application.CurrentApplication.InternalActionManager.GetActions())
             {
-                Markup actionName = new Markup($"[bold]{a.Key}[/]");
-                Markup usage = new Markup($"[italic]{a.Value.Usage}[/]");
-                Markup description = new Markup($"[dim]{a.Value.Description}[/]");
+                Markup actionName = new Markup($"[bold]{a.ActionName}[/]");
+                Markup usage = new Markup($"[italic]{a.Usage}[/]");
+                Markup description = new Markup($"[dim]{a.Description}[/]");
 
-                if (a.Value.ListOfOptions.Any())
+                if (a.ListOfOptions.Any())
                 {
-                    tableData.AddRow([actionName, usage, description, CreateTableWithSubOptions(a.Value.ListOfOptions)]);
+                    tableData.AddRow([actionName, usage, description, CreateTableWithSubOptions(a.ListOfOptions)]);
                 }
                 else
                 {
@@ -64,13 +64,13 @@ public class Help: ICommandAction
             return;
         }
 
-        if (!Application.CurrentApplication.InternalActionManager.Actions.ContainsKey(args[0]))
+        if (!Application.CurrentApplication.InternalActionManager.Exists(args[0]))
         {
             Console.WriteLine("Command not found");
             return;
         }
 
-        var action = Application.CurrentApplication.InternalActionManager.Actions[args[0]];
+        var action = Application.CurrentApplication.InternalActionManager.GetAction(args[0]);
         tableData.Columns = ["Command", "Usage", "Description"];
         tableData.AddRow([action.ActionName, action.Usage, action.Description]);
 

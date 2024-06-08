@@ -9,7 +9,7 @@ using DiscordBotCore.Others;
 
 namespace DiscordBotCore.Bot;
 
-public class Boot
+public class App
 {
     /// <summary>
     ///     The bot prefix
@@ -41,7 +41,7 @@ public class Boot
     /// </summary>
     /// <param name="botToken">The bot token</param>
     /// <param name="botPrefix">The bot prefix</param>
-    public Boot(string botToken, string botPrefix)
+    public App(string botToken, string botPrefix)
     {
         this.BotPrefix = botPrefix;
         this.BotToken  = botToken;

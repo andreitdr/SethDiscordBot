@@ -8,31 +8,36 @@ namespace DiscordBotCore.Others.Actions;
 
 public class InternalActionManager
 {
-    public Dictionary<string, ICommandAction> Actions = new();
-
-    private readonly ActionsLoader _loader;
-
-    public InternalActionManager(string path, string extension)
-    {
-        _loader = new ActionsLoader(path, extension);
-    }
+    private Dictionary<string, ICommandAction> Actions = new();
 
     public async Task Initialize()
     {
-        var loadedActions = await _loader.Load();
+        Actions.Clear();
+        PluginLoader.Actions.ForEach(action =>
+        {
+            if (action.RunType == InternalActionRunType.ON_CALL || action.RunType == InternalActionRunType.BOTH)
+            {
+                if (this.Actions.ContainsKey(action.ActionName))
+                    return; // ingore duplicates
 
-        if (loadedActions == null)
-            return;
-
-        foreach (var action in loadedActions)
-            Actions.TryAdd(action.ActionName, action);
-        
+                this.Actions.Add(action.ActionName, action);
+            }
+        });
     }
 
-    public async Task Refresh()
+    public IReadOnlyCollection<ICommandAction> GetActions()
     {
-        Actions.Clear();
-        await Initialize();
+        return Actions.Values;
+    }
+
+    public bool Exists(string actionName)
+    {
+        return Actions.ContainsKey(actionName);
+    }
+
+    public ICommandAction GetAction(string actionName)
+    {
+        return Actions[actionName];
     }
 
     public async Task<bool> Execute(string actionName, params string[]? args)

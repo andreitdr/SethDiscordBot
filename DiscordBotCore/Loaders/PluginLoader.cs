@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using DiscordBotCore.Interfaces;
@@ -17,13 +19,17 @@ public class PluginLoader
 
     public delegate void SlashCommandLoaded(PluginLoadResultData resultData);
 
+    public delegate void ActionLoaded(PluginLoadResultData resultData);
+
     public CommandLoaded?      OnCommandLoaded;
     public EventLoaded?        OnEventLoaded;
     public SlashCommandLoaded? OnSlashCommandLoaded;
+    public ActionLoaded?       OnActionLoaded;
 
     public static List<DBCommand> Commands { get; private set; } = new List<DBCommand>();
     public static List<DBEvent>  Events { get; private set; } = new List<DBEvent>();
     public static List<DBSlashCommand> SlashCommands { get; private set; } = new List<DBSlashCommand>();
+    public static List<ICommandAction> Actions { get; private set; } = new List<ICommandAction>();
 
     public PluginLoader(DiscordSocketClient discordSocketClient)
     {
@@ -34,9 +40,7 @@ public class PluginLoader
     {
         Application.CurrentApplication.Logger.Log("Loading plugins...", this);
         
-        var loader = new Loader(Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"], "dll");
-
-        //await this.ResetSlashCommands();
+        var loader = new Loader();
 
         loader.OnFileLoadedException += FileLoadedException;
         loader.OnPluginLoaded        += OnPluginLoaded;
@@ -53,6 +57,17 @@ public class PluginLoader
     {
         switch (result.PluginType)
         {
+            case PluginType.ACTION:
+                ICommandAction action = (ICommandAction)result.Plugin;
+                if (action.RunType == InternalActionRunType.ON_STARTUP || action.RunType == InternalActionRunType.BOTH)
+                    action.ExecuteStartup();
+                
+                if(action.RunType == InternalActionRunType.ON_CALL || action.RunType == InternalActionRunType.BOTH)
+                    Actions.Add(action);
+
+                OnActionLoaded?.Invoke(result);
+
+                break;
             case PluginType.COMMAND:
                 Commands.Add((DBCommand)result.Plugin);
                 OnCommandLoaded?.Invoke(result);
