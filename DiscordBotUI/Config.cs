@@ -8,7 +8,7 @@ namespace DiscordBotUI_Windows
 {
     internal class Config
     {
-        internal static DiscordBotCore.Others.SettingsDictionary<string, string> ApplicationSettings = new DiscordBotCore.Others.SettingsDictionary<string, string>(Path.Combine(DiscordBotCore.Application.CurrentApplication.DataFolder, "DiscordBotUI/config.json"));
+        internal static DiscordBotCore.Others.SettingsDictionary<string, string> ApplicationSettings = new DiscordBotCore.Others.SettingsDictionary<string, string>(DiscordBotCore.Application.GetResourceFullPath("DiscordBotUI/config.json"));
         internal static ThemeManager ThemeManager = new ThemeManager();
     }
 }

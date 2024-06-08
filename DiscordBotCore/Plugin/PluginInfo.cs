@@ -13,15 +13,17 @@ public class PluginInfo
     public string FilePath { get; private set; }
     public Dictionary<string, string> ListOfDependancies {get; private set;}
     public bool IsMarkedToUninstall {get; internal set;}
+    public bool IsOfflineAdded { get; internal set; }
 
     [JsonConstructor]
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall, bool isOfflineAdded)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
         ListOfDependancies = listOfDependancies;
         IsMarkedToUninstall = isMarkedToUninstall;
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
+        IsOfflineAdded = isOfflineAdded;
     }
 
     public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies)

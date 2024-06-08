@@ -6,6 +6,7 @@ using DiscordBotCore.Plugin;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -30,7 +31,6 @@ namespace DiscordBotCore
         public string ServerID => ApplicationEnvironmentVariables["ServerID"];
         public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"] ?? _PluginsDatabaseFile;
         public string LogFile => $"{ApplicationEnvironmentVariables["LogFolder"]}/{DateTime.Now.ToLongDateString().Replace(" / ", "")}.log";
-        public string DataFolder => _ResourcesFolder;
 
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
@@ -81,6 +81,7 @@ namespace DiscordBotCore
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
 
+
         }
 
 
@@ -101,5 +102,12 @@ namespace DiscordBotCore
             CurrentApplication.ApplicationEnvironmentVariables["MaxParallelDownloads"] = _MaxParallelDownloads;
         }
 
+        public static string GetResourceFullPath(string path)
+        {
+            string result = Path.Combine(_ResourcesFolder, path);
+            return result;
+        }
+
+        public static string GetResourceFullPath() => _ResourcesFolder;
     }
 }

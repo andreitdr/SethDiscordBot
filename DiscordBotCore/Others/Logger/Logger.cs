@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using DiscordBotCore.Interfaces.Logger;
 
@@ -8,6 +10,7 @@ namespace DiscordBotCore.Others.Logger;
 
 public sealed class Logger : ILogger
 {
+    private readonly FileStream _LogStream;
 
     public List<string> LogMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
     public string LogMessageFormat { get ; set; }
@@ -18,6 +21,7 @@ public sealed class Logger : ILogger
     public Logger(string logMessageFormat)
     {
         this.LogMessageFormat = logMessageFormat;
+        _LogStream = File.Open(Application.CurrentApplication.LogFile, FileMode.Append, FileAccess.Write, FileShare.Read);
     }
 
     /// <summary>
@@ -37,9 +41,15 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
-    private void LogToFile(string message)
+    private async void LogToFile(string message)
     {
-        System.IO.File.AppendAllText(Application.CurrentApplication.LogFile, message);
+        byte[] messageAsBytes = System.Text.Encoding.ASCII.GetBytes(message);
+        await _LogStream.WriteAsync(messageAsBytes, 0, messageAsBytes.Length);
+
+        byte[] newLine = System.Text.Encoding.ASCII.GetBytes(Environment.NewLine);
+        await _LogStream.WriteAsync(newLine, 0, newLine.Length);
+
+        await _LogStream.FlushAsync();
     }
 
     private string GenerateLogMessage(ILogMessage message, string customFormat)

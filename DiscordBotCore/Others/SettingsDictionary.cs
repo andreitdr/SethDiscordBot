@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,6 +90,26 @@ public class SettingsDictionary<TKey, TValue>
         }
         set => _Dictionary[key] = value;
     }
+
+    // First
+    public KeyValuePair<TKey, TValue> FirstOrDefault(Func<KeyValuePair<TKey, TValue>, bool> predicate)
+    {
+        return _Dictionary.FirstOrDefault(predicate);
+    }
+
+    // Where
+    public IEnumerable<KeyValuePair<TKey, TValue>> Where(Func<KeyValuePair<TKey, TValue>, bool> predicate)
+    {
+        return _Dictionary.Where(predicate);
+    }
+
+    public void Clear()
+    {
+        _Dictionary.Clear();
+    }
+
+    public IEnumerable<TKey> Keys => _Dictionary.Keys;
+    public IEnumerable<TValue> Values => _Dictionary.Values;
 
 
 }

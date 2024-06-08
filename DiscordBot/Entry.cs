@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 
 namespace DiscordBot;
@@ -81,4 +83,6 @@ public static class Entry
 
         Program.Startup(args).Wait();
     }
+
+
 }

@@ -52,6 +52,9 @@ public class PluginUpdater
     public async Task<bool> HasUpdate(string pluginName)
     {
         var localPluginInfo = await GetLocalPluginInfo(pluginName);
+        if(localPluginInfo.IsOfflineAdded)
+            return false;
+
         var pluginInfo = await GetPluginInfo(pluginName);
 
         return pluginInfo.Version.IsNewerThan(localPluginInfo.PluginVersion);
