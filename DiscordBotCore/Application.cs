@@ -6,14 +6,16 @@ using DiscordBotCore.Plugin;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
         
 namespace DiscordBotCore
 {
-    public class Application
+    /// <summary>
+    /// The main Application and its components
+    /// </summary>
+    public sealed class Application
     {
         public static Application CurrentApplication { get; private set; } = null!;
 

@@ -13,12 +13,17 @@ public class InternalActionManager
     public async Task Initialize()
     {
         Actions.Clear();
+
         PluginLoader.Actions.ForEach(action =>
         {
             if (action.RunType == InternalActionRunType.ON_CALL || action.RunType == InternalActionRunType.BOTH)
             {
                 if (this.Actions.ContainsKey(action.ActionName))
-                    return; // ingore duplicates
+                {
+                    // This should never happen. If it does, log it and return
+                    Application.CurrentApplication.Logger.Log($"Action {action.ActionName} already exists", this, LogType.ERROR);
+                    return;
+                }
 
                 this.Actions.Add(action.ActionName, action);
             }

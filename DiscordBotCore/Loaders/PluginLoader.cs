@@ -38,6 +38,18 @@ public class PluginLoader
 
     public async Task LoadPlugins()
     {
+
+        if (_Client == null)
+        {
+            Application.CurrentApplication.Logger.Log("Discord client is null", this, LogType.ERROR);
+            return;
+        }
+
+        Commands.Clear();
+        Events.Clear();
+        SlashCommands.Clear();
+        Actions.Clear();
+
         Application.CurrentApplication.Logger.Log("Loading plugins...", this);
         
         var loader = new Loader();

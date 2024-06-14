@@ -55,7 +55,7 @@ public class Program
     private static async Task PrepareConsole()
     {
 
-        AnsiConsole.MarkupLine($"[yellow]Running on version: {Application.CurrentApplication.ApplicationEnvironmentVariables["Version"]}[/]");
+        AnsiConsole.MarkupLine($"[yellow]Running on version: {Assembly.GetExecutingAssembly().GetName().Version}[/]");
         AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
         AnsiConsole.MarkupLine("[yellow]Git Plugins: https://github.com/andreitdr/SethPlugins [/]");
 
@@ -80,7 +80,6 @@ public class Program
     private static async Task LoadComponents(string[] args)
     {
         await Application.CreateApplication();
-        Application.CurrentApplication.ApplicationEnvironmentVariables["Version"] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         AppUpdater updater = new();
         var update = await updater.CheckForUpdates();
