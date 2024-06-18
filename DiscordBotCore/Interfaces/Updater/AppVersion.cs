@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace DiscordBotCore.Interfaces.Updater
 {
@@ -12,7 +13,7 @@ namespace DiscordBotCore.Interfaces.Updater
 
         public int PatchVersion { get; set; }
 
-        public static readonly AppVersion CurrentAppVersion = new AppVersion(Application.CurrentApplication.ApplicationEnvironmentVariables["Version"]);
+        public static readonly AppVersion CurrentAppVersion = new AppVersion(Assembly.GetEntryAssembly().GetName().Version.ToString());
 
         private readonly char _Separator = '.';
 

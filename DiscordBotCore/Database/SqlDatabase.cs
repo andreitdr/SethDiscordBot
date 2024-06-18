@@ -389,6 +389,37 @@ public class SqlDatabase
     ///     Read data from the result table and return the first row
     /// </summary>
     /// <param name="query">The query</param>
+    /// <param name="parameters">The parameters of the query</param>
+    /// <returns>The result is a string that has all values separated by space character</returns>
+    public async Task<string?> ReadDataAsync(string query, params KeyValuePair<string, object>[] parameters)
+    {
+        if (!_connection.State.HasFlag(ConnectionState.Open))
+            await _connection.OpenAsync();
+
+        var command = new SQLiteCommand(query, _connection);
+        foreach (var parameter in parameters)
+        {
+            var p = CreateParameter(parameter);
+            if (p is not null)
+                command.Parameters.Add(p);
+        }
+
+        var reader = await command.ExecuteReaderAsync();
+
+        var values = new object[reader.FieldCount];
+        if (reader.Read())
+        {
+            reader.GetValues(values);
+            return string.Join<object>(" ", values);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    ///     Read data from the result table and return the first row
+    /// </summary>
+    /// <param name="query">The query</param>
     /// <returns>The result is a string that has all values separated by space character</returns>
     public string? ReadData(string query)
     {
@@ -427,6 +458,32 @@ public class SqlDatabase
         }
 
         return null;
+    }
+
+    public async Task<object[]?> ReadDataArrayAsync(string query, params KeyValuePair<string, object>[] parameters)
+    {
+        if (!_connection.State.HasFlag(ConnectionState.Open))
+            await _connection.OpenAsync();
+
+        var command = new SQLiteCommand(query, _connection);
+        foreach (var parameter in parameters)
+        {
+            var p = CreateParameter(parameter);
+            if (p is not null)
+                command.Parameters.Add(p);
+        }
+
+        var reader = await command.ExecuteReaderAsync();
+
+        var values = new object[reader.FieldCount];
+        if (reader.Read())
+        {
+            reader.GetValues(values);
+            return values;
+        }
+
+        return null;
+
     }
 
 
