@@ -80,6 +80,7 @@ public sealed class Logger : ILogger
         LogToFile(messageAsString);
     }
 
+    public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.INFO));
     public void Log(string message, LogType logType, string format) => Log(new LogMessage(message, logType), format);
     public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
     public void Log(string message, object Sender) => Log(new LogMessage(message, Sender));

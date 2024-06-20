@@ -22,7 +22,7 @@ namespace DiscordBot.Bot.Actions
         public string Usage => "add-plugin <path>";
 
         public IEnumerable<InternalActionOption> ListOfOptions => [
-            new InternalActionOption("path", "The path to the plugin to add")
+            new InternalActionOption("fileName", "The file name")
         ];
 
         public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
@@ -32,13 +32,14 @@ namespace DiscordBot.Bot.Actions
             if(args.Length < 1)
             {
                 Console.WriteLine("Invalid arguments given. Please use the following format:");
-                Console.WriteLine("add-plugin <path>");
-                Console.WriteLine("path: The path to the plugin to add");
+                Console.WriteLine("add-plugin <fileName>");
+                Console.WriteLine("fileName: The file name");
 
                 return;
             }
 
-            var path = args[0];
+            string fileName = args[0] + ".dll";
+            var path = Application.GetPluginFullPath(fileName);
 
             if(!System.IO.File.Exists(path))
             {
@@ -47,7 +48,7 @@ namespace DiscordBot.Bot.Actions
             }
 
             FileInfo fileInfo = new FileInfo(path);
-            PluginInfo pluginInfo = new PluginInfo(fileInfo.Name, new(1, 0, 0), [], false, true);
+            PluginInfo pluginInfo = new PluginInfo(args[0], new(1, 0, 0), [], false, true);
             await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
         }
     }

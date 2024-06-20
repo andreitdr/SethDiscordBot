@@ -85,7 +85,7 @@ namespace DiscordBotUI_Windows
             if (theme == null)
                 throw new Exception("Theme not found");
 
-            string basefolderPath = Path.Combine(DiscordBotCore.Application.CurrentApplication.DataFolder, _ThemesFolder);
+            string basefolderPath = DiscordBotCore.Application.GetResourceFullPath(_ThemesFolder);
             Directory.CreateDirectory(basefolderPath);
             string filePath = Path.Combine(basefolderPath, $"{themeName}.json");
             await DiscordBotCore.Others.JsonManager.SaveToJsonFile(filePath, theme);
@@ -93,7 +93,7 @@ namespace DiscordBotUI_Windows
 
         internal async Task<int> LoadThemesFromThemesFolder()
         {
-            string basefolderPath = Path.Combine(DiscordBotCore.Application.CurrentApplication.DataFolder, _ThemesFolder);
+            string basefolderPath = DiscordBotCore.Application.GetResourceFullPath(_ThemesFolder);
             Directory.CreateDirectory(basefolderPath);
             var files = Directory.GetFiles(basefolderPath, "*.json");
             _InstalledThemes.Clear();

@@ -105,10 +105,9 @@ public class Program
                 _ => "[white]"
             };
 
-            if (logMessage.Message.Contains('['))
+            if (logMessage.Message.Contains('[') || logMessage.Message.Contains(']'))
             {
-                Console.WriteLine(logMessage.Message);
-                return;
+                logMessage.Message = logMessage.Message.Replace("[", "<").Replace("]", ">");
             }
 
             string messageToPrint = $"{messageColor}{logMessage.Message}[/]";

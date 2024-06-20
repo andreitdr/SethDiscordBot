@@ -67,6 +67,9 @@ internal class Loader
                     _              => PluginType.UNKNOWN
                 };
 
+                if (pluginType == PluginType.UNKNOWN)
+                    throw new Exception($"Unknown plugin type for plugin with type {type.FullName} [{type.Assembly}]");
+
                 OnPluginLoaded?.Invoke(new PluginLoadResultData(type.FullName, pluginType, true, plugin: plugin));
             }
             catch (Exception ex)

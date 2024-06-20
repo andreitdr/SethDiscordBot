@@ -6,6 +6,7 @@ namespace DiscordBotCore.Others.Logger
 {
     internal sealed class LogMessage : ILogMessage
     {
+        private static readonly string _DefaultLogMessageSender = "\b";
         public string Message { get; set; }
         public DateTime ThrowTime { get; set; }
         public string SenderName { get; set; }
@@ -22,7 +23,7 @@ namespace DiscordBotCore.Others.Logger
         public LogMessage(string message, object sender)
         {
             Message = message;
-            SenderName = sender.GetType().FullName ?? sender.GetType().Name;
+            SenderName = sender is string && sender as string == string.Empty ? _DefaultLogMessageSender : sender.GetType().FullName ?? sender.GetType().Name;
             ThrowTime = DateTime.Now;
             LogMessageType = LogType.INFO;
         }
@@ -30,7 +31,7 @@ namespace DiscordBotCore.Others.Logger
         public LogMessage(string message, object sender, DateTime throwTime)
         {
             Message = message;
-            SenderName = sender.GetType().FullName ?? sender.GetType().Name;
+            SenderName = sender is string && sender as string == string.Empty ? _DefaultLogMessageSender : sender.GetType().FullName ?? sender.GetType().Name;
             ThrowTime = throwTime;
             LogMessageType = LogType.INFO;
         }
@@ -38,7 +39,7 @@ namespace DiscordBotCore.Others.Logger
         public LogMessage(string message, object sender, LogType logMessageType)
         {
             Message = message;
-            SenderName = sender.GetType().FullName ?? sender.GetType().Name;
+            SenderName = sender is string && sender as string == string.Empty ? _DefaultLogMessageSender : sender.GetType().FullName ?? sender.GetType().Name;
             ThrowTime = DateTime.Now;
             LogMessageType = logMessageType;
 
@@ -48,7 +49,7 @@ namespace DiscordBotCore.Others.Logger
         {
             Message = message;
             ThrowTime = throwTime;
-            SenderName = sender.GetType().FullName ?? sender.GetType().Name;
+            SenderName = sender is string && sender as string == string.Empty ? _DefaultLogMessageSender : sender.GetType().FullName ?? sender.GetType().Name;
             LogMessageType = logMessageType;
         }
 

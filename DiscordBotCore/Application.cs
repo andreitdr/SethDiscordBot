@@ -111,5 +111,13 @@ namespace DiscordBotCore
         }
 
         public static string GetResourceFullPath() => _ResourcesFolder;
+
+        public static string GetPluginFullPath(string path)
+        {
+            string result = Path.Combine(_PluginsFolder, path);
+            return result;
+        }
+
+        public static string GetPluginFullPath() => _PluginsFolder;
     }
 }

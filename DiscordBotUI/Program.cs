@@ -23,18 +23,12 @@ namespace DiscordBotUI
          
         public InternalActionRunType RunType => InternalActionRunType.BOTH;
 
-        public async void ExecuteStartup()
-        {
-            Directory.CreateDirectory(Path.Combine(DiscordBotCore.Application.CurrentApplication.DataFolder, "DiscordBotUI"));
-            await Execute(["start"]);
-        }
-
         public async Task Execute(string[]? args)
         {
             if (args == null || args.Length == 0)
             {
-                Console.WriteLine("Please provide an option");
-                return;
+                Directory.CreateDirectory(Path.Combine(DiscordBotCore.Application.GetResourceFullPath(), "DiscordBotUI"));
+                await StartUI();
             }
 
             if (args[0] == "theme")
