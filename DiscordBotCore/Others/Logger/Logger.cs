@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 using DiscordBotCore.Interfaces.Logger;
 
@@ -10,7 +9,7 @@ namespace DiscordBotCore.Others.Logger;
 
 public sealed class Logger : ILogger
 {
-    private readonly FileStream _LogStream;
+    private readonly FileStream _LogFileStream;
 
     public List<string> LogMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
     public string LogMessageFormat { get ; set; }
@@ -21,7 +20,7 @@ public sealed class Logger : ILogger
     public Logger(string logMessageFormat)
     {
         this.LogMessageFormat = logMessageFormat;
-        _LogStream = File.Open(Application.CurrentApplication.LogFile, FileMode.Append, FileAccess.Write, FileShare.Read);
+        _LogFileStream = File.Open(Application.CurrentApplication.LogFile, FileMode.Append, FileAccess.Write, FileShare.Read);
     }
 
     /// <summary>
@@ -44,12 +43,12 @@ public sealed class Logger : ILogger
     private async void LogToFile(string message)
     {
         byte[] messageAsBytes = System.Text.Encoding.ASCII.GetBytes(message);
-        await _LogStream.WriteAsync(messageAsBytes, 0, messageAsBytes.Length);
+        await _LogFileStream.WriteAsync(messageAsBytes, 0, messageAsBytes.Length);
 
         byte[] newLine = System.Text.Encoding.ASCII.GetBytes(Environment.NewLine);
-        await _LogStream.WriteAsync(newLine, 0, newLine.Length);
+        await _LogFileStream.WriteAsync(newLine, 0, newLine.Length);
 
-        await _LogStream.FlushAsync();
+        await _LogFileStream.FlushAsync();
     }
 
     private string GenerateLogMessage(ILogMessage message, string customFormat)
@@ -78,6 +77,7 @@ public sealed class Logger : ILogger
         string messageAsString = GenerateLogMessage(message);
         OnFormattedLog?.Invoke(this, new ILogger.FormattedMessage() { Message = messageAsString, Type = message.LogMessageType }) ;
         LogToFile(messageAsString);
+        
     }
 
     public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.INFO));
@@ -86,5 +86,4 @@ public sealed class Logger : ILogger
     public void Log(string message, object Sender) => Log(new LogMessage(message, Sender));
     public void Log(string message, object Sender, LogType type) => Log(new LogMessage(message, Sender, type));
     public void LogException(Exception exception, object Sender) => Log(LogMessage.CreateFromException(exception, Sender));
-
 }

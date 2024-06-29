@@ -66,8 +66,8 @@ public class Program
 
         try
         {
-            var token         = Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
-            var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
+            var token = Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
+            var prefix = Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
             var discordbooter = new App(token, prefix);
             await discordbooter.Awake();
         }
@@ -77,6 +77,10 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// Load the bot components.
+    /// </summary>
+    /// <param name="args">The startup arguments</param>
     private static async Task LoadComponents(string[] args)
     {
         await Application.CreateApplication();
@@ -118,7 +122,7 @@ public class Program
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
-                await Installer.GenerateStartupConfig();
+            await Installer.GenerateStartupConfig();
 
         
     }

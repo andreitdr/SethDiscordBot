@@ -8,14 +8,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotCore", "DiscordBo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotUI_Windows", "DiscordBotUI\DiscordBotUI_Windows.csproj", "{95AD2D0C-D1EB-47B9-8DB4-F11CBAF15704}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8FAEFF5E-F749-435C-BB7B-D57C0F8B17FC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayer", "..\SethPlugins\MusicPlayer\MusicPlayer.csproj", "{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LevelingSystem", "..\SethPlugins\LevelingSystem\LevelingSystem.csproj", "{39EF14F8-7E67-4C14-A4F1-E706CFF61192}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CppWrapper", "..\SethPlugins\CppWrapper\CppWrapper.csproj", "{2E526F88-368C-4BE5-9B46-69EE3D311E9B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,26 +26,11 @@ Global
 		{95AD2D0C-D1EB-47B9-8DB4-F11CBAF15704}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95AD2D0C-D1EB-47B9-8DB4-F11CBAF15704}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95AD2D0C-D1EB-47B9-8DB4-F11CBAF15704}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84}.Release|Any CPU.Build.0 = Release|Any CPU
-		{39EF14F8-7E67-4C14-A4F1-E706CFF61192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39EF14F8-7E67-4C14-A4F1-E706CFF61192}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39EF14F8-7E67-4C14-A4F1-E706CFF61192}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39EF14F8-7E67-4C14-A4F1-E706CFF61192}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2E526F88-368C-4BE5-9B46-69EE3D311E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E526F88-368C-4BE5-9B46-69EE3D311E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E526F88-368C-4BE5-9B46-69EE3D311E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E526F88-368C-4BE5-9B46-69EE3D311E9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F094D29D-6F1A-46BC-8B1F-88F3D98FCA84} = {8FAEFF5E-F749-435C-BB7B-D57C0F8B17FC}
-		{39EF14F8-7E67-4C14-A4F1-E706CFF61192} = {8FAEFF5E-F749-435C-BB7B-D57C0F8B17FC}
-		{2E526F88-368C-4BE5-9B46-69EE3D311E9B} = {8FAEFF5E-F749-435C-BB7B-D57C0F8B17FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
