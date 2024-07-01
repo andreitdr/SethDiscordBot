@@ -3,7 +3,11 @@
     "DiscordBot": {
       "commandName": "Project"
     },
-    "DiscordBot(WSL)": {
+    "DiscordBot (wsl Build)": {
+      "commandName": "WSL2",
+      "distributionName": "Debian"
+    },
+    "DiscordBot (wsl Run)": {
       "commandName": "Executable",
       "executablePath": "wsl",
       "commandLineArgs": "./DiscordBot"
