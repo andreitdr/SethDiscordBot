@@ -168,7 +168,7 @@ public class PluginManager
             Directory.Delete($"Libraries/{pluginInfo.PluginName}", true);
     }
 
-    public async Task<string> GetDependencyLocation(string dependencyName)
+    public async Task<string?> GetDependencyLocation(string dependencyName)
     {
         List<PluginInfo> installedPlugins = await GetInstalledPlugins();
 
@@ -178,7 +178,7 @@ public class PluginManager
                 return plugin.ListOfDependancies[dependencyName];
         }
 
-        return string.Empty;
+        return null;
     }
 
     public string GenerateDependencyLocation(string pluginName, string dependencyName)
