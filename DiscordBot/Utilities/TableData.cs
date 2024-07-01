@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DiscordBotCore.Others;
 using Spectre.Console;
@@ -42,29 +43,20 @@ namespace DiscordBot.Utilities
             foreach (var row in this.Rows)
             {
                 table.AddRow(row.Select(element => element.Match(
-                    (data) => new Markup(data),
-                    (data) => data
+                    (string data) => new Markup(data),
+                    (IRenderable data) => data
                 )));
             }
+
+            table.Alignment(Justify.Center);
 
             return table;
         }
 
         public void PrintTable()
         {
-            var table = new Table();
-            table.Border(this.HasRoundBorders ? TableBorder.Rounded : TableBorder.Square);
-            table.AddColumns(this.Columns.ToArray());
-            table.ShowRowSeparators = DisplayLinesBetweenRows;
-            foreach (var row in this.Rows)
-            {
-                table.AddRow(row.Select(element => element.Match(
-                    (data) => new Markup(data),
-                    (data) => data
-                )));
-            }
-
-            AnsiConsole.Write(table);
+            if (IsEmpty) return;
+            AnsiConsole.Write(this.AsTable());
         }
     }
 }

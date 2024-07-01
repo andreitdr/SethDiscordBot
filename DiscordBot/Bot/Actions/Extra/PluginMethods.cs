@@ -25,17 +25,49 @@ internal static class PluginMethods
 
         var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Reading remote database");
 
-        TableData tableData = new(["Name", "Description", "Version", "Is Installed"]);
+        TableData tableData = new(["Name", "Description", "Version", "Is Installed", "Dependencies"]);
 
         var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetInstalledPlugins(), "Reading local database ");
 
         foreach (var plugin in data)
         {
             bool isInstalled = installedPlugins.Any(p => p.PluginName == plugin.Name);
-            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No"]);
+            if (!plugin.HasFileDependencies)
+            {
+                tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No", "None"]);
+                continue;
+            }
+
+            TableData dependenciesTable;
+            
+
+            if (isInstalled)
+            {
+                dependenciesTable = new(["Name", "Location", "Is Executable"]);
+                foreach (var dep in plugin.Dependencies)
+                {
+                    dependenciesTable.AddRow([dep.DependencyName, dep.DownloadLocation, dep.IsExecutable ? "Yes" : "No"]);
+                }
+
+            } 
+            else
+            {
+                dependenciesTable = new(["Name", "Is Executable"]);
+                foreach (var dep in plugin.Dependencies)
+                {
+                    dependenciesTable.AddRow([dep.DependencyName, dep.IsExecutable ? "Yes" : "No"]);
+                }
+            }
+
+            dependenciesTable.DisplayLinesBetweenRows = true;
+
+            Table spectreTable = dependenciesTable.AsTable();
+
+            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No", spectreTable]);
         }
 
         tableData.HasRoundBorders = false;
+        tableData.DisplayLinesBetweenRows = true;
         tableData.PrintTable();
     }
 
@@ -44,10 +76,13 @@ internal static class PluginMethods
         try
         {
             await LoadPlugins(quiet ? ["-q"] : null);
-            await Application.CurrentApplication.InternalActionManager.Initialize();
+            
         }catch(Exception ex)
         {
             Application.CurrentApplication.Logger.LogException(ex, typeof(PluginMethods), false);
+        } finally
+        {
+            await Application.CurrentApplication.InternalActionManager.Initialize();
         }
 
     }
