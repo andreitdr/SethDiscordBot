@@ -85,5 +85,5 @@ public sealed class Logger : ILogger
     public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
     public void Log(string message, object Sender) => Log(new LogMessage(message, Sender));
     public void Log(string message, object Sender, LogType type) => Log(new LogMessage(message, Sender, type));
-    public void LogException(Exception exception, object Sender) => Log(LogMessage.CreateFromException(exception, Sender));
+    public void LogException(Exception exception, object Sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, Sender, logFullStack));
 }

@@ -71,9 +71,9 @@ namespace DiscordBotCore.Others.Logger
             return this;
         }
 
-        public static LogMessage CreateFromException(Exception exception, object Sender)
+        public static LogMessage CreateFromException(Exception exception, object Sender, bool logFullStack)
         {
-            LogMessage message = new LogMessage(exception.ToString(), Sender, LogType.ERROR);
+            LogMessage message = new LogMessage(logFullStack? exception.ToString() : exception.Message, Sender, LogType.ERROR);
             return message;
         }
     }

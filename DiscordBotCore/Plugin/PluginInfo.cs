@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -37,6 +36,11 @@ public class PluginInfo
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)
     {
-        return new PluginInfo(onlineInfo.Name, onlineInfo.Version, onlineInfo.Dependencies.Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation)).ToDictionary());
+        return new PluginInfo(onlineInfo.Name,
+            onlineInfo.Version,
+            onlineInfo.Dependencies
+                .Where(dep => dep.IsExecutable)
+                .Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation))
+                .ToDictionary());
     }
 }

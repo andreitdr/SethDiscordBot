@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DiscordBotCore.Others;
 using DiscordBotCore.Plugin;
@@ -165,6 +163,9 @@ public class PluginManager
             File.Delete(dependency.Value);
 
         await RemovePluginFromDatabase(pluginInfo.PluginName);
+
+        if (Directory.Exists($"Libraries/{pluginInfo.PluginName}"))
+            Directory.Delete($"Libraries/{pluginInfo.PluginName}", true);
     }
 
     public async Task<string> GetDependencyLocation(string dependencyName)
@@ -177,7 +178,7 @@ public class PluginManager
                 return plugin.ListOfDependancies[dependencyName];
         }
 
-        throw new Exception("Dependency not found");
+        return string.Empty;
     }
 
     public string GenerateDependencyLocation(string pluginName, string dependencyName)

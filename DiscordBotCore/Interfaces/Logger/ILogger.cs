@@ -11,7 +11,7 @@ namespace DiscordBotCore.Interfaces.Logger
         public string LogMessageFormat { get; set; }
 
         public void Log(ILogMessage message);
-        public void LogException(Exception exception, object Sender);
+        public void LogException(Exception exception, object Sender, bool logFullStack = false);
 
         public event EventHandler<FormattedMessage> OnFormattedLog;
         public event EventHandler<ILogMessage> OnRawLog;

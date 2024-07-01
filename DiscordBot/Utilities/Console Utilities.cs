@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Spectre.Console;
 
 namespace DiscordBot.Utilities;
 
-public static class ConsoleUtilities
+internal static class ConsoleUtilities
 {
+    
     public static async Task<T> ExecuteWithProgressBar<T>(Task<T> function, string message)
     {
         T result = default;
@@ -28,4 +26,5 @@ public static class ConsoleUtilities
 
         return result;
     }
+
 }

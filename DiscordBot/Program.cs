@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -22,10 +21,10 @@ public class Program
     /// </summary>
     public static async Task Startup(string[] args)
     {
+
         await LoadComponents(args);
         await PrepareConsole();
-        await PluginMethods.LoadPlugins(null);
-        await Application.CurrentApplication.InternalActionManager.Initialize();
+        await PluginMethods.RefreshPlugins(false);
         await ConsoleInputHandler();
     }
 
@@ -54,7 +53,6 @@ public class Program
     /// <returns>Returns the bootloader for the Discord Bot</returns>
     private static async Task PrepareConsole()
     {
-
         AnsiConsole.MarkupLine($"[yellow]Running on version: {Assembly.GetExecutingAssembly().GetName().Version}[/]");
         AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
         AnsiConsole.MarkupLine("[yellow]Git Plugins: https://github.com/andreitdr/SethPlugins [/]");

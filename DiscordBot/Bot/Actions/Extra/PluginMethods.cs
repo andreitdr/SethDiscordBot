@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using DiscordBot.Utilities;
@@ -40,9 +41,15 @@ internal static class PluginMethods
 
     internal static async Task RefreshPlugins(bool quiet)
     {
+        try
+        {
+            await LoadPlugins(quiet ? ["-q"] : null);
+            await Application.CurrentApplication.InternalActionManager.Initialize();
+        }catch(Exception ex)
+        {
+            Application.CurrentApplication.Logger.LogException(ex, typeof(PluginMethods), false);
+        }
 
-        await LoadPlugins(quiet ? ["-q"] : null);
-        await Application.CurrentApplication.InternalActionManager.Initialize();
     }
 
     internal static async Task DownloadPlugin(PluginManager manager, string pluginName)
@@ -108,7 +115,7 @@ internal static class PluginMethods
 
                                  foreach (var dependency in pluginData.Dependencies)
                                  {
-                                     var task = ctx.AddTask($"Downloading {dependency.DownloadLocation}: ");
+                                     var task = ctx.AddTask($"Downloading {dependency.DownloadLocation} -> Executable: {dependency.IsExecutable}: ");
                                      IProgress<float> progress = new Progress<float>(p =>
                                          {
                                              task.Value = p;

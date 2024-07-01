@@ -43,7 +43,7 @@ public class PluginUpdater
         await ServerCom.DownloadFileAsync(pluginInfo.DownLoadLink, $"{DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll", progressMeter);
         
         foreach(OnlineDependencyInfo dependency in pluginInfo.Dependencies)
-            await ServerCom.DownloadFileAsync(dependency.DownloadLocation, dependency.DownloadLocation, progressMeter);
+            await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progressMeter);
 
         await _PluginsManager.RemovePluginFromDatabase(pluginName);
         await _PluginsManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginInfo));
