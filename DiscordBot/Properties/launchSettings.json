@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DiscordBot": {
+      "commandName": "Project"
+    },
+    "DiscordBot(WSL)": {
+      "commandName": "Executable",
+      "executablePath": "wsl",
+      "commandLineArgs": "./DiscordBot"
+    }
+  }
+}
