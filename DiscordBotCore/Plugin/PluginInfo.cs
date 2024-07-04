@@ -13,9 +13,10 @@ public class PluginInfo
     public Dictionary<string, string> ListOfDependancies {get; private set;}
     public bool IsMarkedToUninstall {get; internal set;}
     public bool IsOfflineAdded { get; internal set; }
+    public bool IsDisabled { get; internal set; }
 
     [JsonConstructor]
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall, bool isOfflineAdded)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall, bool isOfflineAdded, bool isDisabled)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
@@ -23,6 +24,7 @@ public class PluginInfo
         IsMarkedToUninstall = isMarkedToUninstall;
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
         IsOfflineAdded = isOfflineAdded;
+        IsDisabled = isDisabled;
     }
 
     public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies)
@@ -32,6 +34,8 @@ public class PluginInfo
         ListOfDependancies = listOfDependancies;
         IsMarkedToUninstall = false;
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
+        IsOfflineAdded = false;
+        IsDisabled = false;
     }
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)

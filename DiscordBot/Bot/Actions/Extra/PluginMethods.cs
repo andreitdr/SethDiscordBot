@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DiscordBot.Utilities;
 
 using DiscordBotCore;
+using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Loaders;
 using DiscordBotCore.Online;
 using DiscordBotCore.Others;
@@ -19,15 +20,17 @@ namespace DiscordBot.Bot.Actions.Extra;
 internal static class PluginMethods
 {
 
-    internal static async Task List(PluginManager manager)
+    internal static async Task List()
     {
-        Console.WriteLine($"Fetching plugin list from branch {manager.Branch} ...");
 
-        var data = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetPluginsList(), "Reading remote database");
+        
+        Console.WriteLine($"Fetching plugin list from branch {Application.CurrentApplication.PluginManager.Branch} ...");
+
+        var data = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");
 
         TableData tableData = new(["Name", "Description", "Version", "Is Installed", "Dependencies"]);
 
-        var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(manager.GetInstalledPlugins(), "Reading local database ");
+        var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetInstalledPlugins(), "Reading local database ");
 
         foreach (var plugin in data)
         {
@@ -87,9 +90,19 @@ internal static class PluginMethods
 
     }
 
-    internal static async Task DownloadPlugin(PluginManager manager, string pluginName)
+    internal static async Task DisablePlugin(string pluginName)
     {
-        var pluginData = await manager.GetPluginDataByName(pluginName);
+        await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, true);
+    }
+
+    internal static async Task EnablePlugin(string pluginName)
+    {
+        await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, false);
+    }
+
+    internal static async Task DownloadPlugin(string pluginName)
+    {
+        var pluginData = await Application.CurrentApplication.PluginManager.GetPluginDataByName(pluginName);
         if (pluginData is null)
         {
             Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
@@ -127,12 +140,12 @@ internal static class PluginMethods
             if (pluginData.HasScriptDependencies)
             {
                 Console.WriteLine("Executing post install scripts ...");
-                await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
+                await Application.CurrentApplication.PluginManager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
             }
 
             PluginInfo pluginInfo = new(pluginName, pluginData.Version, []);
             Console.WriteLine("Finished installing " + pluginName + " successfully");
-            await manager.AppendPluginToDatabase(pluginInfo);
+            await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
             await RefreshPlugins(false);
             return;
         }
@@ -175,7 +188,7 @@ internal static class PluginMethods
                                  await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
                                      {
                                          tuple.Item1.IsIndeterminate = false;
-                                         string downloadLocation = manager.GenerateDependencyLocation(pluginName, tuple.Item4);
+                                         string downloadLocation = Application.CurrentApplication.PluginManager.GenerateDependencyLocation(pluginName, tuple.Item4);
                                          await ServerCom.DownloadFileAsync(tuple.Item3, downloadLocation, tuple.Item2);
                                      }
                                  );
@@ -189,10 +202,10 @@ internal static class PluginMethods
         if(pluginData.HasScriptDependencies)
         {
             Console.WriteLine("Executing post install scripts ...");
-            await manager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
+            await Application.CurrentApplication.PluginManager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
         }
 
-        await manager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginData));
+        await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginData));
         await RefreshPlugins(false);
     }
 

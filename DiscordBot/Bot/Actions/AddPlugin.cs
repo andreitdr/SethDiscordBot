@@ -48,7 +48,7 @@ namespace DiscordBot.Bot.Actions
             }
 
             FileInfo fileInfo = new FileInfo(path);
-            PluginInfo pluginInfo = new PluginInfo(args[0], new(1, 0, 0), [], false, true);
+            PluginInfo pluginInfo = new PluginInfo(args[0], new(1, 0, 0), [], false, true, false);
             await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
         }
     }

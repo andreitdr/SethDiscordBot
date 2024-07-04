@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-
 
 namespace DiscordBot;
 
@@ -20,35 +17,24 @@ public static class Entry
             {
                 File.Delete(plugin);
             }
+
+            File.Delete("./Data/Resources/plugins.json");
+            Directory.Delete("./Libraries/", true);
         })
     ];
 
-    private static readonly string logo =
-#if DEBUG
+    private static readonly string logo = 
 @"
 
-   _____      _   _       _____  _                       _   ____        _   
-  / ____|    | | | |     |  __ \(_)                     | | |  _ \      | |  
- | (___   ___| |_| |__   | |  | |_ ___  ___ ___  _ __ __| | | |_) | ___ | |_ 
-  \___ \ / _ \ __| '_ \  | |  | | / __|/ __/ _ \| '__/ _` | |  _ < / _ \| __|
-  ____) |  __/ |_| | | | | |__| | \__ \ (_| (_) | | | (_| | | |_) | (_) | |_ 
- |_____/ \___|\__|_| |_| |_____/|_|___/\___\___/|_|  \__,_| |____/ \___/ \__|  
-                                                                               (Debug)
-                                                                                                                                                   
-";
-#else
-@"
-
-   _____      _   _       _____  _                       _   ____        _   
-  / ____|    | | | |     |  __ \(_)                     | | |  _ \      | |  
- | (___   ___| |_| |__   | |  | |_ ___  ___ ___  _ __ __| | | |_) | ___ | |_ 
-  \___ \ / _ \ __| '_ \  | |  | | / __|/ __/ _ \| '__/ _` | |  _ < / _ \| __|
-  ____) |  __/ |_| | | | | |__| | \__ \ (_| (_) | | | (_| | | |_) | (_) | |_ 
- |_____/ \___|\__|_| |_| |_____/|_|___/\___\___/|_|  \__,_| |____/ \___/ \__|  
+   _____      _   _        _____  _                       _    ____        _   
+  / ____|    | | | |      |  __ \(_)                     | |  |  _ \      | |  
+ | (___   ___| |_| |__    | |  | |_ ___  ___ ___  _ __ __| |  | |_) | ___ | |_ 
+  \___ \ / _ \ __| '_ \   | |  | | / __|/ __/ _ \| '__/ _` |  |  _ < / _ \| __|
+  ____) |  __/ |_| | | |  | |__| | \__ \ (_| (_) | | | (_| |  | |_) | (_) | |_ 
+ |_____/ \___|\__|_| |_|  |_____/|_|___/\___\___/|_|  \__,_|  |____/ \___/ \__|  
                                                                                
                                                                                                                                                    
 ";
-#endif
     public static void Main(string[] args)
     {
 #if DEBUG
@@ -82,6 +68,7 @@ public static class Entry
         }
 
         Program.Startup(args).Wait();
+
     }
 
 

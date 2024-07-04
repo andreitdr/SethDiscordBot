@@ -29,6 +29,12 @@ public class Plugin: ICommandAction
         new InternalActionOption("branch", "Sets a plugin option", [
             new InternalActionOption("set", "Sets the branch"),
             new InternalActionOption("get", "Gets the branch")
+        ]),
+        new InternalActionOption("enable", "Enables a plugin", [
+            new InternalActionOption("name", "The name of the plugin to enable")
+        ]),
+        new InternalActionOption("disable", "Disables a plugin", [
+            new InternalActionOption("name", "The name of the plugin to disable")
         ])
     };
 
@@ -36,20 +42,40 @@ public class Plugin: ICommandAction
 
     public async Task Execute(string[] args)
     {
-        if (args is null || args.Length == 0 || args[0] == "help")
+        if (args is null || args.Length == 0)
         {
-            Console.WriteLine("Usage : plugin [help|list|load|install]");
-            Console.WriteLine("help : Displays this message");
-            Console.WriteLine("list : Lists all plugins");
-            Console.WriteLine("load : Loads all plugins");
-            Console.WriteLine("install : Installs a plugin");
-            Console.WriteLine("refresh : Refreshes the plugin list");
-
+            await Application.CurrentApplication.InternalActionManager.Execute("help", ActionName);
             return;
         }
 
         switch (args[0])
         {
+            case "enable":
+            {
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Usage : plugin enable <plugin name>");
+                    return;
+                }
+
+                string pluginName = string.Join(' ', args, 1, args.Length - 1);
+                await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, false);
+
+                break;
+            }
+            case "disable":
+            {
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Usage : plugin disable <plugin name>");
+                    return;
+                }
+
+                string pluginName = string.Join(' ', args, 1, args.Length - 1);
+                await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, true);
+
+                break;
+            }
             case "branch":
                 if (args.Length < 2)
                 {
@@ -87,14 +113,15 @@ public class Plugin: ICommandAction
                 break;
 
             case "uninstall":
-                string plugName = string.Join(' ', args, 1, args.Length-1);
+            {
+                string plugName = string.Join(' ', args, 1, args.Length - 1);
                 bool result = await Application.CurrentApplication.PluginManager.MarkPluginToUninstall(plugName);
-                if(result)
+                if (result)
                     Console.WriteLine($"Marked to uninstall plugin {plugName}. Please restart the bot");
                 break;
-                
+            }
             case "list":
-                await PluginMethods.List(Application.CurrentApplication.PluginManager);
+                await PluginMethods.List();
                 break;
             case "load":
                 if (pluginsLoaded)
@@ -113,6 +140,7 @@ public class Plugin: ICommandAction
                 break;
 
             case "install":
+            {
                 var pluginName = string.Join(' ', args, 1, args.Length - 1);
                 if (string.IsNullOrEmpty(pluginName) || pluginName.Length < 2)
                 {
@@ -126,8 +154,10 @@ public class Plugin: ICommandAction
                     }
                 }
 
-                await PluginMethods.DownloadPlugin(Application.CurrentApplication.PluginManager, pluginName);
+                await PluginMethods.DownloadPlugin(pluginName);
+
                 break;
+            }
         }
     }
 }

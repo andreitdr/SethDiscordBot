@@ -21,7 +21,7 @@ internal class Loader
     internal async Task Load()
     {
         var installedPlugins = await Application.CurrentApplication.PluginManager.GetInstalledPlugins();
-        var files = installedPlugins.Select(plugin => plugin.FilePath).ToArray();
+        var files = installedPlugins.Where(plugin=>!plugin.IsDisabled).Select(plugin => plugin.FilePath).ToArray();
         
         foreach (var file in files)
         {

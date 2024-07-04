@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Others;
 using DiscordBotCore.Plugin;
 using DiscordBotCore.Updater.Plugins;
 
 namespace DiscordBotCore.Online;
 
-public class PluginManager
+public class PluginManager : IPluginManager
 {
-    private static readonly string _DefaultBranch  = "releases";
+    private static readonly string _DefaultBranch = "releases";
     private static readonly string _DefaultBaseUrl = "https://raw.githubusercontent.com/andreitdr/SethPlugins";
 
     private static readonly string _DefaultPluginsLink = "PluginsList.json";
@@ -26,29 +27,29 @@ public class PluginManager
     public PluginManager(Uri baseUrl, string branch)
     {
         BaseUrl = baseUrl.ToString();
-        Branch  = branch;
+        Branch = branch;
     }
 
     public PluginManager(string branch)
     {
         BaseUrl = _DefaultBaseUrl;
-        Branch  = branch;
+        Branch = branch;
     }
 
     public PluginManager()
     {
         BaseUrl = _DefaultBaseUrl;
-        Branch  = _DefaultBranch;
+        Branch = _DefaultBranch;
     }
 
     public async Task<List<PluginOnlineInfo>?> GetPluginsList()
     {
-        var                    jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
-        List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
+        var jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
+        List<PluginOnlineInfo> result = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
 
         var currentOS = OperatingSystem.IsWindows() ? OSType.WINDOWS :
-                        OperatingSystem.IsLinux()   ? OSType.LINUX : 
-                        OperatingSystem.IsMacOS()   ? OSType.MACOSX : OSType.NONE;
+                        OperatingSystem.IsLinux() ? OSType.LINUX :
+                        OperatingSystem.IsMacOS() ? OSType.MACOSX : OSType.NONE;
 
         return result.FindAll(pl => (pl.SupportedOS & currentOS) != 0);
 
@@ -58,29 +59,29 @@ public class PluginManager
     public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)
     {
         List<PluginOnlineInfo>? plugins = await GetPluginsList();
-        
-        if(plugins == null)
+
+        if (plugins == null)
             return null;
 
         // try to get the best matching plugin using the pluginName as a search query
         PluginOnlineInfo? result = plugins.Find(pl => pl.Name.ToLower().Contains(pluginName.ToLower()));
-        if(result == null) return null;
+        if (result == null) return null;
 
         return result;
     }
-    
+
     public async Task RemovePluginFromDatabase(string pluginName)
     {
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Application.CurrentApplication.PluginDatabase));
-        
+
         installedPlugins.RemoveAll(p => p.PluginName == pluginName);
-        await JsonManager.SaveToJsonFile(Application.CurrentApplication.PluginDatabase,installedPlugins);
+        await JsonManager.SaveToJsonFile(Application.CurrentApplication.PluginDatabase, installedPlugins);
     }
 
     public async Task ExecutePluginInstallScripts(List<OnlineScriptDependencyInfo> listOfDependencies)
     {
         string consoleType = OperatingSystem.IsWindows() ? "cmd.exe" : "bash";
-        foreach(var script in listOfDependencies)
+        foreach (var script in listOfDependencies)
             await ServerCom.RunConsoleCommand(consoleType, "/c " + script.ScriptContent);
     }
 
@@ -95,7 +96,7 @@ public class PluginManager
         installedPlugins.Add(pluginData);
         await JsonManager.SaveToJsonFile(Application.CurrentApplication.PluginDatabase, installedPlugins);
     }
-    
+
     public async Task<List<PluginInfo>> GetInstalledPlugins()
     {
         return await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Application.CurrentApplication.PluginDatabase));
@@ -111,9 +112,9 @@ public class PluginManager
     public async Task CheckForUpdates()
     {
         var pluginUpdater = new PluginUpdater(this);
-        
+
         List<PluginInfo> installedPlugins = await GetInstalledPlugins();
-        
+
         foreach (var plugin in installedPlugins)
         {
             if (await pluginUpdater.HasUpdate(plugin.PluginName))
@@ -129,7 +130,7 @@ public class PluginManager
         IEnumerable<PluginInfo> installedPlugins = await GetInstalledPlugins();
         IEnumerable<PluginInfo> info = installedPlugins.Where(info => info.PluginName == pluginName).AsEnumerable();
 
-        if(!info.Any())
+        if (!info.Any())
             return false;
 
         foreach (var item in info)
@@ -190,14 +191,15 @@ public class PluginManager
     {
         installProgress?.Report(0f);
 
-        int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1: 1;
+        int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1 : 1;
         totalSteps += pluginData.HasScriptDependencies ? pluginData.ScriptDependencies.Count : 0;
 
-        float stepProgress = 1f / totalSteps; 
+        float stepProgress = 1f / totalSteps;
 
         float currentProgress = 0f;
 
-        IProgress<float> progress = new Progress<float>((p) => {
+        IProgress<float> progress = new Progress<float>((p) =>
+        {
             installProgress?.Report(currentProgress + stepProgress * p);
         });
 
@@ -208,7 +210,7 @@ public class PluginManager
             {
                 string dependencyLocation = GenerateDependencyLocation(pluginData.Name, dependency.DownloadLocation);
                 await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependencyLocation, progress);
-                
+
                 currentProgress += stepProgress;
             }
 
@@ -228,6 +230,18 @@ public class PluginManager
         await AppendPluginToDatabase(pluginInfo);
     }
 
+    public async Task SetDisabledStatus(string pluginName, bool status)
+    {
+        var plugins = await GetInstalledPlugins();
+        var plugin = plugins.Find(p => p.PluginName == pluginName);
 
+        if (plugin == null)
+            return;
 
+        plugin.IsDisabled = status;
+
+        await RemovePluginFromDatabase(pluginName);
+        await AppendPluginToDatabase(plugin);
+
+    }
 }

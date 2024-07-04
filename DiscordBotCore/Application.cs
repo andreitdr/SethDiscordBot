@@ -1,4 +1,5 @@
-﻿using DiscordBotCore.Online;
+﻿using DiscordBotCore.Interfaces.PluginManager;
+using DiscordBotCore.Online;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
 using DiscordBotCore.Others.Logger;
@@ -36,7 +37,7 @@ namespace DiscordBotCore
 
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
-        public PluginManager PluginManager { get; private set; }
+        public IPluginManager PluginManager { get; private set; }
         public Logger Logger { get; private set; }
         public Bot.App DiscordBotClient { get; internal set; }
 
