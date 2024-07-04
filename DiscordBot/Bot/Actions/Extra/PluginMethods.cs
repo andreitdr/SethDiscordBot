@@ -28,16 +28,19 @@ internal static class PluginMethods
 
         var data = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");
 
-        TableData tableData = new(["Name", "Description", "Version", "Is Installed", "Dependencies"]);
+        TableData tableData = new(["Name", "Description", "Version", "Installed", "Dependencies", "Enabled"]);
 
         var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetInstalledPlugins(), "Reading local database ");
 
         foreach (var plugin in data)
         {
-            bool isInstalled = installedPlugins.Any(p => p.PluginName == plugin.Name);
+            bool       isInstalled     = installedPlugins.Any(p => p.PluginName == plugin.Name);
+            
             if (!plugin.HasFileDependencies)
             {
-                tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No", "None"]);
+                tableData.AddRow([plugin.Name, plugin.Description,
+                    plugin.Version.ToString(), isInstalled ? "[green]Yes[/]" : "[red]No[/]", "None",
+                    isInstalled ? installedPlugins.First(p=>p.PluginName == plugin.Name).IsEnabled ? "[green]Enabled[/]" : "[red]Disabled[/]" : "[yellow]NOT INSTALLED[/]"]);
                 continue;
             }
 
@@ -66,7 +69,8 @@ internal static class PluginMethods
 
             Table spectreTable = dependenciesTable.AsTable();
 
-            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "Yes" : "No", spectreTable]);
+            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "[green]Yes[/]" : "[red]No[/]", spectreTable,
+                isInstalled ? installedPlugins.First(p=>p.PluginName == plugin.Name).IsEnabled ? "Enabled" : "[red]Disabled[/]" : "[yellow]NOT INSTALLED[/]"]);
         }
 
         tableData.HasRoundBorders = false;
@@ -92,12 +96,12 @@ internal static class PluginMethods
 
     internal static async Task DisablePlugin(string pluginName)
     {
-        await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, true);
+        await Application.CurrentApplication.PluginManager.SetEnabledStatus(pluginName, false);
     }
 
     internal static async Task EnablePlugin(string pluginName)
     {
-        await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, false);
+        await Application.CurrentApplication.PluginManager.SetEnabledStatus(pluginName, true);
     }
 
     internal static async Task DownloadPlugin(string pluginName)

@@ -10,32 +10,32 @@ public class PluginInfo
     public string PluginName { get; private set; }
     public PluginVersion PluginVersion { get; private set; }
     public string FilePath { get; private set; }
-    public Dictionary<string, string> ListOfDependancies {get; private set;}
+    public Dictionary<string, string> ListOfExecutableDependencies {get; private set;}
     public bool IsMarkedToUninstall {get; internal set;}
     public bool IsOfflineAdded { get; internal set; }
-    public bool IsDisabled { get; internal set; }
+    public bool IsEnabled { get; internal set; }
 
     [JsonConstructor]
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies, bool isMarkedToUninstall, bool isOfflineAdded, bool isDisabled)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfExecutableDependencies, bool isMarkedToUninstall, bool isOfflineAdded, bool isEnabled)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
-        ListOfDependancies = listOfDependancies;
+        ListOfExecutableDependencies = listOfExecutableDependencies;
         IsMarkedToUninstall = isMarkedToUninstall;
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
         IsOfflineAdded = isOfflineAdded;
-        IsDisabled = isDisabled;
+        IsEnabled = isEnabled;
     }
 
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfDependancies)
+    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfExecutableDependencies)
     {
         PluginName    = pluginName;
         PluginVersion = pluginVersion;
-        ListOfDependancies = listOfDependancies;
+        ListOfExecutableDependencies = listOfExecutableDependencies;
         IsMarkedToUninstall = false;
         FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
         IsOfflineAdded = false;
-        IsDisabled = false;
+        IsEnabled = true;
     }
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)

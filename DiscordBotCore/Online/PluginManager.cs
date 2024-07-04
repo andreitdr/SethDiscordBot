@@ -88,9 +88,9 @@ public class PluginManager : IPluginManager
     public async Task AppendPluginToDatabase(PluginInfo pluginData)
     {
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Application.CurrentApplication.PluginDatabase));
-        foreach (var dependency in pluginData.ListOfDependancies)
+        foreach (var dependency in pluginData.ListOfExecutableDependencies)
         {
-            pluginData.ListOfDependancies[dependency.Key] = GenerateDependencyLocation(pluginData.PluginName, dependency.Value);
+            pluginData.ListOfExecutableDependencies[dependency.Key] = GenerateDependencyLocation(pluginData.PluginName, dependency.Value);
         }
 
         installedPlugins.Add(pluginData);
@@ -160,7 +160,7 @@ public class PluginManager : IPluginManager
     {
         File.Delete(pluginInfo.FilePath);
 
-        foreach (var dependency in pluginInfo.ListOfDependancies)
+        foreach (var dependency in pluginInfo.ListOfExecutableDependencies)
             File.Delete(dependency.Value);
 
         await RemovePluginFromDatabase(pluginInfo.PluginName);
@@ -175,8 +175,8 @@ public class PluginManager : IPluginManager
 
         foreach (var plugin in installedPlugins)
         {
-            if (plugin.ListOfDependancies.ContainsKey(dependencyName))
-                return plugin.ListOfDependancies[dependencyName];
+            if (plugin.ListOfExecutableDependencies.ContainsKey(dependencyName))
+                return plugin.ListOfExecutableDependencies[dependencyName];
         }
 
         return null;
@@ -230,7 +230,7 @@ public class PluginManager : IPluginManager
         await AppendPluginToDatabase(pluginInfo);
     }
 
-    public async Task SetDisabledStatus(string pluginName, bool status)
+    public async Task SetEnabledStatus(string pluginName, bool status)
     {
         var plugins = await GetInstalledPlugins();
         var plugin = plugins.Find(p => p.PluginName == pluginName);
@@ -238,7 +238,7 @@ public class PluginManager : IPluginManager
         if (plugin == null)
             return;
 
-        plugin.IsDisabled = status;
+        plugin.IsEnabled = status;
 
         await RemovePluginFromDatabase(pluginName);
         await AppendPluginToDatabase(plugin);

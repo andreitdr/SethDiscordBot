@@ -59,7 +59,7 @@ public class Plugin: ICommandAction
                 }
 
                 string pluginName = string.Join(' ', args, 1, args.Length - 1);
-                await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, false);
+                await PluginMethods.EnablePlugin(pluginName);
 
                 break;
             }
@@ -72,7 +72,7 @@ public class Plugin: ICommandAction
                 }
 
                 string pluginName = string.Join(' ', args, 1, args.Length - 1);
-                await Application.CurrentApplication.PluginManager.SetDisabledStatus(pluginName, true);
+                await PluginMethods.DisablePlugin(pluginName);
 
                 break;
             }

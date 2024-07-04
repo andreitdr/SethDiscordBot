@@ -24,6 +24,6 @@ namespace DiscordBotCore.Interfaces.PluginManager
         Task RemovePluginFromDatabase(string pluginName);
         Task UninstallMarkedPlugins();
 
-        Task SetDisabledStatus(string pluginName, bool status);
+        Task SetEnabledStatus(string pluginName, bool status);
     }
 }
