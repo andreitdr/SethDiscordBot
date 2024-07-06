@@ -90,7 +90,7 @@ public class PluginManager : IPluginManager
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(await File.ReadAllTextAsync(Application.CurrentApplication.PluginDatabase));
         foreach (var dependency in pluginData.ListOfExecutableDependencies)
         {
-            pluginData.ListOfExecutableDependencies[dependency.Key] = GenerateDependencyLocation(pluginData.PluginName, dependency.Value);
+            pluginData.ListOfExecutableDependencies[dependency.Key] = dependency.Value;
         }
 
         installedPlugins.Add(pluginData);
@@ -175,16 +175,37 @@ public class PluginManager : IPluginManager
 
         foreach (var plugin in installedPlugins)
         {
-            if (plugin.ListOfExecutableDependencies.ContainsKey(dependencyName))
-                return plugin.ListOfExecutableDependencies[dependencyName];
+            if (plugin.ListOfExecutableDependencies.TryGetValue(dependencyName, out var dependencyPath))
+            {
+                string relativePath = GenerateDependencyRelativePath(plugin.PluginName, dependencyPath);
+                return relativePath;
+            }
+        }
+
+        return null;
+    }
+    
+    public async Task<string?> GetDependencyLocation(string dependencyName, string pluginName)
+    {
+        List<PluginInfo> installedPlugins = await GetInstalledPlugins();
+
+        foreach (var plugin in installedPlugins)
+        {
+            if (plugin.PluginName == pluginName && plugin.ListOfExecutableDependencies.ContainsKey(dependencyName))
+            {
+                string dependencyPath     = plugin.ListOfExecutableDependencies[dependencyName];
+                string relativePath = GenerateDependencyRelativePath(pluginName, dependencyPath); 
+                return relativePath;
+            }
         }
 
         return null;
     }
 
-    public string GenerateDependencyLocation(string pluginName, string dependencyName)
+    public string GenerateDependencyRelativePath(string pluginName, string dependencyPath)
     {
-        return Path.Combine(Environment.CurrentDirectory, $"Libraries/{pluginName}/{dependencyName}");
+        string relative = $"./Libraries/{pluginName}/{dependencyPath}";
+        return relative;
     }
 
     public async Task InstallPlugin(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
@@ -208,7 +229,7 @@ public class PluginManager : IPluginManager
         if (pluginData.HasFileDependencies)
             foreach (var dependency in pluginData.Dependencies)
             {
-                string dependencyLocation = GenerateDependencyLocation(pluginData.Name, dependency.DownloadLocation);
+                string dependencyLocation = GenerateDependencyRelativePath(pluginData.Name, dependency.DownloadLocation);
                 await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependencyLocation, progress);
 
                 currentProgress += stepProgress;

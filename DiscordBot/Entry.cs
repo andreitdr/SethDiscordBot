@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace DiscordBot;
 
+
 public static class Entry
 {
     /// <summary>
@@ -58,7 +59,7 @@ public static class Entry
         static Assembly LoadFromSameFolder(object sender, ResolveEventArgs args)
         {
             string requestingAssembly = args.RequestingAssembly?.GetName().Name;
-            var folderPath   = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, $"Libraries\\{requestingAssembly}");
+            var folderPath   = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, $"Libraries/{requestingAssembly}");
             var assemblyPath = Path.Combine(folderPath, new AssemblyName(args.Name).Name + ".dll");
             if (!File.Exists(assemblyPath)) 
                 return null;

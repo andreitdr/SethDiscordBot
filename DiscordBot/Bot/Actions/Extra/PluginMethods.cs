@@ -192,7 +192,7 @@ internal static class PluginMethods
                                  await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
                                      {
                                          tuple.Item1.IsIndeterminate = false;
-                                         string downloadLocation = Application.CurrentApplication.PluginManager.GenerateDependencyLocation(pluginName, tuple.Item4);
+                                         string downloadLocation = Application.CurrentApplication.PluginManager.GenerateDependencyRelativePath(pluginName, tuple.Item4);
                                          await ServerCom.DownloadFileAsync(tuple.Item3, downloadLocation, tuple.Item2);
                                      }
                                  );

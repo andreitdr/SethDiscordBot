@@ -9,8 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using DiscordBotCore.Others.Exceptions;
 
-        
+
 namespace DiscordBotCore
 {
     /// <summary>
@@ -120,5 +121,19 @@ namespace DiscordBotCore
         }
 
         public static string GetPluginFullPath() => _PluginsFolder;
+
+        public static async Task<string> GetPluginDependencyPath(string dependencyName, string? pluginName = null)
+        {
+            string? dependencyLocation;
+            if(pluginName is null)
+                dependencyLocation = await Application.CurrentApplication.PluginManager.GetDependencyLocation(dependencyName);
+            else
+                dependencyLocation = await Application.CurrentApplication.PluginManager.GetDependencyLocation(dependencyName, pluginName);
+            
+            if(dependencyLocation is null)
+                throw new DependencyNotFoundException($"Dependency {dependencyName} not found", pluginName);
+            
+            return dependencyLocation;
+        }
     }
 }

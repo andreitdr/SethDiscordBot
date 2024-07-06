@@ -13,8 +13,9 @@ namespace DiscordBotCore.Interfaces.PluginManager
         Task AppendPluginToDatabase(PluginInfo pluginData);
         Task CheckForUpdates();
         Task ExecutePluginInstallScripts(List<OnlineScriptDependencyInfo> listOfDependencies);
-        string GenerateDependencyLocation(string pluginName, string dependencyName);
+        string GenerateDependencyRelativePath(string pluginName, string dependencyPath);
         Task<string?> GetDependencyLocation(string dependencyName);
+        Task<string?> GetDependencyLocation(string pluginName, string dependencyName);
         Task<List<PluginInfo>> GetInstalledPlugins();
         Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName);
         Task<List<PluginOnlineInfo>?> GetPluginsList();
