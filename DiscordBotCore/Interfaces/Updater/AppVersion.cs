@@ -5,15 +5,12 @@ namespace DiscordBotCore.Interfaces.Updater
 {
     public class AppVersion : IVersion
     {
-        public int Major { get; set; }
-
-        public int Minor  { get; set; }
-
-        public int Patch { get; set; }
-
-        public int PatchVersion { get; set; }
-
         public static readonly AppVersion CurrentAppVersion = new AppVersion(Assembly.GetEntryAssembly().GetName().Version.ToString());
+       
+        public int Major { get; set; }
+        public int Minor  { get; set; }
+        public int Patch { get; set; }
+        public int PatchVersion { get; set; }
 
         private readonly char _Separator = '.';
 

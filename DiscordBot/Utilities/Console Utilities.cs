@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DiscordBotCore.Updater.Application;
 using Spectre.Console;
 
 namespace DiscordBot.Utilities;
@@ -25,6 +26,24 @@ internal static class ConsoleUtilities
 
 
         return result;
+    }
+
+    public static async Task ExecuteTaskWithBuiltInProgress<T>(Func<T, IProgress<float>, Task> method, T parameter, string taskMessage)
+    {
+        await AnsiConsole.Progress()
+                         .AutoClear(false)     // Do not remove the task list when done
+                         .HideCompleted(false) // Hide tasks as they are completed
+                         .Columns(new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn())
+                         .StartAsync(
+                             async ctx =>
+                             {
+                                 var task = ctx.AddTask(taskMessage);
+                                 IProgress<float> progress = new Progress<float>(x => task.Value = x);
+                                 await method(parameter, progress);
+                                 task.Value = 100;
+                             }
+                         );
+
     }
 
 }

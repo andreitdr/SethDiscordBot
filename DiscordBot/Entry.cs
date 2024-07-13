@@ -21,6 +21,19 @@ public static class Entry
 
             File.Delete("./Data/Resources/plugins.json");
             Directory.Delete("./Libraries/", true);
+        }),
+
+        new StartupAction("--update-cleanup", () => {
+            List<string> files = new List<string>();
+            files.AddRange(Directory.GetFiles("./"));
+
+            foreach (var file in files)
+            {
+                if (file.EndsWith(".bak"))
+                    File.Delete(file);
+            }
+
+            Directory.Delete("temp");
         })
     ];
 

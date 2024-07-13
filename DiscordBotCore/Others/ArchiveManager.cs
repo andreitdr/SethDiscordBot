@@ -150,7 +150,10 @@ public static class ArchiveManager
 
                 try
                 {
-                    entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
+                    string path = Path.Combine(folder, entry.FullName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    
+                    entry.ExtractToFile(path, true);
                     currentSize += (ulong)entry.CompressedLength;
                 }
                 catch (Exception ex)

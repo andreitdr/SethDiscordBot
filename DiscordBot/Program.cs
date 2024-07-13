@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using DiscordBot.Bot.Actions.Extra;
-
+using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
@@ -83,19 +83,14 @@ public class Program
     {
         await Application.CreateApplication();
 
-        AppUpdater updater = new();
-        var update = await updater.CheckForUpdates();
-
-        if (update != Update.None)
+        AppUpdater updater = new AppUpdater();
+        Update? update = await updater.PrepareUpdate();
+        if(update is not null)
         {
-            Console.WriteLine($"New update available: {update.UpdateVersion}");
-            Console.WriteLine($"Download link: {update.UpdateUrl}");
-            Console.WriteLine($"Update notes: {update.UpdateNotes}\n\n");
-
-            Console.WriteLine("Waiting 5 seconds ...");
-            await Task.Delay(5000);
+            await ConsoleUtilities.ExecuteTaskWithBuiltInProgress(updater.SelfUpdate, update, "Discord Bot Update");
+            return;
         }
-
+        
         Application.CurrentApplication.Logger.OnFormattedLog += (sender, logMessage) =>
         {
             var messageColor = logMessage.Type switch

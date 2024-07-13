@@ -12,5 +12,11 @@ namespace DiscordBot
             this.Command = command;
             this.RunAction = runAction;
         }
+
+        public StartupAction(string command, Action runAction)
+        {
+            this.Command = command;
+            this.RunAction = (args) => runAction();
+        }
     }
 }
