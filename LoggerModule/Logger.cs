@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using DiscordBotCore.Interfaces.Logger;
+using DiscordBotCore.Others;
 
-using DiscordBotCore.Interfaces.Logger;
-
-namespace DiscordBotCore.Others.Logger;
+namespace LoggerModule;
 
 public sealed class Logger : ILogger
 {
@@ -17,10 +13,11 @@ public sealed class Logger : ILogger
     public event EventHandler<ILogger.FormattedMessage> OnFormattedLog;
     public event EventHandler<ILogMessage> OnRawLog;
 
-    public Logger(string logMessageFormat)
+    public Logger(string logFolder, string logMessageFormat)
     {
         this.LogMessageFormat = logMessageFormat;
-        _LogFileStream = File.Open(Application.CurrentApplication.LogFile, FileMode.Append, FileAccess.Write, FileShare.Read);
+        var logFile = logFolder + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+        _LogFileStream = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.Read);
     }
 
     /// <summary>

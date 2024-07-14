@@ -2,7 +2,6 @@
 using DiscordBotCore.Online;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
-using DiscordBotCore.Others.Logger;
 using DiscordBotCore.Plugin;
 
 using System;
@@ -10,6 +9,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DiscordBotCore.Others.Exceptions;
+using DiscordBotCore.Loaders;
+using DiscordBotCore.Interfaces.Modules;
+using DiscordBotCore.Interfaces.Logger;
+using DiscordBotCore.Modules;
+using System.Linq;
+using System.Collections.Immutable;
 
 
 namespace DiscordBotCore
@@ -21,9 +26,9 @@ namespace DiscordBotCore
     {
         public static Application CurrentApplication { get; private set; } = null!;
 
-        private static readonly string _DefaultLogMessageFormat = "{ThrowTime} {SenderName} {Message}";
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
         private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
+        private static readonly string _ModuleFolder = "./Data/Modules";
 
         private static readonly string _ResourcesFolder = "./Data/Resources";
         private static readonly string _PluginsFolder = "./Data/Plugins";
@@ -36,10 +41,13 @@ namespace DiscordBotCore
         public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"] ?? _PluginsDatabaseFile;
         public string LogFile => $"{ApplicationEnvironmentVariables["LogFolder"]}/{DateTime.Now.ToLongDateString().Replace(" / ", "")}.log";
 
+        private ModuleManager _ModuleManager;
+        
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
+
+        public ILogger Logger => _ModuleManager.GetModule<ILogger>();
         public IPluginManager PluginManager { get; private set; }
-        public Logger Logger { get; private set; }
         public Bot.App DiscordBotClient { get; internal set; }
 
         public static async Task CreateApplication()
@@ -63,9 +71,10 @@ namespace DiscordBotCore
                 await CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             }
 
-            CurrentApplication.Logger = CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("LogMessageFormat") ?
-                                        new Logger(CurrentApplication.ApplicationEnvironmentVariables["LogMessageFormat"]) :
-                                        new Logger(_DefaultLogMessageFormat);
+            CurrentApplication.ApplicationEnvironmentVariables.Add("ModuleFolder", _ModuleFolder);
+
+            CurrentApplication._ModuleManager = new(_ModuleFolder);
+            await CurrentApplication._ModuleManager.LoadModules();
             
             if (!File.Exists(_PluginsDatabaseFile))
             {
@@ -88,6 +97,7 @@ namespace DiscordBotCore
 
         }
 
+        public IReadOnlyDictionary<Type, List<object>> GetLoadedCoreModules() => _ModuleManager.LoadedModules.AsReadOnly();
 
         private static void PopulateEnvWithDefault()
         {
@@ -102,7 +112,6 @@ namespace DiscordBotCore
             CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"] = _PluginsFolder;
             CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"] = _ArchivesFolder;
             CurrentApplication.ApplicationEnvironmentVariables["PluginDatabase"] = _PluginsDatabaseFile;
-            CurrentApplication.ApplicationEnvironmentVariables["LogMessageFormat"] = _DefaultLogMessageFormat;
             CurrentApplication.ApplicationEnvironmentVariables["MaxParallelDownloads"] = _MaxParallelDownloads;
         }
 

@@ -58,6 +58,9 @@ public class SettingsDictionary<TKey, TValue>
 
     public void Add(TKey key, TValue value)
     {
+        if (_Dictionary.ContainsKey(key))
+            return;
+
         _Dictionary.Add(key, value);
     }
 

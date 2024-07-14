@@ -1,8 +1,7 @@
 ﻿using DiscordBotCore.Interfaces.Logger;
+using DiscordBotCore.Others;
 
-using System;
-
-namespace DiscordBotCore.Others.Logger
+namespace LoggerModule
 {
     internal sealed class LogMessage : ILogMessage
     {
