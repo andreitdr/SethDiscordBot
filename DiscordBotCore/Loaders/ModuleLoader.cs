@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using DiscordBotCore.Interfaces.Modules;
 using System.Reflection;
-using Discord.Commands;
 
 namespace DiscordBotCore.Loaders
 {

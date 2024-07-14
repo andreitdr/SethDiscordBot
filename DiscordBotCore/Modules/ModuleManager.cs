@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Interfaces.Modules;
 using DiscordBotCore.Loaders;
+using DiscordBotCore.Others.Exceptions;
 
 namespace DiscordBotCore.Modules
 {
@@ -23,7 +24,10 @@ namespace DiscordBotCore.Modules
         public T GetModule<T>() where T : IBaseModule
         {
             if(!LoadedModules.ContainsKey(typeof(T)))
-                throw new Exception($"No module loaded with this signature: {nameof(T)}");
+                throw new ModuleNotFoundException<T>();
+
+            if (!LoadedModules[typeof(T)].Any())
+                throw new ModuleNotFoundException<T>();
 
             IModule<T> module = (IModule<T>)LoadedModules[typeof(T)][0];
             return module.Module;

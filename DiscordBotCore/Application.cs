@@ -15,6 +15,7 @@ using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Modules;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 
 namespace DiscordBotCore
@@ -46,7 +47,28 @@ namespace DiscordBotCore
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
 
-        public ILogger Logger => _ModuleManager.GetModule<ILogger>();
+        public ILogger Logger
+        {
+            get
+            {
+                try { return _ModuleManager.GetModule<ILogger>(); }
+                catch (ModuleNotFoundException<ILogger> ex)
+                {
+                    Console.WriteLine("No logger found");
+                    Console.WriteLine("Not having a valid logger is NOT an option. The default module will be downloaded from the official repo.");
+                    Console.WriteLine("Install the default one ? [y/n]");
+                    ConsoleKey response = Console.ReadKey().Key;
+                    if (response is ConsoleKey.Y)
+                    {
+                        Process.Start("DiscordBot", "--module-install LoggerModule");
+                    }
+
+                    Environment.Exit(0);
+                    return null!;
+                }
+            }
+        }
+
         public IPluginManager PluginManager { get; private set; }
         public Bot.App DiscordBotClient { get; internal set; }
 
@@ -61,6 +83,7 @@ namespace DiscordBotCore
             Directory.CreateDirectory(_PluginsFolder);
             Directory.CreateDirectory(_ArchivesFolder);
             Directory.CreateDirectory(_LogsFolder);
+            Directory.CreateDirectory(_ModuleFolder);
 
             CurrentApplication.ApplicationEnvironmentVariables = new SettingsDictionary<string, string>(_ConfigFile);
             bool result = await CurrentApplication.ApplicationEnvironmentVariables.LoadFromFile();

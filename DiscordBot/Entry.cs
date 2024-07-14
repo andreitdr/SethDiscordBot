@@ -4,6 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using DiscordBot.Utilities;
+
+using DiscordBotCore.Modules;
+
 namespace DiscordBot;
 
 
@@ -13,7 +17,7 @@ public static class Entry
     /// Some startup actions that can are executed when the console first starts. This actions are invoked externally at application launch
     /// </summary>
     private static readonly List<IStartupAction> StartupActions = [
-        new StartupAction("/purge_plugins", (args) => {
+        new StartupAction("/purge_plugins", () => {
             foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
             {
                 File.Delete(plugin);
@@ -34,6 +38,12 @@ public static class Entry
             }
 
             Directory.Delete("temp");
+        }),
+
+        new StartupAction("--module-install", (args) => {
+            ModuleDownloader moduleDownloader = new ModuleDownloader(args[0]);
+
+            ConsoleUtilities.ExecuteTaskWithBuiltInProgress(moduleDownloader.DownloadModule, "Downloading logger module").Wait();
         })
     ];
 
@@ -51,13 +61,11 @@ public static class Entry
 ";
     public static void Main(string[] args)
     {
-#if DEBUG
         if (args.Length > 0)
         {
-            StartupActions.FirstOrDefault(action => action.Command == args[0], null)?.RunAction(args[..1]);
+            
+            StartupActions.FirstOrDefault(action => action.Command == args[0], null)?.RunAction(args[1..]);
         }
-
-#endif
 
         Console.Clear();
 

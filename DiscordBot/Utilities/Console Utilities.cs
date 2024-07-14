@@ -46,4 +46,22 @@ internal static class ConsoleUtilities
 
     }
 
+    public static async Task ExecuteTaskWithBuiltInProgress(Func<IProgress<float>, Task> method, string taskMessage)
+    {
+        await AnsiConsole.Progress()
+                         .AutoClear(false)     // Do not remove the task list when done
+                         .HideCompleted(false) // Hide tasks as they are completed
+                         .Columns(new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn())
+                         .StartAsync(
+                             async ctx =>
+                             {
+                                 var task = ctx.AddTask(taskMessage);
+                                 IProgress<float> progress = new Progress<float>(x => task.Value = x);
+                                 await method(progress);
+                                 task.Value = 100;
+                             }
+                         );
+
+    }
+
 }

@@ -90,26 +90,8 @@ public class Program
             await ConsoleUtilities.ExecuteTaskWithBuiltInProgress(updater.SelfUpdate, update, "Discord Bot Update");
             return;
         }
-        
-        Application.CurrentApplication.Logger.OnFormattedLog += (sender, logMessage) =>
-        {
-            var messageColor = logMessage.Type switch
-            {
-                LogType.INFO => "[green]",
-                LogType.WARNING => "[yellow]",
-                LogType.ERROR => "[red]",
-                LogType.CRITICAL => "[red]",
-                _ => "[white]"
-            };
 
-            if (logMessage.Message.Contains('[') || logMessage.Message.Contains(']'))
-            {
-                logMessage.Message = logMessage.Message.Replace("[", "<").Replace("]", ">");
-            }
-
-            string messageToPrint = $"{messageColor}{logMessage.Message}[/]";
-            AnsiConsole.MarkupLine(messageToPrint);
-        };
+        Application.CurrentApplication.Logger.SetOutFunction(AnsiConsole.MarkupLine);
 
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
