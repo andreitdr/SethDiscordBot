@@ -9,13 +9,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DiscordBotCore.Others.Exceptions;
-using DiscordBotCore.Loaders;
-using DiscordBotCore.Interfaces.Modules;
 using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Modules;
-using System.Linq;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using DiscordBotCore.Online.Helpers;
 
 
 namespace DiscordBotCore
@@ -40,8 +37,7 @@ namespace DiscordBotCore
 
         public string ServerID => ApplicationEnvironmentVariables["ServerID"];
         public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"] ?? _PluginsDatabaseFile;
-        public string LogFile => $"{ApplicationEnvironmentVariables["LogFolder"]}/{DateTime.Now.ToLongDateString().Replace(" / ", "")}.log";
-
+        
         private ModuleManager _ModuleManager;
         
         public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
@@ -74,11 +70,20 @@ namespace DiscordBotCore
 
         public static async Task CreateApplication()
         {
+
+            if (!await OnlineFunctions.IsInternetConnected())
+            {
+                Console.WriteLine("No internet connection detected. Exiting ...");
+                Environment.Exit(0);
+            }
+            
             if (CurrentApplication is not null)
                 return;
 
             CurrentApplication = new Application();
 
+            
+            
             Directory.CreateDirectory(_ResourcesFolder);
             Directory.CreateDirectory(_PluginsFolder);
             Directory.CreateDirectory(_ArchivesFolder);

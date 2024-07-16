@@ -107,4 +107,21 @@ internal static class OnlineFunctions
         using var client = new HttpClient();
         return await client.GetStringAsync(url, cancellation);
     }
+
+    internal static async Task<bool> IsInternetConnected()
+    {
+        bool result = false;
+        try
+        {
+            using var client = new HttpClient();
+            await client.GetStringAsync("https://www.google.com");
+            result = true;
+        }
+        catch
+        {
+            result = false;
+        }
+        
+        return result;
+    }
 }
