@@ -18,13 +18,13 @@ public class Exit: ICommandAction
         new InternalActionOption("help", "Displays this message"),
         new InternalActionOption("force | -f", "Exits the bot without saving the config")
     };
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
     public async Task Execute(string[] args)
     {
         if (args is null || args.Length == 0)
         {
-            Application.CurrentApplication.Logger.Log("Exiting...", this, LogType.WARNING);
+            Application.CurrentApplication.Logger.Log("Exiting...", this, LogType.Warning);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             Environment.Exit(0);
         }
@@ -40,7 +40,7 @@ public class Exit: ICommandAction
 
                 case "-f":
                 case "force":
-                    Application.CurrentApplication.Logger.Log("Exiting (FORCE)...", this, LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("Exiting (FORCE)...", this, LogType.Warning);
                     Environment.Exit(0);
                     break;
 

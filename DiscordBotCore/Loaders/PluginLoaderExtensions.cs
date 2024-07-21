@@ -26,7 +26,7 @@ internal static class PluginLoaderExtensions
         }
         catch (Exception e)
         {
-            Application.CurrentApplication.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.ERROR);
+            Application.CurrentApplication.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
             Application.CurrentApplication.Logger.LogException(e, typeof(PluginLoader));
             return false;
         }
@@ -39,14 +39,14 @@ internal static class PluginLoaderExtensions
         if(pluginLoader._Client.Guilds.Count == 0) return;
         if (!ulong.TryParse(Application.CurrentApplication.ServerID, out _))
         {
-            Application.CurrentApplication.Logger.Log("Invalid ServerID in config file. Can not reset specific guild commands", typeof(PluginLoader), LogType.ERROR);
+            Application.CurrentApplication.Logger.Log("Invalid ServerID in config file. Can not reset specific guild commands", typeof(PluginLoader), LogType.Error);
             return;
         }
 
         SocketGuild? guild = pluginLoader._Client.GetGuild(ulong.Parse(Application.CurrentApplication.ServerID));
         if(guild is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.ERROR);
+            Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.Error);
             return;
         }
 
@@ -79,7 +79,7 @@ internal static class PluginLoaderExtensions
                 SocketGuild? guild = pluginLoader._Client.GetGuild(result);
                 if (guild is null)
                 {
-                    Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.ERROR);
+                    Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.Error);
                     return false;
                 }
 
@@ -90,7 +90,7 @@ internal static class PluginLoaderExtensions
         }
         catch (Exception e)
         {
-            Application.CurrentApplication.Logger.Log($"Error starting slash command {dbSlashCommand.Name}: {e.Message}", typeof(PluginLoader), LogType.ERROR);
+            Application.CurrentApplication.Logger.Log($"Error starting slash command {dbSlashCommand.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
             return false;
         }
     }

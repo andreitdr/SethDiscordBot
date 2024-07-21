@@ -21,7 +21,7 @@ public class SettingsConfig: ICommandAction
         new InternalActionOption("remove", "Remove a setting"),
         new InternalActionOption("add", "Add a setting")
     };
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public InternalActionRunType RunType => InternalActionRunType.OnCall;
     public Task Execute(string[] args)
     {
         if (args is null)

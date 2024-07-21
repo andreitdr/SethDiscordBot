@@ -25,7 +25,7 @@ public class Help: ICommandAction
         new InternalActionOption("command", "The command to get help for")
         ];
 
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
     public async Task Execute(string[] args)
     {

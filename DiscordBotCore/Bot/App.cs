@@ -107,7 +107,7 @@ public class App
         if (arg.Message.Contains("401"))
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.CRITICAL);
+            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.Critical);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             await Task.Delay(3000);
             
@@ -134,12 +134,12 @@ public class App
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.ERROR);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Error);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.INFO);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Info);
 
 
                 break;

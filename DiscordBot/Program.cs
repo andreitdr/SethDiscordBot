@@ -71,7 +71,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.Log(ex.ToString(), typeof(Program), LogType.CRITICAL);
+            Application.CurrentApplication.Logger.Log(ex.ToString(), typeof(Program), LogType.Critical);
         }
     }
 

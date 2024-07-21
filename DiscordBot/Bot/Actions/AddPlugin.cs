@@ -23,7 +23,7 @@ namespace DiscordBot.Bot.Actions
             new InternalActionOption("fileName", "The file name")
         ];
 
-        public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+        public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
         public async Task Execute(string[] args)
         {

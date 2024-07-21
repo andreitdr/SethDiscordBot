@@ -41,7 +41,7 @@ public class PluginLoader
 
         if (_Client == null)
         {
-            Application.CurrentApplication.Logger.Log("Discord client is null", this, LogType.ERROR);
+            Application.CurrentApplication.Logger.Log("Discord client is null", this, LogType.Error);
             return;
         }
 
@@ -62,7 +62,7 @@ public class PluginLoader
 
     private void FileLoadedException(FileLoaderResult result)
     {
-        Application.CurrentApplication.Logger.Log(result.ErrorMessage, this, LogType.ERROR);
+        Application.CurrentApplication.Logger.Log(result.ErrorMessage, this, LogType.Error);
     }
 
     private async void OnPluginLoaded(PluginLoadResultData result)
@@ -71,10 +71,10 @@ public class PluginLoader
         {
             case PluginType.ACTION:
                 ICommandAction action = (ICommandAction)result.Plugin;
-                if (action.RunType == InternalActionRunType.ON_STARTUP || action.RunType == InternalActionRunType.BOTH)
+                if (action.RunType == InternalActionRunType.OnStartup || action.RunType == InternalActionRunType.OnStartupAndCall)
                     action.Execute(null);
                 
-                if(action.RunType == InternalActionRunType.ON_CALL || action.RunType == InternalActionRunType.BOTH)
+                if(action.RunType == InternalActionRunType.OnCall || action.RunType == InternalActionRunType.OnStartupAndCall)
                     Actions.Add(action);
 
                 OnActionLoaded?.Invoke(result);
@@ -101,11 +101,11 @@ public class PluginLoader
                     OnSlashCommandLoaded?.Invoke(result);
                 } 
                 else 
-                    Application.CurrentApplication.Logger.Log($"Failed to start slash command {result.PluginName}", this, LogType.ERROR);
+                    Application.CurrentApplication.Logger.Log($"Failed to start slash command {result.PluginName}", this, LogType.Error);
                 break;
             case PluginType.UNKNOWN:
             default:
-                Application.CurrentApplication.Logger.Log("Unknown plugin type", this, LogType.ERROR);
+                Application.CurrentApplication.Logger.Log("Unknown plugin type", this, LogType.Error);
                 break;
         }
     }

@@ -15,7 +15,7 @@ public class Clear: ICommandAction
     public string Usage => "clear";
     public IEnumerable<InternalActionOption> ListOfOptions => [];
 
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
     public Task Execute(string[] args)
     {

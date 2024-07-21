@@ -119,7 +119,7 @@ public class PluginManager : IPluginManager
         {
             if (await pluginUpdater.HasUpdate(plugin.PluginName))
             {
-                Application.CurrentApplication.Logger.Log("Updating plugin: " + plugin.PluginName, this, LogType.INFO);
+                Application.CurrentApplication.Logger.Log("Updating plugin: " + plugin.PluginName, this, LogType.Info);
                 await pluginUpdater.UpdatePlugin(plugin.PluginName);
             }
         }

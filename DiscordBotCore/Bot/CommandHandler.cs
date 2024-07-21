@@ -141,9 +141,9 @@ internal class CommandHandler
             DbCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
 
             Application.CurrentApplication.Logger.Log(
-                $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.cleanContent}\"",
+                $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.CleanContent}\"",
                 this,
-                LogType.INFO
+                LogType.Info
             );
 
             if (context.Channel is SocketDMChannel)

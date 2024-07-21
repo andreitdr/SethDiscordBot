@@ -38,7 +38,7 @@ public class Plugin: ICommandAction
         ])
     };
 
-    public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+    public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
     public async Task Execute(string[] args)
     {
@@ -126,13 +126,13 @@ public class Plugin: ICommandAction
             case "load":
                 if (pluginsLoaded)
                 {
-                    Application.CurrentApplication.Logger.Log("Plugins already loaded", this, LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("Plugins already loaded", this, LogType.Warning);
                     break;
                 }
 
                 if (Application.CurrentApplication.DiscordBotClient is null)
                 {
-                    Application.CurrentApplication.Logger.Log("DiscordBot is null", this, LogType.WARNING);
+                    Application.CurrentApplication.Logger.Log("DiscordBot is null", this, LogType.Warning);
                     break;
                 }
 

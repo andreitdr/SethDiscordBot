@@ -40,13 +40,13 @@ internal class Help: DBCommand
     /// <param name="context">The command context</param>
     public void ExecuteServer(DbCommandExecutingArguments args)
     {
-        if (args.arguments is not null)
+        if (args.Arguments is not null)
         {
-            var e = GenerateHelpCommand(args.arguments[0]);
+            var e = GenerateHelpCommand(args.Arguments[0]);
             if (e is null)
-                args.context.Channel.SendMessageAsync("Unknown Command " + args.arguments[0]);
+                args.Context.Channel.SendMessageAsync("Unknown Command " + args.Arguments[0]);
             else
-                args.context.Channel.SendMessageAsync(embed: e.Build());
+                args.Context.Channel.SendMessageAsync(embed: e.Build());
 
 
             return;
@@ -68,7 +68,7 @@ internal class Help: DBCommand
             embedBuilder.AddField("Admin Commands", adminCommands);
         if (normalCommands.Length > 0)
             embedBuilder.AddField("Normal Commands", normalCommands);
-        args.context.Channel.SendMessageAsync(embed: embedBuilder.Build());
+        args.Context.Channel.SendMessageAsync(embed: embedBuilder.Build());
     }
 
     private EmbedBuilder GenerateHelpCommand(string command)

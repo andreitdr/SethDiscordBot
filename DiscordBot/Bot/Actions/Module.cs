@@ -18,7 +18,7 @@ namespace DiscordBot.Bot.Actions
 
         public IEnumerable<InternalActionOption> ListOfOptions => [];
 
-        public InternalActionRunType RunType => InternalActionRunType.ON_CALL;
+        public InternalActionRunType RunType => InternalActionRunType.OnCall;
 
         public Task Execute(string[] args)
         {

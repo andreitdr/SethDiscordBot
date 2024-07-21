@@ -7,10 +7,10 @@ namespace DiscordBotCore.Others;
 /// </summary>
 public enum LogType
 {
-    INFO,
-    WARNING,
-    ERROR,
-    CRITICAL
+    Info,
+    Warning,
+    Error,
+    Critical
 }
 
 public enum UnzipProgressType
@@ -21,9 +21,9 @@ public enum UnzipProgressType
 
 public enum InternalActionRunType
 {
-    ON_STARTUP,
-    ON_CALL,
-    BOTH
+    OnStartup,
+    OnCall,
+    OnStartupAndCall
 }
 
 [Flags]
