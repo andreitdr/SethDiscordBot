@@ -8,7 +8,8 @@ This project is based on:
 
 
 ## Plugins
-- Some plugins can be found in [this repo](https://github.com/andreitdr/SethPlugins).
+- Plugins can be found in [this repo](https://github.com/andreitdr/SethPlugins).
+- The source code for this plugins can be found in the [Plugins](./Plugins) folder.
 
 Plugin Types:
 1. Commands
