@@ -7,8 +7,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotCore", "DiscordBotCore\DiscordBotCore.csproj", "{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{5CF9AD7B-6BF0-4035-835F-722F989C01E1}"
+	ProjectSection(SolutionItems) = preProject
+		Plugins\README.md = Plugins\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{EA4FA308-7B2C-458E-8485-8747D745DD59}"
+	ProjectSection(SolutionItems) = preProject
+		Modules\README.md = Modules\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppWrapper", "Plugins\CppWrapper\CppWrapper.csproj", "{B21FC858-C397-4B0B-BFED-218EFA28E3E1}"
 EndProject
