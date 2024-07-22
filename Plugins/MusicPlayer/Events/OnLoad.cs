@@ -12,7 +12,6 @@ public class OnLoad: DBEvent
     private static readonly string _DefaultMusicDB   = "Music/music_db.json";
     public string Name => "Music Commands";
     public string Description => "The default music commands event loader";
-    public bool RequireOtherThread => false;
 
     public async void Start(DiscordSocketClient client)
     {

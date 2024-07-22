@@ -30,10 +30,10 @@ public static class ArchiveManager
     /// <param name="fileName">The file name in the archive</param>
     /// <param name="archName">The archive location on the disk</param>
     /// <returns>An array of bytes that represents the Stream value from the file that was read inside the archive</returns>
-    public static async Task<byte[]?> ReadStreamFromPakAsync(string fileName, string archName)
+    public static async Task<byte[]?> ReadAllBytes(string fileName, string archName)
     {
 
-        archName = Application.CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"] + archName;
+        archName = Path.Combine(Application.CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"], archName);
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
@@ -49,6 +49,9 @@ public static class ArchiveManager
 
         stream.Close();
         memoryStream.Close();
+        
+        Console.WriteLine("Read file from archive: " + fileName);
+        Console.WriteLine("Size: " + data.Length);
 
         return data;
     }

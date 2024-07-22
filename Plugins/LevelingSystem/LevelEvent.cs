@@ -12,8 +12,6 @@ internal class LevelEvent : DBEvent
     public string Name => "Leveling System Event Handler";
     public string Description => "The Leveling System Event Handler";
 
-    public bool RequireOtherThread => false;
-
     public async void Start(DiscordSocketClient client)
     {
 

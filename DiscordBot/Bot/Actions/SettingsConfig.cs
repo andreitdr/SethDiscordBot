@@ -22,6 +22,9 @@ public class SettingsConfig: ICommandAction
         new InternalActionOption("add", "Add a setting")
     };
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
+    
+    public bool RequireOtherThread => false;
+    
     public Task Execute(string[] args)
     {
         if (args is null)

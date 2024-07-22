@@ -39,6 +39,8 @@ public class Plugin: ICommandAction
     };
 
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
+    
+    public bool RequireOtherThread => false;
 
     public async Task Execute(string[] args)
     {

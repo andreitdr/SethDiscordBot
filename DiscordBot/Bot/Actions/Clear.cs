@@ -16,6 +16,8 @@ public class Clear: ICommandAction
     public IEnumerable<InternalActionOption> ListOfOptions => [];
 
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
+    
+    public bool RequireOtherThread => false;
 
     public Task Execute(string[] args)
     {

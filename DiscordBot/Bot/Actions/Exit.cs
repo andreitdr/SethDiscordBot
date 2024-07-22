@@ -19,6 +19,8 @@ public class Exit: ICommandAction
         new InternalActionOption("force | -f", "Exits the bot without saving the config")
     };
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
+    
+    public bool RequireOtherThread => false;
 
     public async Task Execute(string[] args)
     {

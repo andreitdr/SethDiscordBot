@@ -11,8 +11,6 @@ public class OnVoiceRemoved: DBEvent
     public string Name => "Event: OnVoiceRemoved";
     public string Description => "Called when bot leaves a voice channel";
 
-    public bool RequireOtherThread => false;
-
     public void Start(DiscordSocketClient client)
     {
         client.UserVoiceStateUpdated += async (user, oldState, newState) =>

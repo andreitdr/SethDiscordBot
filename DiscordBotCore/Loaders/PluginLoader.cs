@@ -72,7 +72,7 @@ public class PluginLoader
             case PluginType.ACTION:
                 ICommandAction action = (ICommandAction)result.Plugin;
                 if (action.RunType == InternalActionRunType.OnStartup || action.RunType == InternalActionRunType.OnStartupAndCall)
-                    action.Execute(null);
+                    await Application.CurrentApplication.InternalActionManager.StartAction(action, null);
                 
                 if(action.RunType == InternalActionRunType.OnCall || action.RunType == InternalActionRunType.OnStartupAndCall)
                     Actions.Add(action);

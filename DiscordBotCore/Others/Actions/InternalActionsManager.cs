@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DiscordBotCore.Interfaces;
 using DiscordBotCore.Loaders;
@@ -59,15 +60,30 @@ public class InternalActionManager
             {
                 Application.CurrentApplication.Logger.Log($"Action {actionName} is not executable", this, LogType.Error);
                 return false;
-            }    
+            }
 
-            await Actions[actionName].Execute(args);
+            await StartAction(Actions[actionName], args);
             return true;
         }
         catch (Exception e)
         {
             Application.CurrentApplication.Logger.Log(e.Message, type: LogType.Error, Sender: this);
             return false;
+        }
+    }
+
+    public async Task StartAction(ICommandAction action, params string[]? args)
+    {
+        if (action.RequireOtherThread)
+        {
+            async void Start() => await action.Execute(args);
+
+            Thread thread = new(Start);
+            thread.Start();
+        }
+        else
+        {
+            await action.Execute(args);
         }
     }
 }

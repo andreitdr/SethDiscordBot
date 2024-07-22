@@ -20,6 +20,8 @@ public class Entry : ICommandAction
     public IEnumerable<InternalActionOption> ListOfOptions => [];
 
     public InternalActionRunType RunType => InternalActionRunType.OnStartupAndCall;
+    
+    public bool RequireOtherThread => false;
 
     public async Task Execute(string[]? args)
     {

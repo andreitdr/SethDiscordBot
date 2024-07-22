@@ -24,6 +24,8 @@ namespace DiscordBot.Bot.Actions
         ];
 
         public InternalActionRunType RunType => InternalActionRunType.OnCall;
+        
+        public bool RequireOtherThread => false;
 
         public async Task Execute(string[] args)
         {

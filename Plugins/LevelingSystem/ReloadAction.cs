@@ -10,7 +10,7 @@ public class ReloadAction: ICommandAction
     public string? Description => "Reloads the Leveling System config file";
     public string? Usage => "LevelingSystemReload";
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
-
+    public bool RequireOtherThread => false;
     public IEnumerable<InternalActionOption> ListOfOptions => [];
 
     public async Task Execute(string[]? args)

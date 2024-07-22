@@ -47,7 +47,10 @@ namespace DiscordBotCore
         {
             get
             {
-                try { return _ModuleManager.GetModule<ILogger>(); }
+                try
+                {
+                    return _ModuleManager.GetModule<ILogger>();
+                }
                 catch (ModuleNotFoundException<ILogger> ex)
                 {
                     Console.WriteLine("No logger found");
