@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using DiscordBotCore;
@@ -17,9 +18,12 @@ namespace DiscordBot.Bot.Actions
 
         public string Description => "Add a local plugin to the database";
 
-        public string Usage => "add-plugin <path>";
+        public string Usage => "add-plugin <options> <fileName>";
 
         public IEnumerable<InternalActionOption> ListOfOptions => [
+            new InternalActionOption("options", "Available options", [
+                new InternalActionOption("-enabled", "Enable the plugin"),
+            ]),
             new InternalActionOption("fileName", "The file name")
         ];
 
@@ -31,24 +35,21 @@ namespace DiscordBot.Bot.Actions
         {
             if(args.Length < 1)
             {
-                Console.WriteLine("Invalid arguments given. Please use the following format:");
-                Console.WriteLine("add-plugin <fileName>");
-                Console.WriteLine("fileName: The file name");
-
+                Console.WriteLine("Incorrect number of arguments !");
                 return;
             }
 
-            string fileName = args[0] + ".dll";
+            string fileName = args[^1] + ".dll";
             var path = Application.GetPluginFullPath(fileName);
 
-            if(!System.IO.File.Exists(path))
+            if(!File.Exists(path))
             {
                 Console.WriteLine("The file does not exist !!");
                 return;
             }
-
-            FileInfo fileInfo = new FileInfo(path);
-            PluginInfo pluginInfo = new PluginInfo(args[0], new(1, 0, 0), [], false, true, false);
+            
+            PluginInfo pluginInfo = new PluginInfo(args[^1], new(1, 0, 0), [], false, true, args.Contains("-enabled"));
+            Application.CurrentApplication.Logger.Log("Adding plugin: " + args[^1]);
             await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
         }
     }
