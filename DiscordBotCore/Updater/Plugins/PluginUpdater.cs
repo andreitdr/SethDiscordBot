@@ -40,7 +40,7 @@ public class PluginUpdater
     public async Task UpdatePlugin(string pluginName, IProgress<float>? progressMeter = null)
     {
         PluginOnlineInfo pluginInfo = await GetPluginInfo(pluginName);
-        await ServerCom.DownloadFileAsync(pluginInfo.DownLoadLink, $"{DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll", progressMeter);
+        await ServerCom.DownloadFileAsync(pluginInfo.DownLoadLink, $"{DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginName}.dll", progressMeter);
         
         foreach(OnlineDependencyInfo dependency in pluginInfo.Dependencies)
             await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progressMeter);

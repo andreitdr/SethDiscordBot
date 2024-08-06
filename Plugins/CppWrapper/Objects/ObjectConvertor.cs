@@ -8,9 +8,9 @@ namespace CppWrapper.Objects
         {
             return new ApplicationStruct
             {
-                Token = application.ApplicationEnvironmentVariables["token"],
-                Prefix = application.ApplicationEnvironmentVariables["prefix"],
-                ServerId = application.ServerID
+                Token = application.ApplicationEnvironmentVariables.Get<string>("token") ?? throw new Exception("Token not found"),
+                Prefix = application.ApplicationEnvironmentVariables.Get<string>("prefix") ?? throw new Exception("Prefix not found"),
+                ServerIds = application.ServerIDs.ToArray()
             };
         }
     }

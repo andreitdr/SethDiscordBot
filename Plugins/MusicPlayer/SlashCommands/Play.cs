@@ -29,6 +29,13 @@ public class Play: DBSlashCommand
 
     public async void ExecuteServer(SocketSlashCommand context)
     {
+        
+        if(Variables._MusicDatabase is null)
+        {
+            await context.RespondAsync("Music Database is not loaded !");
+            return;
+        }
+        
         var melodyName = context.Data.Options.First().Value as string;
 
         if (melodyName is null)
@@ -37,8 +44,8 @@ public class Play: DBSlashCommand
             return;
         }
 
-        var melody = Variables._MusicDatabase.GetMusicInfo(melodyName);
-        if (melody is null)
+        var melody = Variables._MusicDatabase.GetMusicInfoWithTitleOrAlias(melodyName);
+        if (!melody.Any())
         {
             await context.RespondAsync("The searched melody does not exists in the database. Sorry :(");
             return;
@@ -71,6 +78,7 @@ public class Play: DBSlashCommand
             await context.RespondAsync("Failed to enqueue your request. Something went wrong !");
             return;
         }
+        
         await context.RespondAsync("Enqueued your request");
 
         await Variables._MusicPlayer.PlayQueue(); //start queue

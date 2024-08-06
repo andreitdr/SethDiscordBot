@@ -13,6 +13,7 @@ using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Modules;
 using System.Diagnostics;
 using DiscordBotCore.Online.Helpers;
+using DiscordBotCore.Others.Settings;
 
 
 namespace DiscordBotCore
@@ -26,21 +27,17 @@ namespace DiscordBotCore
 
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
         private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
-        private static readonly string _ModuleFolder = "./Data/Modules";
 
         private static readonly string _ResourcesFolder = "./Data/Resources";
         private static readonly string _PluginsFolder = "./Data/Plugins";
-        private static readonly string _ArchivesFolder = "./Data/Archives";
         private static readonly string _LogsFolder = "./Data/Logs";
 
-        private static readonly string _MaxParallelDownloads = "3";
-
-        public string ServerID => ApplicationEnvironmentVariables["ServerID"];
-        public string PluginDatabase => ApplicationEnvironmentVariables["PluginDatabase"] ?? _PluginsDatabaseFile;
+        public List<ulong> ServerIDs => ApplicationEnvironmentVariables.GetList("ServerID", new List<ulong>());
+        public string PluginDatabase => ApplicationEnvironmentVariables.Get<string>("PluginDatabase", _PluginsDatabaseFile);
         
         private ModuleManager _ModuleManager;
         
-        public SettingsDictionary<string, string> ApplicationEnvironmentVariables { get; private set; }
+        public CustomSettingsDictionary ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
 
         public ILogger Logger
@@ -84,27 +81,19 @@ namespace DiscordBotCore
                 return;
 
             CurrentApplication = new Application();
-
-            
             
             Directory.CreateDirectory(_ResourcesFolder);
             Directory.CreateDirectory(_PluginsFolder);
-            Directory.CreateDirectory(_ArchivesFolder);
             Directory.CreateDirectory(_LogsFolder);
-            Directory.CreateDirectory(_ModuleFolder);
 
-            CurrentApplication.ApplicationEnvironmentVariables = new SettingsDictionary<string, string>(_ConfigFile);
-            bool result = await CurrentApplication.ApplicationEnvironmentVariables.LoadFromFile();
-            if(!result)
-            {
-                PopulateEnvWithDefault();
-                File.Delete(_ConfigFile);
-                await CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
-            }
+            CurrentApplication.ApplicationEnvironmentVariables = await CustomSettingsDictionary.CreateFromFile(_ConfigFile, true);
 
-            CurrentApplication.ApplicationEnvironmentVariables.Add("ModuleFolder", _ModuleFolder);
-
-            CurrentApplication._ModuleManager = new(_ModuleFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Set("PluginFolder", _PluginsFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Set("ResourceFolder", _ResourcesFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Set("LogsFolder", _LogsFolder);
+            
+            
+            CurrentApplication._ModuleManager = new ModuleManager();
             await CurrentApplication._ModuleManager.LoadModules();
             
             if (!File.Exists(_PluginsDatabaseFile))
@@ -130,29 +119,13 @@ namespace DiscordBotCore
 
         public IReadOnlyDictionary<Type, List<object>> GetLoadedCoreModules() => _ModuleManager.LoadedModules.AsReadOnly();
 
-        private static void PopulateEnvWithDefault()
-        {
-            if (CurrentApplication is null)
-                return;
-
-            if (CurrentApplication.ApplicationEnvironmentVariables is null)
-                return;
-
-
-            CurrentApplication.ApplicationEnvironmentVariables["LogFolder"] = _LogsFolder;
-            CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"] = _PluginsFolder;
-            CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"] = _ArchivesFolder;
-            CurrentApplication.ApplicationEnvironmentVariables["PluginDatabase"] = _PluginsDatabaseFile;
-            CurrentApplication.ApplicationEnvironmentVariables["MaxParallelDownloads"] = _MaxParallelDownloads;
-        }
-
         public static string GetResourceFullPath(string path)
         {
             string result = Path.Combine(_ResourcesFolder, path);
             return result;
         }
 
-        public static string GetResourceFullPath() => _ResourcesFolder;
+        public static string GetResourceFullPath() => CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ResourceFolder", _ResourcesFolder);
 
         public static string GetPluginFullPath(string path)
         {
@@ -160,7 +133,7 @@ namespace DiscordBotCore
             return result;
         }
 
-        public static string GetPluginFullPath() => _PluginsFolder;
+        public static string GetPluginFullPath() => CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder", _PluginsFolder);
 
         public static async Task<string> GetPluginDependencyPath(string dependencyName, string? pluginName = null)
         {

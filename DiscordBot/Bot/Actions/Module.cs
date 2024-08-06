@@ -14,9 +14,11 @@ namespace DiscordBot.Bot.Actions
 
         public string Description => "Access module commands";
 
-        public string Usage => "module <name>";
+        public string Usage => "module <command>";
 
-        public IEnumerable<InternalActionOption> ListOfOptions => [];
+        public IEnumerable<InternalActionOption> ListOfOptions => [
+            new InternalActionOption("list", "List all loaded modules")
+        ];
 
         public InternalActionRunType RunType => InternalActionRunType.OnCall;
         
@@ -24,7 +26,7 @@ namespace DiscordBot.Bot.Actions
 
         public Task Execute(string[] args)
         {
-            string command = args[0];
+            string command = args?[0];
             switch(command)
             {
                 case "list":

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.Bot.Actions.Extra;
 using DiscordBotCore;
@@ -14,6 +15,7 @@ public class SettingsConfig: ICommandAction
     public string ActionName => "config";
     public string Description => "Change the settings of the bot";
     public string Usage => "config <options!>";
+
     public IEnumerable<InternalActionOption> ListOfOptions => new List<InternalActionOption>
     {
         new InternalActionOption("help", "Displays this message"),
@@ -21,16 +23,16 @@ public class SettingsConfig: ICommandAction
         new InternalActionOption("remove", "Remove a setting"),
         new InternalActionOption("add", "Add a setting")
     };
+
     public InternalActionRunType RunType => InternalActionRunType.OnCall;
-    
+
     public bool RequireOtherThread => false;
-    
+
     public Task Execute(string[] args)
     {
         if (args is null)
         {
-            foreach (var settings in Application.CurrentApplication.ApplicationEnvironmentVariables)
-                Console.WriteLine(settings.Key + ": " + settings.Value);
+            PrintAllSettings();
 
             return Task.CompletedTask;
         }
@@ -59,7 +61,7 @@ public class SettingsConfig: ICommandAction
                 break;
 
             case "-h":
-            case "-help":
+            case "help":
                 Console.WriteLine("Options:");
                 Console.WriteLine("-s <settingName> <newValue>: Set a setting");
                 Console.WriteLine("-r <settingName>: Remove a setting");
@@ -75,5 +77,86 @@ public class SettingsConfig: ICommandAction
 
 
         return Task.CompletedTask;
+    }
+    private void PrintList(IList<object> list, int indentLevel)
+    {
+        bool isListOfDictionaries = list.All(item => item is IDictionary<string, object>);
+
+        if (isListOfDictionaries)
+        {
+            foreach (var item in list)
+            {
+                if (item is IDictionary<string, object> dict)
+                {
+                    PrintDictionary(dict, indentLevel + 1);
+                }
+            }
+        }
+        else
+        {
+            PrintIndent(indentLevel);
+            Console.WriteLine(string.Join(",", list));
+        }
+    }
+
+    private void PrintDictionary(IDictionary<string, object> dictionary, int indentLevel)
+    {
+        foreach (var kvp in dictionary)
+        {
+            PrintIndent(indentLevel);
+            Console.Write(kvp.Key + ": ");
+
+            var value = kvp.Value;
+            if (value is IDictionary<string, object> dict)
+            {
+                Console.WriteLine();
+                PrintDictionary(dict, indentLevel + 1);
+            }
+            else if (value is IList<object> list)
+            {
+                if (list.All(item => item is IDictionary<string, object>))
+                {
+                    Console.WriteLine();
+                    PrintList(list, indentLevel + 1);
+                }
+                else
+                {
+                    PrintList(list, indentLevel);
+                }
+            }
+            else
+            {
+                Console.WriteLine(value);
+            }
+        }
+    }
+
+    private void PrintIndent(int indentLevel)
+    {
+        for (int i = 0; i < indentLevel; i++)
+        {
+            Console.Write("  "); // Two spaces for each indentation level
+        }
+    }
+
+    private void PrintAllSettings()
+    {
+        var settings = Application.CurrentApplication.ApplicationEnvironmentVariables;
+        foreach (var setting in settings)
+        {
+            Console.WriteLine("Setting: " + setting.Key);
+            if (setting.Value is IDictionary<string, object> dict)
+            {
+                PrintDictionary(dict, 1);
+            }
+            else if (setting.Value is IList<object> list)
+            {
+                PrintList(list, 1);
+            }
+            else
+            {
+                Console.WriteLine(setting.Value);
+            }
+        }
     }
 }

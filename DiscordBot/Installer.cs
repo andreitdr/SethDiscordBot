@@ -7,7 +7,7 @@ namespace DiscordBot;
 
 public static class Installer
 {
-    private static void AskForConfig(string key, string message)
+    private static string AskForConfig(string key, string message)
     {
         var value = AnsiConsole.Ask<string>($"[green]{message}[/]");
 
@@ -18,19 +18,29 @@ public static class Installer
             Environment.Exit(-20);
         }
 
-        Application.CurrentApplication.ApplicationEnvironmentVariables.Add(key, value);
+        return value;
+
     }
     public static async Task GenerateStartupConfig()
     {
 
         if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token"))
-            AskForConfig("token", "Token:");
+        {
+            string response = AskForConfig("token", "Token:");
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Add("token", response);
+        }
 
-        if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
-            AskForConfig("prefix", "Prefix:");
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
+        {
+            string response = AskForConfig("prefix", "Prefix:");
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Add("prefix", response);
+        }
 
-        if(!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID"))
-            AskForConfig("ServerID", "Server ID:");
+        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID"))
+        {
+            string response = AskForConfig("ServerID", "Please enter the server Ids where the bot will be used (separated by ;):");
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", response);
+        }
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 

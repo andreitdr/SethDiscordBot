@@ -78,8 +78,7 @@ public class AddMelody: DBCommand
         await msg.ModifyAsync(a => a.Content = "Done");
 
 
-        var info =
-            MusicInfoExtensions.CreateMusicInfo(title, location, description ?? "Unknown", aliases.ToList(), bsize);
+        var info = MusicInfoExtensions.CreateMusicInfo(title, location, description ?? "Unknown", aliases.ToList(), bsize);
 
         Variables._MusicDatabase?.Add(title, info);
 

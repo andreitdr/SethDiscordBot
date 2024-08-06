@@ -22,20 +22,20 @@ public class PluginInfo
         PluginVersion = pluginVersion;
         ListOfExecutableDependencies = listOfExecutableDependencies;
         IsMarkedToUninstall = isMarkedToUninstall;
-        FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
+        FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginName}.dll";
         IsOfflineAdded = isOfflineAdded;
         IsEnabled = isEnabled;
     }
 
     public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfExecutableDependencies)
     {
-        PluginName    = pluginName;
-        PluginVersion = pluginVersion;
+        PluginName                   = pluginName;
+        PluginVersion                = pluginVersion;
         ListOfExecutableDependencies = listOfExecutableDependencies;
-        IsMarkedToUninstall = false;
-        FilePath = $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginName}.dll";
-        IsOfflineAdded = false;
-        IsEnabled = true;
+        IsMarkedToUninstall          = false;
+        FilePath                     = $"{Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginName}.dll";
+        IsOfflineAdded               = false;
+        IsEnabled                    = true;
     }
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)

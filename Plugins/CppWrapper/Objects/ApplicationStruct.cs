@@ -5,8 +5,8 @@ namespace CppWrapper.Objects
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct ApplicationStruct
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 19)]
-        public string ServerId;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)] 
+        public ulong[] ServerIds;
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 2)]
         public string Prefix;

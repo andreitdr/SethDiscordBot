@@ -47,7 +47,7 @@ internal class LevelEvent : DBEvent
 
     private async Task ClientOnMessageReceived(SocketMessage arg)
     {
-        if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"]))
+        if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix")))
             return;
 
         if (WaitingList.ContainsKey(arg.Author.Id) && WaitingList[arg.Author.Id] > DateTime.Now.AddSeconds(-GlobalSettings.SecondsToWaitBetweenMessages))

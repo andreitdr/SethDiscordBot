@@ -15,8 +15,7 @@ internal static class SettingsConfigExtra
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey(key))
             return;
 
-        Application.CurrentApplication.ApplicationEnvironmentVariables[key] = string.Join(' ', value);
-        // Config.Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile().Wait();
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add(key, string.Join(' ', value));
     }
 
     internal static void RemoveSettings(string key)

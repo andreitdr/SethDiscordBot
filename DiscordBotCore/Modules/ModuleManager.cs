@@ -12,12 +12,20 @@ namespace DiscordBotCore.Modules
 {
     internal class ModuleManager
     {
-        private string _moduleFolder;
-        internal Dictionary<Type, List<object>> LoadedModules { get; private set; }
-
+        private static readonly string _BaseModuleFolder = "./Data/Modules";
+        
+        private readonly string _ModuleFolder;
+        internal Dictionary<Type, List<object>> LoadedModules { get; }
+        
         public ModuleManager(string moduleFolder)
         {
-            _moduleFolder = moduleFolder;
+            _ModuleFolder = moduleFolder;
+            LoadedModules = new Dictionary<Type, List<object>>();
+        }
+        
+        public ModuleManager()
+        {
+            _ModuleFolder = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
             LoadedModules = new Dictionary<Type, List<object>>();
         }
 
@@ -35,11 +43,10 @@ namespace DiscordBotCore.Modules
 
         public async Task LoadModules()
         {
-            ModuleLoader loader = new ModuleLoader(_moduleFolder);
+            ModuleLoader loader = new ModuleLoader(_ModuleFolder);
             await loader.LoadFileModules();
 
-
-            // Load All Loggers
+            
             var loggers = await loader.LoadModules<ILogger>();
             foreach (var logger in loggers)
             {

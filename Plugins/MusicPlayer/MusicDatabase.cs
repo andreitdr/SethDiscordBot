@@ -1,64 +1,67 @@
 using DiscordBotCore.Others;
+using DiscordBotCore.Others.Settings;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MusicPlayer;
 
-public class MusicDatabase: SettingsDictionary<string, MusicInfo>
+public class MusicDatabase: CustomSettingsDictionaryBase<string, MusicInfo>
 {
-    public MusicDatabase(string file): base(file)
+    public MusicDatabase(string diskLocation): base(diskLocation)
     {
     }
 
-    /// <summary>
-    /// Checks if the database contains a melody with the specified name or alias
-    /// </summary>
-    /// <param name="melodyName">The name (alias) of the melody</param>
-    /// <returns></returns>
-    public bool ContainsMelodyWithNameOrAlias(string melodyName)
+    public List<MusicInfo> GetMusicInfoWithTitleOrAlias(string searchQuery)
     {
-        return ContainsKey(melodyName) || Values.Any(elem => elem.Aliases.Contains(melodyName, StringComparer.CurrentCultureIgnoreCase));
-    }
-
-    /// <summary>
-    /// Tries to get the music info of a melody with the specified name or alias. Returns the first match or null if no match was found.
-    /// </summary>
-    /// <param name="searchQuery">The music name or one of its aliases.</param>
-    /// <returns></returns>
-    public MusicInfo? GetMusicInfo(string searchQuery)
-    {
-        return FirstOrDefault(kvp => kvp.Key.Contains(searchQuery, StringComparison.InvariantCultureIgnoreCase) ||
-                                          kvp.Value.Aliases.Any(alias => alias.Contains(searchQuery, StringComparison.InvariantCultureIgnoreCase))
-        ).Value;
-    }
-
-    /// <summary>
-    /// Get a list of music info that match the search query. Returns null if an error occurred, or empty list if no match was found.
-    /// </summary>
-    /// <param name="searchQuery">The search query</param>
-    /// <returns>null if an error occured, otherwise a list with songs that match the search query. If no song match the list is empty</returns>
-    public List<MusicInfo>? GetMusicInfoList(string searchQuery)
-    {
-        try
+        List<MusicInfo> musicInfos = new List<MusicInfo>();
+        foreach (var (title, musicInfo) in _InternalDictionary)
         {
-            return this.Where(kvp =>
-                           kvp.Key.Contains(searchQuery, StringComparison.InvariantCultureIgnoreCase) ||
-                           kvp.Value.Aliases.Any(alias => alias.Contains(searchQuery, StringComparison.InvariantCultureIgnoreCase))
-                       )
-                       .Select(item => item.Value).ToList();
+            
+            if(title.StartsWith(searchQuery))
+            {
+                musicInfos.Add(musicInfo);
+            }
+            
+            if (musicInfo.Aliases is null)
+            {
+                continue;
+            }
+
+            if (musicInfo.Aliases.Contains(searchQuery) || musicInfo.Aliases.Any(x => x.StartsWith(searchQuery)))
+            {
+                musicInfos.Add(musicInfo);
+            }
         }
 
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-            return null;
-        }
+        return musicInfos;
     }
 
-    /// <summary>
-    /// Adds a new entry to the database based on the music info. It uses the title as the key.
-    /// </summary>
-    /// <param name="musicInfo">The music to add to</param>
-    public void AddNewEntryBasedOnMusicInfo(MusicInfo musicInfo)
+    public override async Task SaveToFile()
     {
-        Add(musicInfo.Title, musicInfo);
+        var json = JsonConvert.SerializeObject(_InternalDictionary, Formatting.Indented);
+        await File.WriteAllTextAsync(_DiskLocation, json);
+    }
+
+    public override async Task LoadFromFile()
+    {
+        string jsonContent = await File.ReadAllTextAsync(_DiskLocation);
+        var    jObject     = JsonConvert.DeserializeObject<JObject>(jsonContent);
+        _InternalDictionary.Clear();
+
+        foreach (var (key,value) in jObject)
+        {
+            if (value is null || value.Type == JTokenType.Null)
+            {
+                continue;
+            }
+            
+            MusicInfo? info = value.ToObject<MusicInfo>();
+            if (info is null)
+            {
+                continue;
+            }
+            
+            _InternalDictionary[key] = info;
+        }
     }
 }

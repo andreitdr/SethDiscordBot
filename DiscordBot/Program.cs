@@ -64,8 +64,8 @@ public class Program
 
         try
         {
-            var token = Application.CurrentApplication.ApplicationEnvironmentVariables["token"];
-            var prefix = Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"];
+            var token         = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
+            var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
             var discordbooter = new App(token, prefix);
             await discordbooter.Awake();
         }

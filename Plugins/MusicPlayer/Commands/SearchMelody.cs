@@ -15,6 +15,19 @@ public class SearchMelody: DBCommand
 
     public void ExecuteServer(DbCommandExecutingArguments args)
     {
+        
+        if(Variables._MusicDatabase is null)
+        {
+            args.Context.Channel.SendMessageAsync("Music Database is not loaded !");
+            return;
+        }
+        
+        if (args.Arguments is null || args.Arguments.Length == 0)
+        {
+            args.Context.Channel.SendMessageAsync("You need to specify a melody name");
+            return;
+        }
+        
         var title = string.Join(" ", args.Arguments);
 
         if (string.IsNullOrWhiteSpace(title))
@@ -23,16 +36,13 @@ public class SearchMelody: DBCommand
             return;
         }
 
-        List<MusicInfo>? info = Variables._MusicDatabase.GetMusicInfoList(title);
-        if (info == null || info.Count == 0)
+        List<MusicInfo> info = Variables._MusicDatabase.GetMusicInfoWithTitleOrAlias(title);
+        if (!info.Any())
         {
             args.Context.Channel.SendMessageAsync("No melody with that name or alias was found");
             return;
         }
 
-        if (info.Count > 1)
-            args.Context.Channel.SendMessageAsync(embed: info.ToEmbed(Color.DarkOrange));
-        else
-            args.Context.Channel.SendMessageAsync(embed: info[0].ToEmbed(Color.DarkOrange));
+        args.Context.Channel.SendMessageAsync(embed: info.Count > 1 ? info.ToEmbed(Color.DarkOrange) : info[0].ToEmbed(Color.DarkOrange));
     }
 }

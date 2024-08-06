@@ -137,21 +137,19 @@ public class MusicPlayer
 
     public bool Enqueue(string musicName)
     {
-        var minfo = Variables._MusicDatabase.GetMusicInfo(musicName);
-        if (minfo is null) return false;
+        var musicInfo = Variables._MusicDatabase?.Get(musicName);
+        if (musicInfo is null)
+        {
+            return false;
+        }
 
-        MusicQueue.Enqueue(minfo);
+        MusicQueue.Enqueue(musicInfo);
         return true;
     }
 
     public void Skip()
     {
         isPlaying = false;
-    }
-
-    public void SetVolume(float volume)
-    {
-        // set volume
     }
 
     private static Process? CreateStream(string? fileName, string path)

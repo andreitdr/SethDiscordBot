@@ -79,7 +79,9 @@ internal class Help: DBCommand
         );
         if (cmd == null) return null;
 
-        embedBuilder.AddField("Usage", Application.CurrentApplication.ApplicationEnvironmentVariables["prefix"] + cmd.Usage);
+        string prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
+        
+        embedBuilder.AddField("Usage", prefix + cmd.Usage);
         embedBuilder.AddField("Description", cmd.Description);
         if (cmd.Aliases is null)
             return embedBuilder;

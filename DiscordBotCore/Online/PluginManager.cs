@@ -224,7 +224,7 @@ public class PluginManager : IPluginManager
             installProgress?.Report(currentProgress + stepProgress * p);
         });
 
-        await ServerCom.DownloadFileAsync(pluginData.DownLoadLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginData.Name}.dll", progress);
+        await ServerCom.DownloadFileAsync(pluginData.DownLoadLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginData.Name}.dll", progress);
 
         if (pluginData.HasFileDependencies)
             foreach (var dependency in pluginData.Dependencies)

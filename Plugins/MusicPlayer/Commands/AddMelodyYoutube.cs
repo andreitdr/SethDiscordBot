@@ -21,6 +21,13 @@ public class AddMelodyYoutube: DBCommand
 
     public async void ExecuteServer(DbCommandExecutingArguments args)
     {
+        
+        if(Variables._MusicDatabase is null)
+        {
+            await args.Context.Channel.SendMessageAsync("Music Database is not loaded !");
+            return;
+        }
+        
         if (args.Arguments is null)
         {
             await args.Context.Channel.SendMessageAsync("Invalid arguments given. Please use the following format:\nadd_melody_youtube [URL]");
@@ -28,9 +35,9 @@ public class AddMelodyYoutube: DBCommand
         }
 
 
-        var URL = args.Arguments[0];
+        var url = args.Arguments[0];
 
-        if (!URL.StartsWith("https://www.youtube.com/watch?v=") && !URL.StartsWith("https://youtu.be/"))
+        if (!url.StartsWith("https://www.youtube.com/watch?v=") && !url.StartsWith("https://youtu.be/"))
         {
             await args.Context.Channel.SendMessageAsync("Invalid URL given. Please use the following format:\nadd_melody_youtube [URL]");
             return;
@@ -44,7 +51,7 @@ public class AddMelodyYoutube: DBCommand
 
         var msg = await args.Context.Channel.SendMessageAsync("Saving melody ...");
 
-        var title = await YoutubeDLP.DownloadMelody(URL);
+        var title = await YoutubeDLP.DownloadMelody(url);
 
         if (title == null)
         {
@@ -56,8 +63,11 @@ public class AddMelodyYoutube: DBCommand
         List<string> aliases       = joinedAliases.Split('|').ToList();
 
 
-        if (Variables._MusicDatabase.ContainsMelodyWithNameOrAlias(title))
-            Variables._MusicDatabase.Remove(title);
+        if (Variables._MusicDatabase.GetMusicInfoWithTitleOrAlias(title).Any())
+        {
+            await msg.ModifyAsync(x => x.Content = "Melody already exists !");
+            return;
+        }
 
         Variables._MusicDatabase.Add(title, new MusicInfo()
             {

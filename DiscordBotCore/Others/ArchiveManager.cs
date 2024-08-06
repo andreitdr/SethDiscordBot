@@ -8,6 +8,8 @@ namespace DiscordBotCore.Others;
 
 public static class ArchiveManager
 {
+    
+    private static readonly string _ArchivesFolder = "./Data/Archives";
 
     public static void CreateFromFile(string file, string folder)
     {
@@ -33,7 +35,13 @@ public static class ArchiveManager
     public static async Task<byte[]?> ReadAllBytes(string fileName, string archName)
     {
 
-        archName = Path.Combine(Application.CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"], archName);
+        string? archiveFolderBasePath = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ArchiveFolder", _ArchivesFolder);
+        if(archiveFolderBasePath is null)
+            throw new Exception("Archive folder not found");
+
+        Directory.CreateDirectory(archiveFolderBasePath);
+        
+        archName = Path.Combine(archiveFolderBasePath, archName);
 
         if (!File.Exists(archName))
             throw new Exception("Failed to load file !");
@@ -64,7 +72,14 @@ public static class ArchiveManager
     /// <returns>A string that represents the content of the file or null if the file does not exists or it has no content</returns>
     public static async Task<string?> ReadFromPakAsync(string fileName, string archFile)
     {
-        archFile = Application.CurrentApplication.ApplicationEnvironmentVariables["ArchiveFolder"] + archFile;
+        string? archiveFolderBasePath = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ArchiveFolder", _ArchivesFolder);
+        if(archiveFolderBasePath is null)
+            throw new Exception("Archive folder not found");
+        
+        Directory.CreateDirectory(archiveFolderBasePath);
+        
+        archFile = Path.Combine(archiveFolderBasePath, archFile);
+        
         if (!File.Exists(archFile))
             throw new Exception("Failed to load file !");
 

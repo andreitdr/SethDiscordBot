@@ -11,16 +11,17 @@ namespace DiscordBotCore.Loaders
 {
     internal class ModuleLoader
     {
-        private string _moduleFolder;
+        private readonly string _ModuleFolder;
 
         public ModuleLoader(string moduleFolder)
         {
-            _moduleFolder = moduleFolder;
+            _ModuleFolder = moduleFolder;
+            Directory.CreateDirectory(moduleFolder);
         }
 
         public Task LoadFileModules()
         {
-            var files = Directory.GetFiles(_moduleFolder, "*.dll");
+            var files = Directory.GetFiles(_ModuleFolder, "*.dll");
             foreach (var file in files)
             {
                 try

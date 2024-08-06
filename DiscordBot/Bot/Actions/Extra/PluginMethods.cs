@@ -131,7 +131,9 @@ internal static class PluginMethods
 
                                  IProgress<float> progress = new Progress<float>(p => { downloadTask.Value = p; });
 
-                                 await ServerCom.DownloadFileAsync(pluginLink, $"{Application.CurrentApplication.ApplicationEnvironmentVariables["PluginFolder"]}/{pluginData.Name}.dll", progress);
+                                 string baseFolder = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder");
+
+                                 await ServerCom.DownloadFileAsync(pluginLink, $"{baseFolder}/{pluginData.Name}.dll", progress);
 
                                  downloadTask.Increment(100);
 
@@ -177,12 +179,9 @@ internal static class PluginMethods
                                      task.IsIndeterminate = true;
                                      downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, dependency.DownloadLink, dependency.DownloadLocation));
                                  }
-
-                                 int maxParallelDownloads = 5;
-
-                                 if (Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("MaxParallelDownloads"))
-                                     maxParallelDownloads = int.Parse(Application.CurrentApplication.ApplicationEnvironmentVariables["MaxParallelDownloads"]);
-
+                                 
+                                 int maxParallelDownloads = Application.CurrentApplication.ApplicationEnvironmentVariables.Get("MaxParallelDownloads", 5);
+                                 
                                  var options = new ParallelOptions()
                                  {
                                      MaxDegreeOfParallelism = maxParallelDownloads,
