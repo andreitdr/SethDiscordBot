@@ -34,31 +34,6 @@ internal static class PluginLoaderExtensions
         }
     }
     
-    internal static Task ResetSlashCommands(this PluginLoader pluginLoader)
-    {
-        throw new NotImplementedException("This method is not implemented yet.");
-        
-        // await pluginLoader._Client.Rest.DeleteAllGlobalCommandsAsync();
-        //
-        // if(pluginLoader._Client.Guilds.Count == 0) return;
-        // if (!ulong.TryParse(Application.CurrentApplication.ServerID, out _))
-        // {
-        //     Application.CurrentApplication.Logger.Log("Invalid ServerID in config file. Can not reset specific guild commands", typeof(PluginLoader), LogType.Error);
-        //     return;
-        // }
-        //
-        // SocketGuild? guild = pluginLoader._Client.GetGuild(ulong.Parse(Application.CurrentApplication.ServerID));
-        // if(guild is null)
-        // {
-        //     Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.Error);
-        //     return;
-        // }
-        //
-        // await guild.DeleteApplicationCommandsAsync();
-        //
-        // Application.CurrentApplication.Logger.Log($"Cleared all slash commands from guild {guild.Id}", typeof(PluginLoader));
-    }
-    
     internal static async Task<bool> TryStartSlashCommand(this PluginLoader pluginLoader, DBSlashCommand? dbSlashCommand)
     {
         try
@@ -82,23 +57,15 @@ internal static class PluginLoaderExtensions
                 builder.WithContextTypes(InteractionContextType.BotDm, InteractionContextType.Guild);
             else 
                 builder.WithContextTypes(InteractionContextType.Guild);
-
-            // if (uint.TryParse(Application.CurrentApplication.ServerID, out uint result))
-            // {
-            //     SocketGuild? guild = pluginLoader._Client.GetGuild(result);
-            //     if (guild is null)
-            //     {
-            //         Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + Application.CurrentApplication.ServerID, typeof(PluginLoader), LogType.Error);
-            //         return false;
-            //     }
-            //
-            //     await guild.CreateApplicationCommandAsync(builder.Build());
-            // }
-            // else 
             
             foreach(ulong guildId in Application.CurrentApplication.ServerIDs)
             {
-                await pluginLoader.EnableSlashCommandPerGuild(guildId, builder);
+                bool result = await pluginLoader.EnableSlashCommandPerGuild(guildId, builder);
+                
+                if (!result)
+                {
+                    Application.CurrentApplication.Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", typeof(PluginLoader), LogType.Error);
+                }
             }
             
             await pluginLoader._Client.CreateGlobalApplicationCommandAsync(builder.Build());
