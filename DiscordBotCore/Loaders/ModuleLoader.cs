@@ -6,23 +6,24 @@ using System.Threading.Tasks;
 
 using DiscordBotCore.Interfaces.Modules;
 using System.Reflection;
+using DiscordBotCore.Modules;
 
 namespace DiscordBotCore.Loaders
 {
     internal class ModuleLoader
     {
-        private readonly string _ModuleFolder;
+        private readonly List<ModuleData> _ModuleData;
 
-        public ModuleLoader(string moduleFolder)
+        public ModuleLoader(List<ModuleData> moduleFolder)
         {
-            _ModuleFolder = moduleFolder;
-            Directory.CreateDirectory(moduleFolder);
+            _ModuleData = moduleFolder;
         }
 
         public Task LoadFileModules()
         {
-            var files = Directory.GetFiles(_ModuleFolder, "*.dll");
-            foreach (var file in files)
+            var paths = _ModuleData.Select(module => module.ModulePath);
+            
+            foreach (var file in paths)
             {
                 try
                 {
@@ -37,20 +38,20 @@ namespace DiscordBotCore.Loaders
             return Task.CompletedTask;
         }
 
-        public Task<List<IModule<T>>> LoadModules<T>() where T : IBaseModule
+        public Task<List<IModule>> LoadModules()
         {
-            var moduleType = typeof(IModule<T>);
+            var moduleType = typeof(IModule);
             var moduleTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => moduleType.IsAssignableFrom(p) && !p.IsInterface);
 
-            var modules = new List<IModule<T>>();
+            var modules = new List<IModule>();
             foreach (var module in moduleTypes)
             {
                 try
                 {
-                    var instance = (IModule<T>?)Activator.CreateInstance(module);
-                    if (instance == null)
+                    var instance = (IModule?)Activator.CreateInstance(module);
+                    if (instance is null)
                     {
                         Console.WriteLine($"Error loading module {module.Name}: Could not create instance");
                         continue;

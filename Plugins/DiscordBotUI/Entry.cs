@@ -48,7 +48,7 @@ public class Entry : ICommandAction
 
             externalLibrary.FreeLibrary();
         } catch (Exception dllException) {
-            Application.CurrentApplication.Logger.LogException(dllException, this);
+            Application.Logger.LogException(dllException, this);
         }
     }
 }

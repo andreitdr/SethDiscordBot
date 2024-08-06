@@ -107,7 +107,7 @@ public class App
         if (arg.Message.Contains("401"))
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.Critical);
+            Application.Logger.Log("The token is invalid.", this, LogType.Critical);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
             await Task.Delay(3000);
             
@@ -124,7 +124,7 @@ public class App
 
     private Task LoggedIn()
     {
-        Application.CurrentApplication.Logger.Log("Successfully Logged In", this);
+        Application.Logger.Log("Successfully Logged In", this);
         return Task.CompletedTask;
     }
 
@@ -134,12 +134,12 @@ public class App
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Error);
+                Application.Logger.Log(message.Message, this, LogType.Error);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Info);
+                Application.Logger.Log(message.Message, this, LogType.Info);
 
 
                 break;

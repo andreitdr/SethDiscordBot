@@ -9,7 +9,6 @@ namespace DiscordBotCore.Interfaces.PluginManager
     {
         public string BaseUrl { get; set; }
         public string Branch { get; set; }
-
         Task AppendPluginToDatabase(PluginInfo pluginData);
         Task CheckForUpdates();
         Task ExecutePluginInstallScripts(List<OnlineScriptDependencyInfo> listOfDependencies);
@@ -24,7 +23,6 @@ namespace DiscordBotCore.Interfaces.PluginManager
         Task<bool> MarkPluginToUninstall(string pluginName);
         Task RemovePluginFromDatabase(string pluginName);
         Task UninstallMarkedPlugins();
-
         Task SetEnabledStatus(string pluginName, bool status);
     }
 }

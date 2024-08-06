@@ -26,9 +26,9 @@ public class PluginLoader
     public SlashCommandLoaded? OnSlashCommandLoaded;
     public ActionLoaded?       OnActionLoaded;
 
-    public static List<DBCommand> Commands { get; private set; } = new List<DBCommand>();
-    public static List<DBEvent>  Events { get; private set; } = new List<DBEvent>();
-    public static List<DBSlashCommand> SlashCommands { get; private set; } = new List<DBSlashCommand>();
+    public static List<IDbCommand> Commands { get; private set; } = new List<IDbCommand>();
+    public static List<IDbEvent>  Events { get; private set; } = new List<IDbEvent>();
+    public static List<IDbSlashCommand> SlashCommands { get; private set; } = new List<IDbSlashCommand>();
     public static List<ICommandAction> Actions { get; private set; } = new List<ICommandAction>();
 
     public PluginLoader(DiscordSocketClient discordSocketClient)
@@ -41,7 +41,7 @@ public class PluginLoader
 
         if (_Client == null)
         {
-            Application.CurrentApplication.Logger.Log("Discord client is null", this, LogType.Error);
+            Application.Logger.Log("Discord client is null", this, LogType.Error);
             return;
         }
 
@@ -50,7 +50,7 @@ public class PluginLoader
         SlashCommands.Clear();
         Actions.Clear();
 
-        Application.CurrentApplication.Logger.Log("Loading plugins...", this);
+        Application.Logger.Log("Loading plugins...", this);
         
         var loader = new Loader();
 
@@ -62,7 +62,7 @@ public class PluginLoader
 
     private void FileLoadedException(FileLoaderResult result)
     {
-        Application.CurrentApplication.Logger.Log(result.ErrorMessage, this, LogType.Error);
+        Application.Logger.Log(result.ErrorMessage, this, LogType.Error);
     }
 
     private async void OnPluginLoaded(PluginLoadResultData result)
@@ -81,31 +81,31 @@ public class PluginLoader
 
                 break;
             case PluginType.COMMAND:
-                Commands.Add((DBCommand)result.Plugin);
+                Commands.Add((IDbCommand)result.Plugin);
                 OnCommandLoaded?.Invoke(result);
                 break;
             case PluginType.EVENT:
-                if (this.TryStartEvent((DBEvent)result.Plugin))
+                if (this.TryStartEvent((IDbEvent)result.Plugin))
                 {
-                    Events.Add((DBEvent)result.Plugin);
+                    Events.Add((IDbEvent)result.Plugin);
                     OnEventLoaded?.Invoke(result);
                 }
 
                 break;
             case PluginType.SLASH_COMMAND:
-                if (await this.TryStartSlashCommand((DBSlashCommand)result.Plugin))
+                if (await this.TryStartSlashCommand((IDbSlashCommand)result.Plugin))
                 {
-                    if(((DBSlashCommand)result.Plugin).HasInteraction)
-                        _Client.InteractionCreated += ((DBSlashCommand)result.Plugin).ExecuteInteraction;
-                    SlashCommands.Add((DBSlashCommand)result.Plugin);
+                    if(((IDbSlashCommand)result.Plugin).HasInteraction)
+                        _Client.InteractionCreated += ((IDbSlashCommand)result.Plugin).ExecuteInteraction;
+                    SlashCommands.Add((IDbSlashCommand)result.Plugin);
                     OnSlashCommandLoaded?.Invoke(result);
                 } 
                 else 
-                    Application.CurrentApplication.Logger.Log($"Failed to start slash command {result.PluginName}", this, LogType.Error);
+                    Application.Logger.Log($"Failed to start slash command {result.PluginName}", this, LogType.Error);
                 break;
             case PluginType.UNKNOWN:
             default:
-                Application.CurrentApplication.Logger.Log("Unknown plugin type", this, LogType.Error);
+                Application.Logger.Log("Unknown plugin type", this, LogType.Error);
                 break;
         }
     }

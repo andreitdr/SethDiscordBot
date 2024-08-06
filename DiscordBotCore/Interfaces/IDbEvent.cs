@@ -2,7 +2,7 @@
 
 namespace DiscordBotCore.Interfaces;
 
-public interface DBEvent
+public interface IDbEvent
 {
     /// <summary>
     ///     The name of the event

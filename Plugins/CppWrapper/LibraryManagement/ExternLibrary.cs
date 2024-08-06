@@ -21,7 +21,7 @@ namespace CppWrapper.LibraryManagement
                 return;
             }
 
-            Application.CurrentApplication.Logger.Log($"Loading library {LibraryPath}");
+            Application.Logger.Log($"Loading library {LibraryPath}");
 
 
             if(!NativeLibrary.TryLoad(LibraryPath, out IntPtr hModule))
@@ -29,7 +29,7 @@ namespace CppWrapper.LibraryManagement
                 throw new DllNotFoundException($"Unable to load library {LibraryPath}");
             }
 
-            Application.CurrentApplication.Logger.Log($"Library {LibraryPath} loaded successfully [{hModule}]");
+            Application.Logger.Log($"Library {LibraryPath} loaded successfully [{hModule}]");
 
             LibraryHandle = hModule;
         }
@@ -44,7 +44,7 @@ namespace CppWrapper.LibraryManagement
             NativeLibrary.Free(LibraryHandle);
             LibraryHandle = IntPtr.Zero;
 
-            Application.CurrentApplication.Logger.Log($"Library {LibraryPath} freed successfully");
+            Application.Logger.Log($"Library {LibraryPath} freed successfully");
         }
 
         private IntPtr GetFunctionPointer(string functionName)
@@ -66,11 +66,11 @@ namespace CppWrapper.LibraryManagement
         {
             IntPtr functionPointer = GetFunctionPointer(methodName);
 
-            Application.CurrentApplication.Logger.Log($"Function pointer for {methodName} obtained successfully [address: {functionPointer}]");
+            Application.Logger.Log($"Function pointer for {methodName} obtained successfully [address: {functionPointer}]");
             
             T result = (T)Marshal.GetDelegateForFunctionPointer(functionPointer, typeof(T));
 
-            Application.CurrentApplication.Logger.Log($"Delegate for {methodName} created successfully");
+            Application.Logger.Log($"Delegate for {methodName} created successfully");
 
             return result;
         }
@@ -79,7 +79,7 @@ namespace CppWrapper.LibraryManagement
         {
             IntPtr functionPointer = Marshal.GetFunctionPointerForDelegate(functionDelegate);
 
-            Application.CurrentApplication.Logger.Log($"Function pointer for delegate {functionDelegate.Method.Name} obtained successfully [address: {functionPointer}]");
+            Application.Logger.Log($"Function pointer for delegate {functionDelegate.Method.Name} obtained successfully [address: {functionPointer}]");
 
             return functionPointer;
         }
@@ -104,7 +104,7 @@ namespace CppWrapper.LibraryManagement
 
             var result = setterDelegate.DynamicInvoke(executableFunctionPtr);
 
-            Application.CurrentApplication.Logger.Log($"Function {setterExternFunctionName} bound to local action successfully");
+            Application.Logger.Log($"Function {setterExternFunctionName} bound to local action successfully");
 
             return result;
         }

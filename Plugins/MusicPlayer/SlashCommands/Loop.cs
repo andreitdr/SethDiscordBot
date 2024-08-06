@@ -4,12 +4,12 @@ using DiscordBotCore.Interfaces;
 
 namespace MusicPlayer.SlashCommands;
 
-public class Loop: DBSlashCommand
+public class Loop: IDbSlashCommand
 {
 
     public string Name => "loop";
     public string Description => "Loop the current song for a certain amount of times. If no times are specified, it will loop once";
-    public bool canUseDM => false;
+    public bool CanUseDm => false;
     public bool HasInteraction => false;
 
     public List<SlashCommandOptionBuilder> Options => new()

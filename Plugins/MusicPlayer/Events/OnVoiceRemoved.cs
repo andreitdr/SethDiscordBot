@@ -5,7 +5,7 @@ using DiscordBotCore.Others;
 
 namespace MusicPlayer.Events;
 
-public class OnVoiceRemoved: DBEvent
+public class OnVoiceRemoved: IDbEvent
 {
 
     public string Name => "Event: OnVoiceRemoved";
@@ -24,7 +24,7 @@ public class OnVoiceRemoved: DBEvent
                 Variables.audioClient  = null;
                 Variables._MusicPlayer = null;
 
-                Application.CurrentApplication.Logger.Log("Bot left voice channel.", this, LogType.Info);
+                Application.Logger.Log("Bot left voice channel.", this, LogType.Info);
             }
 
         };

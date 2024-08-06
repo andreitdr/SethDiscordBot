@@ -51,12 +51,12 @@ internal class CommandHandler
                 throw new Exception("Failed to run command !");
 
             if (arg.Channel is SocketDMChannel)
-                plugin.ExecuteDM(arg);
+                plugin.ExecuteDm(arg);
             else plugin.ExecuteServer(arg);
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.LogException(ex, this);
+            Application.Logger.LogException(ex, this);
         }
 
         return Task.CompletedTask;
@@ -91,7 +91,7 @@ internal class CommandHandler
 
             await _commandService.ExecuteAsync(context, argPos, null);
 
-            DBCommand? plugin;
+            IDbCommand? plugin;
             var        cleanMessage = "";
 
             if (message.HasMentionPrefix(_client.CurrentUser, ref argPos))
@@ -129,7 +129,7 @@ internal class CommandHandler
             if (plugin is null)
                 return;
 
-            if (plugin.requireAdmin && !context.Message.Author.IsAdmin())
+            if (plugin.RequireAdmin && !context.Message.Author.IsAdmin())
                 return;
 
             var split = cleanMessage.Split(' ');
@@ -140,19 +140,19 @@ internal class CommandHandler
 
             DbCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
 
-            Application.CurrentApplication.Logger.Log(
+            Application.Logger.Log(
                 $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.CleanContent}\"",
                 this,
                 LogType.Info
             );
 
             if (context.Channel is SocketDMChannel)
-                plugin.ExecuteDM(cmd);
+                plugin.ExecuteDm(cmd);
             else plugin.ExecuteServer(cmd);
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.LogException(ex, this);
+            Application.Logger.LogException(ex, this);
         }
     }
 }

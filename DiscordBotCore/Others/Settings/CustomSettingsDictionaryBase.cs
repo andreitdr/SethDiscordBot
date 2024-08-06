@@ -56,6 +56,27 @@ public abstract class CustomSettingsDictionaryBase<TKey,TValue> : ICustomSetting
         
         return default;
     }
+    
+    public virtual IDictionary<TSubKey, TSubValue> GetDictionary<TSubKey, TSubValue>(TKey key)
+    {
+        if (_InternalDictionary.TryGetValue(key, out var value))
+        {
+            if (value is not IDictionary)
+            {
+                throw new Exception("The value is not a dictionary");
+            }
+            
+            var dictionary = new Dictionary<TSubKey, TSubValue>();
+            foreach (DictionaryEntry item in (IDictionary)value)
+            {
+                dictionary.Add((TSubKey)Convert.ChangeType(item.Key, typeof(TSubKey)), (TSubValue)Convert.ChangeType(item.Value, typeof(TSubValue)));
+            }
+            
+            return dictionary;
+        }
+        
+        return new Dictionary<TSubKey, TSubValue>();
+    }
 
     public virtual List<T> GetList<T>(TKey key, List<T> defaultValue)
     {
@@ -67,9 +88,9 @@ public abstract class CustomSettingsDictionaryBase<TKey,TValue> : ICustomSetting
             }
             
             var list = new List<T>();
-            foreach (var item in (IList)value)
+            foreach (object? item in (IList)value)
             {
-                list.Add(ConvertValue<T>(item));
+                list.Add((T)Convert.ChangeType(item, typeof(T)));
             }
             
             return list;
@@ -141,20 +162,4 @@ public abstract class CustomSettingsDictionaryBase<TKey,TValue> : ICustomSetting
     public abstract Task SaveToFile();
 
     public abstract Task LoadFromFile();
-
-    protected virtual T? ConvertValue<T>(object value)
-    {
-
-        if (typeof(T) == typeof(ulong) && value is long longValue)
-        {
-            return (T)(object)Convert.ToUInt64(longValue);
-        }
-
-        if (typeof(T).IsEnum && value is string stringValue)
-        {
-            return (T)Enum.Parse(typeof(T), stringValue);
-        }
-
-        return (T)Convert.ChangeType(value, typeof(T));
-    }
 }

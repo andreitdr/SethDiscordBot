@@ -4,11 +4,11 @@ using DiscordBotCore.Interfaces;
 
 namespace MusicPlayer.SlashCommands;
 
-public class Skip: DBSlashCommand
+public class Skip: IDbSlashCommand
 {
     public string Name => "skip";
     public string Description => "Skip the current melody";
-    public bool canUseDM => false;
+    public bool CanUseDm => false;
     public bool HasInteraction => false;
     public List<SlashCommandOptionBuilder> Options => null;
 

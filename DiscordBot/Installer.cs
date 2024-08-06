@@ -44,6 +44,6 @@ public static class Installer
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 
-        Application.CurrentApplication.Logger.Log("Config Saved", typeof(Installer));
+        Application.Logger.Log("Config Saved", typeof(Installer));
     }
 }

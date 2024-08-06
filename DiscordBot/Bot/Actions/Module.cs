@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
+using DiscordBotCore;
 using DiscordBotCore.Interfaces;
+using DiscordBotCore.Interfaces.Modules;
+using DiscordBotCore.Modules;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
 
@@ -45,15 +47,7 @@ namespace DiscordBot.Bot.Actions
             var modules = DiscordBotCore.Application.CurrentApplication.GetLoadedCoreModules();
             foreach (var module in modules)
             {
-                Type moduleType = module.Key;
-                List<object> moduleList = module.Value;
-
-                Console.WriteLine($"Module Type: {moduleType.Name}");
-
-                foreach (dynamic mod in moduleList)
-                {
-                   Console.WriteLine($"Module: {mod.Name}");
-                }
+                Application.Logger.Log("Module: " + module.Key.ModuleName, this, LogType.Info);
 
             }
         }

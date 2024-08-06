@@ -7,7 +7,7 @@ using DiscordBotCore.Others;
 
 namespace MusicPlayer.Commands;
 
-public class AddMelody: DBCommand
+public class AddMelody: IDbCommand
 {
     public string Command => "add_melody";
 
@@ -18,7 +18,7 @@ public class AddMelody: DBCommand
 
     public string Description => "Add a custom melody to the database";
     public string Usage => "add_melody [title],[description?],[aliases],[byteSize]";
-    public bool requireAdmin => false;
+    public bool RequireAdmin => false;
 
     public async void ExecuteServer(DbCommandExecutingArguments args)
     {

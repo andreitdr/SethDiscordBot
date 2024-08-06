@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,14 +37,14 @@ public class CustomSettingsDictionary : CustomSettingsDictionaryBase<string, obj
 
     public override List<T> GetList<T>(string key, List<T> defaultValue)
     {
-        List<T> result = base.GetList(key, defaultValue);
-
-        if (_EnableAutoAddOnGetWithDefault && defaultValue.All(result.Contains))
+        List<T> value = base.GetList(key, defaultValue);
+        
+        if (_EnableAutoAddOnGetWithDefault && value.All(defaultValue.Contains))
         {
-            Add(key,defaultValue);
+            Add(key, defaultValue);
         }
         
-        return result;
+        return value;
     }
 
     public override async Task LoadFromFile()
@@ -71,11 +73,21 @@ public class CustomSettingsDictionary : CustomSettingsDictionaryBase<string, obj
         else if (kvp.Value is JArray nestedJArray)
         {
             dict[kvp.Key] = nestedJArray.ToObject<List<object>>();
-            
         }
         else
         {
-            dict[kvp.Key] = kvp.Value;
+            if (kvp.Value.Type == JTokenType.Integer)
+                dict[kvp.Key] = kvp.Value.Value<int>();
+            else if (kvp.Value.Type == JTokenType.Float)
+                dict[kvp.Key] = kvp.Value.Value<float>();
+            else if (kvp.Value.Type == JTokenType.Boolean)
+                dict[kvp.Key] = kvp.Value.Value<bool>();
+            else if (kvp.Value.Type == JTokenType.String)
+                dict[kvp.Key] = kvp.Value.Value<string>();
+            else if (kvp.Value.Type == JTokenType.Date)
+                dict[kvp.Key] = kvp.Value.Value<DateTime>();
+            else
+                dict[kvp.Key] = kvp.Value;
         }
     }
 

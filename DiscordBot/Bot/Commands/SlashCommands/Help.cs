@@ -9,11 +9,11 @@ using DiscordBotCore.Others;
 
 namespace DiscordBot.Bot.Commands.SlashCommands;
 
-public class Help: DBSlashCommand
+public class Help: IDbSlashCommand
 {
     public string Name => "help";
     public string Description => "This command allows you to check all loaded commands";
-    public bool canUseDM => true;
+    public bool CanUseDm => true;
 
     public bool HasInteraction => false;
 
@@ -55,7 +55,7 @@ public class Help: DBSlashCommand
                 return;
             }
 
-            embedBuilder.AddField("DM Usable:", slashCommand.canUseDM, true)
+            embedBuilder.AddField("DM Usable:", slashCommand.CanUseDm, true)
                         .WithDescription(slashCommand.Description);
         }
 

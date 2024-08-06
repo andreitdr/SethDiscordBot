@@ -4,11 +4,11 @@ using DiscordBotCore.Interfaces;
 
 namespace MusicPlayer.SlashCommands;
 
-public class Queue: DBSlashCommand
+public class Queue: IDbSlashCommand
 {
     public string Name => "queue";
     public string Description => "Queue a melody to play";
-    public bool canUseDM => false;
+    public bool CanUseDm => false;
     public bool HasInteraction => false;
     public List<SlashCommandOptionBuilder> Options => null;
 

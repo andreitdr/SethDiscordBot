@@ -2,10 +2,20 @@
 
 namespace DiscordBotCore.Interfaces.Modules
 {
-    public interface IModule<T> where T : IBaseModule
+    
+    public enum ModuleType
     {
+        Logger,
+        Other
+    }
+    
+    /// <summary>
+    /// Define a module.
+    /// </summary>
+    public interface IModule
+    {
+        public ModuleType ModuleType { get; }
         public string Name { get; }
-        public T Module { get; }
         public Task Initialize();
     }
 }

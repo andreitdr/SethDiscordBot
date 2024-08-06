@@ -1,5 +1,4 @@
-﻿using DiscordBotCore.Interfaces.Logger;
-using DiscordBotCore.Others;
+﻿using DiscordBotCore.Others;
 
 namespace LoggerModule
 {

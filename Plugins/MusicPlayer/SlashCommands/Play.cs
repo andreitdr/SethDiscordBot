@@ -7,11 +7,11 @@ using DiscordBotCore.Others;
 
 namespace MusicPlayer.SlashCommands;
 
-public class Play: DBSlashCommand
+public class Play: IDbSlashCommand
 {
     public string Name => "play";
     public string Description => "Play music command";
-    public bool canUseDM => false;
+    public bool CanUseDm => false;
     public bool HasInteraction => false;
 
     public List<SlashCommandOptionBuilder> Options => new()
@@ -55,7 +55,7 @@ public class Play: DBSlashCommand
         if (user is null)
         {
             await context.RespondAsync("Failed to get user data from channel ! Check error log at " + DateTime.Now.ToLongTimeString());
-            Application.CurrentApplication.Logger.Log("User is null while trying to convert from context.User to IGuildUser.", typeof(Play), LogType.Error);
+            Application.Logger.Log("User is null while trying to convert from context.User to IGuildUser.", typeof(Play), LogType.Error);
             return;
         }
 

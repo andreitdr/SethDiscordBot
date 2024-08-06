@@ -1,16 +1,17 @@
-﻿using DiscordBotCore;
-using DiscordBotCore.Interfaces.Logger;
-using DiscordBotCore.Interfaces.Modules;
+﻿using DiscordBotCore.Interfaces.Modules;
+using DiscordBotCore.Others;
 
 namespace LoggerModule
 {
-    public class Entry : IModule<ILogger>
+    public class Entry : IModule
     {
-        public string Name => "Logger Module";
+        public string Name => "LoggerModule";
+        public ModuleType ModuleType => ModuleType.Logger;
+        
         const string _LogFolder = "./Data/Logs/";
         const string _LogFormat = "{ThrowTime} {SenderName} {Message}";
-
-        public ILogger Module { get; private set; }
+        
+        public ILogger Module { get; private set; } = null!;
 
         public Task Initialize()
         {
@@ -18,5 +19,20 @@ namespace LoggerModule
             Module = logger;
             return Task.CompletedTask;
         }
+        
+        public void SetOutFunction(Action<string> outFunction)
+        {
+            Module.SetOutFunction(outFunction);
+        }
+
+
+
+        public void LogMessage(string message) => Module.Log(message);
+        public void LogMessageWithTypeAndFormat(string message, LogType logType, string format) => Module.Log(message, logType, format);
+        public void LogMessageWithType(string message, LogType logType) => Module.Log(message, logType);
+        public void LogMessageWithSender(string message, object Sender) => Module.Log(message, Sender);
+        public void LogMessageWithTypeAndSender(string message, object Sender, LogType type) => Module.Log(message, Sender, type);
+        public void LogExceptionWithSenderAndFullStack(Exception exception, object Sender, bool logFullStack = false) => Module.LogException(exception, Sender, logFullStack);
+        
     }
 }

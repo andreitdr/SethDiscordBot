@@ -5,7 +5,7 @@ using DiscordBotCore.Others;
 
 namespace LevelingSystem;
 
-internal class LevelCommand: DBCommand
+internal class LevelCommand: IDbCommand
 {
     public string Command => "level";
 
@@ -15,13 +15,13 @@ internal class LevelCommand: DBCommand
 
     public string Usage => "level";
 
-    public bool requireAdmin => false;
+    public bool RequireAdmin => false;
 
     public async void ExecuteServer(DbCommandExecutingArguments args)
     {
         if(Variables.Database is null)
         {
-            Application.CurrentApplication.Logger.Log("Database is not initialized", this, LogType.Warning);
+            Application.Logger.Log("Database is not initialized", this, LogType.Warning);
             return;
         }
 

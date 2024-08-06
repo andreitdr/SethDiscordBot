@@ -1,61 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Interfaces.Modules;
 using DiscordBotCore.Loaders;
-using DiscordBotCore.Others.Exceptions;
+using Newtonsoft.Json;
 
 namespace DiscordBotCore.Modules
 {
     internal class ModuleManager
     {
         private static readonly string _BaseModuleFolder = "./Data/Modules";
-        
-        private readonly string _ModuleFolder;
-        internal Dictionary<Type, List<object>> LoadedModules { get; }
-        
-        public ModuleManager(string moduleFolder)
-        {
-            _ModuleFolder = moduleFolder;
-            LoadedModules = new Dictionary<Type, List<object>>();
-        }
+        private static readonly string _BaseModuleConfig = "./Data/Resources/modules.json";
+        internal Dictionary<ModuleData, IModule> Modules { get; set; }
         
         public ModuleManager()
         {
-            _ModuleFolder = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
-            LoadedModules = new Dictionary<Type, List<object>>();
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
+            Modules = new Dictionary<ModuleData, IModule>();
         }
 
-        public T GetModule<T>() where T : IBaseModule
+        public KeyValuePair<ModuleData, IModule> GetModule(string moduleName)
         {
-            if(!LoadedModules.ContainsKey(typeof(T)))
-                throw new ModuleNotFoundException<T>();
-
-            if (!LoadedModules[typeof(T)].Any())
-                throw new ModuleNotFoundException<T>();
-
-            IModule<T> module = (IModule<T>)LoadedModules[typeof(T)][0];
-            return module.Module;
+            return Modules.FirstOrDefault(module => module.Key.ModuleName == moduleName);
+        }
+        
+        public KeyValuePair<ModuleData, IModule> GetModule(ModuleType moduleType)
+        {
+            return Modules.First(module => module.Value.ModuleType == moduleType);
         }
 
         public async Task LoadModules()
         {
-            ModuleLoader loader = new ModuleLoader(_ModuleFolder);
-            await loader.LoadFileModules();
-
+            string moduleConfigPath = Application.CurrentApplication.ApplicationEnvironmentVariables
+                                                 .Get<string>("ModuleConfig", _BaseModuleConfig);
             
-            var loggers = await loader.LoadModules<ILogger>();
-            foreach (var logger in loggers)
+            string           moduleConfigFile = await File.ReadAllTextAsync(moduleConfigPath);
+            List<ModuleData>? listOfModuleData = JsonConvert.DeserializeObject<List<ModuleData>>(moduleConfigFile);
+            
+            if(listOfModuleData is null)
+                return;
+            
+            if (!listOfModuleData.Any())
             {
-                await logger.Initialize();
-                Console.WriteLine("Module Loaded: " + logger.Name);
+                return;
+            }
+            
+            ModuleLoader moduleLoader = new ModuleLoader(listOfModuleData);
+            await moduleLoader.LoadFileModules();
+            var modules = await moduleLoader.LoadModules();
+            
+            foreach (var module in modules)
+            {
+                
+                ModuleData? moduleData = listOfModuleData.FirstOrDefault(data => data.ModuleName == module.Name);
+
+                if (moduleData is null)
+                {
+                    continue;
+                }
+                
+                if (moduleData.IsEnabled)
+                {
+                    await module.Initialize(); // TODO: Add error handling
+                    Modules.Add(moduleData, module);
+                }
+            }
+        }
+
+        public async Task InvokeMethod(string moduleName, string methodName, object[] parameters)
+        {
+            IModule module = GetModule(moduleName).Value;
+            var method = module.GetType().GetMethod(methodName);
+            
+            if (method is null)
+            {
+                throw new Exception("Method not found"); // TODO: Add custom exception
             }
 
-            LoadedModules.Add(typeof(ILogger), loggers.Cast<object>().ToList());
+            await Task.Run(() => method.Invoke(module, parameters));
+        }
 
+        public async Task InvokeMethod(IModule module, string methodName, object[] parameters)
+        {
+            var method = module.GetType().GetMethod(methodName);
+            
+            if (method is null)
+            {
+                throw new Exception($"Method not found {methodName}"); 
+            }
+
+            await Task.Run(() => method.Invoke(module, parameters));
         }
 
 

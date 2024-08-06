@@ -14,7 +14,7 @@ namespace DiscordBotCore.Loaders;
 
 internal static class PluginLoaderExtensions
 {
-    internal static bool TryStartEvent(this PluginLoader pluginLoader, DBEvent? dbEvent)
+    internal static bool TryStartEvent(this PluginLoader pluginLoader, IDbEvent? dbEvent)
     {
         try
         {
@@ -28,13 +28,13 @@ internal static class PluginLoaderExtensions
         }
         catch (Exception e)
         {
-            Application.CurrentApplication.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
-            Application.CurrentApplication.Logger.LogException(e, typeof(PluginLoader));
+            Application.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
+            Application.Logger.LogException(e, typeof(PluginLoader));
             return false;
         }
     }
     
-    internal static async Task<bool> TryStartSlashCommand(this PluginLoader pluginLoader, DBSlashCommand? dbSlashCommand)
+    internal static async Task<bool> TryStartSlashCommand(this PluginLoader pluginLoader, IDbSlashCommand? dbSlashCommand)
     {
         try
         {
@@ -53,7 +53,7 @@ internal static class PluginLoaderExtensions
             builder.WithDescription(dbSlashCommand.Description);
             builder.Options = dbSlashCommand.Options;
 
-            if (dbSlashCommand.canUseDM)
+            if (dbSlashCommand.CanUseDm)
                 builder.WithContextTypes(InteractionContextType.BotDm, InteractionContextType.Guild);
             else 
                 builder.WithContextTypes(InteractionContextType.Guild);
@@ -64,7 +64,7 @@ internal static class PluginLoaderExtensions
                 
                 if (!result)
                 {
-                    Application.CurrentApplication.Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", typeof(PluginLoader), LogType.Error);
+                    Application.Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", typeof(PluginLoader), LogType.Error);
                 }
             }
             
@@ -74,7 +74,7 @@ internal static class PluginLoaderExtensions
         }
         catch (Exception e)
         {
-            Application.CurrentApplication.Logger.Log($"Error starting slash command {dbSlashCommand.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
+            Application.Logger.Log($"Error starting slash command {dbSlashCommand.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
             return false;
         }
     }
@@ -84,7 +84,7 @@ internal static class PluginLoaderExtensions
         SocketGuild? guild = pluginLoader._Client.GetGuild(guildId);
         if (guild is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);
+            Application.Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);
             return false;
         }
         

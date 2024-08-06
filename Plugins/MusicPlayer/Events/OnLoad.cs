@@ -5,7 +5,7 @@ using DiscordBotCore.Interfaces;
 
 namespace MusicPlayer.Events;
 
-public class OnLoad: DBEvent
+public class OnLoad: IDbEvent
 {
     private static readonly string _DefaultMusicPath = "Music/";
     private static readonly string _DefaultSaveLocation = "Music/Melodies/";

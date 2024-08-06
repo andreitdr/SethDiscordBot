@@ -10,7 +10,7 @@ namespace DiscordBot.Bot.Commands;
 /// <summary>
 ///     The help command
 /// </summary>
-internal class Help: DBCommand
+internal class Help: IDbCommand
 {
     /// <summary>
     ///     Command name
@@ -32,7 +32,7 @@ internal class Help: DBCommand
     /// <summary>
     ///     Check if the command require administrator to be executed
     /// </summary>
-    public bool requireAdmin => false;
+    public bool RequireAdmin => false;
 
     /// <summary>
     ///     The main body of the command
@@ -58,7 +58,7 @@ internal class Help: DBCommand
         var normalCommands = "";
 
         foreach (var cmd in PluginLoader.Commands)
-            if (cmd.requireAdmin)
+            if (cmd.RequireAdmin)
                 adminCommands += cmd.Command + " ";
             else
                 normalCommands += cmd.Command + " ";

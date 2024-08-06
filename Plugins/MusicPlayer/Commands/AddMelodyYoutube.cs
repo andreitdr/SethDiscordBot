@@ -6,7 +6,7 @@ using DiscordBotCore.Others;
 
 namespace MusicPlayer.Commands;
 
-public class AddMelodyYoutube: DBCommand
+public class AddMelodyYoutube: IDbCommand
 {
     public string Command => "add_melody_youtube";
 
@@ -17,7 +17,7 @@ public class AddMelodyYoutube: DBCommand
 
     public string Description => "Add melody to the database from a youtube link";
     public string Usage => "add_melody_youtube [URL] <alias1|alias2|...>";
-    public bool requireAdmin => true;
+    public bool RequireAdmin => true;
 
     public async void ExecuteServer(DbCommandExecutingArguments args)
     {

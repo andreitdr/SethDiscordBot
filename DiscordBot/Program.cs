@@ -71,7 +71,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.Log(ex.ToString(), typeof(Program), LogType.Critical);
+            Application.Logger.Log(ex.ToString(), typeof(Program), LogType.Critical);
         }
     }
 
@@ -91,7 +91,7 @@ public class Program
             return;
         }
 
-        Application.CurrentApplication.Logger.SetOutFunction(AnsiConsole.MarkupLine);
+        Application.Logger.SetOutFunction(AnsiConsole.MarkupLine);
 
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||

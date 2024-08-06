@@ -86,7 +86,7 @@ internal static class PluginMethods
             
         }catch(Exception ex)
         {
-            Application.CurrentApplication.Logger.LogException(ex, typeof(PluginMethods), false);
+            Application.Logger.LogException(ex, typeof(PluginMethods), false);
         } finally
         {
             await Application.CurrentApplication.InternalActionManager.Initialize();
@@ -226,12 +226,12 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
+                Application.Logger.Log("Successfully loaded command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
             }
 
             else
             {
-                Application.CurrentApplication.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(PluginMethods), LogType.Error
                 );
             }
@@ -242,11 +242,11 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded event : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
+                Application.Logger.Log("Successfully loaded event : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
             }
             else
             {
-                Application.CurrentApplication.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(PluginMethods), LogType.Error
                 );
             }
@@ -258,11 +258,11 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded slash command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
+                Application.Logger.Log("Successfully loaded slash command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
             }
             else
             {
-                Application.CurrentApplication.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(PluginMethods), LogType.Error
                 );
             }
@@ -274,11 +274,11 @@ internal static class PluginMethods
         {
             if (data.IsSuccess)
             {
-                Application.CurrentApplication.Logger.Log("Successfully loaded action : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
+                Application.Logger.Log("Successfully loaded action : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
             }
             else
             {
-                Application.CurrentApplication.Logger.Log("Failed to load action : " + data.PluginName + " because " + data.ErrorMessage,
+                Application.Logger.Log("Failed to load action : " + data.PluginName + " because " + data.ErrorMessage,
                     typeof(PluginMethods), LogType.Error
                 );
             }

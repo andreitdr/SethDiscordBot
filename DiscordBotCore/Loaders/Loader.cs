@@ -35,9 +35,9 @@ internal class Loader
             }
         }
 
-        await LoadEverythingOfType<DBEvent>();
-        await LoadEverythingOfType<DBCommand>();
-        await LoadEverythingOfType<DBSlashCommand>();
+        await LoadEverythingOfType<IDbEvent>();
+        await LoadEverythingOfType<IDbCommand>();
+        await LoadEverythingOfType<IDbSlashCommand>();
         await LoadEverythingOfType<ICommandAction>();
     }
 
@@ -60,9 +60,9 @@ internal class Loader
 
                 var pluginType = plugin switch
                 {
-                    DBEvent        => PluginType.EVENT,
-                    DBCommand      => PluginType.COMMAND,
-                    DBSlashCommand => PluginType.SLASH_COMMAND,
+                    IDbEvent        => PluginType.EVENT,
+                    IDbCommand      => PluginType.COMMAND,
+                    IDbSlashCommand => PluginType.SLASH_COMMAND,
                     ICommandAction => PluginType.ACTION,
                     _              => PluginType.UNKNOWN
                 };

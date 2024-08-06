@@ -3,7 +3,7 @@ using DiscordBotCore.Others;
 
 namespace DiscordBotCore.Interfaces;
 
-public interface DBCommand
+public interface IDbCommand
 {
     /// <summary>
     ///     Command to be executed
@@ -30,7 +30,7 @@ public interface DBCommand
     /// <summary>
     ///     true if the command requre admin, otherwise false
     /// </summary>
-    bool requireAdmin { get; }
+    bool RequireAdmin { get; }
 
     /// <summary>
     ///     The main body of the command. This is what is executed when user calls the command in Server
@@ -44,7 +44,7 @@ public interface DBCommand
     ///     The main body of the command. This is what is executed when user calls the command in DM
     /// </summary>
     /// <param name="args">The disocrd Context</param>
-    void ExecuteDM(DbCommandExecutingArguments args)
+    void ExecuteDm(DbCommandExecutingArguments args)
     {
     }
 }

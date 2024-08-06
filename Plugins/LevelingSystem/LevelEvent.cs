@@ -7,7 +7,7 @@ using static LevelingSystem.Variables;
 
 namespace LevelingSystem;
 
-internal class LevelEvent : DBEvent
+internal class LevelEvent : IDbEvent
 {
     public string Name => "Leveling System Event Handler";
     public string Description => "The Leveling System Event Handler";

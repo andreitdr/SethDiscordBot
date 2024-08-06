@@ -22,7 +22,7 @@ public class InternalActionManager
                 if (this.Actions.ContainsKey(action.ActionName))
                 {
                     // This should never happen. If it does, log it and return
-                    Application.CurrentApplication.Logger.Log($"Action {action.ActionName} already exists", this, LogType.Error);
+                    Application.Logger.Log($"Action {action.ActionName} already exists", this, LogType.Error);
                     return;
                 }
 
@@ -50,7 +50,7 @@ public class InternalActionManager
     {
         if (!Actions.ContainsKey(actionName))
         {
-            Application.CurrentApplication.Logger.Log($"Action {actionName} not found", this, LogType.Error);
+            Application.Logger.Log($"Action {actionName} not found", this, LogType.Error);
             return false;
         }
 
@@ -58,7 +58,7 @@ public class InternalActionManager
         {
             if (Actions[actionName].RunType == InternalActionRunType.OnStartup)
             {
-                Application.CurrentApplication.Logger.Log($"Action {actionName} is not executable", this, LogType.Error);
+                Application.Logger.Log($"Action {actionName} is not executable", this, LogType.Error);
                 return false;
             }
 
@@ -67,7 +67,7 @@ public class InternalActionManager
         }
         catch (Exception e)
         {
-            Application.CurrentApplication.Logger.Log(e.Message, type: LogType.Error, Sender: this);
+            Application.Logger.Log(e.Message, type: LogType.Error, sender: this);
             return false;
         }
     }

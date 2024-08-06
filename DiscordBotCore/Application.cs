@@ -6,12 +6,12 @@ using DiscordBotCore.Plugin;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using DiscordBotCore.Others.Exceptions;
-using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Modules;
-using System.Diagnostics;
+using DiscordBotCore.Interfaces.Modules;
 using DiscordBotCore.Online.Helpers;
 using DiscordBotCore.Others.Settings;
 
@@ -39,32 +39,6 @@ namespace DiscordBotCore
         
         public CustomSettingsDictionary ApplicationEnvironmentVariables { get; private set; }
         public InternalActionManager InternalActionManager { get; private set; }
-
-        public ILogger Logger
-        {
-            get
-            {
-                try
-                {
-                    return _ModuleManager.GetModule<ILogger>();
-                }
-                catch (ModuleNotFoundException<ILogger> ex)
-                {
-                    Console.WriteLine("No logger found");
-                    Console.WriteLine("Not having a valid logger is NOT an option. The default module will be downloaded from the official repo.");
-                    Console.WriteLine("Install the default one ? [y/n]");
-                    ConsoleKey response = Console.ReadKey().Key;
-                    if (response is ConsoleKey.Y)
-                    {
-                        Process.Start("DiscordBot", "--module-install LoggerModule");
-                    }
-
-                    Environment.Exit(0);
-                    return null!;
-                }
-            }
-        }
-
         public IPluginManager PluginManager { get; private set; }
         public Bot.App DiscordBotClient { get; internal set; }
 
@@ -88,9 +62,9 @@ namespace DiscordBotCore
 
             CurrentApplication.ApplicationEnvironmentVariables = await CustomSettingsDictionary.CreateFromFile(_ConfigFile, true);
 
-            CurrentApplication.ApplicationEnvironmentVariables.Set("PluginFolder", _PluginsFolder);
-            CurrentApplication.ApplicationEnvironmentVariables.Set("ResourceFolder", _ResourcesFolder);
-            CurrentApplication.ApplicationEnvironmentVariables.Set("LogsFolder", _LogsFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Add("PluginFolder", _PluginsFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Add("ResourceFolder", _ResourcesFolder);
+            CurrentApplication.ApplicationEnvironmentVariables.Add("LogsFolder", _LogsFolder);
             
             
             CurrentApplication._ModuleManager = new ModuleManager();
@@ -117,7 +91,52 @@ namespace DiscordBotCore
 
         }
 
-        public IReadOnlyDictionary<Type, List<object>> GetLoadedCoreModules() => _ModuleManager.LoadedModules.AsReadOnly();
+        public static class Logger
+        {
+            public static async void LogException(Exception ex, object sender, bool fullStackTrace = false)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["BaseLogException"], [ex, sender, fullStackTrace]);
+            }
+
+            public static async void Log(string message)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["BaseLog"], [message]);
+            }
+
+            public static async void Log(string message, LogType logType, string format)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["LogWithTypeAndFormat"], [message, logType, format]);
+            }
+
+            public static async void Log(string message, LogType logType)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["LogWithType"], [message, logType]);
+            }
+
+            public static async void Log(string message, object sender)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["LogWithSender"], [message, sender]);
+            }
+
+            public static async void Log(string message, object sender, LogType type)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["LogWithTypeAndSender"], [message, sender, type]);
+            }
+            
+            public static async void SetOutFunction(Action<string> outFunction)
+            {
+                var loggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+                await CurrentApplication._ModuleManager.InvokeMethod(loggerModule.Value, loggerModule.Key.MethodMapping["SetPrintFunction"], [outFunction]);
+            }
+        }
+
+        public ReadOnlyDictionary<ModuleData, IModule> GetLoadedCoreModules() => _ModuleManager.Modules.AsReadOnly();
 
         public static string GetResourceFullPath(string path)
         {

@@ -128,13 +128,7 @@ public class Plugin: ICommandAction
             case "load":
                 if (pluginsLoaded)
                 {
-                    Application.CurrentApplication.Logger.Log("Plugins already loaded", this, LogType.Warning);
-                    break;
-                }
-
-                if (Application.CurrentApplication.DiscordBotClient is null)
-                {
-                    Application.CurrentApplication.Logger.Log("DiscordBot is null", this, LogType.Warning);
+                    Application.Logger.Log("Plugins already loaded", this, LogType.Warning);
                     break;
                 }
 

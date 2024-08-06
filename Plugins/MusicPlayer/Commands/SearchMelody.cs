@@ -4,14 +4,14 @@ using DiscordBotCore.Others;
 
 namespace MusicPlayer.Commands;
 
-public class SearchMelody: DBCommand
+public class SearchMelody: IDbCommand
 {
 
     public string Command => "search_melody";
     public List<string>? Aliases => null;
     public string Description => "Search for a melody in the database";
     public string Usage => "search_melody [melody name OR one of its aliases]";
-    public bool requireAdmin => false;
+    public bool RequireAdmin => false;
 
     public void ExecuteServer(DbCommandExecutingArguments args)
     {
