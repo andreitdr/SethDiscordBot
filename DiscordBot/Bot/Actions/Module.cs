@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBotCore;
 using DiscordBotCore.Interfaces;
-using DiscordBotCore.Interfaces.Modules;
-using DiscordBotCore.Modules;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
 
@@ -44,7 +41,7 @@ namespace DiscordBot.Bot.Actions
         private void ListLoadedModules()
         {
 
-            var modules = DiscordBotCore.Application.CurrentApplication.GetLoadedCoreModules();
+            var modules = Application.CurrentApplication.GetLoadedCoreModules();
             foreach (var module in modules)
             {
                 Application.Logger.Log("Module: " + module.Key.ModuleName, this, LogType.Info);

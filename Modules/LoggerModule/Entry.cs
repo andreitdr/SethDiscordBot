@@ -7,7 +7,18 @@ namespace LoggerModule
     {
         public string Name => "LoggerModule";
         public ModuleType ModuleType => ModuleType.Logger;
-        
+
+        public IDictionary<string, string> MethodMapping => new Dictionary<string, string>
+        {
+            {"BaseLog", "LogMessage"},
+            {"LogWithTypeAndFormat", "LogMessageWithTypeAndFormat"},
+            {"LogWithType", "LogMessageWithType"},
+            {"LogWithSender", "LogMessageWithSender"},
+            {"LogWithTypeAndSender", "LogMessageWithTypeAndSender"},
+            {"BaseLogException", "LogExceptionWithSenderAndFullStack"},
+            {"SetPrintFunction", "SetOutFunction"},
+        };
+
         const string _LogFolder = "./Data/Logs/";
         const string _LogFormat = "{ThrowTime} {SenderName} {Message}";
         

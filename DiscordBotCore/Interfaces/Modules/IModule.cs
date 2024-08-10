@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscordBotCore.Interfaces.Modules
 {
@@ -16,6 +17,8 @@ namespace DiscordBotCore.Interfaces.Modules
     {
         public ModuleType ModuleType { get; }
         public string Name { get; }
+        public IDictionary<string, string> MethodMapping { get; }
+
         public Task Initialize();
     }
 }

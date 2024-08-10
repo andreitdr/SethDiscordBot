@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using DiscordBot.Utilities;
 
 using DiscordBotCore;
-using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Loaders;
 using DiscordBotCore.Online;
 using DiscordBotCore.Others;
@@ -22,8 +20,6 @@ internal static class PluginMethods
 
     internal static async Task List()
     {
-
-        
         Console.WriteLine($"Fetching plugin list from branch {Application.CurrentApplication.PluginManager.Branch} ...");
 
         var data = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");

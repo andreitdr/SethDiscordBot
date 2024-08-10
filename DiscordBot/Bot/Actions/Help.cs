@@ -9,7 +9,6 @@ using DiscordBotCore.Interfaces;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Actions;
 using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace DiscordBot.Bot.Actions;
 

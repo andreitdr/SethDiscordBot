@@ -39,12 +39,6 @@ public static class Entry
             }
 
             Directory.Delete("temp");
-        }),
-
-        new StartupAction("--module-install", (args) => {
-            ModuleDownloader moduleDownloader = new ModuleDownloader(args[0]);
-
-            ConsoleUtilities.ExecuteTaskWithBuiltInProgress(moduleDownloader.DownloadModule, "Downloading logger module").Wait();
         })
     ];
 
