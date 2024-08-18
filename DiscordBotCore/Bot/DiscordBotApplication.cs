@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord;
@@ -109,6 +110,23 @@ public class DiscordBotApplication
     private Task Ready()
     {
         IsReady = true;
+
+        if (Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("CustomStatus"))
+        {
+            var status = Application.CurrentApplication.ApplicationEnvironmentVariables.GetDictionary<string, string>("CustomStatus");
+            string type = status["Type"];
+            string message = status["Message"];
+            ActivityType activityType = type switch
+            {
+                "Playing" => ActivityType.Playing,
+                "Listening" => ActivityType.Listening,
+                "Watching" => ActivityType.Watching,
+                "Streaming" => ActivityType.Streaming,
+                _ => ActivityType.Playing
+            };
+            Client.SetGameAsync(message, null, activityType);
+        }
+        
         return Task.CompletedTask;
     }
 

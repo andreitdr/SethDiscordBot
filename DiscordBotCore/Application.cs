@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Discord;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Online;
 using DiscordBotCore.Online.Helpers;
@@ -32,7 +33,7 @@ namespace DiscordBotCore
         /// Defines the current application. This is a singleton class
         /// </summary>
         public static Application CurrentApplication { get; private set; } = null!;
-
+        
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
         private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
 
@@ -48,16 +49,21 @@ namespace DiscordBotCore
         public CustomSettingsDictionary ApplicationEnvironmentVariables { get; private set; } = null!;
         public InternalActionManager InternalActionManager { get; private set; } = null!;
         public IPluginManager PluginManager { get; private set; } = null!;
-        
-        
 
-
+        /// <summary>
+        /// Create the application. This method is used to initialize the application. Can not initialize multiple times.
+        /// </summary>
         public static async Task CreateApplication()
         {
             if (!await OnlineFunctions.IsInternetConnected())
             {
                 Console.WriteLine("No internet connection detected. Exiting ...");
                 Environment.Exit(0);
+            }
+            
+            if (CurrentApplication is not null)
+            {
+                return;
             }
 
             CurrentApplication = new Application();
@@ -93,9 +99,7 @@ namespace DiscordBotCore
 
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
-
         }
-
         /// <summary>
         /// A special class that is designed to log messages. It is a wrapper around the Logger module
         /// The logger module is required to have this specific methods:
@@ -157,47 +161,11 @@ namespace DiscordBotCore
             string result = Path.Combine(_ResourcesFolder, path);
             return result;
         }
-
-        public static string GetResourceFullPath() => CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ResourceFolder", _ResourcesFolder);
-
+        
         public static string GetPluginFullPath(string path)
         {
             string result = Path.Combine(_PluginsFolder, path);
             return result;
-        }
-
-        public static string GetPluginFullPath() => CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder", _PluginsFolder);
-
-        public static async Task<string> GetPluginDependencyPath(string dependencyName, string? pluginName = null)
-        {
-            string? dependencyLocation;
-            if (pluginName is null)
-                dependencyLocation = await Application.CurrentApplication.PluginManager.GetDependencyLocation(dependencyName);
-            else
-                dependencyLocation = await Application.CurrentApplication.PluginManager.GetDependencyLocation(dependencyName, pluginName);
-
-            if (dependencyLocation is null)
-                throw new DependencyNotFoundException($"Dependency {dependencyName} not found", pluginName);
-
-            return dependencyLocation;
-        }
-
-        /// <summary>
-        /// Invokes a method from a module
-        /// </summary>
-        public static async Task InvokeModuleMethod(string moduleName, string methodName, object[] parameters)
-        {
-            KeyValuePair<ModuleData, IModule> module = CurrentApplication._ModuleManager.GetModule(moduleName);
-            await CurrentApplication._ModuleManager.InvokeMethod(module.Value, module.Value.MethodMapping[methodName], parameters);
-        }
-
-        /// <summary>
-        /// Invokes a method from a module and returns the result
-        /// </summary>
-        public static async Task<object?> InvokeModuleMethodWithResponse(string moduleName, string methodName, object[] parameters)
-        {
-            KeyValuePair<ModuleData, IModule> module = CurrentApplication._ModuleManager.GetModule(moduleName);
-            return await CurrentApplication._ModuleManager.InvokeMethodWithReturnValue(module.Value, module.Value.MethodMapping[methodName], parameters);
         }
     }
 }
