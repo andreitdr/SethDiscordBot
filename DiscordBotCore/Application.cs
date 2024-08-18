@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using DiscordBotCore.Bot;
 using DiscordBotCore.Online;
 using DiscordBotCore.Online.Helpers;
 
@@ -18,6 +19,7 @@ using DiscordBotCore.Plugin;
 
 using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Interfaces.Modules;
+using DiscordBotCore.Loaders;
 
 namespace DiscordBotCore
 {
@@ -37,28 +39,26 @@ namespace DiscordBotCore
         private static readonly string _ResourcesFolder = "./Data/Resources";
         private static readonly string _PluginsFolder = "./Data/Plugins";
         private static readonly string _LogsFolder = "./Data/Logs";
+        
+        private ModuleManager _ModuleManager = null!;
+        public DiscordBotApplication DiscordBotClient { get; set; } = null!;
 
         public List<ulong> ServerIDs => ApplicationEnvironmentVariables.GetList("ServerID", new List<ulong>());
         public string PluginDatabase => ApplicationEnvironmentVariables.Get<string>("PluginDatabase", _PluginsDatabaseFile);
-
-        private ModuleManager _ModuleManager = null!;
-
         public CustomSettingsDictionary ApplicationEnvironmentVariables { get; private set; } = null!;
         public InternalActionManager InternalActionManager { get; private set; } = null!;
         public IPluginManager PluginManager { get; private set; } = null!;
-        public Bot.App DiscordBotClient { get; internal set; } = null!;
+        
+        
+
 
         public static async Task CreateApplication()
         {
-
             if (!await OnlineFunctions.IsInternetConnected())
             {
                 Console.WriteLine("No internet connection detected. Exiting ...");
                 Environment.Exit(0);
             }
-
-            if (CurrentApplication is not null)
-                return;
 
             CurrentApplication = new Application();
 
@@ -82,8 +82,7 @@ namespace DiscordBotCore
                 List<PluginInfo> plugins = new();
                 await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);
             }
-
-
+            
 #if DEBUG
             CurrentApplication.PluginManager = new PluginManager("tests");
 #else
@@ -109,8 +108,8 @@ namespace DiscordBotCore
         /// LogWithTypeAndSender(string message, object sender, LogType type)<br/>
         /// SetPrintFunction(Action[in string] outFunction)<br/><br/>
         /// 
-        /// If your custom logger does not have the following methods mapped, the application might crash.
-        /// Please check <b>modules.json</b> file for the mapping or refer to the official repository for the logger module.
+        /// If your custom logger does not have the methods from above, the application might crash.
+        /// Please refer to the official logger documentation for more information.
         /// </summary>
         public static class Logger
         {

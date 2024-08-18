@@ -135,9 +135,9 @@ namespace DiscordBotCore.Modules
                 var availableModules = await GetAllModules(module);
 
                 Console.WriteLine("Please select a module of type " + module);
-                for (int i = 0; i < availableModules.Count; i++)
+                for (var i = 0; i < availableModules.Count; i++)
                 {
-                    Console.WriteLine(i + " - " + availableModules[i].ModuleName);
+                    Console.WriteLine((i+1) + " - " + availableModules[i].ModuleName);
                     Console.WriteLine("Author: " + availableModules[i].ModuleAuthor);
                     Console.WriteLine("Description: " + availableModules[i].ModuleDescription);
 

@@ -66,8 +66,8 @@ public class Program
         {
             var token         = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
             var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
-            var discordbooter = new App(token, prefix);
-            await discordbooter.Awake();
+            var discordbooter = new DiscordBotApplication(token, prefix);
+            await discordbooter.StartAsync();
         }
         catch (Exception ex)
         {

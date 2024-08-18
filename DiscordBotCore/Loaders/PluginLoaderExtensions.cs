@@ -14,7 +14,7 @@ namespace DiscordBotCore.Loaders;
 
 internal static class PluginLoaderExtensions
 {
-    internal static bool TryStartEvent(this PluginLoader pluginLoader, IDbEvent? dbEvent)
+    internal static bool TryStartEvent(this IDbEvent? dbEvent)
     {
         try
         {
@@ -23,7 +23,7 @@ internal static class PluginLoaderExtensions
                 throw new ArgumentNullException(nameof(dbEvent));
             }
 
-            dbEvent.Start(pluginLoader._Client);
+            dbEvent.Start(Application.CurrentApplication.DiscordBotClient.Client);
             return true;
         }
         catch (Exception e)
@@ -34,18 +34,18 @@ internal static class PluginLoaderExtensions
         }
     }
     
-    internal static async Task<bool> TryStartSlashCommand(this PluginLoader pluginLoader, IDbSlashCommand? dbSlashCommand)
+    internal static async Task<Result> TryStartSlashCommand(this IDbSlashCommand? dbSlashCommand)
     {
         try
         {
             if (dbSlashCommand is null)
             {
-                return false;
+                return Result.Failure(new Exception("dbSlashCommand is null"));
             }
 
-            if (pluginLoader._Client.Guilds.Count == 0)
+            if (Application.CurrentApplication.DiscordBotClient.Client.Guilds.Count == 0)
             {
-                return false;
+                return Result.Failure(new Exception("No guilds found"));
             }
 
             var builder = new SlashCommandBuilder();
@@ -60,28 +60,27 @@ internal static class PluginLoaderExtensions
             
             foreach(ulong guildId in Application.CurrentApplication.ServerIDs)
             {
-                bool result = await pluginLoader.EnableSlashCommandPerGuild(guildId, builder);
+                bool result = await EnableSlashCommandPerGuild(guildId, builder);
                 
                 if (!result)
                 {
-                    Application.Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", typeof(PluginLoader), LogType.Error);
+                    return Result.Failure($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}");
                 }
             }
             
-            await pluginLoader._Client.CreateGlobalApplicationCommandAsync(builder.Build());
+            await Application.CurrentApplication.DiscordBotClient.Client.CreateGlobalApplicationCommandAsync(builder.Build());
 
-            return true;
+            return Result.Success();
         }
         catch (Exception e)
         {
-            Application.Logger.Log($"Error starting slash command {dbSlashCommand.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
-            return false;
+            return Result.Failure("Error starting slash command");
         }
     }
 
-    private static async Task<bool> EnableSlashCommandPerGuild(this PluginLoader pluginLoader, ulong guildId, SlashCommandBuilder builder)
+    private static async Task<bool> EnableSlashCommandPerGuild(ulong guildId, SlashCommandBuilder builder)
     {
-        SocketGuild? guild = pluginLoader._Client.GetGuild(guildId);
+        SocketGuild? guild = Application.CurrentApplication.DiscordBotClient.Client.GetGuild(guildId);
         if (guild is null)
         {
             Application.Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);

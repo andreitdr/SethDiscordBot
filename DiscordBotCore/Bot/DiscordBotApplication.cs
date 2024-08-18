@@ -9,17 +9,17 @@ using DiscordBotCore.Others;
 
 namespace DiscordBotCore.Bot;
 
-public class App
+public class DiscordBotApplication
 {
     /// <summary>
     ///     The bot prefix
     /// </summary>
-    public readonly string BotPrefix;
+    private readonly string _BotPrefix;
 
     /// <summary>
     ///     The bot token
     /// </summary>
-    public readonly string BotToken;
+    private readonly string _BotToken;
 
     /// <summary>
     ///     The bot client
@@ -29,77 +29,67 @@ public class App
     /// <summary>
     ///     The bot command handler
     /// </summary>
-    private CommandHandler _commandServiceHandler;
+    private CommandHandler _CommandServiceHandler;
 
     /// <summary>
     ///     The command service
     /// </summary>
-    private CommandService _service;
+    private CommandService _Service;
+    
+    /// <summary>
+    ///     Checks if the bot is ready
+    /// </summary>
+    /// <value> true if the bot is ready, otherwise false </value>
+    private bool IsReady { get; set; }
 
     /// <summary>
     ///     The main Boot constructor
     /// </summary>
     /// <param name="botToken">The bot token</param>
     /// <param name="botPrefix">The bot prefix</param>
-    public App(string botToken, string botPrefix)
+    public DiscordBotApplication(string botToken, string botPrefix)
     {
-        this.BotPrefix = botPrefix;
-        this.BotToken  = botToken;
+        this._BotPrefix = botPrefix;
+        this._BotToken  = botToken;
     }
-
-
-    /// <summary>
-    ///     Checks if the bot is ready
-    /// </summary>
-    /// <value> true if the bot is ready, otherwise false </value>
-    public bool IsReady { get; private set; }
 
     /// <summary>
     ///     The start method for the bot. This method is used to load the bot
     /// </summary>
-    /// <param name="config">
-    ///     The discord socket config. If null then the default one will be applied (AlwaysDownloadUsers=true,
-    ///     UseInteractionSnowflakeDate=false, GatewayIntents=GatewayIntents.All)
-    /// </param>
-    /// <returns>Task</returns>
-    public async Task Awake(DiscordSocketConfig? config = null)
+    public async Task StartAsync()
     {
-        if (config is null)
-            config = new DiscordSocketConfig
-            {
-                AlwaysDownloadUsers = true,
+        var config = new DiscordSocketConfig
+        {
+            AlwaysDownloadUsers = true,
 
-                //Disable system clock checkup (for responses at slash commands)
-                UseInteractionSnowflakeDate = false,
-                GatewayIntents              = GatewayIntents.All
-            };
+            //Disable system clock checkup (for responses at slash commands)
+            UseInteractionSnowflakeDate = false,
+            GatewayIntents              = GatewayIntents.All
+        };
 
         Client  = new DiscordSocketClient(config);
-        _service = new CommandService();
-
-        CommonTasks();
-
-        await Client.LoginAsync(TokenType.Bot, BotToken);
-
-        await Client.StartAsync();
-
-        _commandServiceHandler = new CommandHandler(Client, _service, BotPrefix);
-
-        await _commandServiceHandler.InstallCommandsAsync();
-
-        Application.CurrentApplication.DiscordBotClient = this;
-
-        while (!IsReady) ;
-    }
-
-    
-    private void CommonTasks()
-    {
-        if (Client == null) return;
+        _Service = new CommandService();
+        
         Client.Log          += Log;
         Client.LoggedIn     += LoggedIn;
         Client.Ready        += Ready;
         Client.Disconnected += Client_Disconnected;
+
+        await Client.LoginAsync(TokenType.Bot, _BotToken);
+
+        await Client.StartAsync();
+
+        _CommandServiceHandler = new CommandHandler(Client, _Service, _BotPrefix);
+
+        await _CommandServiceHandler.InstallCommandsAsync();
+
+        Application.CurrentApplication.DiscordBotClient = this;
+        
+        // wait for the bot to be ready
+        while (!IsReady)
+        {
+            await Task.Delay(100);
+        }
     }
 
     private async Task Client_Disconnected(Exception arg)

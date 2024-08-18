@@ -49,8 +49,21 @@ public class CustomSettingsDictionary : CustomSettingsDictionaryBase<string, obj
 
     public override async Task LoadFromFile()
     {
+        if (!File.Exists(_DiskLocation))
+        {
+            await SaveToFile();
+            return;
+        }
+        
         string jsonContent = await File.ReadAllTextAsync(_DiskLocation);
         var    jObject     = JsonConvert.DeserializeObject<JObject>(jsonContent);
+
+        if (jObject is null)
+        {
+            await SaveToFile();
+            return;
+        }
+        
         _InternalDictionary.Clear();
         
         foreach (var kvp in jObject)

@@ -211,79 +211,33 @@ internal static class PluginMethods
     internal static async Task<bool> LoadPlugins(string[] args)
     {
         var loader = new PluginLoader(Application.CurrentApplication.DiscordBotClient.Client);
-        if (args != null && (args.Length == 2 && args[1] == "-q"))
+        if (args != null && args.Contains("-q"))
         {
             await loader.LoadPlugins();
             return true;
         }
-
-        var cc = Console.ForegroundColor;
-        loader.OnCommandLoaded += (data) =>
+        
+        loader.OnCommandLoaded += (command) =>
         {
-            if (data.IsSuccess)
-            {
-                Application.Logger.Log("Successfully loaded command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
-            }
-
-            else
-            {
-                Application.Logger.Log("Failed to load command : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(PluginMethods), LogType.Error
-                );
-            }
-
-            Console.ForegroundColor = cc;
+            Application.Logger.Log($"Command {command.Command} loaded successfully", LogType.Info);
         };
-        loader.OnEventLoaded += (data) =>
+        
+        loader.OnEventLoaded += (eEvent) =>
         {
-            if (data.IsSuccess)
-            {
-                Application.Logger.Log("Successfully loaded event : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
-            }
-            else
-            {
-                Application.Logger.Log("Failed to load event : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(PluginMethods), LogType.Error
-                );
-            }
-
-            Console.ForegroundColor = cc;
+            Application.Logger.Log($"Event {eEvent.Name} loaded successfully",LogType.Info);
         };
-
-        loader.OnSlashCommandLoaded += (data) =>
+        
+        loader.OnActionLoaded += (action) =>
         {
-            if (data.IsSuccess)
-            {
-                Application.Logger.Log("Successfully loaded slash command : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
-            }
-            else
-            {
-                Application.Logger.Log("Failed to load slash command : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(PluginMethods), LogType.Error
-                );
-            }
-
-            Console.ForegroundColor = cc;
+            Application.Logger.Log($"Action {action.ActionName} loaded successfully", LogType.Info);
         };
-
-        loader.OnActionLoaded += (data) =>
+        
+        loader.OnSlashCommandLoaded += (slashCommand) =>
         {
-            if (data.IsSuccess)
-            {
-                Application.Logger.Log("Successfully loaded action : " + data.PluginName, LogType.Info, "\t\t  > {Message}");
-            }
-            else
-            {
-                Application.Logger.Log("Failed to load action : " + data.PluginName + " because " + data.ErrorMessage,
-                    typeof(PluginMethods), LogType.Error
-                );
-            }
-
-            Console.ForegroundColor = cc;
+            Application.Logger.Log($"Slash Command {slashCommand.Name} loaded successfully", LogType.Info);
         };
 
         await loader.LoadPlugins();
-        Console.ForegroundColor = cc;
         return true;
     }
 

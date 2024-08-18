@@ -2,7 +2,7 @@
 
 namespace DiscordBotCore.Others.Exceptions
 {
-    internal class PluginNotFoundException : Exception
+    public class PluginNotFoundException : Exception
     {
         public PluginNotFoundException(string pluginName) : base($"Plugin {pluginName} was not found") { }
 

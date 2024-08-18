@@ -33,7 +33,8 @@ public class DbCommandExecutingArguments
         }
         else
         {
-            CleanContent = message.Content.Substring(Application.CurrentApplication.DiscordBotClient.BotPrefix.Length);
+            string? prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
+            CleanContent = message.Content.Substring(prefix?.Length ?? 0);
         }
 
         var split = CleanContent.Split(' ');
