@@ -40,12 +40,10 @@ namespace DiscordBot.Bot.Actions
 
         private void ListLoadedModules()
         {
-
-            var modules = Application.CurrentApplication.GetLoadedCoreModules();
+            var modules = Application.CurrentApplication.ModuleManager.GetLocalModules();
             foreach (var module in modules)
             {
-                Application.Logger.Log("Module: " + module.Key.ModuleName, this, LogType.Info);
-
+                Application.Logger.Log("Module: " + module.ModuleName, this, LogType.Info);
             }
         }
     }

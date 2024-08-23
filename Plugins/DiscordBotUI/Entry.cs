@@ -26,7 +26,6 @@ public class Entry : ICommandAction
     public async Task Execute(string[]? args)
     {
         try{
-        
             string appUiComponent = "./Data/Test/libtestlib.dll";
 
             ExternLibrary externalLibrary = new ExternLibrary(appUiComponent);

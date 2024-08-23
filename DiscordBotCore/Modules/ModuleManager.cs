@@ -13,22 +13,39 @@ using Newtonsoft.Json;
 
 namespace DiscordBotCore.Modules
 {
-    internal class ModuleManager
+    
+    public class LoadedModule
+    {
+        public IModule    Value { get; init; }
+        public ModuleData ModuleData { get; init; }
+        public LoadedModule(IModule module, ModuleData moduleData)
+        {
+            Value = module;
+            ModuleData = moduleData;
+        }
+    }
+    
+    public class ModuleManager
     {
         private static readonly string _BaseModuleFolder = "./Data/Modules";
         private static readonly string _BaseModuleConfig = "./Data/Resources/modules.json";
         
         private const string _ModuleDatabase = "https://raw.githubusercontent.com/andreitdr/SethPlugins/tests/modules.json";
-        
-        internal Dictionary<ModuleData, IModule> Modules { get; set; }
 
-        public ModuleManager()
+        private List<LoadedModule> Modules { get; }
+        
+        public IEnumerable<ModuleData> GetLocalModules()
         {
-            Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
-            Modules = new Dictionary<ModuleData, IModule>();
+            return Modules.Select(module => module.ModuleData);
         }
 
-        public async Task<List<ModuleOnlineData>> GetAllModules(ModuleType? moduleTypeFilter = null)
+        internal ModuleManager()
+        {
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
+            Modules = new();
+        }
+
+        public async Task<List<ModuleOnlineData>> ServerGetAllModules(ModuleType? moduleTypeFilter = null)
         {
             string jsonDatabaseRemote = await ServerCom.GetAllTextFromUrl(_ModuleDatabase);
 
@@ -49,7 +66,7 @@ namespace DiscordBotCore.Modules
             
             Directory.CreateDirectory(moduleFolder);
             
-            List<ModuleOnlineData> modules = await GetAllModules();
+            List<ModuleOnlineData> modules = await ServerGetAllModules();
 
             string url = modules.Find(m => m.ModuleName == moduleName)?.ModuleDownloadUrl ?? string.Empty;
 
@@ -64,11 +81,11 @@ namespace DiscordBotCore.Modules
             await AddModuleToDatabase(localModuleData);
         }
         
-        public KeyValuePair<ModuleData, IModule> GetModule(string moduleName)
+        public LoadedModule GetModule(string moduleName)
         {
-            var result = Modules.FirstOrDefault(module => module.Key.ModuleName == moduleName);
+            var result = Modules.FirstOrDefault(module => module.ModuleData.ModuleName == moduleName);
 
-            if (result.Value is null || result.Key is null)
+            if(result is null)
             {
                 throw new ModuleNotFound(moduleName);
             }
@@ -76,11 +93,11 @@ namespace DiscordBotCore.Modules
             return result;
         }
 
-        public KeyValuePair<ModuleData, IModule> GetModule(ModuleType moduleType)
+        public LoadedModule GetLoadedModuleWithTag(ModuleType moduleType)
         {
             var result = Modules.FirstOrDefault(module => module.Value.ModuleType == moduleType);
 
-            if (result.Value is null || result.Key is null)
+            if(result is null)
             {
                 throw new ModuleNotFound(moduleType);
             }
@@ -112,27 +129,27 @@ namespace DiscordBotCore.Modules
             await File.WriteAllTextAsync(moduleConfigPath, json);
         }
 
-        public Task<RequireInstallModule> CheckRequiredModules()
+        internal Task<ModuleRequirement> CheckRequiredModules()
         {
-            RequireInstallModule requireInstallModule = new RequireInstallModule();
-            if (!Modules.Any(module => module.Value.ModuleType == ModuleType.Logger))
+            ModuleRequirement moduleRequirement = new ModuleRequirement();
+            if (Modules.All(module => module.Value.ModuleType != ModuleType.Logger))
             {
-                requireInstallModule.AddType(ModuleType.Logger);
+                moduleRequirement.AddType(ModuleType.Logger);
             }
             
-            return Task.FromResult(requireInstallModule);
+            return Task.FromResult(moduleRequirement);
         }
 
-        public async Task SolveRequirementIssues(RequireInstallModule requirements)
+        internal async Task SolveRequirementIssues(ModuleRequirement requirements)
         {
             if (!requirements.RequireAny)
             {
                 return;
             }
 
-            foreach (var module in requirements.RequiredModules)
+            foreach (var module in requirements.RequiredModulesWithTypes)
             {
-                var availableModules = await GetAllModules(module);
+                var availableModules = await ServerGetAllModules(module);
 
                 Console.WriteLine("Please select a module of type " + module);
                 for (var i = 0; i < availableModules.Count; i++)
@@ -162,7 +179,7 @@ namespace DiscordBotCore.Modules
             System.Diagnostics.Process.Start(System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName);
         }
 
-        public async Task LoadModules()
+        internal async Task LoadModules()
         {
             string moduleConfigPath = Application.CurrentApplication.ApplicationEnvironmentVariables
                                                  .Get<string>("ModuleConfig", _BaseModuleConfig);
@@ -199,7 +216,7 @@ namespace DiscordBotCore.Modules
                 {
                     try{
                         await module.Initialize();
-                        Modules.Add(moduleData, module);
+                        Modules.Add(new LoadedModule(module, moduleData));
                     }catch(Exception e){
                         Console.WriteLine($"Error loading module {moduleData.ModuleName}: {e.Message}");
                     }
@@ -207,7 +224,7 @@ namespace DiscordBotCore.Modules
             }
         }
 
-        public async Task<object?> InvokeMethodWithReturnValue(string moduleName, string methodName, object[] parameters)
+        internal async Task<object?> InvokeMethodWithReturnValue(string moduleName, string methodName, object[] parameters)
         {
             IModule module = GetModule(moduleName).Value;
             var method = module.GetType().GetMethod(methodName);
@@ -222,7 +239,7 @@ namespace DiscordBotCore.Modules
             return result;
         }
 
-        public async Task<object?> InvokeMethodWithReturnValue(IModule module, string methodName, object[] parameters)
+        internal async Task<object?> InvokeMethodWithReturnValue(IModule module, string methodName, object[] parameters)
         {
             var method = module.GetType().GetMethod(methodName);
 
@@ -237,7 +254,7 @@ namespace DiscordBotCore.Modules
         }
 
 
-        public async Task InvokeMethod(string moduleName, string methodName, object[] parameters)
+        internal async Task InvokeMethod(string moduleName, string methodName, object[] parameters)
         {
             IModule module = GetModule(moduleName).Value;
             var method = module.GetType().GetMethod(methodName);
@@ -250,7 +267,7 @@ namespace DiscordBotCore.Modules
             await Task.Run(() => method.Invoke(module, parameters));
         }
 
-        public async Task InvokeMethod(IModule module, string methodName, object[] parameters)
+        internal async Task InvokeMethod(IModule module, string methodName, object[] parameters)
         {
             var method = module.GetType().GetMethod(methodName);
 

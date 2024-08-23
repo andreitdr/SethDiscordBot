@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DiscordBotCore.Others;
@@ -34,7 +35,6 @@ public static class ArchiveManager
     /// <returns>An array of bytes that represents the Stream value from the file that was read inside the archive</returns>
     public static async Task<byte[]?> ReadAllBytes(string fileName, string archName)
     {
-
         string? archiveFolderBasePath = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ArchiveFolder", _ArchivesFolder);
         if(archiveFolderBasePath is null)
             throw new Exception("Archive folder not found");

@@ -1,0 +1,57 @@
+﻿@page "/"
+
+@using DiscordBotCore.Others.Exceptions
+@using DiscordBotWebUI.Components.Pages.Setup
+@using DiscordBotWebUI.DiscordBot
+
+@inject DialogService DialogService
+
+<RadzenButton Text="Start" Click="Initialize"/>
+<RadzenTextArea Placeholder="Logs..." Value="@_TextValue" Style="width: 100%; height: 80%"/>
+
+
+@code {
+    private string? _TextValue;
+
+    private async Task FixModules(ModuleRequirement requirements)
+    {
+        if(!requirements.RequireAny)
+        {
+            return;
+        }
+        
+        await DialogService.OpenAsync<InstallRequiredModules>("Please select one of the following to download ...", new Dictionary<string, object>()
+        {
+            {"Requirements", requirements}
+        }, new DialogOptions() 
+            {
+                Width = "75%",
+                Height = "75%"
+            });
+    }
+
+    private async void Initialize()
+    {
+        DiscordBotStartup setup = new DiscordBotStartup(FixModules);
+        
+        setup.Log += async (sender, str) => {
+            _TextValue += str + "\n";
+            await InvokeAsync(StateHasChanged);
+        };
+        
+        dynamic result = await setup.LoadComponents();
+
+        if (!result)
+        {
+            result = await DialogService.OpenAsync<FirstSetup>("Please complete this setup before starting the bot", new Dictionary<string, object>());
+            
+            if (result != true)
+            {
+                Environment.Exit(0);
+            }
+        }
+
+        await setup.PrepareBot();
+        await setup.RefreshPlugins(false);
+    }
+}

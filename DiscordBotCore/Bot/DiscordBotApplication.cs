@@ -100,10 +100,6 @@ public class DiscordBotApplication
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
             Application.Logger.Log("The token is invalid.", this, LogType.Critical);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
-            await Task.Delay(3000);
-            
-            Process.Start(Environment.ProcessPath);
-            Environment.Exit(0);
         }
     }
 

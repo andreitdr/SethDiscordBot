@@ -8,6 +8,7 @@ using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
+using DiscordBotCore.Others.Exceptions;
 using DiscordBotCore.Updater.Application;
 
 using Spectre.Console;
@@ -21,7 +22,6 @@ public class Program
     /// </summary>
     public static async Task Startup(string[] args)
     {
-
         await LoadComponents(args);
         await PrepareConsole();
         await PluginMethods.RefreshPlugins(false);
@@ -64,10 +64,11 @@ public class Program
 
         try
         {
-            var token         = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
-            var prefix        = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
-            var discordbooter = new DiscordBotApplication(token, prefix);
-            await discordbooter.StartAsync();
+            var token  = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
+            var prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
+            
+            DiscordBotApplication discordApp = new (token, prefix);
+            await discordApp.StartAsync();
         }
         catch (Exception ex)
         {
@@ -80,8 +81,8 @@ public class Program
     /// </summary>
     /// <param name="args">The startup arguments</param>
     private static async Task LoadComponents(string[] args)
-    {
-        await Application.CreateApplication();
+    {   
+        await Application.CreateApplication(default);
 
         AppUpdater updater = new AppUpdater();
         Update? update = await updater.PrepareUpdate();

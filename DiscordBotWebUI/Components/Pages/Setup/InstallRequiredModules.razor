@@ -1,0 +1,39 @@
+﻿@using DiscordBotCore
+@using DiscordBotCore.Modules
+@using DiscordBotCore.Others.Exceptions
+@using DiscordBotWebUI.Components.Items
+@using DiscordBotWebUI.Types
+
+@if(MarketItems.Count > 0)
+{
+    <Marketplace ListedItems="MarketItems"/>
+}
+
+@code {
+    [Parameter]
+    public ModuleRequirement Requirements { get; set; }
+
+    private List<MarketItem> MarketItems = new List<MarketItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        foreach(var requirement in Requirements.RequiredModulesWithTypes)
+        {
+            var modulesWithType = await Application.CurrentApplication.ModuleManager.ServerGetAllModules(requirement);
+            AppendToList(modulesWithType);
+        }
+    }
+    
+    private void AppendToList(List<ModuleOnlineData> listOfModules)
+    {
+        foreach (var module in listOfModules)
+        {
+            MarketItem item = new MarketItem(module.ModuleName, module.ModuleAuthor, module.ModuleDescription, ItemType.Module);
+            MarketItems.Add(item);
+        }
+    }
+   
+
+}

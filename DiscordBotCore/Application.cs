@@ -32,6 +32,7 @@ namespace DiscordBotCore
         /// <summary>
         /// Defines the current application. This is a singleton class
         /// </summary>
+       
         public static Application CurrentApplication { get; private set; } = null!;
         
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
@@ -41,7 +42,7 @@ namespace DiscordBotCore
         private static readonly string _PluginsFolder = "./Data/Plugins";
         private static readonly string _LogsFolder = "./Data/Logs";
         
-        private ModuleManager _ModuleManager = null!;
+        public ModuleManager ModuleManager = null!;
         public DiscordBotApplication DiscordBotClient { get; set; } = null!;
 
         public List<ulong> ServerIDs => ApplicationEnvironmentVariables.GetList("ServerID", new List<ulong>());
@@ -53,7 +54,8 @@ namespace DiscordBotCore
         /// <summary>
         /// Create the application. This method is used to initialize the application. Can not initialize multiple times.
         /// </summary>
-        public static async Task CreateApplication()
+        /// <param name="moduleRequirementsSolver">A function that will be called when a module is required to be installed. If set to default, will use the built in method(console)</param>
+        public static async Task CreateApplication(Func<ModuleRequirement, Task>? moduleRequirementsSolver)
         {
             if (!await OnlineFunctions.IsInternetConnected())
             {
@@ -78,10 +80,15 @@ namespace DiscordBotCore
             CurrentApplication.ApplicationEnvironmentVariables.Add("ResourceFolder", _ResourcesFolder);
             CurrentApplication.ApplicationEnvironmentVariables.Add("LogsFolder", _LogsFolder);
 
-            CurrentApplication._ModuleManager = new ModuleManager();
-            await CurrentApplication._ModuleManager.LoadModules();
-            var requirements = await CurrentApplication._ModuleManager.CheckRequiredModules();
-            await CurrentApplication._ModuleManager.SolveRequirementIssues(requirements);
+            CurrentApplication.ModuleManager = new ModuleManager();
+            await CurrentApplication.ModuleManager.LoadModules();
+            var requirements = await CurrentApplication.ModuleManager.CheckRequiredModules();
+            if(requirements.RequireAny)
+            {
+                moduleRequirementsSolver ??= requirement => CurrentApplication.ModuleManager.SolveRequirementIssues(requirement);
+                await moduleRequirementsSolver(requirements);
+            }
+            
 
             if (!File.Exists(_PluginsDatabaseFile))
             {
@@ -100,6 +107,24 @@ namespace DiscordBotCore
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
         }
+        
+        public static async Task InvokeMethod(string moduleName, string methodFriendlyName, params object[] parameters)
+        {
+            var    module     = CurrentApplication.ModuleManager.GetModule(moduleName);
+            var methodName = module.Value.MethodMapping[methodFriendlyName];
+            
+            await CurrentApplication.ModuleManager.InvokeMethod(module.Value, methodName, parameters);
+        }
+        
+        public static async Task<object?> InvokeMethodWithReturnValue(string moduleName, string methodFriendlyName, params object[] parameters)
+        {
+            var module = CurrentApplication.ModuleManager.GetModule(moduleName).Value;
+            var methodName = module.MethodMapping[methodFriendlyName];
+            
+            var response = await CurrentApplication.ModuleManager.InvokeMethodWithReturnValue(module, methodName, parameters);
+            return response;
+        }
+        
         /// <summary>
         /// A special class that is designed to log messages. It is a wrapper around the Logger module
         /// The logger module is required to have this specific methods:
@@ -117,54 +142,52 @@ namespace DiscordBotCore
         /// </summary>
         public static class Logger
         {
-            private static readonly KeyValuePair<ModuleData, IModule> _LoggerModule = CurrentApplication._ModuleManager.GetModule(ModuleType.Logger);
+            private static readonly LoadedModule _LoggerModule = CurrentApplication.ModuleManager.GetLoadedModuleWithTag(ModuleType.Logger);
             public static async void LogException(Exception ex, object sender, bool fullStackTrace = false)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLogException"], [ex, sender, fullStackTrace]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLogException"], [ex, sender, fullStackTrace]);
             }
 
             public static async void Log(string message)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLog"], [message]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLog"], [message]);
             }
 
             public static async void Log(string message, LogType logType, string format)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndFormat"], [message, logType, format]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndFormat"], [message, logType, format]);
             }
 
             public static async void Log(string message, LogType logType)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithType"], [message, logType]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithType"], [message, logType]);
             }
 
             public static async void Log(string message, object sender)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithSender"], [message, sender]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithSender"], [message, sender]);
             }
 
             public static async void Log(string message, object sender, LogType type)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndSender"], [message, sender, type]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndSender"], [message, sender, type]);
             }
 
             public static async void SetOutFunction(Action<string> outFunction)
             {
-                await CurrentApplication._ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["SetPrintFunction"], [outFunction]);
+                await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["SetPrintFunction"], [outFunction]);
             }
         }
 
-        public ReadOnlyDictionary<ModuleData, IModule> GetLoadedCoreModules() => _ModuleManager.Modules.AsReadOnly();
-
         public static string GetResourceFullPath(string path)
         {
-            string result = Path.Combine(_ResourcesFolder, path);
+            var result = Path.Combine(_ResourcesFolder, path);
             return result;
         }
         
         public static string GetPluginFullPath(string path)
         {
-            string result = Path.Combine(_PluginsFolder, path);
+            var result = Path.Combine(_PluginsFolder, path);
             return result;
         }
     }

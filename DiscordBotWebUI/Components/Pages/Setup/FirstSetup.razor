@@ -1,0 +1,81 @@
+﻿@using DiscordBotCore
+@inject DialogService DialogService
+
+<RadzenPanel>
+    <HeaderTemplate>
+        <RadzenText>Discord Bot requires a Bot Token, a prefix for normal commands and the server Ids on the servers it will be in</RadzenText>
+    </HeaderTemplate>
+    <ChildContent>
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenText>Discord Bot Token</RadzenText>
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenTextBox Placeholder="Token..." Value="@_Token" ValueChanged="TokenValueChanged"></RadzenTextBox>
+            </RadzenColumn>
+        </RadzenRow>
+        
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenText>Bot prefix</RadzenText>
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenTextBox Placeholder="Bot prefix ..." MaxLength="1" Value="@_Prefix" ValueChanged="PrefixValueChanged"></RadzenTextBox>
+            </RadzenColumn>
+        </RadzenRow>
+        
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenText>Bot Server Ids:</RadzenText>
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenTextArea Placeholder="One per line ..." Value="@_ServerIds" ValueChanged="ServerIDsValueChanged"></RadzenTextArea>
+            </RadzenColumn>
+        </RadzenRow>
+    </ChildContent>
+    
+    <FooterTemplate>
+        <RadzenButton Text="Save" Click="SaveChanges"></RadzenButton>
+    </FooterTemplate>
+</RadzenPanel>
+
+@code {
+
+    private string _Token     = string.Empty;
+    private string _Prefix    = string.Empty;
+    private string _ServerIds = string.Empty;
+    
+    private async Task SaveChanges()
+    {
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("token", _Token);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("prefix", _Prefix);
+
+        List<ulong> serverIds = new List<ulong>();
+        string[]    values    = _ServerIds.Split('\n');
+        foreach(var value in values)
+        {
+            if(ulong.TryParse(value, out ulong actualValue))
+            {
+                serverIds.Add(actualValue);
+            }
+        }
+        
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("ServerID", serverIds);
+
+        await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
+        
+        DialogService.Close(true);
+    }
+    private void ServerIDsValueChanged(string obj)
+    {
+        _ServerIds = obj;
+    }
+    private void PrefixValueChanged(string obj)
+    {
+        _Prefix = obj;
+    }
+    private void TokenValueChanged(string obj)
+    {
+        _Token = obj;
+    }
+}
