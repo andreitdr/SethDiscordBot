@@ -19,15 +19,11 @@
         {
             return;
         }
-        
+
         await DialogService.OpenAsync<InstallRequiredModules>("Please select one of the following to download ...", new Dictionary<string, object>()
         {
             {"Requirements", requirements}
-        }, new DialogOptions() 
-            {
-                Width = "75%",
-                Height = "75%"
-            });
+        }, new DialogOptions() { Width = "75%", Height = "75%" });
     }
 
     private async void Initialize()

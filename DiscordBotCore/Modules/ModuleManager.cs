@@ -181,6 +181,8 @@ namespace DiscordBotCore.Modules
 
         internal async Task LoadModules()
         {
+            Modules.Clear();
+            
             string moduleConfigPath = Application.CurrentApplication.ApplicationEnvironmentVariables
                                                  .Get<string>("ModuleConfig", _BaseModuleConfig);
             

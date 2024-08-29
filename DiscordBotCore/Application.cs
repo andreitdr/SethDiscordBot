@@ -87,6 +87,10 @@ namespace DiscordBotCore
             {
                 moduleRequirementsSolver ??= requirement => CurrentApplication.ModuleManager.SolveRequirementIssues(requirement);
                 await moduleRequirementsSolver(requirements);
+                
+                await CurrentApplication.ModuleManager.LoadModules();
+
+                Logger._LoggerModule = CurrentApplication.ModuleManager.GetLoadedModuleWithTag(ModuleType.Logger);
             }
             
 
@@ -142,7 +146,7 @@ namespace DiscordBotCore
         /// </summary>
         public static class Logger
         {
-            private static readonly LoadedModule _LoggerModule = CurrentApplication.ModuleManager.GetLoadedModuleWithTag(ModuleType.Logger);
+            internal static LoadedModule _LoggerModule = null!; // initial is null, will be populated when the application will load all modules !!
             public static async void LogException(Exception ex, object sender, bool fullStackTrace = false)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLogException"], [ex, sender, fullStackTrace]);
