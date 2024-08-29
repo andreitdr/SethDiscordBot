@@ -40,11 +40,19 @@ public class PluginInfo
 
     public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)
     {
-        return new PluginInfo(onlineInfo.Name,
-            onlineInfo.Version,
-            onlineInfo.Dependencies
-                .Where(dep => dep.IsExecutable)
-                .Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation))
-                .ToDictionary());
+        var pluginName             = onlineInfo.Name;
+        var version                = onlineInfo.Version;
+        var dependencies= onlineInfo.Dependencies;
+        
+        if(dependencies is null)
+        {
+            return new PluginInfo(pluginName, version, new Dictionary<string, string>());
+        }
+        
+        var executableDependencies = dependencies.Where(dep => dep.IsExecutable);
+        var dictDependencies       = executableDependencies.Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation)).ToDictionary();
+
+        return new PluginInfo(pluginName, version, dictDependencies);
+        
     }
 }

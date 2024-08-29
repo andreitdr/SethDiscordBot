@@ -2,8 +2,6 @@
 @using DiscordBotCore.Plugin
 @using DiscordBotWebUI.Types
 
-@inject DialogService DialogService
-
 <RadzenDataGrid AllowColumnResize="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" Data="ListedItems">
     <Columns>
         <RadzenDataGridColumn Property="@nameof(MarketItem.Name)" Title="Item Name"></RadzenDataGridColumn>
@@ -50,8 +48,6 @@
         });
         await Application.CurrentApplication.ModuleManager.InstallModule(moduleName, downloadProgress);
         _ProgressBarVisible = false;
-        
-        DialogService.Close(true);
     }
     
     private async Task DownloadPlugin(string pluginName)
@@ -68,7 +64,5 @@
         await Application.CurrentApplication.PluginManager.InstallPlugin(pluginInfo, downloadProgress);
 
         _ProgressBarVisible = false;
-        
-        DialogService.Close(true);
     }
 }

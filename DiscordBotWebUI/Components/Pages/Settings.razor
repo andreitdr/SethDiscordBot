@@ -1,5 +1,5 @@
-﻿@using DiscordBotCore
-@inject DialogService DialogService
+﻿@page "/settings"
+@using DiscordBotCore
 
 <RadzenPanel>
     <HeaderTemplate>
@@ -14,7 +14,7 @@
                 <RadzenTextBox Placeholder="Token..." Value="@_Token" ValueChanged="TokenValueChanged"></RadzenTextBox>
             </RadzenColumn>
         </RadzenRow>
-        
+
         <RadzenRow>
             <RadzenColumn>
                 <RadzenText>Bot prefix</RadzenText>
@@ -23,7 +23,7 @@
                 <RadzenTextBox Placeholder="Bot prefix ..." MaxLength="1" Value="@_Prefix" ValueChanged="PrefixValueChanged"></RadzenTextBox>
             </RadzenColumn>
         </RadzenRow>
-        
+
         <RadzenRow>
             <RadzenColumn>
                 <RadzenText>Bot Server Ids:</RadzenText>
@@ -33,14 +33,13 @@
             </RadzenColumn>
         </RadzenRow>
     </ChildContent>
-    
+
     <FooterTemplate>
         <RadzenButton Text="Save" Click="SaveChanges"></RadzenButton>
     </FooterTemplate>
 </RadzenPanel>
 
 @code {
-
     private string _Token     = string.Empty;
     private string _Prefix    = string.Empty;
     private string _ServerIds = string.Empty;
@@ -64,8 +63,8 @@
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
         
-        DialogService.Close(true);
     }
+    
     private void ServerIDsValueChanged(string obj)
     {
         _ServerIds = obj;

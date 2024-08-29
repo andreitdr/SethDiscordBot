@@ -13,6 +13,14 @@
 @code {
     private string? _TextValue;
 
+    private DiscordBotStartup _DiscordBotStartup = null!;
+
+    protected override async void OnInitialized()
+    {
+        _DiscordBotStartup = new DiscordBotStartup(FixModules);
+        await _DiscordBotStartup.CreateApplication();
+    }
+
     private async Task FixModules(ModuleRequirement requirements)
     {
         if(!requirements.RequireAny)
@@ -27,19 +35,17 @@
     }
 
     private async void Initialize()
-    {
-        DiscordBotStartup setup = new DiscordBotStartup(FixModules);
-        
-        setup.Log += async (sender, str) => {
+    {   
+        _DiscordBotStartup.Log += async (sender, str) => {
             _TextValue += str + "\n";
             await InvokeAsync(StateHasChanged);
         };
         
-        dynamic result = await setup.LoadComponents();
+        dynamic result = _DiscordBotStartup.LoadComponents();
 
         if (!result)
         {
-            result = await DialogService.OpenAsync<FirstSetup>("Please complete this setup before starting the bot", new Dictionary<string, object>());
+            result = await DialogService.OpenAsync<Settings>("Please complete this setup before starting the bot", new Dictionary<string, object>());
             
             if (result != true)
             {
@@ -47,7 +53,7 @@
             }
         }
 
-        await setup.PrepareBot();
-        await setup.RefreshPlugins(false);
+        await _DiscordBotStartup.PrepareBot();
+        await _DiscordBotStartup.RefreshPlugins(false);
     }
 }

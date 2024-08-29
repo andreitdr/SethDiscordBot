@@ -1,0 +1,37 @@
+﻿@page "/market/plugins"
+@using DiscordBotCore
+@using DiscordBotWebUI.Types
+@using DiscordBotWebUI.Components.Items
+
+@if(_MarketItems is null)
+{
+    <RadzenText Text="There are no plugins available right now ..."></RadzenText>
+}
+
+@if(_MarketItems is not null && _MarketItems.Any())
+{
+    <Marketplace ListedItems="_MarketItems"/>
+}
+
+@code {
+    private List<MarketItem>? _MarketItems;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var plugins = await Application.CurrentApplication.PluginManager.GetPluginsList();
+        
+        if(plugins is null)
+        {
+            _MarketItems = null;
+            return;
+        }
+
+        _MarketItems = new List<MarketItem>();
+        
+        foreach (var onlinePlugin in plugins)
+        {
+            var marketItem = new MarketItem(onlinePlugin.Name, onlinePlugin.Author, onlinePlugin.Description, ItemType.Plugin);
+            _MarketItems.Add(marketItem);
+        }
+    }
+}

@@ -1,0 +1,26 @@
+﻿@page "/market/modules"
+@using DiscordBotCore
+@using DiscordBotWebUI.Types
+@using DiscordBotWebUI.Components.Items
+
+@if(_MarketItems is not null && _MarketItems.Any())
+{
+    <Marketplace ListedItems="_MarketItems"/>
+} else 
+{
+    <RadzenText Text="There are no modules available right now ..."></RadzenText>
+}
+
+@code {
+    private readonly List<MarketItem>? _MarketItems = new List<MarketItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var modules = await Application.CurrentApplication.ModuleManager.ServerGetAllModules();
+        foreach(var onlineModule in modules)
+        {
+            var item = new MarketItem(onlineModule.ModuleName, onlineModule.ModuleAuthor, onlineModule.ModuleDescription, ItemType.Module);
+            _MarketItems.Add(item);
+        }
+    }
+}

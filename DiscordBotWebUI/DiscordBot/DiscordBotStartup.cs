@@ -9,28 +9,31 @@ namespace DiscordBotWebUI.DiscordBot;
 public class DiscordBotStartup
 {
     public event EventHandler<string>? Log; 
-    private Func<ModuleRequirement, Task> RequireInstallModule { get; }
-    public DiscordBotStartup(Func<ModuleRequirement, Task> requireInstallModule)
-    {
-        RequireInstallModule = requireInstallModule;
-    }
-   
     private void WriteLog(string message)
     {
         Log?.Invoke(this, message);
     }
+
+    private readonly Func<ModuleRequirement, Task> RequireInstallModule;
     
-    public async Task<bool> LoadComponents()
+    public DiscordBotStartup(Func<ModuleRequirement, Task> requirementHandler)
+    {
+        this.RequireInstallModule = requirementHandler;
+    }
+    
+    public async Task CreateApplication()
     {
         await Application.CreateApplication(RequireInstallModule);
+    }
+    
+    public bool LoadComponents()
+    {
         Application.Logger.SetOutFunction(WriteLog);
 
-        if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
-            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
-            !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
-            return false;
+        return Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") &&
+               Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") &&
+               Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix");
 
-        return true;
     }
     
     public async Task PrepareBot()

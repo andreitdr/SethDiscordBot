@@ -1,4 +1,8 @@
+using DiscordBotCore;
+using DiscordBotCore.Others.Exceptions;
 using DiscordBotWebUI.Components;
+using DiscordBotWebUI.Components.Pages.Setup;
+using DiscordBotWebUI.DiscordBot;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
        .AddInteractiveServerComponents();
 builder.Services.AddRadzenComponents();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
