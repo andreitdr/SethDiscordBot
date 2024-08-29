@@ -1,5 +1,6 @@
 ﻿@page "/settings"
 @using DiscordBotCore
+@inject NotificationService NotificationService
 
 <RadzenPanel>
     <HeaderTemplate>
@@ -43,7 +44,38 @@
     private string _Token     = string.Empty;
     private string _Prefix    = string.Empty;
     private string _ServerIds = string.Empty;
-    
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+        if(Application.CurrentApplication.ApplicationEnvironmentVariables.TryGetValue("token", out var token))
+        {
+            _Token = token as string;
+        }
+        
+        if(Application.CurrentApplication.ApplicationEnvironmentVariables.TryGetValue("prefix", out var prefix))
+        {
+            _Prefix = prefix as string;
+        }
+        
+        if(Application.CurrentApplication.ApplicationEnvironmentVariables.TryGetValue("ServerID", out var serverIds))
+        {
+            if (serverIds is List<object> listServerIds)
+            {
+                foreach(var item in listServerIds)
+                {
+                    _ServerIds += $"{item}\n";
+                }
+
+                _ServerIds.TrimEnd();
+            }
+        }
+        
+        StateHasChanged();
+        
+    }
+
     private async Task SaveChanges()
     {
         Application.CurrentApplication.ApplicationEnvironmentVariables.Set("token", _Token);
@@ -53,7 +85,8 @@
         string[]    values    = _ServerIds.Split('\n');
         foreach(var value in values)
         {
-            if(ulong.TryParse(value, out ulong actualValue))
+            string clearValue = value.TrimEnd().Replace("\r", "");
+            if(ulong.TryParse(clearValue, out ulong actualValue))
             {
                 serverIds.Add(actualValue);
             }
@@ -63,6 +96,7 @@
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
         
+        NotificationService.Notify(NotificationSeverity.Success, "Configuration", "Configuration has been saved !", 4000);
     }
     
     private void ServerIDsValueChanged(string obj)
