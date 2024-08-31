@@ -28,22 +28,30 @@ public class Program
         await ConsoleInputHandler();
     }
 
-    /// <summary>
-    ///     The main loop for the discord bot
-    /// </summary>
     private static async Task ConsoleInputHandler()
     {
-
         while (true)
         {
-            var cmd     = Console.ReadLine();
-            var args    = cmd.Split(' ');
+            var cmd = Console.ReadLine();
+            if (cmd is null)
+            {
+                break;
+            }
+
+            var args = cmd.Split(' ');
+            if (args.Length == 0)
+            {
+                continue; // Skip empty command
+            }
+
             var command = args[0];
             args = args.Skip(1).ToArray();
             if (args.Length == 0)
+            {
                 args = null;
+            }
 
-            await Application.CurrentApplication.InternalActionManager.Execute(command, args); 
+            await Application.CurrentApplication.InternalActionManager.Execute(command, args);
         }
     }
 
