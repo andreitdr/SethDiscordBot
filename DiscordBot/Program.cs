@@ -3,13 +3,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-using DiscordBot.Bot.Actions.Extra;
-using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
-using DiscordBotCore.Others;
-using DiscordBotCore.Others.Exceptions;
+using DiscordBot.Bot.Actions.Extra;
 using DiscordBotCore.Updater.Application;
+using DiscordBot.Utilities;
+using DiscordBotCore.Others;
 
 using Spectre.Console;
 
