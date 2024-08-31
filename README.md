@@ -1,3 +1,6 @@
+> [!CAUTION]
+> The project moved to gitlab: https://gitlab.com/andreitdr/SethDiscordBot
+
 # Seth Discord Bot
 
 This is a Discord Bot made with C# that accepts plugins as extensions for more commands and events. All basic commands are built in already in the PluginManager class library. 
