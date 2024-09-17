@@ -3,7 +3,7 @@
 namespace DiscordBotCore.Others;
 
 /// <summary>
-///     The output log type
+///     The output log type. This must be used by other loggers in order to provide logging information
 /// </summary>
 public enum LogType
 {

@@ -27,7 +27,7 @@ public class MusicDatabase: CustomSettingsDictionaryBase<string, MusicInfo>
                 continue;
             }
 
-            if (musicInfo.Aliases.Contains(searchQuery) || musicInfo.Aliases.Any(x => x.StartsWith(searchQuery)))
+            if (musicInfo.Aliases.Contains(searchQuery) || musicInfo.Aliases.Any(x => x.Contains(searchQuery)))
             {
                 musicInfos.Add(musicInfo);
             }
@@ -44,10 +44,15 @@ public class MusicDatabase: CustomSettingsDictionaryBase<string, MusicInfo>
 
     public override async Task LoadFromFile()
     {
+        if(!File.Exists(_DiskLocation))
+        {
+            await SaveToFile();
+            return;
+        }
+        
         string jsonContent = await File.ReadAllTextAsync(_DiskLocation);
         var    jObject     = JsonConvert.DeserializeObject<JObject>(jsonContent);
         _InternalDictionary.Clear();
-
         foreach (var (key,value) in jObject)
         {
             if (value is null || value.Type == JTokenType.Null)

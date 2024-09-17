@@ -7,10 +7,10 @@ public sealed class Logger : ILogger
     private readonly FileStream _LogFileStream;
 
     public List<string> LogMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
-    private Action<string>? _OutFunction;
+    private Action<string, LogType>? _OutFunction;
     public string LogMessageFormat { get ; set; }
 
-    public Logger(string logFolder, string logMessageFormat, Action<string>? outFunction = null)
+    public Logger(string logFolder, string logMessageFormat, Action<string,LogType>? outFunction = null)
     {
         this.LogMessageFormat = logMessageFormat;
         this._OutFunction = outFunction;
@@ -30,23 +30,6 @@ public sealed class Logger : ILogger
         {
             Type messageType = typeof(ILogMessage);
             messageAsString = messageAsString.Replace("{" + prop + "}", messageType?.GetProperty(prop)?.GetValue(message)?.ToString());
-        }
-
-        switch (message.LogMessageType)
-        {
-            case LogType.Info:
-                messageAsString = $"[green]{messageAsString} [/]";
-                break;
-            case LogType.Warning:
-                messageAsString = $"[yellow]{messageAsString} [/]";
-                break;
-            case LogType.Error:
-                messageAsString = $"[red]{messageAsString} [/]";
-                break;
-            case LogType.Critical:
-                messageAsString = $"[red] [bold]{messageAsString} [/][/]";
-                break;
-
         }
 
         return messageAsString;
@@ -72,37 +55,20 @@ public sealed class Logger : ILogger
             messageAsString = messageAsString.Replace("{" + prop + "}", messageType?.GetProperty(prop)?.GetValue(message)?.ToString());
         }
 
-        switch (message.LogMessageType)
-        {
-            case LogType.Info:
-                messageAsString = $"[green]{messageAsString} [/]";
-                break;
-            case LogType.Warning:
-                messageAsString = $"[yellow]{messageAsString} [/]";
-                break;
-            case LogType.Error:
-                messageAsString = $"[red]{messageAsString} [/]";
-                break;
-            case LogType.Critical:
-                messageAsString = $"[red][bold]{messageAsString} [/][/]";
-                break;
-
-        }
-
         return messageAsString;
     }
 
     public void Log(ILogMessage message, string format)
     {
         string messageAsString = GenerateLogMessage(message, format);
-        _OutFunction?.Invoke(messageAsString);
+        _OutFunction?.Invoke(messageAsString, message.LogMessageType);
         LogToFile(messageAsString);
     }
 
     public void Log(ILogMessage message)
     {
         string messageAsString = GenerateLogMessage(message);
-        _OutFunction?.Invoke(messageAsString);
+        _OutFunction?.Invoke(messageAsString, message.LogMessageType);
         LogToFile(messageAsString);
         
     }
@@ -114,7 +80,7 @@ public sealed class Logger : ILogger
     public void Log(string message, object Sender, LogType type) => Log(new LogMessage(message, Sender, type));
     public void LogException(Exception exception, object Sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, Sender, logFullStack));
 
-    public void SetOutFunction(Action<string> outFunction)
+    public void SetOutFunction(Action<string, LogType> outFunction)
     {
         this._OutFunction = outFunction;
     }

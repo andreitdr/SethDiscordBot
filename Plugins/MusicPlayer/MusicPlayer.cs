@@ -51,9 +51,6 @@ public class MusicPlayer
         
         ffmpegPath = ffmpegPath.Replace("\\", "/");
         ffmpegPath = Path.GetFullPath(ffmpegPath);
-
-        Console.WriteLine("FFMPEG Path: " + ffmpegPath);
-
         while (MusicQueue.TryDequeue(out var dequeuedMusic))
         {
             CurrentlyPlaying = dequeuedMusic;
@@ -135,15 +132,9 @@ public class MusicPlayer
         isPaused = false;
     }
 
-    public bool Enqueue(string musicName)
+    public bool Enqueue(MusicInfo music)
     {
-        var musicInfo = Variables._MusicDatabase?.Get(musicName);
-        if (musicInfo is null)
-        {
-            return false;
-        }
-
-        MusicQueue.Enqueue(musicInfo);
+        MusicQueue.Enqueue(music);
         return true;
     }
 

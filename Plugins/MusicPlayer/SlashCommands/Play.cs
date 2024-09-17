@@ -73,7 +73,7 @@ public class Play: IDbSlashCommand
 
         Variables._MusicPlayer ??= new MusicPlayer();
 
-        if (!Variables._MusicPlayer.Enqueue(melodyName))
+        if (!Variables._MusicPlayer.Enqueue(melody.First()))
         {
             await context.RespondAsync("Failed to enqueue your request. Something went wrong !");
             return;

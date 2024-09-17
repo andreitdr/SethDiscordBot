@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using DiscordBotCore;
-
+using DiscordBotCore.Others;
 using Spectre.Console;
 
 namespace DiscordBot;
@@ -42,8 +44,25 @@ public static class Installer
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID"))
         {
-            var response = AskForConfig("ServerID", "Please enter the server Ids where the bot will be used (separated by ;):");
-            Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", response);
+            var         response  = AskForConfig("ServerID", "Please enter the server Ids where the bot will be used (separated by ;):");
+            List<ulong> serverIds = new List<ulong>();
+            foreach (var id in response.Split(';'))
+            {
+                if(!ulong.TryParse(id, out ulong sID))
+                {
+                    Application.Logger.Log($"Invalid server ID {id}", LogType.Warning);
+                }
+                
+                serverIds.Add(sID);
+            }
+            
+            if(!serverIds.Any())
+            {
+                Application.Logger.Log($"No valid server id provided", LogType.Critical);
+                Environment.Exit(-20);
+            }
+            
+            Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", serverIds);
         }
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();

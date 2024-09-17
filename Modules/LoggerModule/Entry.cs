@@ -31,7 +31,7 @@ namespace LoggerModule
             return Task.CompletedTask;
         }
         
-        public void SetOutFunction(Action<string> outFunction)
+        public void SetOutFunction(Action<string, LogType> outFunction)
         {
             Module.SetOutFunction(outFunction);
         }

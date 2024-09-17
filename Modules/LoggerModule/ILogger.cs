@@ -18,5 +18,5 @@ public interface ILogger
     void Log(string message, object Sender, LogType type);
     void LogException(Exception exception, object Sender, bool logFullStack = false);
 
-    void SetOutFunction(Action<string> outFunction);
+    void SetOutFunction(Action<string,LogType> outFunction);
 }

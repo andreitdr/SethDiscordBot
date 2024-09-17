@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Discord;
+
 using DiscordBotCore.Bot;
 using DiscordBotCore.Online;
 using DiscordBotCore.Online.Helpers;
@@ -20,7 +17,6 @@ using DiscordBotCore.Plugin;
 
 using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Interfaces.Modules;
-using DiscordBotCore.Loaders;
 
 namespace DiscordBotCore
 {
@@ -89,11 +85,9 @@ namespace DiscordBotCore
                 await moduleRequirementsSolver(requirements);
                 
                 await CurrentApplication.ModuleManager.LoadModules();
-
-                Logger._LoggerModule = CurrentApplication.ModuleManager.GetLoadedModuleWithTag(ModuleType.Logger);
             }
             
-
+            Logger._LoggerModule = CurrentApplication.ModuleManager.GetLoadedModuleWithTag(ModuleType.Logger);
             if (!File.Exists(_PluginsDatabaseFile))
             {
                 List<PluginInfo> plugins = new();
@@ -177,7 +171,7 @@ namespace DiscordBotCore
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndSender"], [message, sender, type]);
             }
 
-            public static async void SetOutFunction(Action<string> outFunction)
+            public static async void SetOutFunction(Action<string, LogType> outFunction)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["SetPrintFunction"], [outFunction]);
             }

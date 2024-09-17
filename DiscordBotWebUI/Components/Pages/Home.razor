@@ -15,9 +15,17 @@
 
     private DiscordBotStartup _DiscordBotStartup = null!;
 
-    protected override async void OnInitialized()
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender) 
     {
-        _DiscordBotStartup = new DiscordBotStartup(FixModules);
+        // Only run after the first render
+        if(!firstRender)
+        {
+            return;
+        }
+        
+        
+        _DiscordBotStartup = new DiscordBotStartup {RequirementsSolver = FixModules};
         await _DiscordBotStartup.CreateApplication();
     }
 
@@ -28,16 +36,16 @@
             return;
         }
 
-        await DialogService.OpenAsync<InstallRequiredModules>("Please select one of the following to download ...", new Dictionary<string, object>()
+        await DialogService.OpenAsync<InstallRequiredModules>("Some required modules are not installed. Please install before using the bot ...", new Dictionary<string, object>()
         {
             {"Requirements", requirements}
         }, new DialogOptions() { Width = "75%", Height = "75%" });
-    }
+   }
 
     private async void Initialize()
     {   
-        _DiscordBotStartup.Log += async (sender, str) => {
-            _TextValue += str + "\n";
+        _DiscordBotStartup.Log += async (str, type) => {
+            _TextValue += $"[{type}] {str} \n";
             await InvokeAsync(StateHasChanged);
         };
         
@@ -45,7 +53,10 @@
 
         if (!result)
         {
-            result = await DialogService.OpenAsync<Settings>("Please complete this setup before starting the bot", new Dictionary<string, object>());
+            result = await DialogService.OpenAsync<Settings>("Please complete this setup before starting the bot", new Dictionary<string, object>()
+            {
+                {"OnSaveChanged", () => {DialogService.Close(true);}}
+            });
             
             if (result != true)
             {

@@ -44,6 +44,9 @@
     private string _Token     = string.Empty;
     private string _Prefix    = string.Empty;
     private string _ServerIds = string.Empty;
+    
+    [Parameter]
+    public Action? OnSaveChanged { get; set; }
 
     protected override void OnInitialized()
     {
@@ -97,6 +100,8 @@
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
         
         NotificationService.Notify(NotificationSeverity.Success, "Configuration", "Configuration has been saved !", 4000);
+
+        OnSaveChanged?.Invoke();
     }
     
     private void ServerIDsValueChanged(string obj)

@@ -51,13 +51,16 @@ public class AddMelodyYoutube: IDbCommand
 
         var msg = await args.Context.Channel.SendMessageAsync("Saving melody ...");
 
-        var title = await YoutubeDLP.DownloadMelody(url);
-
-        if (title == null)
+        string musicId = Guid.NewGuid().ToString();
+        string? title = await YoutubeDlp.GetMusicTitle(url);
+        
+        if(title is null)
         {
-            await msg.ModifyAsync(x => x.Content = "Failed to download melody !");
+            await msg.ModifyAsync(x => x.Content = "Failed to retrieve music title from the provided URL.");
             return;
         }
+        
+        await YoutubeDlp.DownloadMelody(url, musicId);
 
         var          joinedAliases = string.Join(" ", args.Arguments.Skip(1));
         List<string> aliases       = joinedAliases.Split('|').ToList();
@@ -74,12 +77,10 @@ public class AddMelodyYoutube: IDbCommand
                 Aliases     = aliases,
                 ByteSize    = 1024,
                 Description = "Melody added from youtube link",
-                Location    = Application.GetResourceFullPath($"Music/Melodies/{title}.mp3"),
+                Location    = Application.GetResourceFullPath($"Music/Melodies/{musicId}.mp3"),
                 Title       = title
             }
         );
-
-
 
         await Variables._MusicDatabase.SaveToFile();
         await msg.ModifyAsync(x => x.Content = "Melody saved !");

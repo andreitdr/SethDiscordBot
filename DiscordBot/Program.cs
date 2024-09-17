@@ -3,12 +3,13 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using DiscordBot.Bot.Actions.Extra;
+using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
-using DiscordBot.Bot.Actions.Extra;
-using DiscordBotCore.Updater.Application;
-using DiscordBot.Utilities;
 using DiscordBotCore.Others;
+using DiscordBotCore.Others.Exceptions;
+using DiscordBotCore.Updater.Application;
 
 using Spectre.Console;
 
@@ -27,30 +28,22 @@ public class Program
         await ConsoleInputHandler();
     }
 
+    /// <summary>
+    ///     The main loop for the discord bot
+    /// </summary>
     private static async Task ConsoleInputHandler()
     {
+
         while (true)
         {
-            var cmd = Console.ReadLine();
-            if (cmd is null)
-            {
-                break;
-            }
-
-            var args = cmd.Split(' ');
-            if (args.Length == 0)
-            {
-                continue; // Skip empty command
-            }
-
+            var cmd     = Console.ReadLine();
+            var args    = cmd.Split(' ');
             var command = args[0];
             args = args.Skip(1).ToArray();
             if (args.Length == 0)
-            {
                 args = null;
-            }
 
-            await Application.CurrentApplication.InternalActionManager.Execute(command, args);
+            await Application.CurrentApplication.InternalActionManager.Execute(command, args); 
         }
     }
 
@@ -98,8 +91,31 @@ public class Program
             await ConsoleUtilities.ExecuteTaskWithBuiltInProgress(updater.SelfUpdate, update, "Discord Bot Update");
             return;
         }
+        
+        void LogMessageFunction(string message, LogType logType)
+        {
+            string messageAsString = message;
+            switch (logType)
+            {
+                case LogType.Info:
+                    messageAsString = $"[green]{messageAsString} [/]";
+                    break;
+                case LogType.Warning:
+                    messageAsString = $"[yellow]{messageAsString} [/]";
+                    break;
+                case LogType.Error:
+                    messageAsString = $"[red]{messageAsString} [/]";
+                    break;
+                case LogType.Critical:
+                    messageAsString = $"[red] [bold]{messageAsString} [/][/]";
+                    break;
 
-        Application.Logger.SetOutFunction(AnsiConsole.MarkupLine);
+            }
+            
+            AnsiConsole.MarkupLine(messageAsString);
+        }
+
+        Application.Logger.SetOutFunction(LogMessageFunction);
 
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
