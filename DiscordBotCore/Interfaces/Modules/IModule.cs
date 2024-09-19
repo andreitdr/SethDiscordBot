@@ -7,6 +7,7 @@ namespace DiscordBotCore.Interfaces.Modules
     public enum ModuleType
     {
         Logger,
+        Compatibility,
         Other
     }
     

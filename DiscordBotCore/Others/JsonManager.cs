@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBotCore.Others;
 
-public class JsonManager
+public static class JsonManager
 {
     /// <summary>
     ///     Save to JSON file

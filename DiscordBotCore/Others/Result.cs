@@ -19,6 +19,18 @@ public class Result
         _Result   = result;
         Exception = null;
     }
+
+    public bool IsSuccess => _Result.HasValue && _Result.Value;
+    
+    public void HandleException(Action<Exception> action)
+    {
+        if(IsSuccess)
+        {
+            return;
+        }
+        
+        action(Exception!);
+    }
     
     public static Result Success() => new Result(true);
     public static Result Failure(Exception ex) => new Result(ex);
@@ -34,6 +46,12 @@ public class Result
         {
             exceptionAction(Exception!);
         }
+    }
+    
+    
+    public TResult Match<TResult>(Func<TResult> successAction, Func<Exception,TResult> errorAction)
+    {
+        return IsSuccess ? successAction() : errorAction(Exception!);
     }
     
 }
