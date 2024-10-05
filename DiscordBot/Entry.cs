@@ -4,11 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using DiscordBot.Utilities;
-using DiscordBotCore;
-using DiscordBotCore.Modules;
-using DiscordBotCore.Others;
-
 namespace DiscordBot;
 
 

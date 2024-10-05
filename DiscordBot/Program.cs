@@ -8,7 +8,6 @@ using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
-using DiscordBotCore.Others.Exceptions;
 using DiscordBotCore.Updater.Application;
 
 using Spectre.Console;

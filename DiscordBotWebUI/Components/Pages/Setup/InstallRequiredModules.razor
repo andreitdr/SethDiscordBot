@@ -24,6 +24,13 @@
             var modulesWithType = await Application.CurrentApplication.ModuleManager.ServerGetAllModules(requirement);
             AppendToList(modulesWithType);
         }
+
+        foreach (var moduleName in Requirements.RequiredModulesWithNames)
+        {
+            var module = await Application.CurrentApplication.ModuleManager.ServerGetModuleWithName(moduleName);
+            MarketItem item = new MarketItem(module.ModuleName, module.ModuleAuthor, module.ModuleDescription, ItemType.Module);
+            MarketItems.Add(item);
+        }
     }
     
     private void AppendToList(List<ModuleOnlineData> listOfModules)

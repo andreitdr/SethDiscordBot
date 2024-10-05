@@ -45,6 +45,12 @@ namespace DiscordBotCore.Modules
             Modules = new();
         }
 
+        public async Task<ModuleOnlineData?> ServerGetModuleWithName(string moduleName)
+        {
+            var modules = await ServerGetAllModules();
+            return modules.FirstOrDefault(module => module?.ModuleName == moduleName, null);
+        }
+
         public async Task<List<ModuleOnlineData>> ServerGetAllModules(ModuleType? moduleTypeFilter = null)
         {
             string jsonDatabaseRemote = await ServerCom.GetAllTextFromUrl(_ModuleDatabase);

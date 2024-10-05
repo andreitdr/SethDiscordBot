@@ -1,0 +1,19 @@
+﻿@page "/welcome"
+@using DiscordBotWebUI.Components.Items.Setup
+@inject NavigationManager Navigation
+
+<WelcomeComponent/>
+
+<RadzenButton
+Icon="arrow_forward"
+ButtonStyle="ButtonStyle.Dark"
+Style="position: absolute; right: -50px; top: 50%; transform: translateY(-50%); background-color: #2d3748; border: none; color: #63b3ed;"
+Click="GoToNextPage" />
+
+@code {
+    // Method to navigate to a new page
+    private void GoToNextPage()
+    {
+        Navigation.NavigateTo("/settings");
+    }
+}

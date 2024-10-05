@@ -23,7 +23,7 @@ public class Entry : ICommandAction
     
     public bool RequireOtherThread => false;
 
-    public async Task Execute(string[]? args)
+    public Task Execute(string[]? args)
     {
         try{
             string appUiComponent = "./Data/Test/libtestlib.dll";
@@ -49,5 +49,7 @@ public class Entry : ICommandAction
         } catch (Exception dllException) {
             Application.Logger.LogException(dllException, this);
         }
+
+        return Task.CompletedTask;
     }
 }
