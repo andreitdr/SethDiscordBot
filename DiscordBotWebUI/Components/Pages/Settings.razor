@@ -1,6 +1,7 @@
 ﻿@page "/settings"
 @using DiscordBotCore
 @inject NotificationService NotificationService
+@inject DialogService DialogService
 
 <RadzenPanel>
     <HeaderTemplate>
@@ -44,9 +45,6 @@
     private string _Token     = string.Empty;
     private string _Prefix    = string.Empty;
     private string _ServerIds = string.Empty;
-    
-    [Parameter]
-    public Action? OnSaveChanged { get; set; }
 
     protected override void OnInitialized()
     {
@@ -81,8 +79,11 @@
 
     private async Task SaveChanges()
     {
-        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("token", _Token);
-        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("prefix", _Prefix);
+
+        if (_Prefix.Length != 1)
+        {
+            DialogService.Close(false);
+        }
 
         List<ulong> serverIds = new List<ulong>();
         string[]    values    = _ServerIds.Split('\n');
@@ -94,14 +95,21 @@
                 serverIds.Add(actualValue);
             }
         }
+
+        if (serverIds.Count == 0)
+        {
+            DialogService.Close(false);
+        }
         
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("token", _Token);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Set("prefix", _Prefix);
         Application.CurrentApplication.ApplicationEnvironmentVariables.Set("ServerID", serverIds);
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
         
         NotificationService.Notify(NotificationSeverity.Success, "Configuration", "Configuration has been saved !", 4000);
-
-        OnSaveChanged?.Invoke();
+        
+        DialogService.Close(true);
     }
     
     private void ServerIDsValueChanged(string obj)

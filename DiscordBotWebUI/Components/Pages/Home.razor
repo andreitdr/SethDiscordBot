@@ -43,26 +43,28 @@
    }
 
     private async void Initialize()
-    {   
-        _DiscordBotStartup.Log += async (str, type) => {
+    {
+        _DiscordBotStartup.Log = async (str, type) => {
             _TextValue += $"[{type}] {str} \n";
             await InvokeAsync(StateHasChanged);
-        };
-        
-        dynamic result = _DiscordBotStartup.LoadComponents();
-
-        if (!result)
-        {
-            result = await DialogService.OpenAsync<Settings>("Please complete this setup before starting the bot", new Dictionary<string, object>()
-            {
-                {"OnSaveChanged", () => {DialogService.Close(true);}}
-            });
             
-            if (result != true)
-            {
-                Environment.Exit(0);
-            }
+            Console.WriteLine(str);
+        };
+
+        if (_DiscordBotStartup.LoadComponents())
+        {
+            await _DiscordBotStartup.PrepareBot();
+            await _DiscordBotStartup.RefreshPlugins(false);
+
+            return;
         }
+
+        while (await DialogService.OpenAsync<Settings>("Please complete this setup before starting the bot") == false)
+        {
+            Console.WriteLine("Failed to complete the setup. Invalid data acquired ...");
+        }
+        
+        
 
         await _DiscordBotStartup.PrepareBot();
         await _DiscordBotStartup.RefreshPlugins(false);
