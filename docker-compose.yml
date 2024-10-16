@@ -1,6 +1,5 @@
 ﻿services:
   discordbotwebui:
-    image: discordbotwebui
     build:
       context: .
       dockerfile: DiscordBotWebUI/Dockerfile
