@@ -1,5 +1,3 @@
-> [!CAUTION]
-> The project moved to gitlab: https://gitlab.com/andreitdr/SethDiscordBot
 
 # Seth Discord Bot
 
