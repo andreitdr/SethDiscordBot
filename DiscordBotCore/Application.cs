@@ -103,6 +103,12 @@ namespace DiscordBotCore
             await CurrentApplication.InternalActionManager.Initialize();
         }
         
+        /// <summary>
+        /// Invokes an external method from a module.
+        /// </summary>
+        /// <param name="moduleName">The module name</param>
+        /// <param name="methodFriendlyName">The method to be invoked. This should be in the documentation of the module</param>
+        /// <param name="parameters">The parameters of the invoked method</param>
         public static async Task InvokeMethod(string moduleName, string methodFriendlyName, params object[] parameters)
         {
             var    module     = CurrentApplication.ModuleManager.GetModule(moduleName);
@@ -111,6 +117,13 @@ namespace DiscordBotCore
             await CurrentApplication.ModuleManager.InvokeMethod(module.Value, methodName, parameters);
         }
         
+        /// <summary>
+        /// Invokes an external method from a module and returns the result.
+        /// </summary>
+        /// <param name="moduleName">The module name</param>
+        /// <param name="methodFriendlyName">The method to be invoked. This should be in the documentation of the module</param>
+        /// <param name="parameters">The parameters for the invoked function</param>
+        /// <returns>An object that has the expected result, otherwise method returns null</returns>
         public static async Task<object?> InvokeMethodWithReturnValue(string moduleName, string methodFriendlyName, params object[] parameters)
         {
             var module = CurrentApplication.ModuleManager.GetModule(moduleName).Value;
@@ -138,36 +151,73 @@ namespace DiscordBotCore
         public static class Logger
         {
             internal static LoadedModule _LoggerModule = null!; // initial is null, will be populated when the application will load all modules !!
+            
+            /// <summary>
+            /// Logs an exception with the default log type.
+            /// </summary>
+            /// <param name="ex">The exception to be logged</param>
+            /// <param name="sender">The type that sent this error</param>
+            /// <param name="fullStackTrace">True if it should keep all stack, otherwise false</param>
             public static async void LogException(Exception ex, object sender, bool fullStackTrace = false)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLogException"], [ex, sender, fullStackTrace]);
             }
 
+            /// <summary>
+            /// Logs a message with the default log type.
+            /// </summary>
+            /// <param name="message">The message in a normal string format</param>
             public static async void Log(string message)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["BaseLog"], [message]);
             }
 
+            /// <summary>
+            /// Logs a message with a specific type and format.
+            /// </summary>
+            /// <param name="message">The message in a normal string format</param>
+            /// <param name="logType">The log type</param>
+            /// <param name="format">The format in which the log should be written. Please refer to the documentation for placeholders</param>
             public static async void Log(string message, LogType logType, string format)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndFormat"], [message, logType, format]);
             }
 
+            /// <summary>
+            /// Logs a message with a specific type.
+            /// </summary>
+            /// <param name="message">The message in a normal string format</param>
+            /// <param name="logType">The log type</param>
             public static async void Log(string message, LogType logType)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithType"], [message, logType]);
             }
 
+            /// <summary>
+            /// Logs a message with a specific sender.
+            /// </summary>
+            /// <param name="message">The message in a normal string format.</param>
+            /// <param name="sender">The sender of the log message.</param>
             public static async void Log(string message, object sender)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithSender"], [message, sender]);
             }
 
+            /// <summary>
+            /// Logs a message with a specific type and sender
+            /// </summary>
+            /// <param name="message">The message in a normal string format</param>
+            /// <param name="sender">The sender of the log message. It should be a type or a string</param>
+            /// <param name="type">The log type</param>
             public static async void Log(string message, object sender, LogType type)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["LogWithTypeAndSender"], [message, sender, type]);
             }
 
+            /// <summary>
+            /// Sets the output function. This function is called whenever a new log message was created.
+            /// </summary>
+            /// <param name="outFunction">The function to be used to process the log message.</param>
             public static async void SetOutFunction(Action<string, LogType> outFunction)
             {
                 await CurrentApplication.ModuleManager.InvokeMethod(_LoggerModule.Value, _LoggerModule.Value.MethodMapping["SetPrintFunction"], [outFunction]);

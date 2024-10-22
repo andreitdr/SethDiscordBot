@@ -32,7 +32,6 @@ public class Program
     /// </summary>
     private static async Task ConsoleInputHandler()
     {
-
         while (true)
         {
             var cmd     = Console.ReadLine();
