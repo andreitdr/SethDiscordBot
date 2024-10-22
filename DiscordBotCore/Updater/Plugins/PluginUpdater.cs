@@ -17,16 +17,16 @@ public class PluginUpdater
     {
         _PluginsManager = pluginManager;
     }
-    
-    public async Task<PluginOnlineInfo> GetPluginInfo(string pluginName)
+
+    private async Task<PluginOnlineInfo> GetPluginInfo(string pluginName)
     {
         var result = await _PluginsManager.GetPluginDataByName(pluginName);
         if(result is null)
-            throw new PluginNotFoundException(pluginName, _PluginsManager.BaseUrl, _PluginsManager.Branch);
+            throw new PluginNotFoundException(pluginName);
         return result;
     }
-    
-    public async Task<PluginInfo> GetLocalPluginInfo(string pluginName)
+
+    private async Task<PluginInfo> GetLocalPluginInfo(string pluginName)
     {
         string           pluginsDatabase  = File.ReadAllText(DiscordBotCore.Application.CurrentApplication.PluginDatabase);
         List<PluginInfo> installedPlugins = await JsonManager.ConvertFromJson<List<PluginInfo>>(pluginsDatabase);
@@ -42,8 +42,9 @@ public class PluginUpdater
         PluginOnlineInfo pluginInfo = await GetPluginInfo(pluginName);
         await ServerCom.DownloadFileAsync(pluginInfo.DownLoadLink, $"{DiscordBotCore.Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginName}.dll", progressMeter);
         
-        foreach(OnlineDependencyInfo dependency in pluginInfo.Dependencies)
-            await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progressMeter);
+        if(pluginInfo.Dependencies is not null)
+            foreach(OnlineDependencyInfo dependency in pluginInfo.Dependencies)
+                await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependency.DownloadLocation, progressMeter);
 
         await _PluginsManager.RemovePluginFromDatabase(pluginName);
         await _PluginsManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginInfo));

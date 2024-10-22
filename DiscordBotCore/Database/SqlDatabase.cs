@@ -9,7 +9,7 @@ namespace DiscordBotCore.Database;
 
 public class SqlDatabase
 {
-    private readonly SQLiteConnection _connection;
+    private readonly SQLiteConnection _Connection;
 
     /// <summary>
     ///     Initialize a SQL connection by specifing its private path
@@ -17,12 +17,10 @@ public class SqlDatabase
     /// <param name="fileName">The path to the database (it is starting from ./Data/Resources/)</param>
     public SqlDatabase(string fileName)
     {
-        if (!fileName.StartsWith("./Data/Resources/"))
-            fileName = Path.Combine("./Data/Resources", fileName);
         if (!File.Exists(fileName))
             SQLiteConnection.CreateFile(fileName);
         var connectionString = $"URI=file:{fileName}";
-        _connection = new SQLiteConnection(connectionString);
+        _Connection = new SQLiteConnection(connectionString);
     }
 
 
@@ -32,7 +30,7 @@ public class SqlDatabase
     /// <returns></returns>
     public async Task Open()
     {
-        await _connection.OpenAsync();
+        await _Connection.OpenAsync();
     }
 
     /// <summary>
@@ -55,7 +53,7 @@ public class SqlDatabase
 
         query += ")";
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -79,7 +77,7 @@ public class SqlDatabase
 
         query += ")";
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         command.ExecuteNonQuery();
     }
 
@@ -94,7 +92,7 @@ public class SqlDatabase
     {
         var query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -109,7 +107,7 @@ public class SqlDatabase
     {
         var query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         command.ExecuteNonQuery();
     }
 
@@ -225,7 +223,7 @@ public class SqlDatabase
     /// <returns></returns>
     public async void Stop()
     {
-        await _connection.CloseAsync();
+        await _Connection.CloseAsync();
     }
 
     /// <summary>
@@ -237,7 +235,7 @@ public class SqlDatabase
     /// <returns></returns>
     public async Task AddColumnsToTableAsync(string tableName, string[] columns, string TYPE = "TEXT")
     {
-        var command = _connection.CreateCommand();
+        var command = _Connection.CreateCommand();
         command.CommandText = $"SELECT * FROM {tableName}";
         var reader       = await command.ExecuteReaderAsync();
         var tableColumns = new List<string>();
@@ -261,7 +259,7 @@ public class SqlDatabase
     /// <returns></returns>
     public void AddColumnsToTable(string tableName, string[] columns, string TYPE = "TEXT")
     {
-        var command = _connection.CreateCommand();
+        var command = _Connection.CreateCommand();
         command.CommandText = $"SELECT * FROM {tableName}";
         var reader       = command.ExecuteReader();
         var tableColumns = new List<string>();
@@ -283,7 +281,7 @@ public class SqlDatabase
     /// <returns>True if the table exists, false if not</returns>
     public async Task<bool> TableExistsAsync(string tableName)
     {
-        var cmd = _connection.CreateCommand();
+        var cmd = _Connection.CreateCommand();
         cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}'";
         var result = await cmd.ExecuteScalarAsync();
 
@@ -299,7 +297,7 @@ public class SqlDatabase
     /// <returns>True if the table exists, false if not</returns>
     public bool TableExists(string tableName)
     {
-        var cmd = _connection.CreateCommand();
+        var cmd = _Connection.CreateCommand();
         cmd.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}'";
         var result = cmd.ExecuteScalar();
 
@@ -316,7 +314,7 @@ public class SqlDatabase
     /// <returns></returns>
     public async Task CreateTableAsync(string tableName, params string[] columns)
     {
-        var cmd = _connection.CreateCommand();
+        var cmd = _Connection.CreateCommand();
         cmd.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
         await cmd.ExecuteNonQueryAsync();
     }
@@ -329,7 +327,7 @@ public class SqlDatabase
     /// <returns></returns>
     public void CreateTable(string tableName, params string[] columns)
     {
-        var cmd = _connection.CreateCommand();
+        var cmd = _Connection.CreateCommand();
         cmd.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
         cmd.ExecuteNonQuery();
     }
@@ -341,9 +339,9 @@ public class SqlDatabase
     /// <returns>The number of rows that the query modified</returns>
     public async Task<int> ExecuteAsync(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
+        var command = new SQLiteCommand(query, _Connection);
         var answer  = await command.ExecuteNonQueryAsync();
         return answer;
     }
@@ -355,9 +353,9 @@ public class SqlDatabase
     /// <returns>The number of rows that the query modified</returns>
     public int Execute(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            _connection.Open();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            _Connection.Open();
+        var command = new SQLiteCommand(query, _Connection);
         var r       = command.ExecuteNonQuery();
 
         return r;
@@ -370,9 +368,9 @@ public class SqlDatabase
     /// <returns>The result is a string that has all values separated by space character</returns>
     public async Task<string?> ReadDataAsync(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
+        var command = new SQLiteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
@@ -393,10 +391,10 @@ public class SqlDatabase
     /// <returns>The result is a string that has all values separated by space character</returns>
     public async Task<string?> ReadDataAsync(string query, params KeyValuePair<string, object>[] parameters)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -423,9 +421,9 @@ public class SqlDatabase
     /// <returns>The result is a string that has all values separated by space character</returns>
     public string? ReadData(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            _connection.Open();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            _Connection.Open();
+        var command = new SQLiteCommand(query, _Connection);
         var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
@@ -445,9 +443,9 @@ public class SqlDatabase
     /// <returns>The first row as separated items</returns>
     public async Task<object[]?> ReadDataArrayAsync(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
+        var command = new SQLiteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
@@ -462,10 +460,10 @@ public class SqlDatabase
 
     public async Task<object[]?> ReadDataArrayAsync(string query, params KeyValuePair<string, object>[] parameters)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -494,9 +492,9 @@ public class SqlDatabase
     /// <returns>The first row as separated items</returns>
     public object[]? ReadDataArray(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            _connection.Open();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            _Connection.Open();
+        var command = new SQLiteCommand(query, _Connection);
         var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
@@ -517,9 +515,9 @@ public class SqlDatabase
     /// <returns>A list of string arrays representing the values that the query returns</returns>
     public async Task<List<string[]>?> ReadAllRowsAsync(string query)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
-        var command = new SQLiteCommand(query, _connection);
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
+        var command = new SQLiteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         if (!reader.HasRows)
@@ -614,10 +612,10 @@ public class SqlDatabase
     /// <returns>The number of rows that the query modified in the database</returns>
     public async Task<int> ExecuteNonQueryAsync(string query, params KeyValuePair<string, object>[] parameters)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -638,10 +636,10 @@ public class SqlDatabase
     /// <returns>An object of type T that represents the output of the convertor function based on the array of objects that the first row of the result has</returns>
     public async Task<T?> ReadObjectOfTypeAsync<T>(string query, Func<object[], T> convertor, params KeyValuePair<string, object>[] parameters)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -672,10 +670,10 @@ public class SqlDatabase
     public async Task<List<T>> ReadListOfTypeAsync<T>(string query, Func<object[], T> convertor,
         params KeyValuePair<string, object>[] parameters)
     {
-        if (!_connection.State.HasFlag(ConnectionState.Open))
-            await _connection.OpenAsync();
+        if (!_Connection.State.HasFlag(ConnectionState.Open))
+            await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _connection);
+        var command = new SQLiteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);

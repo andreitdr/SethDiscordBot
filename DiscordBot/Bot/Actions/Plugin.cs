@@ -78,38 +78,6 @@ public class Plugin: ICommandAction
 
                 break;
             }
-            case "branch":
-                if (args.Length < 2)
-                {
-                    Console.WriteLine("Usage : plugin branch <option> <value>");
-                    return;
-                }
-
-                string option = args[1];
-                switch (option)
-                {
-                    case "set":
-                    {
-                        if (args.Length < 3)
-                        {
-                            Console.WriteLine("Usage : plugin branch set <value>");
-                            return;
-                        }
-
-                        string value = string.Join(' ', args, 2, args.Length - 2);
-                        Application.CurrentApplication.PluginManager.Branch = value;
-                        Console.WriteLine($"Branch set to {value}");
-                    }
-                        break;
-                    case "get":
-                        Console.WriteLine($"Branch is set to {Application.CurrentApplication.PluginManager.Branch}");
-                        break;
-
-                    default:
-                        Console.WriteLine("Invalid option");
-                        break;
-                }
-                break;
             case "refresh":
                 await PluginMethods.RefreshPlugins(true);
                 break;
@@ -154,6 +122,7 @@ public class Plugin: ICommandAction
 
                 break;
             }
+                
         }
     }
 }

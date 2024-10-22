@@ -9,6 +9,7 @@ using DiscordBotCore.Loaders;
 using DiscordBotCore.Online;
 using DiscordBotCore.Others;
 using DiscordBotCore.Others.Exceptions;
+using DiscordBotCore.Repository;
 using Newtonsoft.Json;
 
 namespace DiscordBotCore.Modules
@@ -30,8 +31,8 @@ namespace DiscordBotCore.Modules
         private static readonly string _BaseModuleFolder = "./Data/Modules";
         private static readonly string _BaseModuleConfig = "./Data/Resources/modules.json";
         
-        private const string _ModuleDatabase = "https://raw.githubusercontent.com/andreitdr/SethPlugins/tests/modules.json";
-
+        // private const string _ModuleDatabase = "https://raw.githubusercontent.com/andreitdr/SethPlugins/tests/modules.json";
+        private ModuleRepository _ModuleRepository;
         private List<LoadedModule> Modules { get; }
         
         public IEnumerable<ModuleData> GetLocalModules()
@@ -39,10 +40,11 @@ namespace DiscordBotCore.Modules
             return Modules.Select(module => module.ModuleData);
         }
 
-        internal ModuleManager()
+        internal ModuleManager(ModuleRepository moduleRepository)
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("ModuleFolder", _BaseModuleFolder);
             Modules = new();
+            _ModuleRepository = moduleRepository;
         }
 
         public async Task<ModuleOnlineData?> ServerGetModuleWithName(string moduleName)
@@ -53,7 +55,7 @@ namespace DiscordBotCore.Modules
 
         public async Task<List<ModuleOnlineData>> ServerGetAllModules(ModuleType? moduleTypeFilter = null)
         {
-            string jsonDatabaseRemote = await ServerCom.GetAllTextFromUrl(_ModuleDatabase);
+            var jsonDatabaseRemote = await _ModuleRepository.JsonGetAllModules();
 
             var modules = await JsonManager.ConvertFromJson<List<ModuleOnlineData>>(jsonDatabaseRemote);
             

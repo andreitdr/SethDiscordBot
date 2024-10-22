@@ -20,7 +20,7 @@ internal static class PluginMethods
 
     internal static async Task List()
     {
-        Console.WriteLine($"Fetching plugin list from branch {Application.CurrentApplication.PluginManager.Branch} ...");
+        Console.WriteLine($"Fetching plugin list ...");
 
         var data = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");
 

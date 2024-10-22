@@ -15,8 +15,8 @@ using DiscordBotCore.Others.Settings;
 using DiscordBotCore.Modules;
 using DiscordBotCore.Plugin;
 
-using DiscordBotCore.Interfaces.PluginManager;
 using DiscordBotCore.Interfaces.Modules;
+using DiscordBotCore.Repository;
 
 namespace DiscordBotCore
 {
@@ -45,7 +45,7 @@ namespace DiscordBotCore
         public string PluginDatabase => ApplicationEnvironmentVariables.Get<string>("PluginDatabase", _PluginsDatabaseFile);
         public CustomSettingsDictionary ApplicationEnvironmentVariables { get; private set; } = null!;
         public InternalActionManager InternalActionManager { get; private set; } = null!;
-        public IPluginManager PluginManager { get; private set; } = null!;
+        public PluginManager PluginManager { get; private set; } = null!;
 
         /// <summary>
         /// Create the application. This method is used to initialize the application. Can not initialize multiple times.
@@ -76,7 +76,7 @@ namespace DiscordBotCore
             CurrentApplication.ApplicationEnvironmentVariables.Add("ResourceFolder", _ResourcesFolder);
             CurrentApplication.ApplicationEnvironmentVariables.Add("LogsFolder", _LogsFolder);
 
-            CurrentApplication.ModuleManager = new ModuleManager();
+            CurrentApplication.ModuleManager = new ModuleManager(ModuleRepository.SolveRepo());
             await CurrentApplication.ModuleManager.LoadModules();
             var requirements = await CurrentApplication.ModuleManager.CheckRequiredModules();
             if(requirements.RequireAny)
@@ -94,11 +94,8 @@ namespace DiscordBotCore
                 await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);
             }
             
-#if DEBUG
-            CurrentApplication.PluginManager = new PluginManager("tests");
-#else
-            CurrentApplication.PluginManager = new PluginManager();
-#endif
+            CurrentApplication.PluginManager = new PluginManager(PluginRepository.SolveRepo());
+
             await CurrentApplication.PluginManager.UninstallMarkedPlugins();
             await CurrentApplication.PluginManager.CheckForUpdates();
 

@@ -3,69 +3,50 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using DiscordBotCore.Interfaces.PluginManager;
+
 using DiscordBotCore.Others;
 using DiscordBotCore.Plugin;
+using DiscordBotCore.Repository;
 using DiscordBotCore.Updater.Plugins;
 
 namespace DiscordBotCore.Online;
 
-public class PluginManager : IPluginManager
+public class PluginManager
 {
-    private static readonly string _DefaultBranch = "releases";
-    private static readonly string _DefaultBaseUrl = "https://raw.githubusercontent.com/andreitdr/SethPlugins";
+    private PluginRepository _PluginRepository;
 
-    private static readonly string _DefaultPluginsLink = "PluginsList.json";
-
-
-    public string Branch { get; set; }
-    public string BaseUrl { get; set; }
-
-
-    private string PluginsLink => $"{BaseUrl}/{Branch}/{_DefaultPluginsLink}";
-
-    public PluginManager(Uri baseUrl, string branch)
+    public PluginManager(PluginRepository pluginRepository)
     {
-        BaseUrl = baseUrl.ToString();
-        Branch = branch;
-    }
-
-    public PluginManager(string branch)
-    {
-        BaseUrl = _DefaultBaseUrl;
-        Branch = branch;
-    }
-
-    public PluginManager()
-    {
-        BaseUrl = _DefaultBaseUrl;
-        Branch = _DefaultBranch;
+        _PluginRepository = pluginRepository;
     }
 
     public async Task<List<PluginOnlineInfo>?> GetPluginsList()
     {
-        var jsonText = await ServerCom.GetAllTextFromUrl(PluginsLink);
-        List<PluginOnlineInfo> result = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
+        var jsonText = await _PluginRepository.JsonGetAllPlugins();
+        List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);
 
-        var currentOS = OperatingSystem.IsWindows() ? OSType.WINDOWS :
+        var currentOs = OperatingSystem.IsWindows() ? OSType.WINDOWS :
                         OperatingSystem.IsLinux() ? OSType.LINUX :
                         OperatingSystem.IsMacOS() ? OSType.MACOSX : OSType.NONE;
 
-        return result.FindAll(pl => (pl.SupportedOS & currentOS) != 0);
-
-
+        return result.FindAll(pl => (pl.SupportedOS & currentOs) != 0);
     }
 
     public async Task<PluginOnlineInfo?> GetPluginDataByName(string pluginName)
     {
         List<PluginOnlineInfo>? plugins = await GetPluginsList();
 
-        if (plugins == null)
+        if (plugins is null)
+        {
             return null;
+        }
 
         // try to get the best matching plugin using the pluginName as a search query
-        PluginOnlineInfo? result = plugins.Find(pl => pl.Name.ToLower().Contains(pluginName.ToLower()));
-        if (result == null) return null;
+        PluginOnlineInfo? result = plugins.Find(pl => pl.Name.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
+        if (result is null)
+        {
+            return null;
+        }
 
         return result;
     }

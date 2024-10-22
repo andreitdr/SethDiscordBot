@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DiscordBotCore.Online.Helpers;
+using DiscordBotCore.Others;
 
 namespace DiscordBotCore.Online;
 
