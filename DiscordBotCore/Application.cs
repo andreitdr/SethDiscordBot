@@ -28,7 +28,6 @@ namespace DiscordBotCore
         /// <summary>
         /// Defines the current application. This is a singleton class
         /// </summary>
-       
         public static Application CurrentApplication { get; private set; } = null!;
         
         public static bool IsRunning { get; private set; }
@@ -60,9 +59,10 @@ namespace DiscordBotCore
                 Console.WriteLine("No internet connection detected. Exiting ...");
                 Environment.Exit(0);
             }
-            
+
             if (CurrentApplication is not null)
             {
+                Logger.Log("Application is already initialized. Reinitialization is not allowed", LogType.Error);
                 return;
             }
 

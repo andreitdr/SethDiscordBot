@@ -35,7 +35,7 @@ public class DiscordApplication
     {
         if (!await LoadComponents())
         {
-            Application.Logger.Log("Some required components are missing", LogType.Critical);
+            Console.WriteLine("Failed to load components");
             return;
         }
         

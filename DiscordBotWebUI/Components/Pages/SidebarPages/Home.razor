@@ -1,5 +1,6 @@
 ﻿@page "/"
 
+@using DiscordBotCore
 @using DiscordBotCore.Others
 @using DiscordBotCore.Others.Exceptions
 @using DiscordBotWebUI.Components.Pages.Setup
@@ -7,23 +8,58 @@
 
 @inject DialogService DialogService
 
-<RadzenButton Text="Start" Click="Initialize"/>
-<RadzenTextArea Placeholder="Logs..." Value="@_TextValue" Style="width: 100%; height: 80%"/>
 
+@if (RestartAppMessage)
+{
+    <RadzenText Text="The application is not running. Click this button to close the application and restart"/>
+    <RadzenButton Text="Close Application" Click="RestartApplication"/>
+}
+else
+{
+    <RadzenButton Text="Start" Click="Initialize"/>
+    <RadzenTextArea Placeholder="Logs..." Value="@_TextValue" Style="width: 100%; height: 80%"/>
+}
 
 @code {
     private string? _TextValue;
+    private bool    RestartAppMessage;
     
     private async Task Solver(ModuleRequirement moduleRequirement)
     {
-        while (await DialogService.OpenAsync<SetupWizard>("Setup Wizard", new Dictionary<string, object> {{"RequirementsToDownload", moduleRequirement}}) != true)
+        while (await DialogService.OpenAsync<SetupWizard>("Setup Wizard", new Dictionary<string, object> {{"RequirementsToDownload", moduleRequirement}}, new DialogOptions()
+               {
+                   ShowTitle = false,
+                   CloseDialogOnEsc = false,
+                   CloseDialogOnOverlayClick = false,
+                   ShowClose = false
+               }) != true)
         {
             Console.WriteLine("Failed to complete the setup. Invalid data acquired ...");
         }
     }
 
+    private void RestartApplication()
+    {
+        var appExecutable = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+        if (appExecutable is null)
+        {
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            return;
+        }
+        
+        System.Diagnostics.Process.Start(appExecutable);
+        System.Diagnostics.Process.GetCurrentProcess().Kill();
+    }
+
     private async Task Initialize()
     {
+        if (!Application.IsRunning && Application.CurrentApplication is not null)
+        {
+            RestartAppMessage = true;
+            StateHasChanged();
+            return;
+        }
+        
         Action<string, LogType> logging = async (str, type) => {
             _TextValue += $"[{type}] {str} \n";
             await InvokeAsync(StateHasChanged);
@@ -31,6 +67,12 @@
 
         var discordApplication = new DiscordApplication(logging, Solver);
         await discordApplication.Start();
+
+        if (!Application.IsRunning)
+        {
+            RestartAppMessage = true;
+            StateHasChanged();
+        }
     }
     
     // private async void Initialize()
