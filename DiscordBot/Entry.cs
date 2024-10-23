@@ -6,7 +6,6 @@ using System.Reflection;
 
 namespace DiscordBot;
 
-
 public static class Entry
 {
     /// <summary>
@@ -46,7 +45,7 @@ public static class Entry
   \___ \ / _ \ __| '_ \   | |  | | / __|/ __/ _ \| '__/ _` |  |  _ < / _ \| __|
   ____) |  __/ |_| | | |  | |__| | \__ \ (_| (_) | | | (_| |  | |_) | (_) | |_ 
  |_____/ \___|\__|_| |_|  |_____/|_|___/\___\___/|_|  \__,_|  |____/ \___/ \__|  
-                                                                               
+                                                                               (Console Application)
                                                                                                                                                    
 ";
     public static void Main(string[] args)

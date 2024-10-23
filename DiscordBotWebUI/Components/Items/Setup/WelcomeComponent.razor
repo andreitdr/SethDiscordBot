@@ -1,17 +1,7 @@
-﻿<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-    <RadzenCard Style="position: relative; background-color: #2d3748; color: #fff; max-width: 450px; padding: 30px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); border-radius: 12px;">
-        <RadzenHeading Size="H2" Text=@_Title Style="text-align: center; color: #e2e8f0;" />
-        <RadzenText Text=@_Text Style="text-align: center; color: #a0aec0;" />
-    </RadzenCard>
-</div>
-
-@code {
-
-    private static readonly string _Title = "Welcome to Seth Discord Bot setup page";
-
-    private static readonly string _Text =
-@"
-Seth Discord Bot is a small yet powerful Discord Bot that allows you to integrate custom commands and events into your Discord server.
-But let's start with the configuration first. Please click the arrow to the right to begin ...
-";
+﻿@code {
+    [Parameter] public Action NextStep { get; set; }
 }
+
+<RadzenHeading Size="H4">Welcome to the Bot Setup Wizard</RadzenHeading>
+<p>This setup wizard will guide you through the process of configuring your bot and downloading the necessary dependencies.</p>
+<RadzenButton Text="Start Setup" Click="NextStep" Style="margin-top: 20px;" />

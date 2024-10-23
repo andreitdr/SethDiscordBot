@@ -6,26 +6,24 @@ using DiscordBotCore.Others.Exceptions;
 
 namespace DiscordBotWebUI.DiscordBot;
 
-public class DiscordBotStartup
+public class DiscordApplication
 {
-    public required Func<ModuleRequirement, Task> RequirementsSolver { get; set; }
+    public bool IsRunning { get; private set; }
+    private Action<string, LogType> LogWriter { get; set; }
+    private Func<ModuleRequirement, Task> RequirementsSolver { get; set; }
     
-    internal delegate void LogEventHandler(string message, LogType type);
-    internal LogEventHandler Log;
-    
-    private void WriteLog(string message, LogType logType)
+    public DiscordApplication(Action<string, LogType> logWriter, Func<ModuleRequirement, Task> requirementsSolver)
     {
-        Log?.Invoke(message, logType);
+        this.LogWriter = logWriter;
+        this.RequirementsSolver = requirementsSolver;
+        IsRunning = false;
+        
     }
     
-    public async Task CreateApplication()
+    private async Task<bool> LoadComponents()
     {
-        await Application.CreateApplication(RequirementsSolver);
-    }
-    
-    public bool LoadComponents()
-    {
-        Application.Logger.SetOutFunction(WriteLog);
+        await Application.CreateApplication(RequirementsSolver); // This is a placeholder for the RequirementsSolver delegate
+        Application.Logger.SetOutFunction(LogWriter);
 
         return Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") &&
                Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") &&
@@ -33,13 +31,23 @@ public class DiscordBotStartup
 
     }
     
-    public async Task PrepareBot()
+    public async Task Start()
     {
+        
+        if (!await LoadComponents())
+        {
+            return;
+        }
+        
         var token  = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
         var prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
 
-        DiscordBotApplication app = new DiscordBotApplication(token, prefix);
-        await app.StartAsync();
+        var coreApplication = new DiscordBotApplication(token, prefix);
+        await coreApplication.StartAsync();
+
+        await RefreshPlugins(false);
+        
+        IsRunning = true;
     }
     
     public async Task RefreshPlugins(bool quiet)
@@ -47,7 +55,7 @@ public class DiscordBotStartup
         await LoadPlugins(quiet ? ["-q"] : null);
         await InitializeInternalActionManager();
     }
-
+    
     private async Task LoadPlugins(string[]? args)
     {
         var loader = new PluginLoader(Application.CurrentApplication.DiscordBotClient.Client);
@@ -74,10 +82,9 @@ public class DiscordBotStartup
 
         await loader.LoadPlugins();
     }
-
+    
     private async Task InitializeInternalActionManager()
     {
         await Application.CurrentApplication.InternalActionManager.Initialize();
     }
-    
 }

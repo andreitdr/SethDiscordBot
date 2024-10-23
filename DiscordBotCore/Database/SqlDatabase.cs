@@ -12,7 +12,7 @@ public class SqlDatabase
     private readonly SQLiteConnection _Connection;
 
     /// <summary>
-    ///     Initialize a SQL connection by specifing its private path
+    ///     Initialize a SQL connection by specifying its private path
     /// </summary>
     /// <param name="fileName">The path to the database (it is starting from ./Data/Resources/)</param>
     public SqlDatabase(string fileName)
@@ -483,8 +483,7 @@ public class SqlDatabase
         return null;
 
     }
-
-
+    
     /// <summary>
     ///     Read data from the result table and return the first row
     /// </summary>
@@ -542,7 +541,7 @@ public class SqlDatabase
     /// <param name="name">The name of the parameter</param>
     /// <param name="value">The value of the parameter</param>
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
-    private SQLiteParameter? CreateParameter(string name, object value)
+    private static SQLiteParameter? CreateParameter(string name, object value)
     {
         var parameter = new SQLiteParameter(name);
         parameter.Value = value;
@@ -599,7 +598,7 @@ public class SqlDatabase
     /// </summary>
     /// <param name="parameterValues">The parameter raw inputs. The Key is name and the Value is the value of the parameter</param>
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
-    private SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues)
+    private static SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues)
     {
         return CreateParameter(parameterValues.Key, parameterValues.Value);
     }

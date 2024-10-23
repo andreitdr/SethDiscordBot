@@ -65,7 +65,7 @@ public class Program
             var token  = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("token");
             var prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix");
             
-            DiscordBotApplication discordApp = new (token, prefix);
+            var discordApp = new DiscordBotApplication(token, prefix);
             await discordApp.StartAsync();
         }
         catch (Exception ex)
