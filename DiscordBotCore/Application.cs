@@ -31,6 +31,8 @@ namespace DiscordBotCore
        
         public static Application CurrentApplication { get; private set; } = null!;
         
+        public static bool IsRunning { get; private set; }
+        
         private static readonly string _ConfigFile = "./Data/Resources/config.json";
         private static readonly string _PluginsDatabaseFile = "./Data/Resources/plugins.json";
 
@@ -101,6 +103,8 @@ namespace DiscordBotCore
 
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
+
+            IsRunning = true;
         }
         
         /// <summary>

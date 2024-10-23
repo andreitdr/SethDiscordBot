@@ -22,7 +22,7 @@ public class DiscordApplication
     
     private async Task<bool> LoadComponents()
     {
-        await Application.CreateApplication(RequirementsSolver); // This is a placeholder for the RequirementsSolver delegate
+        await Application.CreateApplication(RequirementsSolver);
         Application.Logger.SetOutFunction(LogWriter);
 
         return Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") &&
@@ -33,9 +33,9 @@ public class DiscordApplication
     
     public async Task Start()
     {
-        
         if (!await LoadComponents())
         {
+            Application.Logger.Log("Some required components are missing", LogType.Critical);
             return;
         }
         

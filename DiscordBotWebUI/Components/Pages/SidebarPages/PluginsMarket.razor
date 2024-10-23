@@ -18,6 +18,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        
+        if(!Application.IsRunning)
+        {
+            return;
+        }
+        
         var plugins = await Application.CurrentApplication.PluginManager.GetPluginsList();
         
         if(plugins is null)

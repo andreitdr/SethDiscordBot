@@ -3,43 +3,51 @@
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenPanel>
-    <HeaderTemplate>
-        <RadzenText>Discord Bot requires a Bot Token, a prefix for normal commands and the server Ids on the servers it will be in</RadzenText>
-    </HeaderTemplate>
-    <ChildContent>
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenText>Discord Bot Token</RadzenText>
-            </RadzenColumn>
-            <RadzenColumn>
-                <RadzenTextBox Placeholder="Token..." Value="@_Token" ValueChanged="TokenValueChanged"></RadzenTextBox>
-            </RadzenColumn>
-        </RadzenRow>
+@if (Application.IsRunning)
+{
+    <RadzenPanel>
+        <HeaderTemplate>
+            <RadzenText>Discord Bot requires a Bot Token, a prefix for normal commands and the server Ids on the servers it will be in</RadzenText>
+        </HeaderTemplate>
+        <ChildContent>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText>Discord Bot Token</RadzenText>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenTextBox Placeholder="Token..." Value="@_Token" ValueChanged="TokenValueChanged"></RadzenTextBox>
+                </RadzenColumn>
+            </RadzenRow>
 
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenText>Bot prefix</RadzenText>
-            </RadzenColumn>
-            <RadzenColumn>
-                <RadzenTextBox Placeholder="Bot prefix ..." MaxLength="1" Value="@_Prefix" ValueChanged="PrefixValueChanged"></RadzenTextBox>
-            </RadzenColumn>
-        </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText>Bot prefix</RadzenText>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenTextBox Placeholder="Bot prefix ..." MaxLength="1" Value="@_Prefix" ValueChanged="PrefixValueChanged"></RadzenTextBox>
+                </RadzenColumn>
+            </RadzenRow>
 
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenText>Bot Server Ids:</RadzenText>
-            </RadzenColumn>
-            <RadzenColumn>
-                <RadzenTextArea Placeholder="One per line ..." Value="@_ServerIds" ValueChanged="ServerIDsValueChanged"></RadzenTextArea>
-            </RadzenColumn>
-        </RadzenRow>
-    </ChildContent>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText>Bot Server Ids:</RadzenText>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenTextArea Placeholder="One per line ..." Value="@_ServerIds" ValueChanged="ServerIDsValueChanged"></RadzenTextArea>
+                </RadzenColumn>
+            </RadzenRow>
+        </ChildContent>
 
-    <FooterTemplate>
-        <RadzenButton Text="Save" Click="SaveChanges"></RadzenButton>
-    </FooterTemplate>
-</RadzenPanel>
+        <FooterTemplate>
+            <RadzenButton Text="Save" Click="SaveChanges"></RadzenButton>
+        </FooterTemplate>
+    </RadzenPanel>
+}
+else
+{
+    <RadzenText>The application is not running. Please start the application first from the Home page</RadzenText>
+}
+
 
 @code {
     private string _Token     = string.Empty;
@@ -49,6 +57,11 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        if (!Application.IsRunning)
+        {
+            return;
+        }
         
         if(Application.CurrentApplication.ApplicationEnvironmentVariables.TryGetValue("token", out var token))
         {

@@ -17,6 +17,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        if (!Application.IsRunning)
+        {
+            return;
+        }
+        
         var modules = await Application.CurrentApplication.ModuleManager.ServerGetAllModules();
         foreach(var onlineModule in modules)
         {
