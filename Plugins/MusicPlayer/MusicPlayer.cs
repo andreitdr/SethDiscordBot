@@ -29,13 +29,13 @@ public class MusicPlayer
     {
         if (isQueueRunning)
         {
-            Application.Logger.Log("Another queue is running !", typeof(MusicPlayer), LogType.Warning);
+            Application.CurrentApplication.Logger.Log("Another queue is running !", typeof(MusicPlayer), LogType.Warning);
             return;
         }
 
         if (Variables.audioClient is null)
         {
-            Application.Logger.Log("Audio Client is null", typeof(MusicPlayer), LogType.Warning);
+            Application.CurrentApplication.Logger.Log("Audio Client is null", typeof(MusicPlayer), LogType.Warning);
             return;
         }
 
@@ -44,7 +44,7 @@ public class MusicPlayer
         string? ffmpegPath = await Application.CurrentApplication.PluginManager.GetDependencyLocation("FFMPEG");
         if(ffmpegPath is null)
         {
-            Application.Logger.Log("FFMPEG is missing. Please install it and try again.", typeof(MusicPlayer), LogType.Error);
+            Application.CurrentApplication.Logger.Log("FFMPEG is missing. Please install it and try again.", typeof(MusicPlayer), LogType.Error);
             isQueueRunning = false;
             return;
         }
@@ -58,7 +58,7 @@ public class MusicPlayer
             using var       ffmpeg        = CreateStream(ffmpegPath, CurrentlyPlaying.Location);
             if (ffmpeg is null)
             {
-                Application.Logger.Log($"Failed to start ffmpeg process. FFMPEG is missing or the {CurrentlyPlaying.Location} has an invalid format.", typeof(MusicPlayer), LogType.Error);
+                Application.CurrentApplication.Logger.Log($"Failed to start ffmpeg process. FFMPEG is missing or the {CurrentlyPlaying.Location} has an invalid format.", typeof(MusicPlayer), LogType.Error);
                 continue;
             }
             await using var ffmpegOut = ffmpeg.StandardOutput.BaseStream;
@@ -108,7 +108,7 @@ public class MusicPlayer
             }
             catch (Exception ex)
             {
-                Application.Logger.LogException(ex, this);
+                Application.CurrentApplication.Logger.LogException(ex, this);
                 break;
             }
         }

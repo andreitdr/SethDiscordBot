@@ -24,7 +24,7 @@ public class OnVoiceRemoved: IDbEvent
                 Variables.audioClient  = null;
                 Variables._MusicPlayer = null;
 
-                Application.Logger.Log("Bot left voice channel.", this, LogType.Info);
+                Application.CurrentApplication.Logger.Log("Bot left voice channel.", this, LogType.Info);
             }
 
         };

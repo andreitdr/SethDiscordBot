@@ -21,7 +21,7 @@ internal class LevelCommand: IDbCommand
     {
         if(Variables.Database is null)
         {
-            Application.Logger.Log("Database is not initialized", this, LogType.Warning);
+            Application.CurrentApplication.Logger.Log("Database is not initialized", this, LogType.Warning);
             return;
         }
 

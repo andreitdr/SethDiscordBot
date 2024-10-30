@@ -50,7 +50,7 @@ public static class Installer
             {
                 if(!ulong.TryParse(id, out ulong sID))
                 {
-                    Application.Logger.Log($"Invalid server ID {id}", LogType.Warning);
+                    Application.CurrentApplication.Logger.Log($"Invalid server ID {id}", LogType.Warning);
                 }
                 
                 serverIds.Add(sID);
@@ -58,7 +58,7 @@ public static class Installer
             
             if(!serverIds.Any())
             {
-                Application.Logger.Log($"No valid server id provided", LogType.Critical);
+                Application.CurrentApplication.Logger.Log($"No valid server id provided", LogType.Critical);
                 Environment.Exit(-20);
             }
             
@@ -67,6 +67,6 @@ public static class Installer
 
         await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
 
-        Application.Logger.Log("Config Saved", typeof(Installer));
+        Application.CurrentApplication.Logger.Log("Config Saved", typeof(Installer));
     }
 }

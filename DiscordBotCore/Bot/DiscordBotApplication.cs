@@ -98,7 +98,7 @@ public class DiscordBotApplication
         if (arg.Message.Contains("401"))
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.Logger.Log("The token is invalid.", this, LogType.Critical);
+            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.Critical);
             await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
         }
     }
@@ -128,7 +128,7 @@ public class DiscordBotApplication
 
     private Task LoggedIn()
     {
-        Application.Logger.Log("Successfully Logged In", this);
+        Application.CurrentApplication.Logger.Log("Successfully Logged In", this);
         return Task.CompletedTask;
     }
 
@@ -138,12 +138,12 @@ public class DiscordBotApplication
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Application.Logger.Log(message.Message, this, LogType.Error);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Error);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Application.Logger.Log(message.Message, this, LogType.Info);
+                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Info);
 
 
                 break;

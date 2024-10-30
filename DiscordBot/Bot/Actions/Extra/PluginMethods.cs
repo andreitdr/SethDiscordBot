@@ -82,7 +82,7 @@ internal static class PluginMethods
             
         }catch(Exception ex)
         {
-            Application.Logger.LogException(ex, typeof(PluginMethods), false);
+            Application.CurrentApplication.Logger.LogException(ex, typeof(PluginMethods), false);
         } finally
         {
             await Application.CurrentApplication.InternalActionManager.Initialize();
@@ -219,22 +219,22 @@ internal static class PluginMethods
         
         loader.OnCommandLoaded += (command) =>
         {
-            Application.Logger.Log($"Command {command.Command} loaded successfully", LogType.Info);
+            Application.CurrentApplication.Logger.Log($"Command {command.Command} loaded successfully", LogType.Info);
         };
         
         loader.OnEventLoaded += (eEvent) =>
         {
-            Application.Logger.Log($"Event {eEvent.Name} loaded successfully",LogType.Info);
+            Application.CurrentApplication.Logger.Log($"Event {eEvent.Name} loaded successfully",LogType.Info);
         };
         
         loader.OnActionLoaded += (action) =>
         {
-            Application.Logger.Log($"Action {action.ActionName} loaded successfully", LogType.Info);
+            Application.CurrentApplication.Logger.Log($"Action {action.ActionName} loaded successfully", LogType.Info);
         };
         
         loader.OnSlashCommandLoaded += (slashCommand) =>
         {
-            Application.Logger.Log($"Slash Command {slashCommand.Name} loaded successfully", LogType.Info);
+            Application.CurrentApplication.Logger.Log($"Slash Command {slashCommand.Name} loaded successfully", LogType.Info);
         };
 
         await loader.LoadPlugins();

@@ -96,7 +96,7 @@ public class Plugin: ICommandAction
             case "load":
                 if (pluginsLoaded)
                 {
-                    Application.Logger.Log("Plugins already loaded", this, LogType.Warning);
+                    Application.CurrentApplication.Logger.Log("Plugins already loaded", this, LogType.Warning);
                     break;
                 }
 

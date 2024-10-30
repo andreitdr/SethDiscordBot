@@ -53,7 +53,6 @@ public class Program
     {
         AnsiConsole.MarkupLine($"[yellow]Running on version: {Assembly.GetExecutingAssembly().GetName().Version}[/]");
         AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
-        AnsiConsole.MarkupLine("[yellow]Git Plugins: https://github.com/andreitdr/SethPlugins [/]");
 
         AnsiConsole.MarkupLine("[yellow]Remember to close the bot using the shutdown command ([/][red]exit[/][yellow]) or some settings won't be saved[/]");
         AnsiConsole.MarkupLine($"[yellow]Running on [/][magenta]{(OperatingSystem.IsWindows() ? "Windows" : "Linux")}[/]");
@@ -70,7 +69,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Application.Logger.Log(ex.ToString(), typeof(Program), LogType.Critical);
+            Application.CurrentApplication.Logger.Log(ex.ToString(), typeof(Program), LogType.Critical);
         }
     }
 
@@ -80,7 +79,7 @@ public class Program
     /// <param name="args">The startup arguments</param>
     private static async Task LoadComponents(string[] args)
     {   
-        await Application.CreateApplication(default);
+        await Application.CreateApplication();
 
         AppUpdater updater = new AppUpdater();
         Update? update = await updater.PrepareUpdate();
@@ -113,7 +112,7 @@ public class Program
             AnsiConsole.MarkupLine(messageAsString);
         }
 
-        Application.Logger.SetOutFunction(LogMessageFunction);
+        Application.CurrentApplication.Logger.SetOutFunction(LogMessageFunction);
 
 
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||

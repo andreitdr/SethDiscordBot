@@ -28,8 +28,8 @@ internal static class PluginLoaderExtensions
         }
         catch (Exception e)
         {
-            Application.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
-            Application.Logger.LogException(e, typeof(PluginLoader));
+            Application.CurrentApplication.Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
+            Application.CurrentApplication.Logger.LogException(e, typeof(PluginLoader));
             return false;
         }
     }
@@ -83,7 +83,7 @@ internal static class PluginLoaderExtensions
         SocketGuild? guild = Application.CurrentApplication.DiscordBotClient.Client.GetGuild(guildId);
         if (guild is null)
         {
-            Application.Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);
+            Application.CurrentApplication.Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);
             return false;
         }
         

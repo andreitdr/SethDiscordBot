@@ -47,7 +47,7 @@ public class ExternalApplication
         return result.Match<ExternalApplication?>(
             () => new ExternalApplication(Guid.NewGuid(), library),
             (ex) => {
-            Application.Logger.Log(ex.Message, LogType.Error);
+            Application.CurrentApplication.Logger.Log(ex.Message, LogType.Error);
             library.FreeLibrary();
             return null;
         });

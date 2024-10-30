@@ -3,7 +3,7 @@ using DiscordBotCore;
 
 namespace CppCompatibilityModule;
 
-public class ExternalApplicationManager
+internal class ExternalApplicationManager
 {
     private List<ExternalApplication> _ExternalApplications;
     
@@ -33,14 +33,14 @@ public class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == applicationId, null);
         if(application is null)
         {
-            Application.Logger.Log($"Couldn't find application with id {applicationId}");
+            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {applicationId}");
             return;
         }
         
         application.FreeLibrary();
         _ExternalApplications.Remove(application);
         
-        Application.Logger.Log($"Application with id {applicationId} freed successfully");
+        Application.CurrentApplication.Logger.Log($"Application with id {applicationId} freed successfully");
     }
     
     public void ExecuteApplicationFunctionWithParameter(Guid appId, string functionName, ref object parameter)
@@ -48,7 +48,7 @@ public class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
         if(application is null)
         {
-            Application.Logger.Log($"Couldn't find application with id {appId}");
+            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {appId}");
             return;
         }
         
@@ -60,7 +60,7 @@ public class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
         if(application is null)
         {
-            Application.Logger.Log($"Couldn't find application with id {appId}");
+            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {appId}");
             return;
         }
         

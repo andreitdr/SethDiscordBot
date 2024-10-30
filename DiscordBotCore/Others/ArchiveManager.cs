@@ -105,7 +105,7 @@ public static class ArchiveManager
         }
         catch (Exception ex)
         {
-            Application.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error); // Write the error to a file
+            Application.CurrentApplication.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error); // Write the error to a file
             await Task.Delay(100);
             return await ReadFromPakAsync(fileName, archFile);
         }
@@ -141,7 +141,7 @@ public static class ArchiveManager
                     }
                     catch (Exception ex)
                     {
-                        Application.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error);
+                        Application.CurrentApplication.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error);
                     }
 
                 currentZipFile++;
@@ -176,7 +176,7 @@ public static class ArchiveManager
                 }
                 catch (Exception ex)
                 {
-                    Application.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error);
+                    Application.CurrentApplication.Logger.Log(ex.Message, typeof(ArchiveManager), LogType.Error);
                 }
 
                 await Task.Delay(10);

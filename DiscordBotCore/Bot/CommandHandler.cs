@@ -56,7 +56,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-            Application.Logger.LogException(ex, this);
+            Application.CurrentApplication.Logger.LogException(ex, this);
         }
 
         return Task.CompletedTask;
@@ -140,7 +140,7 @@ internal class CommandHandler
 
             DbCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
 
-            Application.Logger.Log(
+            Application.CurrentApplication.Logger.Log(
                 $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.CleanContent}\"",
                 this,
                 LogType.Info
@@ -152,7 +152,7 @@ internal class CommandHandler
         }
         catch (Exception ex)
         {
-            Application.Logger.LogException(ex, this);
+            Application.CurrentApplication.Logger.LogException(ex, this);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace DiscordBot.Bot.Actions
         {
             if(args.Length < 1)
             {
-                Console.WriteLine("Incorrect number of arguments !");
+                Application.CurrentApplication.Logger.Log("Incorrect number of arguments !", LogType.Warning);
                 return;
             }
 
@@ -44,12 +44,17 @@ namespace DiscordBot.Bot.Actions
 
             if(!File.Exists(path))
             {
-                Console.WriteLine("The file does not exist !!");
+                Application.CurrentApplication.Logger.Log("The file does not exist !!", LogType.Error);
                 return;
+            }
+
+            if (args[^1] is null)
+            {
+                Application.CurrentApplication.Logger.Log("The plugin name is invalid", LogType.Error);
             }
             
             PluginInfo pluginInfo = new PluginInfo(args[^1], new(1, 0, 0), [], false, true, args.Contains("-enabled"));
-            Application.Logger.Log("Adding plugin: " + args[^1]);
+            Application.CurrentApplication.Logger.Log("Adding plugin: " + args[^1]);
             await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
         }
     }

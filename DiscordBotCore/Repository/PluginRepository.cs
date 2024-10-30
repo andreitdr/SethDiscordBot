@@ -44,7 +44,7 @@ public sealed class PluginRepository : RepositoryBase
         }
         catch(Exception ex)
         {
-            Application.Logger.LogException(ex, Application.CurrentApplication);
+            Application.CurrentApplication.Logger.LogException(ex, Application.CurrentApplication);
 
             return Default;
         }

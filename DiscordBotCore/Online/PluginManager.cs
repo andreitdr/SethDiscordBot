@@ -100,7 +100,7 @@ public class PluginManager
         {
             if (await pluginUpdater.HasUpdate(plugin.PluginName))
             {
-                Application.Logger.Log("Updating plugin: " + plugin.PluginName, this, LogType.Info);
+                Application.CurrentApplication.Logger.Log("Updating plugin: " + plugin.PluginName, this, LogType.Info);
                 await pluginUpdater.UpdatePlugin(plugin.PluginName);
             }
         }

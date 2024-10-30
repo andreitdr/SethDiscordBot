@@ -39,7 +39,7 @@ public sealed class PluginLoader
         SlashCommands.Clear();
         Actions.Clear();
 
-        Application.Logger.Log("Loading plugins...", this);
+        Application.CurrentApplication.Logger.Log("Loading plugins...", this);
         
         var loader = new Loader();
 
@@ -51,7 +51,7 @@ public sealed class PluginLoader
 
     private void FileLoadedException(FileLoaderResult result)
     {
-        Application.Logger.Log(result.ErrorMessage, this, LogType.Error);
+        Application.CurrentApplication.Logger.Log(result.ErrorMessage, this, LogType.Error);
     }
 
     private async void InitializeCommand(ICommandAction action)
@@ -99,7 +99,7 @@ public sealed class PluginLoader
 
     private void HandleError(Exception exception)
     {
-        Application.Logger.Log(exception.Message, this, LogType.Error);
+        Application.CurrentApplication.Logger.Log(exception.Message, this, LogType.Error);
     }
 
     private void OnPluginLoaded(PluginLoaderResult result)
