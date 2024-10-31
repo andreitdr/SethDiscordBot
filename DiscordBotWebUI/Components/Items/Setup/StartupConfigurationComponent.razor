@@ -1,0 +1,60 @@
+﻿@using DiscordBotCore
+@code {
+    [Parameter] public Action NextStep { get; set; }
+    private string BotToken { get; set; }
+    private string BotPrefix { get; set; }
+    private List<ulong> BotServers { get; set; }
+
+    private string BotServersString { get; set; }
+
+    private async void DoNextStep()
+    {
+        if(string.IsNullOrEmpty(BotToken) || string.IsNullOrEmpty(BotPrefix) || string.IsNullOrEmpty(BotServersString))
+        {
+            return;
+        }
+        
+        if(BotServersString.Contains(","))
+        {
+            BotServersString = BotServersString.Replace(",", ";");
+        }
+        
+        var stringList = BotServersString.Split(';');
+        BotServers = new List<ulong>();
+        foreach(var serverId in stringList)
+        {
+            if(ulong.TryParse(serverId, out ulong id))
+            {
+                BotServers.Add(id);
+            }
+        }
+
+        if (!BotServers.Any())
+        {
+            return;
+        }
+        
+        
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add("token", BotToken);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add("prefix", BotPrefix);
+        Application.CurrentApplication.ApplicationEnvironmentVariables.Add("ServerID", BotServers);
+
+        await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
+        
+        NextStep.Invoke();
+    }
+}
+
+<RadzenHeading Size="H4">Basic Configuration</RadzenHeading>
+<p>Please provide some basic settings to get started.</p>
+
+<RadzenLabel Text="Token" />
+<RadzenTextBox @bind-Value="BotToken" Placeholder="Enter bot token here" Style="width: 100%;" />
+
+<RadzenLabel Text="Prefix" Style="margin-top: 10px;" />
+<RadzenTextBox @bind-Value="BotPrefix" Placeholder="Enter the prefix here" Style="width: 100%;" />
+
+<RadzenLabel Text="Server Ids separated by ;" Style="margin-top: 20px;" />
+<RadzenTextBox @bind-Value="BotServersString" Placeholder="Enter Server Ids here. Separated by commas (;)" Style="width: 100%;" />
+
+<RadzenButton Text="Next" Click="DoNextStep" Style="margin-top: 30px;" />

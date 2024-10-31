@@ -1,0 +1,48 @@
+﻿@page "/setup-wizard"
+@inject DialogService DialogService
+
+@using DiscordBotWebUI.Components.Items.Setup
+@using DiscordBotWebUI.Components.Pages.SidebarPages
+
+<RadzenCard Style="max-width: 600px; margin: auto; margin-top: 50px; padding: 20px;">
+    <RadzenSteps @bind-Value="currentStep" ShowStepsButtons="false">
+        <RadzenStepsItem Text="Welcome" />
+        <RadzenStepsItem Text="Basic Configuration" />
+        <RadzenStepsItem Text="Download Plugins" />
+        <RadzenStepsItem Text="Final Setup" />
+    </RadzenSteps>
+
+    <div>
+        @if (currentStep == 0)
+        {
+            <WelcomeComponent NextStep="NextStep" />
+        }
+        else if (currentStep == 1)
+        {
+            <StartupConfigurationComponent NextStep="NextStep"  />
+        }
+        else if (currentStep == 2)
+        {
+            <PluginsMarket/>
+        }
+        else if (currentStep == 3)
+        {
+            <FinishSetupComponent CompleteSetup="FinishSetup" />
+        }
+    </div>
+</RadzenCard>
+
+@code {
+    private int currentStep = 0;
+    
+    private void NextStep()
+    {
+        currentStep++;
+        StateHasChanged();
+    }
+
+    private void FinishSetup()
+    {
+        DialogService.Close(true);
+    }
+}

@@ -73,12 +73,17 @@ public static class Entry
             var    assemblyName       = new AssemblyName(args.Name).Name + ".dll";
             var    assemblyPath       = Path.Combine(folderPath, assemblyName);
             
+            Console.WriteLine("Requesting Assembly: " + requestingAssembly);
+            Console.WriteLine("Requested Assembly File: " + assemblyName);
+            
             if (File.Exists(assemblyPath))
             {
                 var fileAssembly = Assembly.LoadFrom(assemblyPath);
+                Console.WriteLine("Loaded Assembly: " + fileAssembly.FullName);
                 return fileAssembly;
             }
             
+            Console.WriteLine("Failed to load assembly: " + assemblyPath + ". File does not exist");
             return null;
         }
 

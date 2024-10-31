@@ -1,0 +1,8 @@
+﻿@code {
+[Parameter] public Action CompleteSetup { get; set; }
+}
+
+<RadzenHeading Size="H4">Final Setup</RadzenHeading>
+<p>Your bot is almost ready! Click 'Finish' to complete the setup.</p>
+
+<RadzenButton Text="Finish" Click="CompleteSetup" Style="margin-top: 20px;" />

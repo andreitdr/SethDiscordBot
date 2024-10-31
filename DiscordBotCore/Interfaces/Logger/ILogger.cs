@@ -20,4 +20,6 @@ public interface ILogger
     void LogException(Exception exception, object Sender, bool logFullStack = false);
 
     void SetOutFunction(Action<string,LogType> outFunction);
+
+    string GetLogsHistory();
 }

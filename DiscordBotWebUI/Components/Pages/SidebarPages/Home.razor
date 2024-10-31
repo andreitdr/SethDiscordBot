@@ -1,0 +1,54 @@
+﻿@page "/"
+
+
+@using Discord
+@using DiscordBotCore
+@using DiscordBotCore.Others
+@using DiscordBotWebUI.Components.Pages.Setup
+@using DiscordBotWebUI.DiscordBot
+
+@inject DialogService DialogService
+
+<RadzenButton readonly="@Globals.BotIsRunning" Text="Start" Click="Initialize"/>
+<RadzenTextArea Placeholder="Logs..." Value="@_TextValue" Style="width: 100%; height: 80%"/>
+
+@code {
+    private string? _TextValue;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (Globals.BotIsRunning)
+        {
+            _TextValue = Application.CurrentApplication.Logger.GetLogsHistory();
+            StateHasChanged();
+        }
+    }
+
+    private async Task Initialize()
+    {
+        if (Globals.BotIsRunning)
+        {
+            return;
+        }
+        
+        Action<string, LogType> logging = async (str, type) => {
+            _TextValue += $"[{type}] {str} \n";
+            await InvokeAsync(StateHasChanged);
+        };
+
+        var discordApplication = new DiscordApplication(logging);
+        bool hasStarted = await discordApplication.Start();
+
+        if (!hasStarted)
+        {
+            await DialogService.OpenAsync<SetupWizard>(string.Empty, new Dictionary<string, object>());
+            await Initialize();
+            return;
+        }
+        
+        await discordApplication.RefreshPlugins(false);
+        Globals.BotIsRunning = true;
+        await InvokeAsync(StateHasChanged);
+    }
+}

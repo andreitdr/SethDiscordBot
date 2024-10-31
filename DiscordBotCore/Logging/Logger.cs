@@ -9,7 +9,7 @@ namespace DiscordBotCore.Logging;
 
 public sealed class Logger : ILogger
 {
-    private readonly FileStream _LogFileStream;
+    private FileStream _LogFileStream;
 
     private readonly List<string>             _LogMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
     private          Action<string, LogType>? _OutFunction;
@@ -93,5 +93,18 @@ public sealed class Logger : ILogger
     public void SetOutFunction(Action<string, LogType> outFunction)
     {
         this._OutFunction = outFunction;
+    }
+    public string GetLogsHistory()
+    {
+        string fileName = _LogFileStream.Name;
+        
+        _LogFileStream.Flush();
+        _LogFileStream.Close();
+        
+        string[] logs = File.ReadAllLines(fileName);
+        _LogFileStream = File.Open(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+        
+        return string.Join(Environment.NewLine, logs);
+        
     }
 }
