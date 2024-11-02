@@ -4,12 +4,10 @@ using System.Threading.Tasks;
 using DiscordBotCore.Interfaces.API;
 using DiscordBotCore.Others;
 using DiscordBotCore.Plugin;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace DiscordBotCore.API.Endpoints.PluginManagement;
 
-public class InstallPluginEndpoint : IEndpoint
+public class PluginInstallEndpoint : IEndpoint
 {
     public string Path => "/api/plugin/install";
     public EndpointType HttpMethod => EndpointType.Put;
@@ -25,7 +23,7 @@ public class InstallPluginEndpoint : IEndpoint
             return ApiResponse.Fail("Plugin not found.");
         }
 
-        await Application.CurrentApplication.PluginManager.InstallPlugin(pluginInfo, null);
+        await Application.CurrentApplication.PluginManager.InstallPluginWithNoProgress(pluginInfo);
         return ApiResponse.Ok();
     }
 }

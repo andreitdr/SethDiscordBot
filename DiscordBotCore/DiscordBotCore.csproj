@@ -11,7 +11,4 @@
   <ItemGroup>
     <UpToDateCheckInput Remove="UI\Controls\MessageBox.axaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="API\Services\" />
-  </ItemGroup>
 </Project>

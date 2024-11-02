@@ -12,10 +12,19 @@ public class ApiManager
 {
     private bool IsRunning { get; set; }
     private List<IEndpoint> ApiEndpoints { get; }
-
+    
     public ApiManager()
     {
         ApiEndpoints = new List<IEndpoint>();
+    }
+    
+    internal void AddBaseEndpoints()
+    {
+        AddEndpoint(new HomeEndpoint());
+        AddEndpoint(new PluginListEndpoint());
+        AddEndpoint(new PluginListInstalledEndpoint());
+        AddEndpoint(new PluginInstallEndpoint());
+        AddEndpoint(new PluginInstallGetProgressEndpoint());
     }
     
     public Result AddEndpoint(IEndpoint endpoint)
@@ -37,12 +46,6 @@ public class ApiManager
     public bool EndpointExists(string endpointPath)
     {
         return this.ApiEndpoints.Exists(endpoint => endpoint.Path == endpointPath);
-    }
-
-    internal void AddBaseEndpoints()
-    {
-        AddEndpoint(new HomeEndpoint());
-        AddEndpoint(new PluginListEndpoint());
     }
     
     public async Task InitializeApi()

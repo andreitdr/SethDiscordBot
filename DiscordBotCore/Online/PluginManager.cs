@@ -11,10 +11,11 @@ using DiscordBotCore.Updater.Plugins;
 
 namespace DiscordBotCore.Online;
 
-public class PluginManager
+public sealed class PluginManager
 {
-    private PluginRepository _PluginRepository;
-
+    private readonly PluginRepository _PluginRepository;
+    internal InstallingPluginInformation InstallingPluginInformation { get; private set; }
+    
     public PluginManager(PluginRepository pluginRepository)
     {
         _PluginRepository = pluginRepository;
@@ -189,13 +190,56 @@ public class PluginManager
         return relative;
     }
 
-    public async Task InstallPlugin(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
+    public async Task InstallPluginWithNoProgress(PluginOnlineInfo pluginData)
+    {
+        InstallingPluginInformation = new InstallingPluginInformation() {PluginName = pluginData.Name};
+        
+        int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1 : 1;
+
+        float stepProgress = 1f / totalSteps;
+        float currentProgress = 0f;
+        
+        InstallingPluginInformation.IsInstalling = true;
+  
+        IProgress<float> downloadProgress = new Progress<float>(f => InstallingPluginInformation.InstallationProgress = currentProgress + stepProgress * f);
+        
+        await ServerCom.DownloadFileAsync(pluginData.DownLoadLink,
+            $"{Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginData.Name}.dll",
+            downloadProgress
+        );
+        
+        if (pluginData.HasFileDependencies)
+            foreach (var dependency in pluginData.Dependencies)
+            {
+                string dependencyLocation = GenerateDependencyRelativePath(pluginData.Name, dependency.DownloadLocation);
+                await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependencyLocation, downloadProgress);
+
+                currentProgress += stepProgress;
+            }
+
+        if (pluginData.HasScriptDependencies)
+            foreach (var scriptDependency in pluginData.ScriptDependencies)
+            {
+
+                string console   = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
+                string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
+
+                await ServerCom.RunConsoleCommand(console, arguments);
+            }
+
+        PluginInfo pluginInfo = PluginInfo.FromOnlineInfo(pluginData);
+
+        await AppendPluginToDatabase(pluginInfo);
+
+        InstallingPluginInformation.IsInstalling = false;
+    }
+    
+    public async Task InstallPluginWithProgressBar(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
     {
         installProgress?.Report(0f);
 
         int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1 : 1;
-        totalSteps += pluginData.HasScriptDependencies ? pluginData.ScriptDependencies.Count : 0;
-
+        
         float stepProgress = 1f / totalSteps;
 
         float currentProgress = 0f;
@@ -224,7 +268,6 @@ public class PluginManager
                 string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
 
                 await ServerCom.RunConsoleCommand(console, arguments);
-                currentProgress += stepProgress;
             }
 
         PluginInfo pluginInfo = PluginInfo.FromOnlineInfo(pluginData);

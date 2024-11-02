@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotCore.Interfaces.API;
 using DiscordBotCore.Others;
-using Microsoft.AspNetCore.Http;
 
 namespace DiscordBotCore.API.Endpoints;
 
