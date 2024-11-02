@@ -18,7 +18,7 @@ public sealed class Logger : ILogger
     public Logger(string logFolder, string logMessageFormat, Action<string, LogType>? outFunction = null)
     {
         this.LogMessageFormat = logMessageFormat;
-        var logFile = logFolder + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
+        var logFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
         _LogFileStream = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.Read);
         this._OutFunction = outFunction ?? DefaultLogFunction;
     }

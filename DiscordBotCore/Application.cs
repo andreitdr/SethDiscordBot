@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-
+using DiscordBotCore.API;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Interfaces.Logger;
 using DiscordBotCore.Online;
@@ -45,6 +46,7 @@ namespace DiscordBotCore
         public InternalActionManager InternalActionManager { get; private set; } = null!;
         public PluginManager PluginManager { get; private set; } = null!;
         public ILogger Logger { get; private set; } = null!;
+        public ApiManager? ApiManager { get; private set; }
 
         /// <summary>
         /// Create the application. This method is used to initialize the application. Can not initialize multiple times.
@@ -90,9 +92,32 @@ namespace DiscordBotCore
 
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
-
+            
             IsRunning = true;
         }
+
+        /// <summary>
+        /// Initialize the API in a separate thread
+        /// </summary>
+        public static void InitializeThreadedApi()
+        {
+            if (CurrentApplication is null)
+            {
+                return;
+            }
+            
+            if(CurrentApplication.ApiManager is not null)
+            {
+                return;
+            }
+            
+            CurrentApplication.ApiManager = new ApiManager();
+            CurrentApplication.ApiManager.AddBaseEndpoints();
+            
+            Thread apiThread = new Thread(() => _ = CurrentApplication.ApiManager.InitializeApi());
+            apiThread.Start();
+        }
+        
         public static string GetResourceFullPath(string path)
         {
             var result = Path.Combine(_ResourcesFolder, path);

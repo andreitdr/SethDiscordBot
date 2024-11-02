@@ -80,7 +80,7 @@ public class Program
     private static async Task LoadComponents(string[] args)
     {   
         await Application.CreateApplication();
-
+        
         AppUpdater updater = new AppUpdater();
         Update? update = await updater.PrepareUpdate();
         if(update is not null)
@@ -120,7 +120,8 @@ public class Program
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
             await Installer.GenerateStartupConfig();
 
-        
+        Application.InitializeThreadedApi();
+
     }
     
 }

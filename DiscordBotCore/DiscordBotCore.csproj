@@ -1,24 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+      <OutputType>Library</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <FileAlignment>512</FileAlignment>
-    <DebugType>portable</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Config.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="BlankWindow1.xaml" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.15.3" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Remove="UI\Controls\MessageBox.axaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="API\Services\" />
   </ItemGroup>
 </Project>

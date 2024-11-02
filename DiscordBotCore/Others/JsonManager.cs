@@ -8,6 +8,20 @@ namespace DiscordBotCore.Others;
 
 public static class JsonManager
 {
+    
+    public static async Task<string> ConvertToJsonString<T>(T Data)
+    {
+        var str = new MemoryStream();
+        await JsonSerializer.SerializeAsync(str, Data, typeof(T), new JsonSerializerOptions
+        {
+            WriteIndented = false,
+        });
+        var result = Encoding.ASCII.GetString(str.ToArray());
+        await str.FlushAsync();
+        str.Close();
+        return result;
+    }
+    
     /// <summary>
     ///     Save to JSON file
     /// </summary>
