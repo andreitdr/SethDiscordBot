@@ -1,13 +1,48 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DiscordBotCore.Others;
 
 public static class JsonManager
 {
+
+    public static async Task<string> ConvertToJson<T>(List<T> data, string[] propertyNamesToUse)
+    {
+        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (propertyNamesToUse == null) throw new ArgumentNullException(nameof(propertyNamesToUse));
+
+        // Use reflection to filter properties dynamically
+        var filteredData = data.Select(item =>
+        {
+            if (item == null) return null;
+
+            var type          = typeof(T);
+            var propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // Create a dictionary with specified properties and their values
+            var selectedProperties = propertyInfos
+                                     .Where(p => propertyNamesToUse.Contains(p.Name))
+                                     .ToDictionary(p => p.Name, p => p.GetValue(item));
+
+            return selectedProperties;
+        }).ToList();
+
+        // Serialize the filtered data to JSON
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true, // For pretty-print JSON; remove if not needed
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        return await Task.FromResult(JsonSerializer.Serialize(filteredData, options));
+    }
     
     public static async Task<string> ConvertToJsonString<T>(T Data)
     {

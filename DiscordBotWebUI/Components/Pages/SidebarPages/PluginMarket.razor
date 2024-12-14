@@ -1,5 +1,24 @@
 @page "/plugins"
+@using DiscordBotWebUI.Components.CustomTags
+@using DiscordBotWebUI.Models
+
+<Marketplace PluginModels="_PluginModels" OnPluginDownloadClick="OnModelSelected"/>
+
 
 @code {
+    private List<PluginModel> _PluginModels;
+    private async void OnModelSelected(string itemName)
+    {
+        Console.WriteLine(itemName);
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _PluginModels = new List<PluginModel>()
+        {
+            new PluginModel() {PluginName = "Test", PluginAuthor = "Andrei", PluginDescription = "Interesting plugin"}
+        };
+    }
 
 }

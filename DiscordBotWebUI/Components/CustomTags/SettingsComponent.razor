@@ -1,0 +1,66 @@
+@inject DialogService DialogService
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: transparent;">
+    <RadzenCard Style="padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); width: 50%; max-width: 600px;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="20px" Style="color: white;">
+            <RadzenLabel Text="Enter your Discord bot token below:" />
+            <RadzenTextBox
+                id="token"
+                Name="token"
+                Placeholder="Enter your token here ..."
+                Style="width: 100%;"
+                bind-Value="@TokenString" />
+            <RadzenLabel Text="Specify the bot's prefix:" />
+            <RadzenTextBox
+                id="prefix"
+                Name="prefix"
+                Placeholder="Enter your prefix here ..."
+                Style="width: 100%;"
+                bind-Value="@PrefixString" />
+            <RadzenLabel Text="Enter server IDs (separated by semicolons):" />
+            <RadzenTextBox
+                id="server"
+                Name="server"
+                Placeholder="Enter server IDs here ..."
+                Style="width: 100%;"
+                bind-Value="@ServerIdsString" />
+
+            <RadzenButton Text="Save Changes" Click="SaveButtonClick" Style="margin-top: 1rem;" />
+        </RadzenStack>
+    </RadzenCard>
+</div>
+
+
+@code {
+    private string TokenString { get; set; }
+    private string PrefixString { get; set; }
+    private string ServerIdsString { get; set; }
+
+    [Parameter]
+    public required Action SaveSettings { get; set; }
+
+    private async void SaveButtonClick()
+    {
+        var response = await DialogService.Confirm("Saving this requires a bot restart.\nRestart now?", "Save Settings", new ConfirmOptions()
+        {
+            CloseDialogOnEsc = false,
+            ShowClose = false,
+            CloseDialogOnOverlayClick = false,
+            OkButtonText = "Restart Now",
+            CancelButtonText = "Don't Save"
+        });
+
+        if (!response.HasValue)
+        {
+            return;
+        }
+
+        if (!response.Value)
+        {
+            return;
+        }
+
+        SaveSettings.Invoke();
+    }
+
+}

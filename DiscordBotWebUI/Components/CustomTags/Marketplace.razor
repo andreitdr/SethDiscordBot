@@ -1,0 +1,22 @@
+@using DiscordBotWebUI.Models
+<RadzenCard>
+    <RadzenDataGrid Data="PluginModels" AllowPaging="true" AllowColumnResize="true" PageSize="5">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(PluginModel.PluginName)" Title="Plugin Name"/>
+            <RadzenDataGridColumn Property="@nameof(PluginModel.PluginAuthor)" Title="Author"/>
+            <RadzenDataGridColumn Property="@nameof(PluginModel.PluginDescription)" Title="Version"/>
+            <RadzenDataGridColumn Title="Download">
+                <Template Context="item">
+                    <RadzenButton Click="() => OnPluginDownloadClick!(item.PluginName)" Text="Download"/>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+@code {
+    [Parameter]
+    public required List<PluginModel> PluginModels { get; set; }
+
+    [Parameter]
+    public required Action<string> OnPluginDownloadClick { get; set; }
+}
