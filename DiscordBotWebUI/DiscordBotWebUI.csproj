@@ -35,6 +35,15 @@
       <_ContentIncludedByDefault Remove="Data\Resources\config.json" />
       <_ContentIncludedByDefault Remove="Data\Resources\plugins.json" />
       <_ContentIncludedByDefault Remove="Components\Items\MarketplaceItems\MarketplaceItem.razor" />
+      <_ContentIncludedByDefault Remove="Components\Items\Marketplace.razor" />
+      <_ContentIncludedByDefault Remove="Components\Items\Setup\FinishSetupComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Items\Setup\StartupConfigurationComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Items\Setup\WelcomeComponent.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Setup\SetupWizard.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Components\CustomTags\" />
     </ItemGroup>
 
 </Project>

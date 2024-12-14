@@ -1,6 +1,4 @@
-using System.Reflection;
 using DiscordBotWebUI.Components;
-using DiscordBotWebUI.StartupActions;
 using Radzen;
 
 
@@ -17,43 +15,6 @@ string logo =
                                                                                                                                                                                           
 ";
 
-var currentDomain = AppDomain.CurrentDomain;
-currentDomain.AssemblyResolve += LoadFromSameFolder;
-
-static Assembly LoadFromSameFolder(object sender, ResolveEventArgs args)
-{
-    Directory.CreateDirectory("./Libraries");
-    string requestingAssembly = args.RequestingAssembly?.GetName().Name;
-    var    folderPath         = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, $"Libraries/{requestingAssembly}");
-    var    assemblyName       = new AssemblyName(args.Name).Name + ".dll";
-    var    assemblyPath       = Path.Combine(folderPath, assemblyName);
-            
-    if (File.Exists(assemblyPath))
-    {
-        var fileAssembly = Assembly.LoadFrom(assemblyPath);
-        return fileAssembly;
-    }
-            
-    return null;
-}
-
-
-// Start startup actions if any
-if (args.Length > 0)
-{
-    // get all classes that derive from IStartupAction
-    var startupActions = Assembly.GetExecutingAssembly()
-                               .GetTypes()
-                               .Where(t => t.IsSubclassOf(typeof(IStartupAction)))
-                               .Select(t => Activator.CreateInstance(t) as IStartupAction)
-                               .ToList();
-    
-    foreach(var argument in args)
-    {
-        startupActions.FirstOrDefault(action => action?.Command == argument)?.RunAction(argument.Split(' ')[1..]);
-    }
-}
-
 Console.Clear();
 
 Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -65,6 +26,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
        .AddInteractiveServerComponents();
+
+builder.Services.AddRadzenCookieThemeService(options =>
+{
+    options.Name = "RadzenTheme";       // The name of the cookie
+    options.Duration = TimeSpan.FromDays(365); // The duration of the cookie
+});
 
 builder.Services.AddRadzenComponents();
 

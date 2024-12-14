@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBotCore.API.Endpoints;
 using DiscordBotCore.API.Endpoints.PluginManagement;
+using DiscordBotCore.API.Endpoints.SettingsManagement;
 using DiscordBotCore.Interfaces.API;
 using DiscordBotCore.Others;
 using Microsoft.AspNetCore.Builder;
@@ -25,6 +26,9 @@ public class ApiManager
         AddEndpoint(new PluginListInstalledEndpoint());
         AddEndpoint(new PluginInstallEndpoint());
         AddEndpoint(new PluginInstallGetProgressEndpoint());
+
+        AddEndpoint(new SettingsChangeEndpoint());
+        AddEndpoint(new SettingsGetEndpoint());
     }
     
     public Result AddEndpoint(IEndpoint endpoint)

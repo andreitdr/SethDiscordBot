@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject CookieThemeService CookieThemeService
 
 <RadzenComponents @rendermode="InteractiveServer" />
 <div class="page">
@@ -7,12 +8,11 @@
     </div>
 
     <main>
-        <RadzenPanel Style="height: 100%; width: 100%">
+        <RadzenBody Expanded="true">
             <article class="content px-4">
                 @Body
             </article>
-        </RadzenPanel>
-
+        </RadzenBody>
     </main>
 </div>
 
