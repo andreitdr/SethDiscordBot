@@ -13,7 +13,11 @@ public class PluginListEndpoint : IEndpoint
     {
         var onlineInfos = await Application.CurrentApplication.PluginManager.GetPluginsList();
 
-        var response    = await JsonManager.ConvertToJson(onlineInfos, [nameof(PluginOnlineInfo.Name), nameof(PluginOnlineInfo.Author), nameof(PluginOnlineInfo.Version)]);
+        var response    = await JsonManager.ConvertToJson(onlineInfos, [
+            nameof(PluginOnlineInfo.Name),
+            nameof(PluginOnlineInfo.Author),
+            nameof(PluginOnlineInfo.Description)
+        ]);
 
         return ApiResponse.From(response, true);
     }

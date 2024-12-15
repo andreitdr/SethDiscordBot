@@ -10,7 +10,7 @@ namespace DiscordBotCore.API.Endpoints.PluginManagement;
 public class PluginInstallEndpoint : IEndpoint
 {
     public string Path => "/api/plugin/install";
-    public EndpointType HttpMethod => EndpointType.Put;
+    public EndpointType HttpMethod => EndpointType.Post;
     public async Task<ApiResponse> HandleRequest(string? jsonRequest)
     {
         Dictionary<string, string> jsonDict = await JsonManager.ConvertFromJson<Dictionary<string, string>>(jsonRequest);

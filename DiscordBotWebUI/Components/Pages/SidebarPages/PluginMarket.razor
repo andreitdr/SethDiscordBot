@@ -1,24 +1,48 @@
 @page "/plugins"
 @using DiscordBotWebUI.Components.CustomTags
 @using DiscordBotWebUI.Models
+@using DiscordBotWebUI.ServerCommunication
 
 <Marketplace PluginModels="_PluginModels" OnPluginDownloadClick="OnModelSelected"/>
 
 
 @code {
     private List<PluginModel> _PluginModels;
+
+    [Inject]
+    public ApiHandler ApiHandler { get; set; }
+
     private async void OnModelSelected(string itemName)
     {
-        Console.WriteLine(itemName);
-    }
+        ApiResponse response = await ApiHandler.PostAsync("/api/plugin/install", new Dictionary<string, string>()
+        {
+            {"pluginName", itemName}
+        });
+        if(!response.Success)
+        {
+            Console.WriteLine(response.Message);
+            return;
+        }
 
+        Console.WriteLine("Plugin installed");
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        _PluginModels = new List<PluginModel>()
+        ApiResponse response = await ApiHandler.GetAsync("/api/plugin/list/online");
+
+        if (!response.Success)
         {
-            new PluginModel() {PluginName = "Test", PluginAuthor = "Andrei", PluginDescription = "Interesting plugin"}
-        };
+            return;
+        }
+
+        string jsonStr = response.Message;
+        var result = await JsonManager.ConvertFromJson<List<PluginModel>>(jsonStr);
+
+        if (result != null)
+        {
+            _PluginModels = result;
+        }
     }
 
 }

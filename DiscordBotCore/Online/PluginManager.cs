@@ -21,7 +21,7 @@ public sealed class PluginManager
         _PluginRepository = pluginRepository;
     }
 
-    public async Task<List<PluginOnlineInfo>?> GetPluginsList()
+    public async Task<List<PluginOnlineInfo>> GetPluginsList()
     {
         var jsonText = await _PluginRepository.JsonGetAllPlugins();
         List<PluginOnlineInfo> result   = await JsonManager.ConvertFromJson<List<PluginOnlineInfo>>(jsonText);

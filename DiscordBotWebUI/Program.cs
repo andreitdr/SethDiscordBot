@@ -1,4 +1,6 @@
 using DiscordBotWebUI.Components;
+using DiscordBotWebUI.ServerCommunication;
+using DiscordBotWebUI.ServerCommunication.ApiSettings;
 using Radzen;
 
 
@@ -32,6 +34,9 @@ builder.Services.AddRadzenCookieThemeService(options =>
     options.Name = "RadzenTheme";       // The name of the cookie
     options.Duration = TimeSpan.FromDays(365); // The duration of the cookie
 });
+
+builder.Services.AddSingleton<IApiSettings>(new ApiSettings("http://localhost", "5000"));
+builder.Services.AddSingleton<ApiHandler>();
 
 builder.Services.AddRadzenComponents();
 

@@ -1,8 +1,18 @@
+using System.Text.Json.Serialization;
+
 namespace DiscordBotWebUI.Models;
 
 public class PluginModel
 {
-    public string PluginName { get; set; }
-    public string PluginAuthor { get; set; }
-    public string PluginDescription { get; set; }
+    public string Name { get; set; }
+    public string Author { get; set; }
+    public string Description { get; set; }
+
+    [JsonConstructor]
+    public PluginModel(string name, string author, string description)
+    {
+        Name        = name;
+        Author      = author;
+        Description = description;
+    }
 }
