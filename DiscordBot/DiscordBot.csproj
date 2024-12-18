@@ -42,7 +42,4 @@
     <ItemGroup>
       <ProjectReference Include="..\DiscordBotCore\DiscordBotCore.csproj" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Properties\" />
-    </ItemGroup>
 </Project>

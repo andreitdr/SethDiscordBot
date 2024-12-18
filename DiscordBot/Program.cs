@@ -120,8 +120,14 @@ public class Program
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
             await Installer.GenerateStartupConfig();
 
-        Application.InitializeThreadedApi();
-        Application.InitializeThreadedSockets();
+        if (args.Length > 0)
+        {
+            if(args.Contains("--http-api"))
+                Application.InitializeThreadedApi();
+            if(args.Contains("--socket-api"))
+                Application.InitializeThreadedSockets();
+        }
+
 
     }
     
