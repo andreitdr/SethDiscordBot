@@ -4,7 +4,7 @@ using DiscordBotCore.Interfaces.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace DiscordBotCore.API;
+namespace DiscordBotCore.API.Endpoints;
 
 internal sealed class EndpointManager
 {

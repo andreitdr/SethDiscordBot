@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using DiscordBotCore.Others;
 
-namespace DiscordBotCore.API;
+namespace DiscordBotCore.API.Endpoints;
 
 public class ApiResponse
 {

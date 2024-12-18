@@ -7,7 +7,7 @@ using DiscordBotCore.Interfaces.API;
 using DiscordBotCore.Others;
 using Microsoft.AspNetCore.Builder;
 
-namespace DiscordBotCore.API;
+namespace DiscordBotCore.API.Endpoints;
 
 public class ApiManager
 {
@@ -52,7 +52,7 @@ public class ApiManager
         return this.ApiEndpoints.Exists(endpoint => endpoint.Path == endpointPath);
     }
     
-    public async Task InitializeApi()
+    public async void InitializeApi()
     {
         if (IsRunning)
             return;

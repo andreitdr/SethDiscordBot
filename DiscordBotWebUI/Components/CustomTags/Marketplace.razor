@@ -7,7 +7,7 @@
             <RadzenDataGridColumn Property="@nameof(PluginModel.Description)" Title="Version"/>
             <RadzenDataGridColumn Title="Download">
                 <Template Context="item">
-                    <RadzenButton Click="() => OnPluginDownloadClick!(item.Name)" Text="Download"/>
+                    <RadzenButton Click="() => OnPluginDownloadClick!(item.Name)" Text="Install"/>
                 </Template>
             </RadzenDataGridColumn>
         </Columns>

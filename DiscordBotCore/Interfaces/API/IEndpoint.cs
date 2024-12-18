@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
-using DiscordBotCore.API;
-using DiscordBotCore.Others;
+using DiscordBotCore.API.Endpoints;
 
 namespace DiscordBotCore.Interfaces.API;
 

@@ -121,6 +121,7 @@ public class Program
             await Installer.GenerateStartupConfig();
 
         Application.InitializeThreadedApi();
+        Application.InitializeThreadedSockets();
 
     }
     
