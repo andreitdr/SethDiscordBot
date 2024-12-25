@@ -25,7 +25,6 @@ public class ApiManager
         AddEndpoint(new PluginListEndpoint());
         AddEndpoint(new PluginListInstalledEndpoint());
         AddEndpoint(new PluginInstallEndpoint());
-        AddEndpoint(new PluginInstallGetProgressEndpoint());
 
         AddEndpoint(new SettingsChangeEndpoint());
         AddEndpoint(new SettingsGetEndpoint());

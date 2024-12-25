@@ -31,8 +31,8 @@ internal class SocketResponse
         return new SocketResponse(data, true, true, false);
     }
 
-    internal static SocketResponse Fail()
+    internal static SocketResponse Fail(bool closeConnection)
     {
-        return new SocketResponse(new byte[0], true, false, false);
+        return new SocketResponse(new byte[0], true, false, closeConnection);
     }
 }

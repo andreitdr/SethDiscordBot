@@ -23,7 +23,7 @@ public class PluginInstallEndpoint : IEndpoint
             return ApiResponse.Fail("Plugin not found.");
         }
 
-        await Application.CurrentApplication.PluginManager.InstallPluginWithNoProgress(pluginInfo);
+        Application.CurrentApplication.PluginManager.InstallPluginWithNoProgress(pluginInfo);
         return ApiResponse.Ok();
     }
 }

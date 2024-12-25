@@ -192,48 +192,75 @@ public sealed class PluginManager
 
     public async Task InstallPluginWithNoProgress(PluginOnlineInfo pluginData)
     {
-        InstallingPluginInformation = new InstallingPluginInformation() {PluginName = pluginData.Name};
-        
+        InstallingPluginInformation = new InstallingPluginInformation() { PluginName = pluginData.Name };
+
+        // Calculate the total number of steps: main file + dependencies
         int totalSteps = pluginData.HasFileDependencies ? pluginData.Dependencies.Count + 1 : 1;
 
-        float stepProgress = 1f / totalSteps;
+        // Each step contributes this percentage to the total progress
+        float stepFraction = 100f / totalSteps;
+
+        // Tracks the current cumulative progress in percentage
         float currentProgress = 0f;
-        
+
         InstallingPluginInformation.IsInstalling = true;
-  
-        IProgress<float> downloadProgress = new Progress<float>(f => InstallingPluginInformation.InstallationProgress = currentProgress + stepProgress * f);
-        
+
+        // Create a progress updater that maps the file's 0–100 progress to its portion of the total progress
+        IProgress<float> downloadProgress = new Progress<float>(fileProgress =>
+        {
+            // Map the file progress (0-100) to the total progress
+            InstallingPluginInformation.InstallationProgress = currentProgress + (fileProgress / 100f) * stepFraction;
+        });
+
+        // Download the main plugin file and map its progress
         await ServerCom.DownloadFileAsync(pluginData.DownLoadLink,
             $"{Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder")}/{pluginData.Name}.dll",
             downloadProgress
         );
-        
+
+        // Update cumulative progress after the main file
+        currentProgress += stepFraction;
+
+        // Download file dependencies if they exist
         if (pluginData.HasFileDependencies)
+        {
             foreach (var dependency in pluginData.Dependencies)
             {
-                string dependencyLocation = GenerateDependencyRelativePath(pluginData.Name, dependency.DownloadLocation);
+                string dependencyLocation =
+                    GenerateDependencyRelativePath(pluginData.Name, dependency.DownloadLocation);
+
+                // Download dependency and map its progress
                 await ServerCom.DownloadFileAsync(dependency.DownloadLink, dependencyLocation, downloadProgress);
 
-                currentProgress += stepProgress;
+                // Update cumulative progress after each dependency
+                currentProgress += stepFraction;
             }
+        }
 
+        // Run script dependencies if any (doesn't affect download progress percentage)
         if (pluginData.HasScriptDependencies)
+        {
             foreach (var scriptDependency in pluginData.ScriptDependencies)
             {
-
-                string console   = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
-                string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
+                string console = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
+                string arguments = OperatingSystem.IsWindows()
+                    ? $"/c {scriptDependency.ScriptContent}"
+                    : scriptDependency.ScriptContent;
 
                 await ServerCom.RunConsoleCommand(console, arguments);
             }
+        }
 
+        // Register the plugin in the database
         PluginInfo pluginInfo = PluginInfo.FromOnlineInfo(pluginData);
-
         await AppendPluginToDatabase(pluginInfo);
 
-        InstallingPluginInformation.IsInstalling = false;
+        InstallingPluginInformation.IsInstalling = false; // Mark installation as complete
     }
-    
+
+
+
+
     public async Task InstallPluginWithProgressBar(PluginOnlineInfo pluginData, IProgress<float>? installProgress)
     {
         installProgress?.Report(0f);

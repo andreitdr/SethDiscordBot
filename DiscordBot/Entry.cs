@@ -12,7 +12,7 @@ public static class Entry
     /// Some startup actions that can are executed when the console first starts. This actions are invoked externally at application launch
     /// </summary>
     private static readonly List<IStartupAction> StartupActions = [
-        new StartupAction("/purge_plugins", () => {
+        new StartupAction("--clean-up", () => {
             foreach (var plugin in Directory.GetFiles("./Data/Plugins", "*.dll", SearchOption.AllDirectories))
             {
                 File.Delete(plugin);

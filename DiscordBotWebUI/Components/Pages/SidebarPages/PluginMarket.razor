@@ -2,6 +2,7 @@
 @using DiscordBotWebUI.Components.CustomTags
 @using DiscordBotWebUI.Models
 @using DiscordBotWebUI.ServerCommunication
+@inject DialogService DialogService
 
 <Marketplace PluginModels="_PluginModels" OnPluginDownloadClick="OnModelSelected"/>
 
@@ -20,12 +21,22 @@
         });
         if(!response.Success)
         {
-
             Console.WriteLine(response.Message);
             return;
         }
 
-        Console.WriteLine("Plugin installed");
+        await DialogService.OpenAsync<ProgressDialog>($"Installing {itemName}", new Dictionary<string, object>()
+        {
+            {"ProgressUrl", "/plugin/download/progress"},
+            {"FirstMessage", itemName}
+        }, new DialogOptions()
+        {
+            Draggable = false,
+            CloseDialogOnEsc = false,
+            CloseDialogOnOverlayClick = false,
+            ShowClose = false
+        });
+
     }
 
     protected override async Task OnInitializedAsync()
