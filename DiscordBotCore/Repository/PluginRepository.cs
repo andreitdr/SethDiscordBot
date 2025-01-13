@@ -31,7 +31,6 @@ public sealed class PluginRepository : RepositoryBase
             return Default;
         }
         
-        
         try
         {
             var pluginRepoDict = Application.CurrentApplication.ApplicationEnvironmentVariables.GetDictionary<string, string>("PluginRepository");

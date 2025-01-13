@@ -21,7 +21,6 @@ public static class Installer
         }
 
         AnsiConsole.MarkupLine($"Invalid {key} !");
-
         Environment.Exit(-20);
 
         return value;

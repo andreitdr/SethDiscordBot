@@ -16,7 +16,7 @@ public class SettingsChangeEndpoint : IEndpoint
             return ApiResponse.Fail("Invalid json string");
         }
 
-        Dictionary<string, string> jsonDictionary = await JsonManager.ConvertFromJson<Dictionary<string, string>>(jsonRequest);
+        Dictionary<string, object> jsonDictionary = await JsonManager.ConvertFromJson<Dictionary<string, object>>(jsonRequest);
         foreach (var (key, value) in jsonDictionary)
         {
             Application.CurrentApplication.ApplicationEnvironmentVariables.Set(key, value);

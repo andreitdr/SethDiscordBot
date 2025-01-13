@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using DiscordBotCore.API;
 using DiscordBotCore.API.Endpoints;
@@ -82,7 +81,7 @@ namespace DiscordBotCore
             
             CurrentApplication.Logger = new Logger(_LogsFolder, _LogFormat);
             
-             if (!File.Exists(_PluginsDatabaseFile))
+            if (!File.Exists(_PluginsDatabaseFile))
             {
                 List<PluginInfo> plugins = new();
                 await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);

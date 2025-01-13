@@ -1,5 +1,84 @@
 @page "/settings"
 @using DiscordBotWebUI.Components.CustomTags
+@using DiscordBotWebUI.ServerCommunication
+
+@inject NotificationService NotificationService
 <PageTitle>Settings</PageTitle>
 
-<SettingsComponent/>
+@if (SettingsLoaded)
+{
+    <SettingsComponent SaveSettings="SaveSettings"
+                       TokenString="@Token"
+                       PrefixString="@Prefix"
+                       ServerIdsString="@ServerIds"/>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+@code {
+    private string Token { get; set; }
+    private string Prefix { get; set; }
+    private string ServerIds { get; set; }
+    
+    private bool SettingsLoaded { get; set; }
+    
+    [Inject]
+    private ApiHandler ApiHandler { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender)
+        {
+            return;
+        }
+        
+        var response = await ApiHandler.GetAsync("/api/settings/get");
+        if (!response.Success)
+        {
+            return;
+        }
+        
+        Dictionary<string, object>? settings = await JsonManager.ConvertFromJson<Dictionary<string, object>>(response.Message);
+        
+        if (settings == null)
+        {
+            return;
+        }
+        
+        Token = settings["token"].ToString();
+        Prefix = settings["prefix"].ToString();
+        var serverIds = await JsonManager.ConvertFromJson<List<ulong>>(settings["serverIds"].ToString());
+        ServerIds = string.Join(";", serverIds);
+        
+        SettingsLoaded = true;
+        
+        StateHasChanged();
+    }
+
+    private async void SaveSettings(string token, string prefix, string serverIds)
+    {
+        var dict = new Dictionary<string, object>
+        {
+            {"token", token},
+            {"prefix", prefix},
+            {"ServerID", serverIds.Split(';').Select(ulong.Parse).ToList()}
+        };
+
+        string json = await JsonManager.ConvertToJsonString(dict);
+        var response = await ApiHandler.PostAsync("/api/settings/update", json);
+        
+        if (!response.Success)
+        {
+            NotificationService.Notify(new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = response.Message
+            });
+        }
+    }
+
+}

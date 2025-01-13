@@ -96,6 +96,8 @@ public abstract class CustomSettingsDictionaryBase<TKey,TValue> : ICustomSetting
             return list;
         }
         
+        Application.CurrentApplication.Logger.Log($"Key '{key}' not found in settings dictionary. Adding default value.", LogType.Warning);
+        
         return defaultValue;
     }
 

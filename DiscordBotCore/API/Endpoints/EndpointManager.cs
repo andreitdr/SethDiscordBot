@@ -8,10 +8,10 @@ namespace DiscordBotCore.API.Endpoints;
 
 internal sealed class EndpointManager
 {
-    private WebApplication _appBuilder;
+    private readonly WebApplication _AppBuilder;
     internal EndpointManager(WebApplication appBuilder)
     {
-        _appBuilder = appBuilder;
+        _AppBuilder = appBuilder;
     }
     
     internal void MapEndpoint(IEndpoint endpoint)
@@ -19,7 +19,7 @@ internal sealed class EndpointManager
         switch (endpoint.HttpMethod)
         {
             case EndpointType.Get:
-                _appBuilder.MapGet(endpoint.Path, async context =>
+                _AppBuilder.MapGet(endpoint.Path, async context =>
                 {
                     //convert the context to a string
                     string jsonRequest = string.Empty;
@@ -34,7 +34,7 @@ internal sealed class EndpointManager
                 });
                 break;
             case EndpointType.Put:
-                _appBuilder.MapPut(endpoint.Path, async context =>
+                _AppBuilder.MapPut(endpoint.Path, async context =>
                 {
                     string jsonRequest = string.Empty;
                     if (context.Request.Body.CanRead)
@@ -48,7 +48,7 @@ internal sealed class EndpointManager
                 });
                 break;
             case EndpointType.Post:
-                _appBuilder.MapPost(endpoint.Path, async context =>
+                _AppBuilder.MapPost(endpoint.Path, async context =>
                 {
                     string jsonRequest = string.Empty;
                     if (context.Request.Body.CanRead)
@@ -62,7 +62,7 @@ internal sealed class EndpointManager
                 });
                 break;
             case EndpointType.Delete:
-                _appBuilder.MapDelete(endpoint.Path, async context =>
+                _AppBuilder.MapDelete(endpoint.Path, async context =>
                 {
                     string jsonRequest = string.Empty;
                     if (context.Request.Body.CanRead)
