@@ -57,7 +57,7 @@ namespace DiscordBotCore
         {
             if (!await OnlineFunctions.IsInternetConnected())
             {
-                Console.WriteLine("No internet connection detected. Exiting ...");
+                Console.WriteLine("The main repository server is not reachable. Please check your internet connection.");
                 Environment.Exit(0);
             }
 
@@ -94,6 +94,24 @@ namespace DiscordBotCore
 
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
+            
+            if (OperatingSystem.IsWindows())
+            {
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "cmd");
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", "/c ");
+            }
+        
+            if(OperatingSystem.IsLinux())
+            {
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "bash");
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", string.Empty);
+            }
+        
+            if(OperatingSystem.IsMacOS())
+            {
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "sh");
+                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", string.Empty);
+            }
             
             IsRunning = true;
         }
@@ -145,6 +163,11 @@ namespace DiscordBotCore
         {
             var result = Path.Combine(_PluginsFolder, path);
             return result;
+        }
+
+        public static void Log(string message, LogType? logType = LogType.Info)
+        {
+            CurrentApplication.Logger.Log(message, logType);
         }
     }
 }

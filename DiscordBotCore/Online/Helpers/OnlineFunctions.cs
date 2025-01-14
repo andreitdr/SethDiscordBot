@@ -114,7 +114,7 @@ internal static class OnlineFunctions
         try
         {
             using var client = new HttpClient();
-            await client.GetStringAsync("https://www.google.com");
+            await client.GetStringAsync("files.wizzy-server.ro");
             result = true;
         }
         catch

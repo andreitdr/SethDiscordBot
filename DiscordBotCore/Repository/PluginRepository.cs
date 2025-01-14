@@ -6,7 +6,7 @@ namespace DiscordBotCore.Repository;
 
 public sealed class PluginRepository : RepositoryBase
 {
-    public static readonly PluginRepository Default = new PluginRepository("Testing", "https://wizzy-server.ro/SethDiscordBot/PluginsRepo", "PluginsList.json");
+    public static readonly PluginRepository Default = new PluginRepository("Testing", "https://files.wizzy-server.ro/SethDiscordBot/PluginsRepo", "PluginsList.json");
 
     private PluginRepository(string repositoryName, string repositoryUrl, string databaseFile) : base(repositoryName, repositoryUrl, databaseFile)
     {

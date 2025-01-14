@@ -21,6 +21,9 @@
 
     <ItemGroup>
       <Content Remove="Data\**" />
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

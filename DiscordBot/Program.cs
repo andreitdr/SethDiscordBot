@@ -24,6 +24,7 @@ public class Program
         await LoadComponents(args);
         await PrepareConsole();
         await PluginMethods.RefreshPlugins(false);
+        
         await ConsoleInputHandler();
     }
 
@@ -55,7 +56,6 @@ public class Program
         AnsiConsole.MarkupLine("[yellow]Git SethBot: https://github.com/andreitdr/SethDiscordBot [/]");
 
         AnsiConsole.MarkupLine("[yellow]Remember to close the bot using the shutdown command ([/][red]exit[/][yellow]) or some settings won't be saved[/]");
-        AnsiConsole.MarkupLine($"[yellow]Running on [/][magenta]{(OperatingSystem.IsWindows() ? "Windows" : "Linux")}[/]");
 
         AnsiConsole.MarkupLine("[yellow]===== Seth Discord Bot =====[/]");
 
@@ -118,7 +118,9 @@ public class Program
         if (!Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("ServerID") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("token") ||
             !Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("prefix"))
+        {
             await Installer.GenerateStartupConfig();
+        }
 
         if (args.Length > 0)
         {
@@ -127,7 +129,7 @@ public class Program
             if(args.Contains("--socket-api"))
                 Application.InitializeThreadedSockets();
         }
-
+        
 
     }
     

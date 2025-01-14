@@ -1,5 +1,22 @@
 ﻿services:
-  discordbotwebui:
+  discord-bot-client:
+    build:
+      context: .
+      dockerfile: DiscordBot/Dockerfile
+    tty: true
+    stdin_open: true
+
+  discord-bot-webui:
     build:
       context: .
       dockerfile: DiscordBotWebUI/Dockerfile
+
+
+networks: 
+  custom_bridge:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.20.100.0/24"
+          gateway: "172.20.100.1"

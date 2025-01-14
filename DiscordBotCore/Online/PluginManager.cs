@@ -13,8 +13,9 @@ namespace DiscordBotCore.Online;
 
 public sealed class PluginManager
 {
+    private static readonly string _LibrariesBaseFolder = "Libraries";
     private readonly PluginRepository _PluginRepository;
-    internal InstallingPluginInformation InstallingPluginInformation { get; private set; }
+    internal InstallingPluginInformation? InstallingPluginInformation { get; private set; }
     
     public PluginManager(PluginRepository pluginRepository)
     {
@@ -41,8 +42,7 @@ public sealed class PluginManager
         {
             return null;
         }
-
-        // try to get the best matching plugin using the pluginName as a search query
+        
         PluginOnlineInfo? result = plugins.Find(pl => pl.Name.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
         if (result is null)
         {
@@ -62,9 +62,20 @@ public sealed class PluginManager
 
     public async Task ExecutePluginInstallScripts(List<OnlineScriptDependencyInfo> listOfDependencies)
     {
-        string consoleType = OperatingSystem.IsWindows() ? "cmd.exe" : "bash";
+        string? console = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.terminal");
+        if (string.IsNullOrEmpty(console))
+        {
+            return;
+        }
+        
+        string? cmd_prefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.cmd_prefix");
+        if (string.IsNullOrEmpty(cmd_prefix))
+        {
+            return;
+        }
+        
         foreach (var script in listOfDependencies)
-            await ServerCom.RunConsoleCommand(consoleType, "/c " + script.ScriptContent);
+            await ServerCom.RunConsoleCommand(console, $"{cmd_prefix}{script.ScriptContent}");
     }
 
     public async Task AppendPluginToDatabase(PluginInfo pluginData)
@@ -147,8 +158,8 @@ public sealed class PluginManager
 
         await RemovePluginFromDatabase(pluginInfo.PluginName);
 
-        if (Directory.Exists($"Libraries/{pluginInfo.PluginName}"))
-            Directory.Delete($"Libraries/{pluginInfo.PluginName}", true);
+        if (Directory.Exists($"{_LibrariesBaseFolder}/{pluginInfo.PluginName}"))
+            Directory.Delete($"{_LibrariesBaseFolder}/{pluginInfo.PluginName}", true);
     }
 
     public async Task<string?> GetDependencyLocation(string dependencyName)
@@ -186,7 +197,7 @@ public sealed class PluginManager
 
     public string GenerateDependencyRelativePath(string pluginName, string dependencyPath)
     {
-        string relative = $"./Libraries/{pluginName}/{dependencyPath}";
+        string relative = $"./{_LibrariesBaseFolder}/{pluginName}/{dependencyPath}";
         return relative;
     }
 
@@ -242,11 +253,19 @@ public sealed class PluginManager
         {
             foreach (var scriptDependency in pluginData.ScriptDependencies)
             {
-                string console = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
-                string arguments = OperatingSystem.IsWindows()
-                    ? $"/c {scriptDependency.ScriptContent}"
-                    : scriptDependency.ScriptContent;
+                string? console = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.terminal");
+                if (string.IsNullOrEmpty(console))
+                {
+                    return;
+                }
+                
+                string? cmdPrefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.cmd_prefix");
+                if (string.IsNullOrEmpty(cmdPrefix))
+                {
+                    return;
+                }
 
+                string arguments = $"{cmdPrefix}{scriptDependency.ScriptContent}";
                 await ServerCom.RunConsoleCommand(console, arguments);
             }
         }
@@ -288,14 +307,27 @@ public sealed class PluginManager
             }
 
         if (pluginData.HasScriptDependencies)
+        {
             foreach (var scriptDependency in pluginData.ScriptDependencies)
             {
+                string? console = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.terminal");
+                if (string.IsNullOrEmpty(console))
+                {
+                    return;
+                }
+                
+                string? cmdPrefix = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("console.cmd_prefix");
+                if (string.IsNullOrEmpty(cmdPrefix))
+                {
+                    return;
+                }
 
-                string console = OperatingSystem.IsWindows() ? "start cmd.exe" : "bash";
-                string arguments = OperatingSystem.IsWindows() ? $"/c {scriptDependency.ScriptContent}" : scriptDependency.ScriptContent;
+                string arguments = $"{cmdPrefix}{scriptDependency.ScriptContent}";
 
                 await ServerCom.RunConsoleCommand(console, arguments);
             }
+            
+        }
 
         PluginInfo pluginInfo = PluginInfo.FromOnlineInfo(pluginData);
 
