@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using DiscordBot.Utilities;
@@ -22,51 +23,20 @@ internal static class PluginMethods
     {
         Console.WriteLine($"Fetching plugin list ...");
 
-        var data = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");
-
-        TableData tableData = new(["Name", "Description", "Version", "Installed", "Dependencies", "Enabled"]);
-
+        var onlinePlugins = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetPluginsList(), "Reading remote database");
         var installedPlugins = await ConsoleUtilities.ExecuteWithProgressBar(Application.CurrentApplication.PluginManager.GetInstalledPlugins(), "Reading local database ");
+        TableData tableData = new(["Name", "Description", "Author", "Latest Version", "Installed Version"]);
 
-        foreach (var plugin in data)
+        foreach (var onlinePlugin in onlinePlugins)
         {
-            bool       isInstalled     = installedPlugins.Any(p => p.PluginName == plugin.Name);
-            
-            if (!plugin.HasFileDependencies)
-            {
-                tableData.AddRow([plugin.Name, plugin.Description,
-                    plugin.Version.ToString(), isInstalled ? "[green]Yes[/]" : "[red]No[/]", "None",
-                    isInstalled ? installedPlugins.First(p=>p.PluginName == plugin.Name).IsEnabled ? "[green]Enabled[/]" : "[red]Disabled[/]" : "[yellow]NOT INSTALLED[/]"]);
-                continue;
-            }
-
-            TableData dependenciesTable;
-            
-
-            if (isInstalled)
-            {
-                dependenciesTable = new(["Name", "Location", "Is Executable"]);
-                foreach (var dep in plugin.Dependencies)
-                {
-                    dependenciesTable.AddRow([dep.DependencyName, dep.DownloadLocation, dep.IsExecutable ? "Yes" : "No"]);
-                }
-
-            } 
-            else
-            {
-                dependenciesTable = new(["Name", "Is Executable"]);
-                foreach (var dep in plugin.Dependencies)
-                {
-                    dependenciesTable.AddRow([dep.DependencyName, dep.IsExecutable ? "Yes" : "No"]);
-                }
-            }
-
-            dependenciesTable.DisplayLinesBetweenRows = true;
-
-            Table spectreTable = dependenciesTable.AsTable();
-
-            tableData.AddRow([plugin.Name, plugin.Description, plugin.Version.ToString(), isInstalled ? "[green]Yes[/]" : "[red]No[/]", spectreTable,
-                isInstalled ? installedPlugins.First(p=>p.PluginName == plugin.Name).IsEnabled ? "Enabled" : "[red]Disabled[/]" : "[yellow]NOT INSTALLED[/]"]);
+            bool isInstalled = installedPlugins.Any(p => p.PluginName == onlinePlugin.PluginName);
+            tableData.AddRow([
+                onlinePlugin.PluginName,
+                onlinePlugin.PluginDescription,
+                onlinePlugin.PluginAuthor,
+                onlinePlugin.LatestVersion,
+                isInstalled ? installedPlugins.First(p => p.PluginName == onlinePlugin.PluginName).PluginVersion : "Not Installed"
+            ]);
         }
 
         tableData.HasRoundBorders = false;
@@ -100,113 +70,24 @@ internal static class PluginMethods
         await Application.CurrentApplication.PluginManager.SetEnabledStatus(pluginName, true);
     }
 
-    internal static async Task DownloadPlugin(string pluginName)
+    public static async Task DownloadPluginWithParallelDownloads(string pluginName)
     {
-        var pluginData = await Application.CurrentApplication.PluginManager.GetPluginDataByName(pluginName);
+        OnlinePlugin? pluginData = await Application.CurrentApplication.PluginManager.GetPluginDataByName(pluginName);
+        
         if (pluginData is null)
         {
             Console.WriteLine($"Plugin {pluginName} not found. Please check the spelling and try again.");
             return;
         }
 
-        // rename the plugin to the name of the plugin
-        pluginName = pluginData.Name;
+        var result = await Application.CurrentApplication.PluginManager.GatherInstallDataForPlugin(pluginData);
+         List<Tuple<string, string>> downloadList = result.Item1.Select(kvp => new Tuple<string, string>(kvp.Key, kvp.Value)).ToList();
 
-        var pluginLink = pluginData.DownLoadLink;
-
-
-        await AnsiConsole.Progress()
-                         .Columns(new ProgressColumn[]
-                             {
-                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
-                             }
-                         )
-                         .StartAsync(async ctx =>
-                             {
-                                 var downloadTask = ctx.AddTask("Downloading plugin...");
-
-                                 IProgress<float> progress = new Progress<float>(p => { downloadTask.Value = p; });
-
-                                 string baseFolder = Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("PluginFolder");
-
-                                 await ServerCom.DownloadFileAsync(pluginLink, $"{baseFolder}/{pluginData.Name}.dll", progress);
-
-                                 downloadTask.Increment(100);
-
-                                 ctx.Refresh();
-                             }
-                         );
-
-        if (!pluginData.HasFileDependencies)
-        {
-            if (pluginData.HasScriptDependencies)
-            {
-                Console.WriteLine("Executing post install scripts ...");
-                await Application.CurrentApplication.PluginManager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
-            }
-
-            PluginInfo pluginInfo = new(pluginName, pluginData.Version, []);
-            Console.WriteLine("Finished installing " + pluginName + " successfully");
-            await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
-            await RefreshPlugins(false);
-            return;
-        }
-
-        List<Tuple<ProgressTask, IProgress<float>, string, string>> downloadTasks = new();
-        await AnsiConsole.Progress()
-                         .Columns(new ProgressColumn[]
-                             {
-                                 new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn()
-                             }
-                         )
-                         .StartAsync(async ctx =>
-                             {
-
-
-                                 foreach (var dependency in pluginData.Dependencies)
-                                 {
-                                     var task = ctx.AddTask($"Downloading {dependency.DownloadLocation} -> Executable: {dependency.IsExecutable}: ");
-                                     IProgress<float> progress = new Progress<float>(p =>
-                                         {
-                                             task.Value = p;
-                                         }
-                                     );
-
-                                     task.IsIndeterminate = true;
-                                     downloadTasks.Add(new Tuple<ProgressTask, IProgress<float>, string, string>(task, progress, dependency.DownloadLink, dependency.DownloadLocation));
-                                 }
-                                 
-                                 int maxParallelDownloads = Application.CurrentApplication.ApplicationEnvironmentVariables.Get("MaxParallelDownloads", 5);
-                                 
-                                 var options = new ParallelOptions()
-                                 {
-                                     MaxDegreeOfParallelism = maxParallelDownloads,
-                                     TaskScheduler = TaskScheduler.Default
-                                 };
-
-                                 await Parallel.ForEachAsync(downloadTasks, options, async (tuple, token) =>
-                                     {
-                                         tuple.Item1.IsIndeterminate = false;
-                                         string downloadLocation = Application.CurrentApplication.PluginManager.GenerateDependencyRelativePath(pluginName, tuple.Item4);
-                                         await ServerCom.DownloadFileAsync(tuple.Item3, downloadLocation, tuple.Item2);
-                                     }
-                                 );
-
-
-
-                             }
-                         );
-
+        await ConsoleUtilities.ExecuteParallelDownload(FileDownloader.CreateDownloadTask, new HttpClient(), downloadList, "Downloading:");
         
-        if(pluginData.HasScriptDependencies)
-        {
-            Console.WriteLine("Executing post install scripts ...");
-            await Application.CurrentApplication.PluginManager.ExecutePluginInstallScripts(pluginData.ScriptDependencies);
-        }
-
-        await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginData));
-        await RefreshPlugins(false);
+        await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(PluginInfo.FromOnlineInfo(pluginData, result.Item2));
     }
+    
 
     internal static async Task<bool> LoadPlugins(string[] args)
     {

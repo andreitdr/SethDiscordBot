@@ -118,7 +118,7 @@ public class Plugin: ICommandAction
                     }
                 }
 
-                await PluginMethods.DownloadPlugin(pluginName);
+                await PluginMethods.DownloadPluginWithParallelDownloads(pluginName);
 
                 break;
             }

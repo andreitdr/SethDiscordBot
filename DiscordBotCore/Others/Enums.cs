@@ -26,15 +26,6 @@ public enum InternalActionRunType
     OnStartupAndCall
 }
 
-[Flags]
-public enum OSType: byte
-{
-    NONE    = 0,
-    WINDOWS = 1 << 0,
-    LINUX   = 2 << 1,
-    MACOSX  = 3 << 2
-}
-
 public enum PluginType
 {
     UNKNOWN,

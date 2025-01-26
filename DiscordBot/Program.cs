@@ -4,11 +4,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using DiscordBot.Bot.Actions.Extra;
-using DiscordBot.Utilities;
 using DiscordBotCore;
 using DiscordBotCore.Bot;
 using DiscordBotCore.Others;
-using DiscordBotCore.Updater.Application;
 
 using Spectre.Console;
 
@@ -80,14 +78,6 @@ public class Program
     private static async Task LoadComponents(string[] args)
     {   
         await Application.CreateApplication();
-        
-        AppUpdater updater = new AppUpdater();
-        Update? update = await updater.PrepareUpdate();
-        if(update is not null)
-        {
-            await ConsoleUtilities.ExecuteTaskWithBuiltInProgress(updater.SelfUpdate, update, "Discord Bot Update");
-            return;
-        }
         
         void LogMessageFunction(string message, LogType logType)
         {

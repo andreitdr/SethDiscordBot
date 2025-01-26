@@ -16,14 +16,14 @@ public class PluginInstallEndpoint : IEndpoint
         Dictionary<string, string> jsonDict = await JsonManager.ConvertFromJson<Dictionary<string, string>>(jsonRequest);
         string pluginName = jsonDict["pluginName"];
         
-        PluginOnlineInfo? pluginInfo = await Application.CurrentApplication.PluginManager.GetPluginDataByName(pluginName);
+        OnlinePlugin? pluginInfo = await Application.CurrentApplication.PluginManager.GetPluginDataByName(pluginName);
         
         if (pluginInfo == null)
         {
             return ApiResponse.Fail("Plugin not found.");
         }
 
-        Application.CurrentApplication.PluginManager.InstallPluginWithNoProgress(pluginInfo);
+        Application.CurrentApplication.PluginManager.InstallPluginNoProgress(pluginInfo);
         return ApiResponse.Ok();
     }
 }

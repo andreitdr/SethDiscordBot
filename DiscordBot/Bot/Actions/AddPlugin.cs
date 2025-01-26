@@ -53,7 +53,7 @@ namespace DiscordBot.Bot.Actions
                 Application.CurrentApplication.Logger.Log("The plugin name is invalid", LogType.Error);
             }
             
-            PluginInfo pluginInfo = new PluginInfo(args[^1], new(1, 0, 0), [], false, true, args.Contains("-enabled"));
+            PluginInfo pluginInfo = new PluginInfo(args[^1], "1.0.0", [], false, true, args.Contains("-enabled"));
             Application.CurrentApplication.Logger.Log("Adding plugin: " + args[^1]);
             await Application.CurrentApplication.PluginManager.AppendPluginToDatabase(pluginInfo);
         }

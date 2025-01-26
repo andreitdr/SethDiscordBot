@@ -8,7 +8,7 @@ namespace DiscordBotCore.Plugin;
 public class PluginInfo
 {
     public string PluginName { get; private set; }
-    public PluginVersion PluginVersion { get; private set; }
+    public string PluginVersion { get; private set; }
     public string FilePath { get; private set; }
     public Dictionary<string, string> ListOfExecutableDependencies {get; private set;}
     public bool IsMarkedToUninstall {get; internal set;}
@@ -16,7 +16,7 @@ public class PluginInfo
     public bool IsEnabled { get; internal set; }
 
     [JsonConstructor]
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfExecutableDependencies, bool isMarkedToUninstall, bool isOfflineAdded, bool isEnabled)
+    public PluginInfo(string pluginName, string pluginVersion, Dictionary<string, string> listOfExecutableDependencies, bool isMarkedToUninstall, bool isOfflineAdded, bool isEnabled)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
@@ -27,7 +27,7 @@ public class PluginInfo
         IsEnabled = isEnabled;
     }
 
-    public PluginInfo(string pluginName, PluginVersion pluginVersion, Dictionary<string, string> listOfExecutableDependencies)
+    public PluginInfo(string pluginName, string pluginVersion, Dictionary<string, string> listOfExecutableDependencies)
     {
         PluginName                   = pluginName;
         PluginVersion                = pluginVersion;
@@ -38,21 +38,14 @@ public class PluginInfo
         IsEnabled                    = true;
     }
 
-    public static PluginInfo FromOnlineInfo(PluginOnlineInfo onlineInfo)
+    public static PluginInfo FromOnlineInfo(OnlinePlugin plugin, List<OnlineDependencyInfo> dependencies)
     {
-        var pluginName             = onlineInfo.Name;
-        var version                = onlineInfo.Version;
-        var dependencies= onlineInfo.Dependencies;
+        PluginInfo pluginInfo = new PluginInfo(
+            plugin.PluginName, plugin.LatestVersion,
+            dependencies.Where(dependency => dependency.IsExecutable)
+                .ToDictionary(dependency => dependency.DependencyName, dependency => dependency.DownloadLocation)
+        );
         
-        if(dependencies is null)
-        {
-            return new PluginInfo(pluginName, version, new Dictionary<string, string>());
-        }
-        
-        var executableDependencies = dependencies.Where(dep => dep.IsExecutable);
-        var dictDependencies       = executableDependencies.Select(dep => new KeyValuePair<string, string>(dep.DependencyName, dep.DownloadLocation)).ToDictionary();
-
-        return new PluginInfo(pluginName, version, dictDependencies);
-        
+        return pluginInfo;
     }
 }

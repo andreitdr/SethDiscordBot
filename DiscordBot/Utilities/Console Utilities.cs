@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
-using DiscordBotCore.Updater.Application;
+using DiscordBotCore.Online;
 using Spectre.Console;
 
 namespace DiscordBot.Utilities;
@@ -64,4 +67,22 @@ internal static class ConsoleUtilities
 
     }
 
+    public static async Task ExecuteParallelDownload(Func<HttpClient, string, string, IProgress<float>, Task> method, HttpClient client,
+        List<Tuple<string, string>> parameters, string taskMessage)
+    {
+        await AnsiConsole.Progress().AutoClear(false).HideCompleted(false)
+            .Columns(new TaskDescriptionColumn(), new ProgressBarColumn(), new PercentageColumn())
+            .StartAsync(async ctx =>
+            {
+                var tasks = new List<Task>();
+                foreach (var (location, url) in parameters)
+                {
+                    var task = ctx.AddTask(taskMessage + " " + url);
+                    IProgress<float> progress = new Progress<float>(x => task.Value = x * 100);
+                    tasks.Add(method(client, url, location, progress));
+                }
+                
+                await Task.WhenAll(tasks);
+            });
+    }
 }

@@ -14,7 +14,6 @@ using DiscordBotCore.Others.Actions;
 using DiscordBotCore.Others.Settings;
 using DiscordBotCore.Plugin;
 using DiscordBotCore.Logging;
-using DiscordBotCore.Repository;
 
 namespace DiscordBotCore
 {
@@ -55,12 +54,6 @@ namespace DiscordBotCore
         /// </summary>
         public static async Task CreateApplication()
         {
-            if (!await OnlineFunctions.IsInternetConnected())
-            {
-                Console.WriteLine("The main repository server is not reachable. Please check your internet connection.");
-                Environment.Exit(0);
-            }
-
             if (CurrentApplication is not null)
             {
                 CurrentApplication.Logger.Log("Application is already initialized. Reinitialization is not allowed", LogType.Error);
@@ -87,31 +80,12 @@ namespace DiscordBotCore
                 await JsonManager.SaveToJsonFile(_PluginsDatabaseFile, plugins);
             }
             
-            CurrentApplication.PluginManager = new PluginManager(PluginRepository.SolveRepo());
+            CurrentApplication.PluginManager = new PluginManager(new PluginRepository(PluginRepositoryConfiguration.Default));
 
             await CurrentApplication.PluginManager.UninstallMarkedPlugins();
-            await CurrentApplication.PluginManager.CheckForUpdates();
 
             CurrentApplication.InternalActionManager = new InternalActionManager();
             await CurrentApplication.InternalActionManager.Initialize();
-            
-            if (OperatingSystem.IsWindows())
-            {
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "cmd");
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", "/c ");
-            }
-        
-            if(OperatingSystem.IsLinux())
-            {
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "bash");
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", string.Empty);
-            }
-        
-            if(OperatingSystem.IsMacOS())
-            {
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.terminal", "sh");
-                CurrentApplication.ApplicationEnvironmentVariables.Add("console.cmd_prefix", string.Empty);
-            }
             
             IsRunning = true;
         }
@@ -165,7 +139,7 @@ namespace DiscordBotCore
             return result;
         }
 
-        public static void Log(string message, LogType? logType = LogType.Info)
+        public static void Log(string message, LogType logType = LogType.Info)
         {
             CurrentApplication.Logger.Log(message, logType);
         }

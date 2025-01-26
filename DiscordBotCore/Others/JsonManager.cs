@@ -93,7 +93,12 @@ public static class JsonManager
 
         text.Position = 0;
 
-        var obj = await JsonSerializer.DeserializeAsync<T>(text);
+        JsonSerializerOptions options = new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var obj = await JsonSerializer.DeserializeAsync<T>(text, options);
         await text.FlushAsync();
         text.Close();
         
