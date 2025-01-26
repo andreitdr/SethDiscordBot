@@ -4,8 +4,13 @@ namespace DiscordBotWebUI.Models;
 
 public class PluginModel
 {
+    [JsonPropertyName("PluginName")]
     public string Name { get; set; }
+    
+    [JsonPropertyName("PluginAuthor")]
     public string Author { get; set; }
+    
+    [JsonPropertyName("PluginDescription")]
     public string Description { get; set; }
 
     [JsonConstructor]
