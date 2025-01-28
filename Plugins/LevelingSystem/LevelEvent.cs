@@ -63,8 +63,8 @@ internal class LevelEvent : IDbEvent
             return;
         }
 
-        var level = (int)userData[1];
-        var exp   = (int)userData[2];
+        var level = (long)userData[1];
+        var exp   = (long)userData[2];
 
 
         var random = new Random().Next(GlobalSettings.MinExp, GlobalSettings.MaxExp);

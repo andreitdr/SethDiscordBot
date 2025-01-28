@@ -36,8 +36,8 @@ internal class LevelCommand: IDbCommand
             return;
         }
 
-        var level = (int)user[1];
-        var exp   = (int)user[2];
+        var level = (long)user[1];
+        var exp   = (long)user[2];
 
         var builder = new EmbedBuilder();
         var r       = new Random();
