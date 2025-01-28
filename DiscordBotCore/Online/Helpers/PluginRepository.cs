@@ -7,11 +7,12 @@ using DiscordBotCore.Plugin;
 
 namespace DiscordBotCore.Online.Helpers;
 
-internal class PluginRepository : IPluginRepository
+public class PluginRepository : IPluginRepository
 {
     private readonly IPluginRepositoryConfiguration _pluginRepositoryConfiguration;
-    private readonly HttpClient _httpClient;
-    internal PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration)
+    public HttpClient _httpClient;
+
+    public PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration)
     {
         _pluginRepositoryConfiguration = pluginRepositoryConfiguration;
         _httpClient = new HttpClient();

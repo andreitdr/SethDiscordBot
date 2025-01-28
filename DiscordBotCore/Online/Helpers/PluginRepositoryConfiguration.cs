@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DiscordBotCore.Interfaces.PluginManagement;
 
 namespace DiscordBotCore.Online.Helpers;
@@ -10,6 +11,7 @@ public class PluginRepositoryConfiguration : IPluginRepositoryConfiguration
     public string PluginRepositoryLocation { get; }
     public string DependenciesRepositoryLocation { get; }
     
+    [JsonConstructor]
     public PluginRepositoryConfiguration(string baseUrl, string pluginRepositoryLocation, string dependenciesRepositoryLocation)
     {
         BaseUrl = baseUrl;

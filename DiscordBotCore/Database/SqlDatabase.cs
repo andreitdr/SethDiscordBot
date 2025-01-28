@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,7 +9,7 @@ namespace DiscordBotCore.Database;
 
 public class SqlDatabase
 {
-    private readonly SQLiteConnection _Connection;
+    private readonly SqliteConnection _Connection;
 
     /// <summary>
     ///     Initialize a SQL connection by specifying its private path
@@ -17,10 +17,9 @@ public class SqlDatabase
     /// <param name="fileName">The path to the database (it is starting from ./Data/Resources/)</param>
     public SqlDatabase(string fileName)
     {
-        if (!File.Exists(fileName))
-            SQLiteConnection.CreateFile(fileName);
-        var connectionString = $"URI=file:{fileName}";
-        _Connection = new SQLiteConnection(connectionString);
+        var connectionString = $"Data Source={fileName}";
+        _Connection = new SqliteConnection(connectionString);
+        
     }
 
 
@@ -53,7 +52,7 @@ public class SqlDatabase
 
         query += ")";
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -77,7 +76,7 @@ public class SqlDatabase
 
         query += ")";
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         command.ExecuteNonQuery();
     }
 
@@ -92,7 +91,7 @@ public class SqlDatabase
     {
         var query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -107,7 +106,7 @@ public class SqlDatabase
     {
         var query = $"DELETE FROM {tableName} WHERE {KeyName} = '{KeyValue}'";
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         command.ExecuteNonQuery();
     }
 
@@ -341,7 +340,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var answer  = await command.ExecuteNonQueryAsync();
         return answer;
     }
@@ -355,7 +354,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             _Connection.Open();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var r       = command.ExecuteNonQuery();
 
         return r;
@@ -370,7 +369,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
@@ -394,7 +393,7 @@ public class SqlDatabase
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -423,7 +422,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             _Connection.Open();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
@@ -445,7 +444,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         var values = new object[reader.FieldCount];
@@ -463,7 +462,7 @@ public class SqlDatabase
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -493,7 +492,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             _Connection.Open();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var reader  = command.ExecuteReader();
 
         var values = new object[reader.FieldCount];
@@ -516,7 +515,7 @@ public class SqlDatabase
     {
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         var reader  = await command.ExecuteReaderAsync();
 
         if (!reader.HasRows)
@@ -541,9 +540,10 @@ public class SqlDatabase
     /// <param name="name">The name of the parameter</param>
     /// <param name="value">The value of the parameter</param>
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
-    private static SQLiteParameter? CreateParameter(string name, object value)
+    private static SqliteParameter? CreateParameter(string name, object value)
     {
-        var parameter = new SQLiteParameter(name);
+        var parameter = new SqliteParameter();
+        parameter.ParameterName = name;
         parameter.Value = value;
 
         if (value is string)
@@ -598,7 +598,7 @@ public class SqlDatabase
     /// </summary>
     /// <param name="parameterValues">The parameter raw inputs. The Key is name and the Value is the value of the parameter</param>
     /// <returns>The SQLiteParameter that has the name, value and DBType set according to your inputs</returns>
-    private static SQLiteParameter? CreateParameter(KeyValuePair<string, object> parameterValues)
+    private static SqliteParameter? CreateParameter(KeyValuePair<string, object> parameterValues)
     {
         return CreateParameter(parameterValues.Key, parameterValues.Value);
     }
@@ -614,7 +614,7 @@ public class SqlDatabase
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -638,7 +638,7 @@ public class SqlDatabase
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);
@@ -672,7 +672,7 @@ public class SqlDatabase
         if (!_Connection.State.HasFlag(ConnectionState.Open))
             await _Connection.OpenAsync();
 
-        var command = new SQLiteCommand(query, _Connection);
+        var command = new SqliteCommand(query, _Connection);
         foreach (var parameter in parameters)
         {
             var p = CreateParameter(parameter);

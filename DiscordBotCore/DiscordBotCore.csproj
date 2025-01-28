@@ -4,9 +4,12 @@
     <Nullable>enable</Nullable>
       <OutputType>Library</OutputType>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.15.3" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Remove="UI\Controls\MessageBox.axaml" />

@@ -9,7 +9,24 @@ using DiscordBotCore.Plugin;
 
 namespace DiscordBotCore.Online;
 
-public sealed class PluginManager
+public interface IPluginManager
+{
+    Task<List<OnlinePlugin>> GetPluginsList();
+    Task<OnlinePlugin?> GetPluginDataByName(string pluginName);
+    Task AppendPluginToDatabase(PluginInfo pluginData);
+    Task<List<PluginInfo>> GetInstalledPlugins();
+    Task<bool> IsPluginInstalled(string pluginName);
+    Task<bool> MarkPluginToUninstall(string pluginName);
+    Task UninstallMarkedPlugins();
+    Task<string?> GetDependencyLocation(string dependencyName);
+    Task<string?> GetDependencyLocation(string dependencyName, string pluginName);
+    string GenerateDependencyRelativePath(string pluginName, string dependencyPath);
+    Task InstallPluginNoProgress(OnlinePlugin plugin);
+    Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin);
+    Task SetEnabledStatus(string pluginName, bool status);
+}
+
+public sealed class PluginManager : IPluginManager
 {
     private static readonly string _LibrariesBaseFolder = "Libraries";
     private readonly IPluginRepository _PluginRepository;
