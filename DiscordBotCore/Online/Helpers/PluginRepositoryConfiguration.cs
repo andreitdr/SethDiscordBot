@@ -5,7 +5,9 @@ namespace DiscordBotCore.Online.Helpers;
 
 public class PluginRepositoryConfiguration : IPluginRepositoryConfiguration
 {
-    public static PluginRepositoryConfiguration Default => new ("http://localhost:5097/api/v1/", "plugins-repository/", "dependencies-repository/");
+    public static PluginRepositoryConfiguration Default => new ("http://localhost:8080/api/v1/",
+        "plugin/", 
+        "dependency/");
     
     public string BaseUrl { get; }
     public string PluginRepositoryLocation { get; }

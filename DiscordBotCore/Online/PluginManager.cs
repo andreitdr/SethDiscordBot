@@ -43,7 +43,7 @@ public sealed class PluginManager : IPluginManager
         
         if (!onlinePlugins.Any())
         {
-            Application.Log("Failed to get all plugins from the repository", LogType.Warning);
+            Application.Log("Could not get any plugins from the repository", LogType.Warning);
             return [];
         }
         
