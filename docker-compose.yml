@@ -1,14 +1,14 @@
 ﻿services:
-  discord-bot-client:
-    build:
-      context: ./DiscordBot
-      dockerfile: Dockerfile
-    tty: true
-    stdin_open: true
+#  discord-bot-client:
+#    build:
+#      context: ./DiscordBot
+#      dockerfile: Dockerfile
+#    tty: true
+#    stdin_open: true
 
   discord-bot-webui:
     build:
-      context: ./DiscordBotWebUI
+      context: ./WebUI
       dockerfile: Dockerfile
     ports:
       - '4444:8080'

@@ -1,20 +1,23 @@
 ﻿using CppCompatibilityModule.Extern;
 using DiscordBotCore;
+using DiscordBotCore.Logging;
 
 namespace CppCompatibilityModule;
 
 internal class ExternalApplicationManager
 {
+    private readonly ILogger _Logger;
     private List<ExternalApplication> _ExternalApplications;
     
-    public ExternalApplicationManager()
+    public ExternalApplicationManager(ILogger logger)
     {
+        _Logger = logger;
         _ExternalApplications = new List<ExternalApplication>();
     }
     
     public bool TryCreateApplication(string applicationFileName, out Guid applicationId)
     {
-        ExternalApplication? externalApplication = ExternalApplication.CreateFromDllFile(applicationFileName);
+        ExternalApplication? externalApplication = ExternalApplication.CreateFromDllFile(_Logger, applicationFileName);
         
         if(externalApplication is null)
         {
@@ -33,14 +36,14 @@ internal class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == applicationId, null);
         if(application is null)
         {
-            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {applicationId}");
+            _Logger.Log($"Couldn't find application with id {applicationId}");
             return;
         }
         
         application.FreeLibrary();
         _ExternalApplications.Remove(application);
         
-        Application.CurrentApplication.Logger.Log($"Application with id {applicationId} freed successfully");
+        _Logger.Log($"Application with id {applicationId} freed successfully");
     }
     
     public void ExecuteApplicationFunctionWithParameter(Guid appId, string functionName, ref object parameter)
@@ -48,7 +51,7 @@ internal class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
         if(application is null)
         {
-            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {appId}");
+            _Logger.Log($"Couldn't find application with id {appId}");
             return;
         }
         
@@ -60,7 +63,7 @@ internal class ExternalApplicationManager
         var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
         if(application is null)
         {
-            Application.CurrentApplication.Logger.Log($"Couldn't find application with id {appId}");
+            _Logger.Log($"Couldn't find application with id {appId}");
             return;
         }
         

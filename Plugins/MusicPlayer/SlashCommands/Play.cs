@@ -25,11 +25,8 @@ public class Play: IDbSlashCommand
         }
     };
 
-    
-
     public async void ExecuteServer(SocketSlashCommand context)
     {
-        
         if(Variables._MusicDatabase is null)
         {
             await context.RespondAsync("Music Database is not loaded !");

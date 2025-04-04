@@ -1,8 +1,11 @@
-﻿using Discord.WebSocket;
-
-using DiscordBotCore;
-using DiscordBotCore.Database;
-using DiscordBotCore.Interfaces;
+﻿using System.Net.Mime;
+using Discord.WebSocket;
+using DiscordBotCore.Database.Sqlite;
+using DiscordBotCore.Logging;
+using DiscordBotCore.PluginCore;
+using DiscordBotCore.PluginCore.Helpers;
+using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
+using DiscordBotCore.PluginCore.Interfaces;
 using static LevelingSystem.Variables;
 
 namespace LevelingSystem;
@@ -12,7 +15,7 @@ internal class LevelEvent : IDbEvent
     public string Name => "Leveling System Event Handler";
     public string Description => "The Leveling System Event Handler";
 
-    public async void Start(DiscordSocketClient client)
+    public async Task Start(IDbEventExecutingArgument args)
     {
 
         Directory.CreateDirectory(DataFolder);
@@ -29,10 +32,11 @@ internal class LevelEvent : IDbEvent
                 MaxExp                       = 7,
                 MinExp                       = 1
             };
-            await DiscordBotCore.Others.JsonManager.SaveToJsonFile(DataFolder + "Settings.txt", GlobalSettings);
+            
+            await DiscordBotCore.Utilities.JsonManager.SaveToJsonFile(DataFolder + "Settings.txt", GlobalSettings);
         }
         else
-            GlobalSettings = await DiscordBotCore.Others.JsonManager.ConvertFromJson<Settings>(DataFolder + "Settings.txt");
+            GlobalSettings = await DiscordBotCore.Utilities.JsonManager.ConvertFromJson<Settings>(DataFolder + "Settings.txt");
 
         if (!await Database.TableExistsAsync("Levels"))
             await Database.CreateTableAsync("Levels", "UserID VARCHAR(128)", "Level INT", "EXP INT");
@@ -40,14 +44,12 @@ internal class LevelEvent : IDbEvent
         if (!await Database.TableExistsAsync("Users"))
             await Database.CreateTableAsync("Users", "UserID VARCHAR(128)", "UserMention VARCHAR(128)", "Username VARCHAR(128)", "Discriminator VARCHAR(128)");
 
-
-
-        client.MessageReceived += ClientOnMessageReceived;
+        args.Client.MessageReceived += (message) => ClientOnMessageReceived(message, args.BotPrefix);
     }
 
-    private async Task ClientOnMessageReceived(SocketMessage arg)
+    private async Task ClientOnMessageReceived(SocketMessage arg, string botPrefix)
     {
-        if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(Application.CurrentApplication.ApplicationEnvironmentVariables.Get<string>("prefix")))
+        if (arg.Author.IsBot || arg.IsTTS || arg.Content.StartsWith(botPrefix))
             return;
 
         if (WaitingList.ContainsKey(arg.Author.Id) && WaitingList[arg.Author.Id] > DateTime.Now.AddSeconds(-GlobalSettings.SecondsToWaitBetweenMessages))

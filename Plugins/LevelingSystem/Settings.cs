@@ -1,5 +1,4 @@
-﻿using DiscordBotCore;
-using DiscordBotCore.Database;
+﻿using DiscordBotCore.Database.Sqlite;
 
 namespace LevelingSystem;
 
@@ -12,8 +11,8 @@ public class Settings
 
 internal static class Variables
 {
-    internal static readonly string                      DataFolder = Application.GetResourceFullPath("LevelingSystem/");
-    internal static          SqlDatabase?                Database;
-    internal static readonly Dictionary<ulong, DateTime> WaitingList    = new();
-    internal static          Settings                    GlobalSettings = new();
+    internal static readonly string DataFolder = "./Data/Resources/LevelingSystem/";
+    internal static SqlDatabase? Database;
+    internal static readonly Dictionary<ulong, DateTime> WaitingList = new();
+    internal static Settings GlobalSettings = new();
 }

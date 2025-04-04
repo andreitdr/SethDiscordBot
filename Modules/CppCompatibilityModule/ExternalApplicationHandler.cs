@@ -1,15 +1,18 @@
 using DiscordBotCore;
+using DiscordBotCore.Logging;
 using DiscordBotCore.Others;
 
 namespace CppCompatibilityModule;
 
 public class ExternalApplicationHandler 
 {
+    private readonly ILogger _Logger;
     private ExternalApplicationManager? _ExternalApplicationManager;
     
-    public ExternalApplicationHandler()
+    public ExternalApplicationHandler(ILogger logger)
     {
-        _ExternalApplicationManager = new ExternalApplicationManager();
+        _Logger = logger;
+        _ExternalApplicationManager = new ExternalApplicationManager(logger);
     }
 
     public Guid CreateApplication(string dllFilePath)
@@ -17,7 +20,7 @@ public class ExternalApplicationHandler
 
         if (_ExternalApplicationManager is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to create application because the manager is not initialized. This should have never happened in the first place !!!", this, LogType.Critical);
+            _Logger.Log("Failed to create application because the manager is not initialized. This should have never happened in the first place !!!", this, LogType.Critical);
             return Guid.Empty;
         }
 
@@ -33,7 +36,7 @@ public class ExternalApplicationHandler
     {
         if (_ExternalApplicationManager is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to stop application because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
+            _Logger.Log("Failed to stop application because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
             return;
         }
 
@@ -44,7 +47,7 @@ public class ExternalApplicationHandler
     {
         if (_ExternalApplicationManager is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
+            _Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
             return;
         }
 
@@ -55,7 +58,7 @@ public class ExternalApplicationHandler
     {
         if (_ExternalApplicationManager is null)
         {
-            Application.CurrentApplication.Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
+            _Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
             return;
         }
 

@@ -1,18 +1,23 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Net.Mime;
+using System.Runtime.InteropServices;
 using DiscordBotCore;
+using DiscordBotCore.Logging;
 using DiscordBotCore.Others;
+using DiscordBotCore.Utilities;
 
 namespace CppCompatibilityModule.Extern
 {
     public sealed class ExternLibrary
     {
+        private readonly ILogger _Logger;
         public string LibraryPath { get; init; }
         public IntPtr LibraryHandle { get; private set; }
 
-        public ExternLibrary(string libraryPath)
+        public ExternLibrary(ILogger logger, string libraryPath)
         {
             LibraryPath = libraryPath;
             LibraryHandle = IntPtr.Zero;
+            _Logger = logger;
         }
 
         public Result InitializeLibrary()
@@ -22,7 +27,7 @@ namespace CppCompatibilityModule.Extern
                 return Result.Success();
             }
 
-            Application.CurrentApplication.Logger.Log($"Loading library {LibraryPath}");
+            _Logger.Log($"Loading library {LibraryPath}");
 
 
             if(!NativeLibrary.TryLoad(LibraryPath, out IntPtr hModule))
@@ -30,7 +35,7 @@ namespace CppCompatibilityModule.Extern
                 return Result.Failure(new DllNotFoundException($"Unable to load library {LibraryPath}"));
             }
 
-            Application.CurrentApplication.Logger.Log($"Library {LibraryPath} loaded successfully [{hModule}]");
+            _Logger.Log($"Library {LibraryPath} loaded successfully [{hModule}]");
 
             LibraryHandle = hModule;
             
@@ -47,7 +52,7 @@ namespace CppCompatibilityModule.Extern
             NativeLibrary.Free(LibraryHandle);
             LibraryHandle = IntPtr.Zero;
 
-            Application.CurrentApplication.Logger.Log($"Library {LibraryPath} freed successfully");
+            _Logger.Log($"Library {LibraryPath} freed successfully");
         }
 
         private IntPtr GetFunctionPointer(string functionName)
@@ -69,11 +74,11 @@ namespace CppCompatibilityModule.Extern
         {
             IntPtr functionPointer = GetFunctionPointer(methodName);
 
-            Application.CurrentApplication.Logger.Log($"Function pointer for {methodName} obtained successfully [address: {functionPointer}]");
+            _Logger.Log($"Function pointer for {methodName} obtained successfully [address: {functionPointer}]");
             
             T result = (T)Marshal.GetDelegateForFunctionPointer(functionPointer, typeof(T));
 
-            Application.CurrentApplication.Logger.Log($"Delegate for {methodName} created successfully");
+            _Logger.Log($"Delegate for {methodName} created successfully");
 
             return result;
         }
@@ -82,7 +87,7 @@ namespace CppCompatibilityModule.Extern
         {
             IntPtr functionPointer = Marshal.GetFunctionPointerForDelegate(functionDelegate);
 
-            Application.CurrentApplication.Logger.Log($"Function pointer for delegate {functionDelegate.Method.Name} obtained successfully [address: {functionPointer}]");
+            _Logger.Log($"Function pointer for delegate {functionDelegate.Method.Name} obtained successfully [address: {functionPointer}]");
 
             return functionPointer;
         }
@@ -107,7 +112,7 @@ namespace CppCompatibilityModule.Extern
 
             var result = setterDelegate.DynamicInvoke(executableFunctionPtr);
 
-            Application.CurrentApplication.Logger.Log($"Function {setterExternFunctionName} bound to local action successfully");
+            _Logger.Log($"Function {setterExternFunctionName} bound to local action successfully");
 
             return result;
         }
@@ -118,7 +123,7 @@ namespace CppCompatibilityModule.Extern
 
             functionDelegate(ref parameter);
 
-            Application.CurrentApplication.Logger.Log($"Function {methodName} called successfully with parameter");
+            _Logger.Log($"Function {methodName} called successfully with parameter");
         }
         
         public void CallFunction(string methodName)
@@ -127,7 +132,7 @@ namespace CppCompatibilityModule.Extern
 
             functionDelegate();
 
-            Application.CurrentApplication.Logger.Log($"Function {methodName} called successfully");
+            _Logger.Log($"Function {methodName} called successfully");
         }
     }
 }

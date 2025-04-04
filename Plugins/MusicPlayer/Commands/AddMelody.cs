@@ -1,9 +1,8 @@
-using Discord;
 
-using DiscordBotCore;
-using DiscordBotCore.Interfaces;
-using DiscordBotCore.Online;
-using DiscordBotCore.Others;
+using Discord;
+using DiscordBotCore.Networking;
+using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
+using DiscordBotCore.PluginCore.Interfaces;
 
 namespace MusicPlayer.Commands;
 
@@ -20,7 +19,7 @@ public class AddMelody: IDbCommand
     public string Usage => "add_melody [title],[description?],[aliases],[byteSize]";
     public bool RequireAdmin => false;
 
-    public async void ExecuteServer(DbCommandExecutingArguments args)
+    public async void ExecuteServer(IDbCommandExecutingArgument args)
     {
         var      arguments = string.Join(" ", args.Arguments);
         string[] split     = arguments.Split(',');
@@ -68,19 +67,19 @@ public class AddMelody: IDbCommand
 
         IProgress<float> downloadProgress = new Progress<float>();
 
+        var melodiesDirectory = Path.Combine(args.PluginBaseDirectory.FullName, "Music/Melodies");
+        var fileLocation = Path.Combine(melodiesDirectory, $"{title}.mp3");
+        Directory.CreateDirectory(melodiesDirectory);
+        FileDownloader downloader = new FileDownloader(file.Url, fileLocation);
+        await downloader.DownloadFile(downloadProgress.Report);
         
-        var location = Application.GetResourceFullPath($"Music/Melodies/{title}.mp3");
-        Directory.CreateDirectory(Application.GetResourceFullPath("Music/Melodies"));
-        await ServerCom.DownloadFileAsync(file.Url, location, downloadProgress);
-
-        Console.WriteLine($"Done. Saved at {location}");
-
+        args.Logger.Log($"Melody downloaded. Saved at {fileLocation}", this);
         await msg.ModifyAsync(a => a.Content = "Done");
 
 
-        var info = MusicInfoExtensions.CreateMusicInfo(title, location, description ?? "Unknown", aliases.ToList(), bsize);
+        var info = MusicInfoExtensions.CreateMusicInfo(title, fileLocation, description ?? "Unknown", aliases.ToList(), bsize);
 
-        Variables._MusicDatabase?.Add(title, info);
+        Variables._MusicDatabase.Add(title, info);
 
         var builder = new EmbedBuilder();
         builder.Title = "A new music was successfully added !";

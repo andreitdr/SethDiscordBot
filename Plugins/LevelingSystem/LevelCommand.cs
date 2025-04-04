@@ -1,7 +1,8 @@
 ﻿using Discord;
-using DiscordBotCore;
-using DiscordBotCore.Interfaces;
-using DiscordBotCore.Others;
+using DiscordBotCore.Logging;
+using DiscordBotCore.PluginCore.Helpers;
+using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
+using DiscordBotCore.PluginCore.Interfaces;
 
 namespace LevelingSystem;
 
@@ -17,11 +18,11 @@ internal class LevelCommand: IDbCommand
 
     public bool RequireAdmin => false;
 
-    public async void ExecuteServer(DbCommandExecutingArguments args)
+    public async Task ExecuteServer(IDbCommandExecutingArgument args)
     {
         if(Variables.Database is null)
         {
-            Application.CurrentApplication.Logger.Log("Database is not initialized", this, LogType.Warning);
+            args.Logger.Log("Database is not initialized", this);
             return;
         }
 

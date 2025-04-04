@@ -1,0 +1,33 @@
+@model List<OnlinePluginViewModel>
+
+@{
+    ViewData["Title"] = "Online Plugins";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Author</th>
+        <th>Version</th>
+        <th>Download</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var plugin in Model)
+    {
+        <tr>
+            <td>@plugin.Name</td>
+            <td>@plugin.Description</td>
+            <td>@plugin.Author</td>
+            <td>@plugin.Version</td>
+            <td>
+                <a href="@plugin.DownloadUrl" class="btn btn-primary" target="_blank">Download</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

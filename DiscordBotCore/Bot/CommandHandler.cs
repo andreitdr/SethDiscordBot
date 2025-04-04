@@ -1,43 +1,53 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBotCore.Interfaces;
-using DiscordBotCore.Loaders;
+using DiscordBotCore.Configuration;
+using DiscordBotCore.Logging;
 using DiscordBotCore.Others;
-using DiscordBotCore.Others.Permissions;
+using DiscordBotCore.PluginCore.Helpers;
+using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
+using DiscordBotCore.PluginCore.Interfaces;
+using DiscordBotCore.PluginManagement.Loading;
 
 namespace DiscordBotCore.Bot;
 
-internal class CommandHandler
+internal class CommandHandler : ICommandHandler
 {
     private readonly string                _botPrefix;
-    private readonly DiscordSocketClient   _client;
     private readonly CommandService        _commandService;
+    private readonly ILogger               _logger;
+    private readonly IPluginLoader        _pluginLoader;
+    private readonly IConfiguration       _configuration;
 
     /// <summary>
     ///     Command handler constructor
     /// </summary>
-    /// <param name="client">The discord bot client</param>
+    /// <param name="pluginLoader">The plugin loader</param>
     /// <param name="commandService">The discord bot command service</param>
     /// <param name="botPrefix">The prefix to watch for</param>
-    public CommandHandler(DiscordSocketClient client, CommandService commandService, string botPrefix)
+    /// <param name="logger">The logger</param>
+    public CommandHandler(ILogger logger, IPluginLoader pluginLoader, IConfiguration configuration, CommandService commandService, string botPrefix)
     {
-        _client         = client;
         _commandService = commandService;
         _botPrefix      = botPrefix;
+        _logger         = logger;
+        _pluginLoader    = pluginLoader;
+        _configuration  = configuration;
     }
 
     /// <summary>
     ///     The method to initialize all commands
     /// </summary>
     /// <returns></returns>
-    public async Task InstallCommandsAsync()
+    public async Task InstallCommandsAsync(DiscordSocketClient client)
     {
-        _client.MessageReceived      += MessageHandler;
-        _client.SlashCommandExecuted += Client_SlashCommandExecuted;
+        client.MessageReceived      += (message) => MessageHandler(client, message);
+        client.SlashCommandExecuted += Client_SlashCommandExecuted;
         await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
     }
 
@@ -45,18 +55,18 @@ internal class CommandHandler
     {
         try
         {
-            var plugin = PluginLoader.SlashCommands.FirstOrDefault(p => p.Name == arg.Data.Name);
+            var plugin = _pluginLoader.SlashCommands.FirstOrDefault(p => p.Name == arg.Data.Name);
 
             if (plugin is null)
                 throw new Exception("Failed to run command !");
 
             if (arg.Channel is SocketDMChannel)
-                plugin.ExecuteDm(arg);
-            else plugin.ExecuteServer(arg);
+                plugin.ExecuteDm(_logger, arg);
+            else plugin.ExecuteServer(_logger, arg);
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.LogException(ex, this);
+            _logger.LogException(ex, this);
         }
 
         return Task.CompletedTask;
@@ -67,38 +77,38 @@ internal class CommandHandler
     /// </summary>
     /// <param name="Message">The message got from the user in discord chat</param>
     /// <returns></returns>
-    private async Task MessageHandler(SocketMessage Message)
+    private async Task MessageHandler(DiscordSocketClient socketClient, SocketMessage socketMessage)
     {
         try
         {
-            if (Message.Author.IsBot)
+            if (socketMessage.Author.IsBot)
                 return;
 
-            if (Message as SocketUserMessage == null)
+            if (socketMessage as SocketUserMessage == null)
                 return;
 
-            var message = Message as SocketUserMessage;
+            var message = socketMessage as SocketUserMessage;
 
             if (message is null)
                 return;
 
             var argPos = 0;
 
-            if (!message.Content.StartsWith(_botPrefix) && !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if (!message.Content.StartsWith(_botPrefix) && !message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
                 return;
 
-            var context = new SocketCommandContext(_client, message);
+            var context = new SocketCommandContext(socketClient, message);
 
             await _commandService.ExecuteAsync(context, argPos, null);
 
             IDbCommand? plugin;
             var        cleanMessage = "";
 
-            if (message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if (message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
             {
-                var mentionPrefix = "<@" + _client.CurrentUser.Id + ">";
+                var mentionPrefix = "<@" + socketClient.CurrentUser.Id + ">";
 
-                plugin = PluginLoader.Commands!
+                plugin = _pluginLoader.Commands!
                                      .FirstOrDefault(plug => plug.Command ==
                                                              message.Content.Substring(mentionPrefix.Length + 1)
                                                                     .Split(' ')[0] ||
@@ -114,7 +124,7 @@ internal class CommandHandler
 
             else
             {
-                plugin = PluginLoader.Commands!
+                plugin = _pluginLoader.Commands!
                                      .FirstOrDefault(p => p.Command ==
                                                           message.Content.Split(' ')[0].Substring(_botPrefix.Length) ||
                                                           p.Aliases is not null &&
@@ -138,21 +148,26 @@ internal class CommandHandler
             if (split.Length > 1)
                 argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
 
-            DbCommandExecutingArguments cmd = new(context, cleanMessage, split[0], argsClean);
+            DbCommandExecutingArgument cmd = new(_logger,
+                context,
+                cleanMessage,
+                split[0],
+                argsClean,
+                new DirectoryInfo(Path.Combine(_configuration.Get<string>("ResourcesFolder"), plugin.Command)));
 
-            Application.CurrentApplication.Logger.Log(
+            _logger.Log(
                 $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.CleanContent}\"",
                 this,
                 LogType.Info
             );
 
             if (context.Channel is SocketDMChannel)
-                plugin.ExecuteDm(cmd);
-            else plugin.ExecuteServer(cmd);
+                await plugin.ExecuteDm(cmd);
+            else await plugin.ExecuteServer(cmd);
         }
         catch (Exception ex)
         {
-            Application.CurrentApplication.Logger.LogException(ex, this);
+            _logger.LogException(ex, this);
         }
     }
 }

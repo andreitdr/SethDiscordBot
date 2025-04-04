@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DiscordBotCore.Interfaces;
 using DiscordBotCore.Others;
-using DiscordBotCore.Others.Actions;
 
 namespace DiscordBot.Bot.Actions;
 

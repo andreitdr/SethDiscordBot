@@ -1,0 +1,30 @@
+@model SettingsViewModel
+
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="SaveSettings" method="post">
+    <div class="form-group">
+        <label for="Token">Token</label>
+        <input type="text" class="form-control" id="Token" name="Token" value="@Model.Token" />
+        @Html.ValidationMessageFor(model => model.Token, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="Prefix">Prefix</label>
+        <input type="text" class="form-control" id="Prefix" name="Prefix" value="@Model.Prefix" />
+        @Html.ValidationMessageFor(model => model.Prefix, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="ServerIds">Server IDs</label>
+        <textarea class="form-control" id="ServerIds" name="ServerIds" rows="5">@string.Join(",", Model.ServerIds)</textarea>
+        @Html.ValidationMessageFor(model => model.ServerIds, "", new { @class = "text-danger" })
+        <small class="form-text text-muted">Enter server IDs separated by commas.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>

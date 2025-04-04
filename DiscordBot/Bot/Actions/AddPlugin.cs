@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using DiscordBotCore;
 using DiscordBotCore.Interfaces;
 using DiscordBotCore.Others;
-using DiscordBotCore.Others.Actions;
 using DiscordBotCore.Plugin;
 
 namespace DiscordBot.Bot.Actions

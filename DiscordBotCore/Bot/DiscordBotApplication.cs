@@ -1,57 +1,37 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBotCore.Others;
+using DiscordBotCore.Configuration;
+using DiscordBotCore.Logging;
+using DiscordBotCore.PluginManagement.Loading;
 
 
 namespace DiscordBotCore.Bot;
 
-public class DiscordBotApplication
+public class DiscordBotApplication : IDiscordBotApplication
 {
-    /// <summary>
-    ///     The bot prefix
-    /// </summary>
-    private readonly string _BotPrefix;
-
-    /// <summary>
-    ///     The bot token
-    /// </summary>
-    private readonly string _BotToken;
-
-    /// <summary>
-    ///     The bot client
-    /// </summary>
-    public DiscordSocketClient Client;
-
-    /// <summary>
-    ///     The bot command handler
-    /// </summary>
-    private CommandHandler _CommandServiceHandler;
-
-    /// <summary>
-    ///     The command service
-    /// </summary>
-    private CommandService _Service;
+    private static readonly string _DefaultPrefix = ";";
     
-    /// <summary>
-    ///     Checks if the bot is ready
-    /// </summary>
-    /// <value> true if the bot is ready, otherwise false </value>
+    private CommandHandler _CommandServiceHandler;
+    private CommandService _Service;
+    private readonly ILogger _Logger;
+    private readonly IConfiguration _Configuration;
+    private readonly IPluginLoader _PluginLoader;
+    
     private bool IsReady { get; set; }
+    
+    public DiscordSocketClient Client { get; private set; }
 
     /// <summary>
     ///     The main Boot constructor
     /// </summary>
-    /// <param name="botToken">The bot token</param>
-    /// <param name="botPrefix">The bot prefix</param>
-    public DiscordBotApplication(string botToken, string botPrefix)
+    public DiscordBotApplication(ILogger logger, IConfiguration configuration, IPluginLoader pluginLoader)
     {
-        this._BotPrefix = botPrefix;
-        this._BotToken  = botToken;
+        this._Logger    = logger;
+        this._Configuration = configuration;
+        this._PluginLoader = pluginLoader;
     }
 
     /// <summary>
@@ -68,25 +48,24 @@ public class DiscordBotApplication
             GatewayIntents              = GatewayIntents.All
         };
 
-        Client  = new DiscordSocketClient(config);
+        DiscordSocketClient client  = new DiscordSocketClient(config);
+        Client = client;
+        
         _Service = new CommandService();
         
-        Client.Log          += Log;
-        Client.LoggedIn     += LoggedIn;
-        Client.Ready        += Ready;
-        Client.Disconnected += Client_Disconnected;
+        client.Log          += Log;
+        client.LoggedIn     += LoggedIn;
+        client.Ready        += Ready;
+        client.Disconnected += Client_Disconnected;
 
-        await Client.LoginAsync(TokenType.Bot, _BotToken);
+        await client.LoginAsync(TokenType.Bot, _Configuration.Get<string>("token"));
 
-        await Client.StartAsync();
+        await client.StartAsync();
 
-        _CommandServiceHandler = new CommandHandler(Client, _Service, _BotPrefix);
+        _CommandServiceHandler = new CommandHandler(_Logger, _PluginLoader, _Configuration, _Service, _Configuration.Get<string>("prefix", _DefaultPrefix));
 
-        await _CommandServiceHandler.InstallCommandsAsync();
-
-        Application.CurrentApplication.DiscordBotClient = this;
+        await _CommandServiceHandler.InstallCommandsAsync(client);
         
-        // wait for the bot to be ready
         while (!IsReady)
         {
             await Task.Delay(100);
@@ -97,38 +76,21 @@ public class DiscordBotApplication
     {
         if (arg.Message.Contains("401"))
         {
-            Application.CurrentApplication.ApplicationEnvironmentVariables.Remove("token");
-            Application.CurrentApplication.Logger.Log("The token is invalid.", this, LogType.Critical);
-            await Application.CurrentApplication.ApplicationEnvironmentVariables.SaveToFile();
+            _Configuration.Set("token", string.Empty);
+            _Logger.Log("The token is invalid.", this, LogType.Critical);
+            await _Configuration.SaveToFile();
         }
     }
 
     private Task Ready()
     {
         IsReady = true;
-
-        if (Application.CurrentApplication.ApplicationEnvironmentVariables.ContainsKey("CustomStatus"))
-        {
-            var status = Application.CurrentApplication.ApplicationEnvironmentVariables.GetDictionary<string, string>("CustomStatus");
-            string type = status["Type"];
-            string message = status["Message"];
-            ActivityType activityType = type switch
-            {
-                "Playing" => ActivityType.Playing,
-                "Listening" => ActivityType.Listening,
-                "Watching" => ActivityType.Watching,
-                "Streaming" => ActivityType.Streaming,
-                _ => ActivityType.Playing
-            };
-            Client.SetGameAsync(message, null, activityType);
-        }
-        
         return Task.CompletedTask;
     }
 
     private Task LoggedIn()
     {
-        Application.CurrentApplication.Logger.Log("Successfully Logged In", this);
+        _Logger.Log("Successfully Logged In", this);
         return Task.CompletedTask;
     }
 
@@ -138,12 +100,12 @@ public class DiscordBotApplication
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Error);
+                _Logger.Log(message.Message, this, LogType.Error);
                 break;
 
             case LogSeverity.Info:
             case LogSeverity.Debug:
-                Application.CurrentApplication.Logger.Log(message.Message, this, LogType.Info);
+                _Logger.Log(message.Message, this, LogType.Info);
 
 
                 break;
