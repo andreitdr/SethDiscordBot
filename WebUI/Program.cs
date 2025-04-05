@@ -136,7 +136,7 @@ builder.Services.AddSingleton<IPluginManager>(sp =>
     IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
     
     Directory.CreateDirectory(configuration.Get<string>("PluginFolder", defaultPluginFolder));
-    string pluginDatabaseFile = configuration.Get<string>("PluginDatabaseFile", defaultPluginDatabaseFile);
+    string pluginDatabaseFile = configuration.Get<string>("PluginDatabase", defaultPluginDatabaseFile);
     Directory.CreateDirectory(new FileInfo(pluginDatabaseFile).DirectoryName);
     
     IPluginManager pluginManager = new PluginManager(pluginRepository, logger, configuration);

@@ -27,12 +27,43 @@ public class PluginsController : Controller
         foreach (var plugin in plugins)
         {
             OnlinePluginViewModel pluginViewModel = new OnlinePluginViewModel();
-            pluginViewModel.Name = plugin.PluginName;
-            pluginViewModel.Description = plugin.PluginDescription;
-            pluginViewModel.Author = plugin.PluginAuthor;
-            pluginViewModel.Version = plugin.LatestVersion;
-            pluginViewModel.DownloadUrl = plugin.PluginLink;
+            pluginViewModel.Name = plugin.Name;
+            pluginViewModel.Description = plugin.Description;
+            pluginViewModel.Author = plugin.Author;
+            pluginViewModel.Version = plugin.Version;
+            pluginViewModel.DownloadUrl = plugin.DownloadLink;
+            
+            pluginViewModels.Add(pluginViewModel);
         }
+        
         return View(pluginViewModels);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> InstalledPlugins()
+    {
+        _logger.Log("Getting plugins page", this);
+        var plugins = await _pluginManager.GetInstalledPlugins();
+        _logger.Log($"{plugins.Count} Plugins loaded", this);
+        List<InstalledPluginViewModel> pluginViewModels = new List<InstalledPluginViewModel>();
+        foreach (var plugin in plugins)
+        {
+            InstalledPluginViewModel pluginViewModel = new InstalledPluginViewModel();
+            pluginViewModel.Name = plugin.PluginName;
+            pluginViewModel.Version = plugin.PluginVersion;
+            pluginViewModel.IsOfflineAdded = plugin.IsOfflineAdded;
+            
+            pluginViewModels.Add(pluginViewModel);
+        }
+        
+        return View(pluginViewModels);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeletePlugin(string pluginName)
+    {
+        _logger.Log($"Deleting plugin {pluginName}", this);
+        //TODO: Implement delete plugin
+        return RedirectToAction("InstalledPlugins");
     }
 }

@@ -4,24 +4,26 @@ namespace DiscordBotCore.PluginManagement.Models;
 
 public class OnlinePlugin
 {
-    public int PluginId { get; private set; }
-    public string PluginName { get; private set; }
-    public string PluginDescription { get; private set; }
-    public string LatestVersion { get; private set; }
-    public string PluginAuthor { get; private set; }
-    public string PluginLink { get; private set; }
+    public int Id { get; private set; }
+    public string Name { get; private set; }
+    public string Description { get; private set; }
+    public string Version { get; private set; }
+    public string Author { get; private set; }
+    public string DownloadLink { get; private set; }
     public int OperatingSystem { get; private set; }
+    public bool IsApproved { get; private set; }
 
     [JsonConstructor]
-    public OnlinePlugin(int pluginId, string pluginName, string pluginDescription, string latestVersion,
-        string pluginAuthor, string pluginLink, int operatingSystem)
+    public OnlinePlugin(int id, string name, string description, string version,
+        string author, string downloadLink, int operatingSystem, bool isApproved)
     {
-        PluginId = pluginId;
-        PluginName = pluginName;
-        PluginDescription = pluginDescription;
-        LatestVersion = latestVersion;
-        PluginAuthor = pluginAuthor;
-        PluginLink = pluginLink;
+        Id = id;
+        Name = name;
+        Description = description;
+        Version = version;
+        Author = author;
+        DownloadLink = downloadLink;
         OperatingSystem = operatingSystem;
+        IsApproved = isApproved;
     }
 }

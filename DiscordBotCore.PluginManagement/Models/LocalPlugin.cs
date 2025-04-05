@@ -39,7 +39,7 @@ public class LocalPlugin
     public static LocalPlugin FromOnlineInfo(OnlinePlugin plugin, List<OnlineDependencyInfo> dependencies, string downloadLocation)
     {
         LocalPlugin localPlugin = new LocalPlugin(
-            plugin.PluginName, plugin.LatestVersion, downloadLocation,
+            plugin.Name, plugin.Version, downloadLocation,
             dependencies.Where(dependency => dependency.IsExecutable)
                 .ToDictionary(dependency => dependency.DependencyName, dependency => dependency.DownloadLocation)
         );

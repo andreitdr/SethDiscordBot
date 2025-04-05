@@ -23,7 +23,7 @@ public class SettingsController : Controller
         {
             Token = _configuration.Get<string>("token", string.Empty),
             Prefix = _configuration.Get<string>("prefix", string.Empty),
-            ServerIds = _configuration.Get<List<ulong>>("serverIds", new List<ulong>()),
+            ServerIds = _configuration.Get<List<ulong>>("ServerIds", new List<ulong>()),
         };
         
         return View(model);

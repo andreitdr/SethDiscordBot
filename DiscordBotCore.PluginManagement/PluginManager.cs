@@ -88,7 +88,14 @@ public sealed class PluginManager : IPluginManager
         string? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
         if (pluginDatabaseFile is null)
         {
-            throw new Exception("Plugin database file not found");
+            _Logger.Log("Plugin database file path is not present in the config file", this, LogType.Warning);
+            return [];
+        }
+
+        if (!File.Exists(pluginDatabaseFile))
+        {
+            _Logger.Log("Plugin database file not found", this, LogType.Warning);
+            return [];
         }
         
         return await JsonManager.ConvertFromJson<List<LocalPlugin>>(await File.ReadAllTextAsync(pluginDatabaseFile));
@@ -189,31 +196,31 @@ public sealed class PluginManager : IPluginManager
 
     public async Task InstallPlugin(OnlinePlugin plugin, IProgress<InstallationProgressIndicator> progress)
     {
-        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.PluginId);
+        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
             throw new Exception("Plugin folder not found");
         }
         
-        string downloadLocation = $"{pluginsFolder}/{plugin.PluginName}.dll";
+        string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
         
         InstallationProgressIndicator installationProgressIndicator = new InstallationProgressIndicator();
         
         IProgress<float> downloadProgress = new Progress<float>(fileProgress =>
         {
-            installationProgressIndicator.SetProgress(plugin.PluginName, fileProgress);
+            installationProgressIndicator.SetProgress(plugin.Name, fileProgress);
             progress.Report(installationProgressIndicator);
         });
         
-        FileDownloader fileDownloader = new FileDownloader(plugin.PluginLink, downloadLocation);
+        FileDownloader fileDownloader = new FileDownloader(plugin.DownloadLink, downloadLocation);
         await fileDownloader.DownloadFile(downloadProgress.Report);
 
         ParallelDownloadExecutor executor = new ParallelDownloadExecutor();
 
         foreach (var dependency in dependencies)
         {
-            string dependencyLocation = GenerateDependencyRelativePath(plugin.PluginName, dependency.DownloadLocation);
+            string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
             Action<float> dependencyProgress = new Action<float>(fileProgress =>
             {
                 installationProgressIndicator.SetProgress(dependency.DependencyName, fileProgress);
@@ -228,17 +235,17 @@ public sealed class PluginManager : IPluginManager
     
     public async Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin)
     {
-        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.PluginId);
+        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
             throw new Exception("Plugin folder not found");
         }
-        string downloadLocation = $"{pluginsFolder}/{plugin.PluginName}.dll";
-        var downloads = new Dictionary<string, string> { { downloadLocation, plugin.PluginLink } };
+        string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
+        var downloads = new Dictionary<string, string> { { downloadLocation, plugin.DownloadLink } };
         foreach(var dependency in dependencies)
         {
-            string dependencyLocation = GenerateDependencyRelativePath(plugin.PluginName, dependency.DownloadLocation);
+            string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
             downloads.Add(dependencyLocation, dependency.DownloadLink);
         }
 
