@@ -20,7 +20,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private readonly IConfiguration _Configuration;
     private readonly IPluginLoader _PluginLoader;
     
-    private bool IsReady { get; set; }
+    public bool IsReady { get; private set; }
     
     public DiscordSocketClient Client { get; private set; }
 
@@ -32,6 +32,28 @@ public class DiscordBotApplication : IDiscordBotApplication
         this._Logger    = logger;
         this._Configuration = configuration;
         this._PluginLoader = pluginLoader;
+    }
+
+    public async Task StopAsync()
+    {
+        if (!IsReady)
+        {
+            _Logger.Log("Can not stop the bot. It is not yet initialized.", this, LogType.Error);
+            return;
+        }
+        
+        await Client.LogoutAsync();
+        await Client.StopAsync();
+            
+        Client.Log          -= Log;
+        Client.LoggedIn     -= LoggedIn;
+        Client.Ready        -= Ready;
+        Client.Disconnected -= Client_Disconnected;
+            
+        await Client.DisposeAsync();
+        
+        IsReady = false;
+        
     }
 
     /// <summary>
@@ -91,6 +113,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private Task LoggedIn()
     {
         _Logger.Log("Successfully Logged In", this);
+        _PluginLoader.SetClient(Client);
         return Task.CompletedTask;
     }
 

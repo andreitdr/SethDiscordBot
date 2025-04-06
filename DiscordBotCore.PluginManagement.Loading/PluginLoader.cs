@@ -13,27 +13,19 @@ namespace DiscordBotCore.PluginManagement.Loading;
 
 public sealed class PluginLoader : IPluginLoader
 {
-    private readonly DiscordSocketClient _DiscordClient;
     private readonly IPluginManager _PluginManager;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
-    
-    public delegate void CommandLoaded(IDbCommand eCommand);
-    public delegate void EventLoaded(IDbEvent eEvent);
-    public delegate void SlashCommandLoaded(IDbSlashCommand eSlashCommand);
-
-    public CommandLoaded?      OnCommandLoaded;
-    public EventLoaded?        OnEventLoaded;
-    public SlashCommandLoaded? OnSlashCommandLoaded;
 
     public List<IDbCommand> Commands { get; private set; } = new List<IDbCommand>();
     public List<IDbEvent>  Events { get; private set; } = new List<IDbEvent>();
     public List<IDbSlashCommand> SlashCommands { get; private set; } = new List<IDbSlashCommand>();
 
-    public PluginLoader(IPluginManager pluginManager, ILogger logger, IConfiguration configuration, DiscordSocketClient discordSocketDiscordClient)
+    private DiscordSocketClient? _discordClient;
+
+    public PluginLoader(IPluginManager pluginManager, ILogger logger, IConfiguration configuration)
     {
         _PluginManager = pluginManager;
-        _DiscordClient = discordSocketDiscordClient;
         _Logger = logger;
         _Configuration = configuration;
     }
@@ -54,6 +46,24 @@ public sealed class PluginLoader : IPluginLoader
         await loader.Load();
     }
 
+    public void SetClient(DiscordSocketClient client)
+    {
+        if (_discordClient is not null)
+        {
+            _Logger.Log("A client is already set. Please set the client only once.", this, LogType.Error);
+            return;
+        }
+        
+        if (client.LoginState != LoginState.LoggedIn)
+        {
+            _Logger.Log("Client is not logged in. Retry after the client is logged in", this, LogType.Error);
+            return;
+        }
+        
+        _Logger.Log("Client is set to the plugin loader", this);
+        _discordClient = client;
+    }
+
     private void FileLoadedException(string fileName, Exception exception)
     {
         _Logger.LogException(exception, this);
@@ -62,7 +72,7 @@ public sealed class PluginLoader : IPluginLoader
     private void InitializeDbCommand(IDbCommand command)
     {
         Commands.Add(command);
-        OnCommandLoaded?.Invoke(command);
+        _Logger.Log("Command loaded: " + command.Command, this);
     }
     
     private void InitializeEvent(IDbEvent eEvent)
@@ -73,7 +83,7 @@ public sealed class PluginLoader : IPluginLoader
         }
         
         Events.Add(eEvent);
-        OnEventLoaded?.Invoke(eEvent);
+        _Logger.Log("Event loaded: " + eEvent, this);
     }
 
     private async void InitializeSlashCommand(IDbSlashCommand slashCommand)
@@ -83,9 +93,9 @@ public sealed class PluginLoader : IPluginLoader
             () =>
             {
                 if (slashCommand.HasInteraction)
-                    _DiscordClient.InteractionCreated += interaction => slashCommand.ExecuteInteraction(_Logger, interaction);
+                    _discordClient.InteractionCreated += interaction => slashCommand.ExecuteInteraction(_Logger, interaction);
                 SlashCommands.Add(slashCommand);
-                OnSlashCommandLoaded?.Invoke(slashCommand);
+                _Logger.Log("Slash command loaded: " + slashCommand.Name, this);
             },
             HandleError
         );
@@ -116,7 +126,7 @@ public sealed class PluginLoader : IPluginLoader
             }
             IDbEventExecutingArgument args = new DbEventExecutingArgument(
                 _Logger,
-                _DiscordClient, 
+                _discordClient, 
                 _Configuration.Get<string>("prefix"),
                 new DirectoryInfo(Path.Combine(_Configuration.Get<string>("ResourcesPath"), dbEvent.Name)));
             dbEvent.Start(args);
@@ -139,7 +149,7 @@ public sealed class PluginLoader : IPluginLoader
                 return Result.Failure(new Exception("dbSlashCommand is null"));
             }
 
-            if (_DiscordClient.Guilds.Count == 0)
+            if (_discordClient.Guilds.Count == 0)
             {
                 return Result.Failure(new Exception("No guilds found"));
             }
@@ -166,7 +176,7 @@ public sealed class PluginLoader : IPluginLoader
                 }
             }
             
-            await _DiscordClient.CreateGlobalApplicationCommandAsync(builder.Build());
+            await _discordClient.CreateGlobalApplicationCommandAsync(builder.Build());
 
             return Result.Success();
         }
@@ -178,7 +188,7 @@ public sealed class PluginLoader : IPluginLoader
 
     private async Task<bool> EnableSlashCommandPerGuild(ulong guildId, SlashCommandBuilder builder)
     {
-        SocketGuild? guild = _DiscordClient.GetGuild(guildId);
+        SocketGuild? guild = _discordClient.GetGuild(guildId);
         if (guild is null)
         {
             _Logger.Log("Failed to get guild with ID " + guildId, typeof(PluginLoader), LogType.Error);

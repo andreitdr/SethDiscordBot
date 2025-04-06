@@ -1,8 +1,59 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    var isRunning = ViewBag.IsRunning ?? false;
+    ViewBag.Title = "Console Log Viewer";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Console Log</h4>
+            <div id="consoleLog" class="border p-3 bg-dark text-white" style="height: 400px; overflow-y: scroll; font-family: monospace;"></div>
+        </div>
+
+        <div class="col-md-4">
+            <h4>Controls</h4>
+            <form method="post" asp-action="StartApplication">
+                <button type="submit" class="btn btn-success mb-2">Start Application</button>
+            </form>
+            @if (isRunning)
+            {
+                <form method="post" asp-action="StopApplication">
+                    <button type="submit" class="btn btn-danger mb-2">Stop Application</button>
+                </form>
+                <form method="post" asp-action="LoadPlugins">
+                    <button type="submit" class="btn btn-info mb-2">Load Plugins</button>
+                </form>
+            }
+
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        let lastLogCount = 0;
+
+        function fetchLogs() {
+            fetch("/Home/GetLogs")
+                .then(res => res.json())
+                .then(logs => {
+                    const logDiv = document.getElementById("consoleLog");
+                    if (logs.length !== lastLogCount) {
+                        logDiv.innerHTML = logs.map(line => formatLog(line)).join('');
+                        logDiv.scrollTop = logDiv.scrollHeight;
+                        lastLogCount = logs.length;
+                    }
+                });
+        }
+
+        function formatLog(line) {
+            if (line.includes("[Error]")) return `<div style="color: #ff4d4d;">${line}</div>`;
+            if (line.includes("[Warning]")) return `<div style="color: #ffa500;">${line}</div>`;
+            if (line.includes("[Debug]")) return `<div style="color: #88f;">${line}</div>`;
+            return `<div>${line}</div>`;
+        }
+
+        setInterval(fetchLogs, 2000);
+        fetchLogs();
+    </script>
+}

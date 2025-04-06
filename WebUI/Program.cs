@@ -142,6 +142,15 @@ builder.Services.AddSingleton<IPluginManager>(sp =>
     IPluginManager pluginManager = new PluginManager(pluginRepository, logger, configuration);
     return pluginManager;
 });
+
+builder.Services.AddSingleton<IPluginLoader>(sp =>
+{
+    IPluginManager pluginManager = sp.GetRequiredService<IPluginManager>();
+    ILogger logger = sp.GetRequiredService<ILogger>();
+    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+    return new PluginLoader(pluginManager, logger, configuration);
+});
+
 builder.Services.AddSingleton<IDiscordBotApplication>(sp =>
 {
     ILogger logger = sp.GetRequiredService<ILogger>();
@@ -150,14 +159,7 @@ builder.Services.AddSingleton<IDiscordBotApplication>(sp =>
     return new DiscordBotApplication(logger, configuration, pluginLoader);
 });
 
-builder.Services.AddSingleton<IPluginLoader>(sp =>
-{
-    IPluginManager pluginManager = sp.GetRequiredService<IPluginManager>();
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    IDiscordBotApplication discordBotApplication = sp.GetRequiredService<IDiscordBotApplication>();
-    return new PluginLoader(pluginManager, logger, configuration, discordBotApplication.Client);
-});
+
 
 var app = builder.Build();
 

@@ -1,3 +1,4 @@
+using Discord.WebSocket;
 using DiscordBotCore.PluginCore;
 using DiscordBotCore.PluginCore.Interfaces;
 
@@ -9,4 +10,6 @@ public interface IPluginLoader
     List<IDbEvent> Events { get; }
     List<IDbSlashCommand> SlashCommands { get; }
     Task LoadPlugins();
+
+    void SetClient(DiscordSocketClient client);
 }
