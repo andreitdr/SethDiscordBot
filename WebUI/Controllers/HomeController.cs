@@ -65,7 +65,7 @@ public class HomeController : Controller
     {
         _logger.Log("Loading plugins", this);
         await _pluginLoader.LoadPlugins();
-        _logger.Log("Plugins loaded", this);
+        //_logger.Log("Plugins loaded", this);
         return RedirectToAction("Index");
     }
 }

@@ -19,5 +19,5 @@ public interface IDbEvent
     ///     The method that is invoked when the event is loaded into memory
     /// </summary>
     /// <param name="args">The arguments for the start method</param>
-    Task Start(IDbEventExecutingArgument args);
+    void Start(IDbEventExecutingArgument args);
 }

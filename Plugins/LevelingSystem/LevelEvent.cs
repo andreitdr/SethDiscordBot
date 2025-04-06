@@ -15,9 +15,9 @@ internal class LevelEvent : IDbEvent
     public string Name => "Leveling System Event Handler";
     public string Description => "The Leveling System Event Handler";
 
-    public async Task Start(IDbEventExecutingArgument args)
+    public async void Start(IDbEventExecutingArgument args)
     {
-
+        args.Logger.Log("Starting Leveling System Event Handler", this);
         Directory.CreateDirectory(DataFolder);
         await Task.Delay(200);
         Database = new SqlDatabase(DataFolder + "Users.db");

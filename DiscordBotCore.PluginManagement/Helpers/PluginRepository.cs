@@ -45,7 +45,7 @@ public class PluginRepository : IPluginRepository
     public async Task<OnlinePlugin?> GetPluginById(int pluginId)
     {
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.PluginRepositoryLocation,
-            "get-plugin", new Dictionary<string, string>
+            "get-by-id", new Dictionary<string, string>
             {
                 { "pluginId", pluginId.ToString() },
                 { "includeNotApproved", "false" }
@@ -66,7 +66,7 @@ public class PluginRepository : IPluginRepository
     public async Task<OnlinePlugin?> GetPluginByName(string pluginName, int operatingSystem, bool includeNotApproved)
     {
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.PluginRepositoryLocation,
-            "get-plugin-by-name", new Dictionary<string, string>
+            "get-by-name", new Dictionary<string, string>
             {
                 { "pluginName", pluginName },
                 { "operatingSystem", operatingSystem.ToString() },
@@ -89,7 +89,7 @@ public class PluginRepository : IPluginRepository
     public async Task<List<OnlineDependencyInfo>> GetDependenciesForPlugin(int pluginId)
     {
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.DependenciesRepositoryLocation,
-            "get-dependencies-for-plugin", new Dictionary<string, string>
+            "get-by-plugin-id", new Dictionary<string, string>
             {
                 { "pluginId", pluginId.ToString() }
             });

@@ -73,6 +73,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 string defaultLogFormat = "{ThrowTime} {SenderName} {Message}";
 string defaultLogFolder = "./Data/Logs";
+string defaultResourcesFolder = "./Data/Resources";
 string defaultConfigFile = "./Data/Resources/config.json";
 string defaultPluginFolder = "./Data/Plugins";
 string defaultPluginDatabaseFile = "./Data/Resources/plugins.json";
@@ -135,7 +136,12 @@ builder.Services.AddSingleton<IPluginManager>(sp =>
     ILogger logger = sp.GetRequiredService<ILogger>();
     IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
     
-    Directory.CreateDirectory(configuration.Get<string>("PluginFolder", defaultPluginFolder));
+    string pluginFolder = configuration.Get<string>("PluginFolder", defaultPluginFolder);
+    Directory.CreateDirectory(pluginFolder);
+    
+    string resourcesFolder = configuration.Get<string>("ResourcesFolder", defaultResourcesFolder);
+    Directory.CreateDirectory(resourcesFolder);
+    
     string pluginDatabaseFile = configuration.Get<string>("PluginDatabase", defaultPluginDatabaseFile);
     Directory.CreateDirectory(new FileInfo(pluginDatabaseFile).DirectoryName);
     
@@ -159,8 +165,6 @@ builder.Services.AddSingleton<IDiscordBotApplication>(sp =>
     return new DiscordBotApplication(logger, configuration, pluginLoader);
 });
 
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -181,5 +185,24 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Force eager creation of all required services
+using (var scope = app.Services.CreateScope())
+{
+    var provider = scope.ServiceProvider;
+
+    // Manually resolve all your singletons here
+    provider.GetRequiredService<ILogger>();
+    IConfiguration config = provider.GetRequiredService<IConfiguration>();
+    provider.GetRequiredService<IPluginRepositoryConfiguration>();
+    provider.GetRequiredService<IPluginRepository>();
+    provider.GetRequiredService<IPluginManager>();
+    provider.GetRequiredService<IPluginLoader>();
+    provider.GetRequiredService<IDiscordBotApplication>();
+
+    // Optional: Log that all services were initialized
+    provider.GetRequiredService<ILogger>().Log("All core services have been initialized at startup.");
+}
+
 
 app.Run();

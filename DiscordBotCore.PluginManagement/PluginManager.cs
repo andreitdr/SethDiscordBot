@@ -50,6 +50,18 @@ public sealed class PluginManager : IPluginManager
         return plugin;
     }
 
+    public async Task<OnlinePlugin?> GetPluginDataById(int pluginId)
+    {
+        var plugin = await _PluginRepository.GetPluginById(pluginId);
+        if (plugin is null)
+        {
+            _Logger.Log($"Plugin {pluginId} not found in the repository.", this, LogType.Warning);
+            return null;
+        }
+        
+        return plugin;
+    }
+
     private async Task RemovePluginFromDatabase(string pluginName)
     {
         string? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
@@ -72,8 +84,9 @@ public sealed class PluginManager : IPluginManager
         {
             throw new Exception("Plugin database file not found");
         }
+
+        List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
         
-        List<LocalPlugin> installedPlugins = await JsonManager.ConvertFromJson<List<LocalPlugin>>(await File.ReadAllTextAsync(pluginDatabaseFile));
         foreach (var dependency in pluginData.ListOfExecutableDependencies)
         {
             pluginData.ListOfExecutableDependencies[dependency.Key] = dependency.Value;
@@ -194,7 +207,7 @@ public sealed class PluginManager : IPluginManager
         return relative;
     }
 
-    public async Task InstallPlugin(OnlinePlugin plugin, IProgress<InstallationProgressIndicator> progress)
+    public async Task InstallPlugin(OnlinePlugin plugin, IProgress<float> progress)
     {
         List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
@@ -205,13 +218,7 @@ public sealed class PluginManager : IPluginManager
         
         string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
         
-        InstallationProgressIndicator installationProgressIndicator = new InstallationProgressIndicator();
-        
-        IProgress<float> downloadProgress = new Progress<float>(fileProgress =>
-        {
-            installationProgressIndicator.SetProgress(plugin.Name, fileProgress);
-            progress.Report(installationProgressIndicator);
-        });
+        IProgress<float> downloadProgress = new Progress<float>(progress.Report);
         
         FileDownloader fileDownloader = new FileDownloader(plugin.DownloadLink, downloadLocation);
         await fileDownloader.DownloadFile(downloadProgress.Report);
@@ -221,16 +228,14 @@ public sealed class PluginManager : IPluginManager
         foreach (var dependency in dependencies)
         {
             string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
-            Action<float> dependencyProgress = new Action<float>(fileProgress =>
-            {
-                installationProgressIndicator.SetProgress(dependency.DependencyName, fileProgress);
-                progress.Report(installationProgressIndicator);
-            });
             
-            executor.AddTask(dependency.DownloadLink, dependencyLocation, dependencyProgress);
+            executor.AddTask(dependency.DownloadLink, dependencyLocation, progress.Report);
         }
         
         await executor.ExecuteAllTasks();
+        
+        LocalPlugin localPlugin = LocalPlugin.FromOnlineInfo(plugin, dependencies, downloadLocation);
+        await AppendPluginToDatabase(localPlugin);
     }
     
     public async Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin)

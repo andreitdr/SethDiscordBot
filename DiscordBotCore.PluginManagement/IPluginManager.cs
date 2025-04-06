@@ -6,6 +6,7 @@ public interface IPluginManager
 {
     Task<List<OnlinePlugin>> GetPluginsList();
     Task<OnlinePlugin?> GetPluginDataByName(string pluginName);
+    Task<OnlinePlugin?> GetPluginDataById(int pluginId);
     Task AppendPluginToDatabase(LocalPlugin pluginData);
     Task<List<LocalPlugin>> GetInstalledPlugins();
     Task<bool> IsPluginInstalled(string pluginName);
@@ -14,7 +15,7 @@ public interface IPluginManager
     Task<string?> GetDependencyLocation(string dependencyName);
     Task<string?> GetDependencyLocation(string dependencyName, string pluginName);
     string GenerateDependencyRelativePath(string pluginName, string dependencyPath);
-    Task InstallPlugin(OnlinePlugin plugin, IProgress<InstallationProgressIndicator> progress);
+    Task InstallPlugin(OnlinePlugin plugin, IProgress<float> progress);
     Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin);
     Task SetEnabledStatus(string pluginName, bool status);
 }

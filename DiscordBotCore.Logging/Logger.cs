@@ -91,7 +91,7 @@ public sealed class Logger : ILogger
     {
         string fileName = _logFileStream.Name;
         
-        _logFileStream.Flush();
+        //_logFileStream.Flush();
         _logFileStream.Close();
         
         string[] logs = File.ReadAllLines(fileName);

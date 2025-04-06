@@ -42,20 +42,20 @@ public class Configuration : ConfigurationBase
         return value;
     }
 
-    public override async void LoadFromFile()
+    public override void LoadFromFile()
     {
         if (!File.Exists(_DiskLocation))
         {
-            await SaveToFile();
+            SaveToFile().Wait();
             return;
         }
         
-        string jsonContent = await File.ReadAllTextAsync(_DiskLocation);
+        string jsonContent = File.ReadAllText(_DiskLocation);
         var    jObject     = JsonConvert.DeserializeObject<JObject>(jsonContent);
 
         if (jObject is null)
         {
-            await SaveToFile();
+            SaveToFile().Wait();
             return;
         }
         

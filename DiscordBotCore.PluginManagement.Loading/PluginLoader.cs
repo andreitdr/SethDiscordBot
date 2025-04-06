@@ -116,28 +116,48 @@ public sealed class PluginLoader : IPluginLoader
         );
     }
     
-    private bool TryStartEvent(IDbEvent? dbEvent)
+    private bool TryStartEvent(IDbEvent dbEvent)
     {
-        try
+        string? botPrefix = _Configuration.Get<string>("prefix");
+        if (string.IsNullOrEmpty(botPrefix))
         {
-            if (dbEvent is null)
-            {
-                throw new ArgumentNullException(nameof(dbEvent));
-            }
-            IDbEventExecutingArgument args = new DbEventExecutingArgument(
-                _Logger,
-                _discordClient, 
-                _Configuration.Get<string>("prefix"),
-                new DirectoryInfo(Path.Combine(_Configuration.Get<string>("ResourcesPath"), dbEvent.Name)));
-            dbEvent.Start(args);
-            return true;
-        }
-        catch (Exception e)
-        {
-            _Logger.Log($"Error starting event {dbEvent.Name}: {e.Message}", typeof(PluginLoader), LogType.Error);
-            _Logger.LogException(e, typeof(PluginLoader));
+            _Logger.Log("Bot prefix is not set. Please set the bot prefix in the configuration.", this, LogType.Error);
             return false;
         }
+        
+        if (_discordClient is null)
+        {
+            _Logger.Log("Discord client is not set. Please set the discord client before starting events.", this, LogType.Error);
+            return false;
+        }
+        
+        string? resourcesFolder = _Configuration.Get<string>("ResourcesFolder");
+        if (string.IsNullOrEmpty(resourcesFolder))
+        {
+            _Logger.Log("Resources folder is not set. Please set the resources folder in the configuration.", this, LogType.Error);
+            return false;
+        }
+        
+        if (!Directory.Exists(resourcesFolder))
+        {
+            _Logger.Log("Resources folder does not exist. Please create the resources folder.", this, LogType.Error);
+            return false;
+        }
+        
+        string? eventConfigDirectory = Path.Combine(resourcesFolder, dbEvent.GetType().Assembly.GetName().Name);
+        
+        Directory.CreateDirectory(eventConfigDirectory);
+        
+        IDbEventExecutingArgument args = new DbEventExecutingArgument(
+            _Logger,
+            _discordClient, 
+            botPrefix,
+            new DirectoryInfo(eventConfigDirectory));
+        
+        dbEvent.Start(args);
+        
+        _Logger.Log("Event started: " + dbEvent.Name, this);
+        return true;
     }
     
     private async Task<Result> TryStartSlashCommand(IDbSlashCommand? dbSlashCommand)

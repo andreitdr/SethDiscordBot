@@ -25,7 +25,9 @@
             <td>@plugin.Author</td>
             <td>@plugin.Version</td>
             <td>
-                <a href="@plugin.DownloadUrl" class="btn btn-primary" target="_blank">Download</a>
+                <form method="post" asp-action="InstallPlugin" asp-route-pluginId="@plugin.Id">
+                    <button type="submit" class="btn btn-primary">Download</button>
+                </form>
             </td>
         </tr>
     }
