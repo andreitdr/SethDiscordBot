@@ -155,8 +155,6 @@ public sealed class PluginLoader : IPluginLoader
             new DirectoryInfo(eventConfigDirectory));
         
         dbEvent.Start(args);
-        
-        _Logger.Log("Event started: " + dbEvent.Name, this);
         return true;
     }
     
