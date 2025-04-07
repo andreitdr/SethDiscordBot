@@ -70,6 +70,35 @@ public class PluginsController : Controller
     }
 
     [HttpPost]
+    public async Task<IActionResult> GetPluginDetails(string? pluginName)
+    {
+        if (pluginName == null)
+        {
+            _logger.Log("The plugin name is invalid", this);
+            return BadRequest();
+        }
+        
+        _logger.Log($"Gathering information about {pluginName}", this);
+        
+        var pluginData = await _pluginManager.GetPluginDataByName(pluginName);
+        if (pluginData is null)
+        {
+            _logger.Log($"Plugin {pluginName} not found", this);
+            return NotFound("Plugin not found");
+        }
+        
+        PluginDetailsViewModel model = new PluginDetailsViewModel
+        {
+            PluginName = pluginName,
+            Author = pluginData.Author,
+            Description = pluginData.Description,
+            Version = pluginData.Version
+        };
+
+        return View("PluginDetails", model);
+    }
+
+    [HttpPost]
     public async Task<IActionResult> InstallPlugin(int pluginId)
     {
         var pluginData = await _pluginManager.GetPluginDataById(pluginId);

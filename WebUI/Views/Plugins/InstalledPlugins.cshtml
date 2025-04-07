@@ -24,7 +24,9 @@
                     <form method="post" asp-action="DeletePlugin" asp-route-pluginName="@plugin.Name">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
-                    <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#pluginDetailsModal-@plugin.Name">Details</button>
+                    <form method="post" asp-action="GetPluginDetails" asp-route-pluginName="@plugin.Name">
+                        <button type="submit" class="btn btn-info btn-sm" data-toggle="modal">Details</button>
+                    </form>
                 </td>
             </tr>
         }

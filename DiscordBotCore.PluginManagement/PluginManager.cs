@@ -209,12 +209,13 @@ public sealed class PluginManager : IPluginManager
 
     public async Task InstallPlugin(OnlinePlugin plugin, IProgress<float> progress)
     {
-        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
             throw new Exception("Plugin folder not found");
         }
+        
+        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
         
         string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
         
@@ -236,25 +237,6 @@ public sealed class PluginManager : IPluginManager
         
         LocalPlugin localPlugin = LocalPlugin.FromOnlineInfo(plugin, dependencies, downloadLocation);
         await AppendPluginToDatabase(localPlugin);
-    }
-    
-    public async Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin)
-    {
-        List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
-        string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
-        if (pluginsFolder is null)
-        {
-            throw new Exception("Plugin folder not found");
-        }
-        string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
-        var downloads = new Dictionary<string, string> { { downloadLocation, plugin.DownloadLink } };
-        foreach(var dependency in dependencies)
-        {
-            string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
-            downloads.Add(dependencyLocation, dependency.DownloadLink);
-        }
-
-        return (downloads, dependencies).ToTuple();
     }
 
     public async Task SetEnabledStatus(string pluginName, bool status)

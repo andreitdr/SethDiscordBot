@@ -16,6 +16,5 @@ public interface IPluginManager
     Task<string?> GetDependencyLocation(string dependencyName, string pluginName);
     string GenerateDependencyRelativePath(string pluginName, string dependencyPath);
     Task InstallPlugin(OnlinePlugin plugin, IProgress<float> progress);
-    Task<Tuple<Dictionary<string, string>, List<OnlineDependencyInfo>>> GatherInstallDataForPlugin(OnlinePlugin plugin);
     Task SetEnabledStatus(string pluginName, bool status);
 }
