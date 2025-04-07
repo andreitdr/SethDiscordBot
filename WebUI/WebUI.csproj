@@ -14,10 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DiscordBotCore.Configuration\DiscordBotCore.Configuration.csproj" />
-      <ProjectReference Include="..\DiscordBotCore.Logging\DiscordBotCore.Logging.csproj" />
-      <ProjectReference Include="..\DiscordBotCore.PluginManagement\DiscordBotCore.PluginManagement.csproj" />
-      <ProjectReference Include="..\DiscordBotCore\DiscordBotCore.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.Database.Sqlite\DiscordBotCore.Database.Sqlite.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.WebApplication\DiscordBotCore.WebApplication.csproj" />
     </ItemGroup>
 
 </Project>

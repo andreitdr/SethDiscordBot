@@ -5,6 +5,7 @@ using DiscordBotCore.Logging;
 using DiscordBotCore.PluginManagement;
 using DiscordBotCore.PluginManagement.Helpers;
 using DiscordBotCore.PluginManagement.Loading;
+using DiscordBotCore.WebApplication;
 using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
@@ -71,99 +72,9 @@ static Assembly? LoadFromSameFolder(object? sender, ResolveEventArgs args, strin
 
 var builder = WebApplication.CreateBuilder(args);
 
-string defaultLogFormat = "{ThrowTime} {SenderName} {Message}";
-string defaultLogFolder = "./Data/Logs";
-string defaultResourcesFolder = "./Data/Resources";
-string defaultConfigFile = "./Data/Resources/config.json";
-string defaultPluginFolder = "./Data/Plugins";
-string defaultPluginDatabaseFile = "./Data/Resources/plugins.json";
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<ILogger>(sp =>
-{
-    string logFormat = builder.Configuration["Logger:LogFormat"] ?? defaultLogFormat;
-    string logFolder = builder.Configuration["Logger:LogFolder"] ?? defaultLogFolder;
-    
-    Directory.CreateDirectory(logFolder);
-
-    ILogger logger = new Logger(logFolder, logFormat);
-    logger.SetOutFunction((s, type) =>
-    {
-        Console.WriteLine($"[{type}] {s}");
-    });
-    
-    return logger;
-});
-
-builder.Services.AddSingleton<IConfiguration>(sp =>
-{
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    string configFile = builder.Configuration["ConfigFile"] ?? defaultConfigFile;
-    Directory.CreateDirectory(new FileInfo(configFile).DirectoryName);
-    IConfiguration configuration = Configuration.CreateFromFile(logger, configFile, true);
-    return configuration;
-});
-
-builder.Services.AddSingleton<IPluginRepositoryConfiguration>(sp =>
-{
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    Dictionary<string, string>? remotePluginConnectionConfigurationDetails =
-        configuration.Get<Dictionary<string, string>>("RemotePluginConnectionConfigurationDetails");
-
-    if (remotePluginConnectionConfigurationDetails is null)
-    {
-        return PluginRepositoryConfiguration.Default;
-    }
-
-    return new PluginRepositoryConfiguration(
-        remotePluginConnectionConfigurationDetails["Baseurl"], remotePluginConnectionConfigurationDetails["PluginsEndpoint"],
-        remotePluginConnectionConfigurationDetails["DependenciesEndpoint"]
-    );
-});
-
-builder.Services.AddSingleton<IPluginRepository>(sp =>
-{
-    IPluginRepositoryConfiguration pluginRepositoryConfiguration = sp.GetRequiredService<IPluginRepositoryConfiguration>();
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    IPluginRepository pluginRepository = new PluginRepository(pluginRepositoryConfiguration, logger);
-    return pluginRepository;
-});
-
-builder.Services.AddSingleton<IPluginManager>(sp =>
-{
-    IPluginRepository pluginRepository = sp.GetRequiredService<IPluginRepository>();
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    
-    string pluginFolder = configuration.Get<string>("PluginFolder", defaultPluginFolder);
-    Directory.CreateDirectory(pluginFolder);
-    
-    string resourcesFolder = configuration.Get<string>("ResourcesFolder", defaultResourcesFolder);
-    Directory.CreateDirectory(resourcesFolder);
-    
-    string pluginDatabaseFile = configuration.Get<string>("PluginDatabase", defaultPluginDatabaseFile);
-    Directory.CreateDirectory(new FileInfo(pluginDatabaseFile).DirectoryName);
-    
-    IPluginManager pluginManager = new PluginManager(pluginRepository, logger, configuration);
-    return pluginManager;
-});
-
-builder.Services.AddSingleton<IPluginLoader>(sp =>
-{
-    IPluginManager pluginManager = sp.GetRequiredService<IPluginManager>();
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    return new PluginLoader(pluginManager, logger, configuration);
-});
-
-builder.Services.AddSingleton<IDiscordBotApplication>(sp =>
-{
-    ILogger logger = sp.GetRequiredService<ILogger>();
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    IPluginLoader pluginLoader = sp.GetRequiredService<IPluginLoader>();
-    return new DiscordBotApplication(logger, configuration, pluginLoader);
-});
+builder.AddDiscordBotComponents();
 
 var app = builder.Build();
 
