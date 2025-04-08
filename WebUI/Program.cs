@@ -10,6 +10,7 @@ using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
 #region Load External (Unmanaged) Assemblies
+
 // This code is used to load external (unmanaged) assemblies from the same folder as the executing assembly.
 // It handles the AssemblyResolve event to search for the requested assembly in a specific folder structure.
 // The folder structure is expected to be: <ExecutingAssemblyDirectory>/Libraries/<RequestingAssemblyName>/<AssemblyName>.<Extension>

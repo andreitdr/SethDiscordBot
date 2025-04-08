@@ -1,5 +1,4 @@
 using DiscordBotCore.PluginManagement;
-using DiscordBotCore.PluginManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Models;
 using ILogger = DiscordBotCore.Logging.ILogger;
