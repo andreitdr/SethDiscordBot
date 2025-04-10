@@ -18,7 +18,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private CommandService _Service;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
-    private readonly IPluginLoader _PluginLoader;
+    private readonly IPluginLoader _pluginLoader;
     
     public bool IsReady { get; private set; }
     
@@ -27,11 +27,11 @@ public class DiscordBotApplication : IDiscordBotApplication
     /// <summary>
     ///     The main Boot constructor
     /// </summary>
-    public DiscordBotApplication(ILogger logger, IConfiguration configuration, IPluginLoader pluginLoader)
+    public DiscordBotApplication(ILogger logger, IConfiguration configuration, IPluginLoader pluginLoaderOld)
     {
         this._Logger    = logger;
         this._Configuration = configuration;
-        this._PluginLoader = pluginLoader;
+        this._pluginLoader = pluginLoaderOld;
     }
 
     public async Task StopAsync()
@@ -84,7 +84,7 @@ public class DiscordBotApplication : IDiscordBotApplication
 
         await client.StartAsync();
 
-        _CommandServiceHandler = new CommandHandler(_Logger, _PluginLoader, _Configuration, _Service, _Configuration.Get<string>("prefix", _DefaultPrefix));
+        _CommandServiceHandler = new CommandHandler(_Logger, _pluginLoader, _Configuration, _Service, _Configuration.Get<string>("prefix", _DefaultPrefix));
 
         await _CommandServiceHandler.InstallCommandsAsync(client);
         
@@ -113,7 +113,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private Task LoggedIn()
     {
         _Logger.Log("Successfully Logged In", this);
-        _PluginLoader.SetClient(Client);
+        _pluginLoader.SetDiscordClient(Client);
         return Task.CompletedTask;
     }
 
