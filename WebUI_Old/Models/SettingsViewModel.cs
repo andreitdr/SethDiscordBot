@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WebUI.Models;
+namespace WebUI_OLD.Models;
 
 public class SettingsViewModel
 {

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using WebUI.Models;
+using WebUI_OLD.Models;
 using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
-namespace WebUI.Controllers;
+namespace WebUI_OLD.Controllers;
 
 public class SettingsController : Controller
 {

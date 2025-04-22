@@ -31,11 +31,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotCore.Configuratio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotCore.PluginManagement.Loading", "DiscordBotCore.PluginManagement.Loading\DiscordBotCore.PluginManagement.Loading.csproj", "{E8ED73E1-F7D9-44E7-9542-21BC86338724}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj", "{F2E2C2D7-C030-4350-907F-86D5B2AAEA0B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotCore.Database.Sqlite", "DiscordBotCore.Database.Sqlite\DiscordBotCore.Database.Sqlite.csproj", "{6D43E9A7-A295-41AC-8B2A-9A877FABB5DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotCore.WebApplication", "DiscordBotCore.WebApplication\DiscordBotCore.WebApplication.csproj", "{A65A1D7A-99E9-463F-A205-F96CA54D5C51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI_OLD", "WebUI_Old\WebUI_OLD.csproj", "{1D58D773-9BB0-422D-8819-83AF0DF7CCA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj", "{DE42253E-2ED6-4653-B9CC-C2C2551E1EA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,10 +89,6 @@ Global
 		{E8ED73E1-F7D9-44E7-9542-21BC86338724}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8ED73E1-F7D9-44E7-9542-21BC86338724}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8ED73E1-F7D9-44E7-9542-21BC86338724}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2E2C2D7-C030-4350-907F-86D5B2AAEA0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2E2C2D7-C030-4350-907F-86D5B2AAEA0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2E2C2D7-C030-4350-907F-86D5B2AAEA0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2E2C2D7-C030-4350-907F-86D5B2AAEA0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D43E9A7-A295-41AC-8B2A-9A877FABB5DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D43E9A7-A295-41AC-8B2A-9A877FABB5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D43E9A7-A295-41AC-8B2A-9A877FABB5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -99,6 +97,14 @@ Global
 		{A65A1D7A-99E9-463F-A205-F96CA54D5C51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A65A1D7A-99E9-463F-A205-F96CA54D5C51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A65A1D7A-99E9-463F-A205-F96CA54D5C51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D58D773-9BB0-422D-8819-83AF0DF7CCA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D58D773-9BB0-422D-8819-83AF0DF7CCA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D58D773-9BB0-422D-8819-83AF0DF7CCA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D58D773-9BB0-422D-8819-83AF0DF7CCA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE42253E-2ED6-4653-B9CC-C2C2551E1EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE42253E-2ED6-4653-B9CC-C2C2551E1EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE42253E-2ED6-4653-B9CC-C2C2551E1EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE42253E-2ED6-4653-B9CC-C2C2551E1EA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

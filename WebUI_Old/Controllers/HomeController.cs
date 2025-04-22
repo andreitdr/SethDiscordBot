@@ -3,7 +3,7 @@ using DiscordBotCore.PluginManagement.Loading;
 using Microsoft.AspNetCore.Mvc;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
-namespace WebUI.Controllers;
+namespace WebUI_OLD.Controllers;
 
 public class HomeController : Controller
 {

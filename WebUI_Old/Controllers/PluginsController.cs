@@ -1,9 +1,9 @@
 using DiscordBotCore.PluginManagement;
 using Microsoft.AspNetCore.Mvc;
-using WebUI.Models;
+using WebUI_OLD.Models;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
-namespace WebUI.Controllers;
+namespace WebUI_OLD.Controllers;
 
 public class PluginsController : Controller
 {

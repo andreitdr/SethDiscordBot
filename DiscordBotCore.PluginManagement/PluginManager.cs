@@ -108,6 +108,7 @@ public sealed class PluginManager : IPluginManager
         if (!File.Exists(pluginDatabaseFile))
         {
             _Logger.Log("Plugin database file not found", this, LogType.Warning);
+            await CreateEmptyPluginDatabase();
             return [];
         }
         
@@ -252,5 +253,26 @@ public sealed class PluginManager : IPluginManager
         await RemovePluginFromDatabase(pluginName);
         await AppendPluginToDatabase(plugin);
 
+    }
+
+    private async Task<bool> CreateEmptyPluginDatabase()
+    {
+        string ? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
+        if (pluginDatabaseFile is null)
+        {
+            _Logger.Log("Plugin database file path is not present in the config file", this, LogType.Warning);
+            return false;
+        }
+        
+        if (File.Exists(pluginDatabaseFile))
+        {
+            _Logger.Log("Plugin database file already exists", this, LogType.Warning);
+            return false;
+        }
+        
+        List<LocalPlugin> installedPlugins = new List<LocalPlugin>();
+        await JsonManager.SaveToJsonFile(pluginDatabaseFile, installedPlugins);
+        _Logger.Log("Plugin database file created", this, LogType.Info);
+        return true;
     }
 }

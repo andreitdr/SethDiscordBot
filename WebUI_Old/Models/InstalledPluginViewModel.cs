@@ -1,4 +1,4 @@
-namespace WebUI.Models;
+namespace WebUI_OLD.Models;
 
 public class InstalledPluginViewModel
 {

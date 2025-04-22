@@ -1,0 +1,142 @@
+@page "/plugins/local"
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement
+@using DiscordBotCore.PluginManagement.Models
+
+<h3>Installed Plugins</h3>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Version</th>
+        <th>Offline Added</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var plugin in _installedPlugins)
+    {
+        <tr>
+            <td>@plugin.Name</td>
+            <td>@plugin.Version</td>
+            <td>@(plugin.IsOfflineAdded ? "Yes" : "No")</td>
+            <td>
+                <button class="btn btn-danger btn-sm" @onclick="async () => await DeletePluginButtonClick(plugin.Name)">Delete</button>
+                <button class="btn btn-info btn-sm" @onclick="async () => await PluginDetailsButtonClick(plugin.Name)">Details</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_showPluginDetailsModal && _selectedPluginDetails != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Plugin Details: @_selectedPluginDetails.Name</h5>
+                    <button type="button" class="btn-close" @onclick="ClosePluginDetailsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Version:</strong> @_selectedPluginDetails.Version</p>
+                    <p><strong>Author:</strong> @_selectedPluginDetails.Author</p>
+                    <p><strong>Description:</strong> @_selectedPluginDetails.Description</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="ClosePluginDetailsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Inject]
+    public IPluginManager PluginManager { get; set; }
+    
+    [Inject]
+    public ILogger Logger { get; set; }
+
+    private readonly List<InstalledPlugin> _installedPlugins = new List<InstalledPlugin>();
+    
+    private bool _showPluginDetailsModal;
+    private OnlinePlugin? _selectedPluginDetails;
+
+    private async Task DeletePluginButtonClick(string pluginName)
+    {
+        Logger.Log($"Deleting plugin {pluginName}", this);
+
+        bool result = await PluginManager.MarkPluginToUninstall(pluginName);
+        
+        if (!result)
+        {
+            Logger.Log($"Failed to delete plugin {pluginName}", this, LogType.Error);
+            return;
+        }
+        
+        _installedPlugins.RemoveAll(p => p.Name == pluginName);
+        Logger.Log($"Plugin {pluginName} deleted", this);
+        StateHasChanged();
+    }
+    
+    private async Task PluginDetailsButtonClick(string pluginName)
+    {
+        Logger.Log($"Getting plugin details for {pluginName}", this);
+        var pluginDetails = await PluginManager.GetPluginDataByName(pluginName);
+        if (pluginDetails == null)
+        {
+            Logger.Log($"Failed to get details for plugin {pluginName}", this, LogType.Error);
+            return;
+        }
+        
+        _selectedPluginDetails = pluginDetails;
+        _showPluginDetailsModal = true;
+        
+        Logger.Log($"Plugin details for {pluginName} retrieved", this);
+        StateHasChanged();
+    }
+    
+    private void ClosePluginDetailsModal()
+    {
+        Logger.Log("Closing plugin details modal", this);
+        _showPluginDetailsModal = false;
+        _selectedPluginDetails = null;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.Log("Local plugins page initialized", this);
+        var plugins = await PluginManager.GetInstalledPlugins();
+        if (!plugins.Any())
+        {
+            Logger.Log("No plugins found", this, LogType.Warning);
+            return;
+        }
+        
+        Logger.Log($"Found {plugins.Count} plugins", this);
+        _installedPlugins.Clear();
+        
+        foreach (var plugin in plugins)
+        {
+            var installedPlugin = new InstalledPlugin
+            {
+                Name = plugin.PluginName,
+                Version = plugin.PluginVersion,
+                IsOfflineAdded = plugin.IsOfflineAdded
+            };
+            _installedPlugins.Add(installedPlugin);
+        }
+        
+        StateHasChanged();
+    }
+
+    private class InstalledPlugin
+    {
+        public string Name { get; set; }
+        public string Version { get; set; }
+        public bool IsOfflineAdded { get; set; }
+    }
+}
