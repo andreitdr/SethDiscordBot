@@ -136,7 +136,8 @@ public class PluginRepository : IPluginRepository
             List<OnlineDependencyInfo> dependencies = await JsonManager.ConvertFromJson<List<OnlineDependencyInfo>>(content);
         
             return dependencies;
-        }catch(HttpRequestException exception)
+        }
+        catch(HttpRequestException exception)
         {
             _logger.LogException(exception, this);
             return [];

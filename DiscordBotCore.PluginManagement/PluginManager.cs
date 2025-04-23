@@ -127,48 +127,6 @@ public sealed class PluginManager : IPluginManager
         return installedPlugins.Any(plugin => plugin.PluginName == pluginName);
     }
 
-    public async Task<bool> MarkPluginToUninstall(string pluginName)
-    {
-        List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
-        List<LocalPlugin> info = installedPlugins.Where(info => info.PluginName == pluginName).ToList();
-
-        if (!info.Any())
-            return false;
-
-        foreach (var item in info)
-        {
-            await RemovePluginFromDatabase(item.PluginName);
-            item.IsMarkedToUninstall = true;
-            await AppendPluginToDatabase(item);
-        }
-        
-        return true;
-    }
-
-    public async Task UninstallMarkedPlugins()
-    {
-        IEnumerable<LocalPlugin> installedPlugins = (await GetInstalledPlugins()).AsEnumerable();
-        IEnumerable<LocalPlugin> pluginsToRemove = installedPlugins.Where(plugin => plugin.IsMarkedToUninstall).AsEnumerable();
-
-        foreach (var plugin in pluginsToRemove)
-        {
-            await UninstallPlugin(plugin);
-        }
-    }
-
-    private async Task UninstallPlugin(LocalPlugin LocalPlugin)
-    {
-        File.Delete(LocalPlugin.FilePath);
-
-        foreach (var dependency in LocalPlugin.ListOfExecutableDependencies)
-            File.Delete(dependency.Value);
-
-        await RemovePluginFromDatabase(LocalPlugin.PluginName);
-
-        if (Directory.Exists($"{_LibrariesBaseFolder}/{LocalPlugin.PluginName}"))
-            Directory.Delete($"{_LibrariesBaseFolder}/{LocalPlugin.PluginName}", true);
-    }
-
     public async Task<string?> GetDependencyLocation(string dependencyName)
     {
         List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
@@ -253,6 +211,45 @@ public sealed class PluginManager : IPluginManager
         await RemovePluginFromDatabase(pluginName);
         await AppendPluginToDatabase(plugin);
 
+    }
+
+    public async Task<bool> UninstallPluginByName(string pluginName)
+    {
+        var localPlugin = await GetLocalPluginByName(pluginName);
+        if (localPlugin == null)
+        {
+            return false;
+        }
+        
+        File.Delete(localPlugin.FilePath);
+
+        if (Directory.Exists($"./{_LibrariesBaseFolder}/{pluginName}"))
+        {
+            foreach (var file in Directory.EnumerateFiles($"./{_LibrariesBaseFolder}/{pluginName}"))
+            {
+                File.Delete(file);
+            }
+        }
+        
+        await RemovePluginFromDatabase(pluginName);
+        
+        _Logger.Log($"Plugin {pluginName} uninstalled successfully", this, LogType.Info);
+
+        return true;
+    }
+
+    public async Task<LocalPlugin?> GetLocalPluginByName(string pluginName)
+    {
+        List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
+        var plugin = installedPlugins.Find(p => p.PluginName == pluginName);
+
+        if (plugin == null)
+        {
+            _Logger.Log($"Plugin {pluginName} not found in the database", this, LogType.Warning);
+            return null;
+        }
+
+        return plugin;
     }
 
     private async Task<bool> CreateEmptyPluginDatabase()

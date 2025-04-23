@@ -8,17 +8,15 @@ public class LocalPlugin
     public string PluginVersion { get; private set; }
     public string FilePath { get; private set; }
     public Dictionary<string, string> ListOfExecutableDependencies {get; private set;}
-    public bool IsMarkedToUninstall {get; internal set;}
     public bool IsOfflineAdded { get; internal set; }
     public bool IsEnabled { get; internal set; }
 
     [JsonConstructor]
-    public LocalPlugin(string pluginName, string pluginVersion, string filePath, Dictionary<string, string> listOfExecutableDependencies, bool isMarkedToUninstall, bool isOfflineAdded, bool isEnabled)
+    public LocalPlugin(string pluginName, string pluginVersion, string filePath, Dictionary<string, string> listOfExecutableDependencies, bool isOfflineAdded, bool isEnabled)
     {
         PluginName = pluginName;
         PluginVersion = pluginVersion;
         ListOfExecutableDependencies = listOfExecutableDependencies;
-        IsMarkedToUninstall = isMarkedToUninstall;
         FilePath = filePath;
         IsOfflineAdded = isOfflineAdded;
         IsEnabled = isEnabled;
@@ -30,7 +28,6 @@ public class LocalPlugin
         PluginName = pluginName;
         PluginVersion = pluginVersion;
         ListOfExecutableDependencies = listOfExecutableDependencies;
-        IsMarkedToUninstall = false;
         FilePath = filePath;
         IsOfflineAdded = false;
         IsEnabled = true;

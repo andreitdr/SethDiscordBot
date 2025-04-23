@@ -3,6 +3,7 @@
 
 @using DiscordBotCore.Logging
 @using DiscordBotCore.PluginManagement
+@using DiscordBotCore.PluginManagement.Loading
 @using DiscordBotCore.PluginManagement.Models
 
 <h3>Installed Plugins</h3>
@@ -60,6 +61,9 @@
     
     [Inject]
     public ILogger Logger { get; set; }
+    
+    [Inject]
+    public IPluginLoader PluginLoader { get; set; }
 
     private readonly List<InstalledPlugin> _installedPlugins = new List<InstalledPlugin>();
     
@@ -68,9 +72,14 @@
 
     private async Task DeletePluginButtonClick(string pluginName)
     {
+        
+        //TODO: Unload the plugin
+        
+        PluginLoader.UnloadAllPlugins();
+        
         Logger.Log($"Deleting plugin {pluginName}", this);
 
-        bool result = await PluginManager.MarkPluginToUninstall(pluginName);
+        bool result = await PluginManager.UninstallPluginByName(pluginName);
         
         if (!result)
         {
@@ -80,6 +89,9 @@
         
         _installedPlugins.RemoveAll(p => p.Name == pluginName);
         Logger.Log($"Plugin {pluginName} deleted", this);
+
+        await PluginLoader.LoadPlugins();
+        
         StateHasChanged();
     }
     

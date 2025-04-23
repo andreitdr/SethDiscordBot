@@ -111,7 +111,7 @@ public class PluginLoader : IPluginLoader
         
         var files = installedPlugins.Where(plugin => plugin.IsEnabled).Select(plugin => plugin.FilePath);
         
-        PluginLoaderContext = new PluginLoaderContext("PluginLoader");
+        PluginLoaderContext = new PluginLoaderContext(_Logger, "PluginLoader");
         
         foreach (var file in files)
         {
