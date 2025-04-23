@@ -1,9 +1,11 @@
 @page "/plugins/online"
+@rendermode InteractiveServer
+
 @using DiscordBotCore.Logging
 @using DiscordBotCore.PluginManagement
 
-<h3>Available Plugins</h3>
 
+<h3>Available Plugins</h3>
 @if (_onlinePlugins.Any())
 {
     <table class="table table-bordered">
@@ -25,7 +27,7 @@
                 <td>@plugin.Author</td>
                 <td>@plugin.Version</td>
                 <td>
-                    <button type="button" class="btn btn-primary" @onmousedown="async () => await InstallPlugin(plugin.Id)">Download</button>
+                    <button type="button" class="btn" @onclick="async () => await InstallPlugin(plugin.Id)">Download</button>
                 </td>
             </tr>
         }
@@ -104,6 +106,9 @@ else
             };
             _onlinePlugins.Add(onlinePlugin);
         }
+        
+        Logger.Log($"Found {_onlinePlugins.Count} online plugins.", this);
+        StateHasChanged();
     }
 
     private async Task InstallPlugin(int pluginId)
@@ -128,6 +133,7 @@ else
 
         Logger.Log($"Plugin {pluginData.Name} installed successfully.", this);
         CloseInstallPercentageModal();
+        StateHasChanged();
     }
 
     private void CloseInstallPercentageModal()

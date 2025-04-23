@@ -28,18 +28,27 @@ public class PluginRepository : IPluginRepository
                 { "operatingSystem", operatingSystem.ToString() },
                 { "includeNotApproved", includeNotApproved.ToString() }
             });
-        
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
 
-        if (!response.IsSuccessStatusCode)
+        try
         {
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return [];
+            }
+
+            string content = await response.Content.ReadAsStringAsync();
+            List<OnlinePlugin> plugins = await JsonManager.ConvertFromJson<List<OnlinePlugin>>(content);
+
+            return plugins;
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogException(exception,this);
             return [];
         }
-        
-        string content = await response.Content.ReadAsStringAsync();
-        List<OnlinePlugin> plugins = await JsonManager.ConvertFromJson<List<OnlinePlugin>>(content);
-        
-        return plugins;
+
     }
 
     public async Task<OnlinePlugin?> GetPluginById(int pluginId)
@@ -50,17 +59,27 @@ public class PluginRepository : IPluginRepository
                 { "pluginId", pluginId.ToString() },
                 { "includeNotApproved", "false" }
             });
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
 
-        if (!response.IsSuccessStatusCode)
+        try
         {
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            string content = await response.Content.ReadAsStringAsync();
+            OnlinePlugin plugin = await JsonManager.ConvertFromJson<OnlinePlugin>(content);
+
+            return plugin;
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogException(exception, this);
             return null;
         }
-        
-        string content = await response.Content.ReadAsStringAsync();
-        OnlinePlugin plugin = await JsonManager.ConvertFromJson<OnlinePlugin>(content);
-        
-        return plugin;
+
     }
 
     public async Task<OnlinePlugin?> GetPluginByName(string pluginName, int operatingSystem, bool includeNotApproved)
@@ -72,18 +91,28 @@ public class PluginRepository : IPluginRepository
                 { "operatingSystem", operatingSystem.ToString() },
                 { "includeNotApproved", includeNotApproved.ToString() }
             });
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
 
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            _logger.Log($"Plugin {pluginName} not found");
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.Log($"Plugin {pluginName} not found");
+                return null;
+            }
+
+            string content = await response.Content.ReadAsStringAsync();
+            OnlinePlugin plugin = await JsonManager.ConvertFromJson<OnlinePlugin>(content);
+
+            return plugin;
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogException(exception, this);
             return null;
         }
-        
-        string content = await response.Content.ReadAsStringAsync();
-        OnlinePlugin plugin = await JsonManager.ConvertFromJson<OnlinePlugin>(content);
-        
-        return plugin;
+
     }
 
     public async Task<List<OnlineDependencyInfo>> GetDependenciesForPlugin(int pluginId)
@@ -93,18 +122,26 @@ public class PluginRepository : IPluginRepository
             {
                 { "pluginId", pluginId.ToString() }
             });
-        
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
-        if(!response.IsSuccessStatusCode)
+
+        try
         {
-            _logger.Log($"Failed to get dependencies for plugin with ID {pluginId}");
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            if(!response.IsSuccessStatusCode)
+            {
+                _logger.Log($"Failed to get dependencies for plugin with ID {pluginId}");
+                return [];
+            }
+        
+            string content = await response.Content.ReadAsStringAsync();
+            List<OnlineDependencyInfo> dependencies = await JsonManager.ConvertFromJson<List<OnlineDependencyInfo>>(content);
+        
+            return dependencies;
+        }catch(HttpRequestException exception)
+        {
+            _logger.LogException(exception, this);
             return [];
         }
-        
-        string content = await response.Content.ReadAsStringAsync();
-        List<OnlineDependencyInfo> dependencies = await JsonManager.ConvertFromJson<List<OnlineDependencyInfo>>(content);
-        
-        return dependencies;
+
     }
 
     private string CreateUrlWithQueryParams(string baseUrl, string endpoint, Dictionary<string, string> queryParams)

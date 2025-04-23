@@ -4,4 +4,16 @@
 
 <h1>Hello, world!</h1>
 
+<button type="button" class="btn" @onclick="() => ClickTest(2)">Name</button>
+
 Welcome to your new app.
+
+
+@code {
+
+    private void ClickTest(int i)
+    {
+        Console.WriteLine($"Clicked {i}");
+    }
+
+}
