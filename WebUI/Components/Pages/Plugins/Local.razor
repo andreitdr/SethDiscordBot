@@ -71,10 +71,7 @@
     private OnlinePlugin? _selectedPluginDetails;
 
     private async Task DeletePluginButtonClick(string pluginName)
-    {
-        
-        //TODO: Unload the plugin
-        
+    {   
         PluginLoader.UnloadAllPlugins();
         
         Logger.Log($"Deleting plugin {pluginName}", this);
