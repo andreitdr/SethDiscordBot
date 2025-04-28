@@ -38,9 +38,9 @@ public class PluginLoader : IPluginLoader
 
     public void SetDiscordClient(DiscordSocketClient discordSocketClient)
     {
-        if (_DiscordClient is not null)
+        if (_DiscordClient is not null && discordSocketClient == _DiscordClient)
         {
-            _Logger.Log("A client is already set. Please set the client only once.", this, LogType.Error);
+            _Logger.Log("A client is already set. Please set the client only once.", this, LogType.Warning);
             return;
         }
         

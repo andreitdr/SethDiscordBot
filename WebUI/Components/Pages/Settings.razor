@@ -1,0 +1,115 @@
+@page "/settings"
+@using System.ComponentModel.DataAnnotations
+@using DiscordBotCore.Configuration
+@using DiscordBotCore.Logging
+
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+@if (_settingsViewModel is not null)
+{
+    <EditForm Model="@_settingsViewModel" OnValidSubmit="HandleSubmitTask">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label" for="tokenInput">Token</label>
+            <InputText id="tokenInput" class="form-control" @bind-Value="_settingsViewModel.Token" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="prefixInput">Prefix</label>
+            <InputText id="prefixInput" class="form-control" @bind-Value="_settingsViewModel.Prefix" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="serverIdsInput">Server IDs (comma-separated)</label>
+            <InputTextArea id="serverIdsInput" class="form-control" @bind-Value="_settingsViewModel.ServerIds" Rows="3" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </EditForm>
+}
+@code {
+    [Inject]
+    public ILogger Logger { get; set; }
+    
+    [Inject]
+    public IConfiguration Configuration { get; set; }
+    
+    private SettingsViewModel? _settingsViewModel;
+    
+    protected override void OnInitialized()
+    {
+        var token = Configuration.Get<string>("token");
+        var prefix = Configuration.Get<string>("prefix");
+        var serverIds = Configuration.GetList<ulong>("ServerIds", new List<ulong>());
+        if(token == null || prefix == null)
+        {
+            Logger.Log("Token or Prefix is not set in the configuration.", this);
+            _settingsViewModel = new SettingsViewModel
+            {
+                Token = "",
+                Prefix = "",
+                ServerIds = ""
+            };
+            
+            return;
+        }
+        
+        
+        _settingsViewModel = new SettingsViewModel
+        {
+            Token = token,
+            Prefix = prefix,
+            ServerIds = string.Join(",", serverIds)
+        };
+        
+        StateHasChanged();
+    }
+
+    private async Task HandleSubmitTask()
+    {
+        if (_settingsViewModel is null)
+        {
+            return;
+        }
+        
+        var token = _settingsViewModel.Token;
+        var prefix = _settingsViewModel.Prefix;
+        var serverIds = _settingsViewModel.ServerIds
+            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(id => ulong.TryParse(id.Trim(), out var result) ? result : 0)
+            .Where(id => id != 0)
+            .ToList();
+
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(prefix))
+        {
+            return;
+        }
+        
+        Configuration.Set("token", token);
+        Configuration.Set("prefix", prefix);
+        Configuration.Set("ServerIds", serverIds);
+
+        await Configuration.SaveToFile();
+        Logger.Log("Settings saved successfully.", this);
+        
+        Navigation.NavigateTo($"/");
+    }
+    
+
+    private class SettingsViewModel
+    {
+        [Required(ErrorMessage = "Token is required.")]
+        public string Token { get; set; }
+
+        [Required(ErrorMessage = "Prefix is required.")]
+        public string Prefix { get; set; }
+
+        [Required(ErrorMessage = "Server IDs are required.")]
+        public string ServerIds { get; set; }
+    }
+
+}

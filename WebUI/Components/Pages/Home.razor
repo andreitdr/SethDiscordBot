@@ -1,7 +1,122 @@
 ﻿@page "/"
+@using DiscordBotCore.Bot
+@using DiscordBotCore.PluginManagement.Loading
+@inject IDiscordBotApplication DiscordBotApplication
+@inject IPluginLoader PluginLoader
+@inject DiscordBotCore.Logging.ILogger Logger
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+<h3>Console Log Viewer</h3>
 
-<PageTitle>Home</PageTitle>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Console Log</h4>
+            <div id="consoleLog" class="border p-3 bg-dark text-white" style="height: 400px; overflow-y: auto; font-family: monospace;">
+                @foreach (var line in Logs)
+                {
+                    <div style="@GetLogStyle(line)">@line</div>
+                }
+            </div>
+        </div>
 
-<h1>Hello, world!</h1>
+        <div class="col-md-4">
+            <h4>Controls</h4>
+            <button class="btn btn-success mb-2" @onclick="StartApplication" disabled="@IsRunning">Start Application</button>
+            <button class="btn btn-danger mb-2" @onclick="StopApplication" disabled="@(!IsRunning)">Stop Application</button>
+            <button class="btn btn-info mb-2" @onclick="LoadPlugins" disabled="@(!IsRunning)">Load Plugins</button>
+        </div>
+    </div>
+</div>
 
-Welcome to your new app.
+<script>
+    window.scrollToBottom = function (elementId) {
+        var el = document.getElementById(elementId);
+        if (el) {
+            el.scrollTop = el.scrollHeight;
+        }
+    }
+</script>
+
+
+@code {
+    private bool IsRunning { get; set; }
+    private List<string> Logs { get; set; } = new();
+    private Timer? _logTimer;
+    private int _lastLogCount = 0;
+    private readonly object _logLock = new();
+
+    protected override void OnInitialized()
+    {
+        IsRunning = DiscordBotApplication.IsReady;
+        
+        _logTimer = new Timer(async _ => await RefreshLogsAsync(), null, 0, 2000);
+    }
+
+    private async Task StartApplication()
+    {
+        if (!DiscordBotApplication.IsReady)
+        {
+            await DiscordBotApplication.StartAsync();
+            Logger.Log("Application started", this);
+        }
+        IsRunning = DiscordBotApplication.IsReady;
+    }
+
+    private async Task StopApplication()
+    {
+        if (DiscordBotApplication.IsReady)
+        {
+            await DiscordBotApplication.StopAsync();
+            Logger.Log("Application stopped", this);
+        }
+        IsRunning = DiscordBotApplication.IsReady;
+    }
+
+    private async Task LoadPlugins()
+    {
+        Logger.Log("Loading plugins", this);
+        await PluginLoader.LoadPlugins();
+        Logger.Log("Plugins loaded", this);
+    }
+
+    private string GetLogStyle(string line)
+    {
+        if (line.Contains("[Error]")) return "color: #ff4d4d;";
+        if (line.Contains("[Warning]")) return "color: #ffa500;";
+        if (line.Contains("[Debug]")) return "color: #88f;";
+        return "";
+    }
+
+    private async Task RefreshLogsAsync()
+    {
+        try
+        {
+            var logText = Logger.GetLogsHistory();
+            var newLogs = logText.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+            if (newLogs.Length != _lastLogCount)
+            {
+                lock (_logLock)
+                {
+                    Logs = newLogs.ToList();
+                    _lastLogCount = newLogs.Length;
+                }
+                await InvokeAsync(async () =>
+                {
+                    StateHasChanged();
+                    await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            
+        }
+    }
+
+    public void Dispose()
+    {
+        _logTimer?.Dispose();
+    }
+}
