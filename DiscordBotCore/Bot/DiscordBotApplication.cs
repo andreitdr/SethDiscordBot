@@ -12,6 +12,8 @@ namespace DiscordBotCore.Bot;
 
 public class DiscordBotApplication : IDiscordBotApplication
 {
+    internal static IPluginLoader _InternalPluginLoader;
+    
     private static readonly string _DefaultPrefix = ";";
     
     private CommandHandler _CommandServiceHandler;
@@ -27,11 +29,13 @@ public class DiscordBotApplication : IDiscordBotApplication
     /// <summary>
     ///     The main Boot constructor
     /// </summary>
-    public DiscordBotApplication(ILogger logger, IConfiguration configuration, IPluginLoader pluginLoaderOld)
+    public DiscordBotApplication(ILogger logger, IConfiguration configuration, IPluginLoader pluginLoader)
     {
         this._Logger    = logger;
         this._Configuration = configuration;
-        this._pluginLoader = pluginLoaderOld;
+        this._pluginLoader = pluginLoader;
+        
+        _InternalPluginLoader = pluginLoader;
     }
 
     public async Task StopAsync()

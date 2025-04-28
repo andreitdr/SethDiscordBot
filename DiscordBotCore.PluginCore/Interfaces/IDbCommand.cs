@@ -15,7 +15,7 @@ public interface IDbCommand
     /// <summary>
     ///     Command aliases. Users may use this to execute the command
     /// </summary>
-    List<string>? Aliases { get; }
+    List<string> Aliases { get; }
 
     /// <summary>
     ///     Command description

@@ -112,7 +112,6 @@ internal class CommandHandler : ICommandHandler
                                      .FirstOrDefault(plug => plug.Command ==
                                                              message.Content.Substring(mentionPrefix.Length + 1)
                                                                     .Split(' ')[0] ||
-                                                             plug.Aliases is not null &&
                                                              plug.Aliases.Contains(message.CleanContent
                                                                                           .Substring(mentionPrefix.Length + 1)
                                                                                           .Split(' ')[0]
@@ -127,7 +126,6 @@ internal class CommandHandler : ICommandHandler
                 plugin = _pluginLoader.Commands!
                                      .FirstOrDefault(p => p.Command ==
                                                           message.Content.Split(' ')[0].Substring(_botPrefix.Length) ||
-                                                          p.Aliases is not null &&
                                                           p.Aliases.Contains(
                                                               message.Content.Split(' ')[0]
                                                                      .Substring(_botPrefix.Length)
