@@ -1,0 +1,103 @@
+@page "/plugins/add-local"
+@using System.ComponentModel.DataAnnotations
+
+@using DiscordBotCore.Configuration
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement
+@using DiscordBotCore.PluginManagement.Models
+
+@inject NavigationManager Navigation
+
+@inject IPluginManager PluginManager
+@inject IConfiguration Configuration
+@inject ILogger Logger
+
+@rendermode InteractiveServer
+
+<h3>Upload Plugin</h3>
+
+<EditForm Model="@pluginModel" OnValidSubmit="HandleValidSubmit" FormName="pluginForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Plugin Name:</label>
+        <InputText @bind-Value="pluginModel.Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Plugin Version:</label>
+        <InputText @bind-Value="pluginModel.Version" class="form-control" />
+        @if (!IsValidVersion)
+        {
+            <div class="text-danger">Version must be in format X.X.X</div>
+        }
+    </div>
+
+    <div class="form-group">
+        <InputCheckbox @bind-Value="pluginModel.IsEnabled" /> Enable Plugin
+    </div>
+
+    <div class="form-group">
+        <label>Select DLL File:</label>
+        <InputFile OnChange="HandleFileSelected" />
+        @if (selectedFileName != null)
+        {
+            <div>Selected: @selectedFileName</div>
+        }
+    </div>
+
+    <button class="btn btn-primary" type="submit">Upload</button>
+</EditForm>
+
+@code {
+    private PluginUploadModel pluginModel = new();
+    private IBrowserFile? selectedFile;
+    private string? selectedFileName;
+
+    private bool IsValidVersion => System.Text.RegularExpressions.Regex.IsMatch(pluginModel.Version ?? "", @"^\d+\.\d+\.\d+$");
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        selectedFileName = selectedFile.Name;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!IsValidVersion || selectedFile is null || string.IsNullOrEmpty(selectedFileName))
+        {
+            return;
+        }
+
+        string? pluginsFolder = Configuration.Get<string>("PluginFolder");
+        
+        if (string.IsNullOrEmpty(pluginsFolder))
+        {
+            Logger.Log("Plugins folder is not set in the configuration.", this, LogType.Error);
+            return;
+        }
+        
+        string filePath = Path.Combine(pluginsFolder, selectedFileName);
+        
+        await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        await using var fileStream = File.Create(filePath);
+        await stream.CopyToAsync(fileStream);
+
+        LocalPlugin plugin = new LocalPlugin(pluginModel.Name, pluginModel.Version, filePath, new(), true, pluginModel.IsEnabled);
+        await PluginManager.AppendPluginToDatabase(plugin);
+
+        Navigation.NavigateTo("/");
+    }
+
+    public class PluginUploadModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string Version { get; set; } = string.Empty;
+
+        public bool IsEnabled { get; set; }
+    }
+}

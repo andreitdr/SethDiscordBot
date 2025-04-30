@@ -91,6 +91,12 @@ public sealed class PluginManager : IPluginManager
         {
             pluginData.ListOfExecutableDependencies[dependency.Key] = dependency.Value;
         }
+        
+        if (installedPlugins.Any(plugin => plugin.PluginName == pluginData.PluginName))
+        {
+            _Logger.Log($"Plugin {pluginData.PluginName} already exists in the database. Updating...", this, LogType.Info);
+            installedPlugins.RemoveAll(p => p.PluginName == pluginData.PluginName);
+        }
 
         installedPlugins.Add(pluginData);
         await JsonManager.SaveToJsonFile(pluginDatabaseFile, installedPlugins);
