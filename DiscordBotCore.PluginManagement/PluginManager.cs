@@ -1,9 +1,11 @@
-﻿using DiscordBotCore.Logging;
+﻿using System.Diagnostics;
+using DiscordBotCore.Logging;
 using DiscordBotCore.Networking;
 using DiscordBotCore.PluginManagement.Helpers;
 using DiscordBotCore.PluginManagement.Models;
 using DiscordBotCore.Utilities;
 using DiscordBotCore.Configuration;
+using DiscordBotCore.Utilities.Responses;
 using OperatingSystem = DiscordBotCore.Utilities.OperatingSystem;
 
 namespace DiscordBotCore.PluginManagement;
@@ -36,53 +38,53 @@ public sealed class PluginManager : IPluginManager
         return onlinePlugins;
     }
 
-    public async Task<OnlinePlugin?> GetPluginDataByName(string pluginName)
+    public async Task<IResponse<OnlinePlugin>> GetPluginDataByName(string pluginName)
     {
         int os = OperatingSystem.GetOperatingSystemInt();
         var plugin = await _PluginRepository.GetPluginByName(pluginName, os, false);
 
-        if (plugin == null)
+        if (plugin is null)
         {
-            _Logger.Log($"Plugin {pluginName} not found in the repository for operating system {OperatingSystem.GetOperatingSystemString((OperatingSystem.OperatingSystemEnum)os)}.", LogType.Warning);
-            return null;
+            return Response<OnlinePlugin>.Failure($"Plugin {pluginName} not found in the repository for operating system {OperatingSystem.GetOperatingSystemString((OperatingSystem.OperatingSystemEnum)os)}.");
         }
 
-        return plugin;
+        return Response<OnlinePlugin>.Success(plugin);
     }
 
-    public async Task<OnlinePlugin?> GetPluginDataById(int pluginId)
+    public async Task<IResponse<OnlinePlugin>> GetPluginDataById(int pluginId)
     {
         var plugin = await _PluginRepository.GetPluginById(pluginId);
         if (plugin is null)
         {
-            _Logger.Log($"Plugin {pluginId} not found in the repository.", this, LogType.Warning);
-            return null;
+            return Response<OnlinePlugin>.Failure($"Plugin {pluginId} not found in the repository.");
         }
         
-        return plugin;
+        return Response<OnlinePlugin>.Success(plugin);
     }
 
-    private async Task RemovePluginFromDatabase(string pluginName)
+    private async Task<IResponse<bool>> RemovePluginFromDatabase(string pluginName)
     {
         string? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
 
         if (pluginDatabaseFile is null)
         {
-            throw new Exception("Plugin database file not found");
+            return Response.Failure("PluginDatabase file path is not present in the config file");
         }
         
         List<LocalPlugin> installedPlugins = await JsonManager.ConvertFromJson<List<LocalPlugin>>(await File.ReadAllTextAsync(pluginDatabaseFile));
 
         installedPlugins.RemoveAll(p => p.PluginName == pluginName);
         await JsonManager.SaveToJsonFile(pluginDatabaseFile, installedPlugins);
+        
+        return Response.Success();
     }
 
-    public async Task AppendPluginToDatabase(LocalPlugin pluginData)
+    public async Task<IResponse<bool>> AppendPluginToDatabase(LocalPlugin pluginData)
     {
         string? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
         if (pluginDatabaseFile is null)
         {
-            throw new Exception("Plugin database file not found");
+            return Response.Failure("PluginDatabase file path is not present in the config file");
         }
 
         List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
@@ -100,6 +102,8 @@ public sealed class PluginManager : IPluginManager
 
         installedPlugins.Add(pluginData);
         await JsonManager.SaveToJsonFile(pluginDatabaseFile, installedPlugins);
+        
+        return Response.Success();
     }
 
     public async Task<List<LocalPlugin>> GetInstalledPlugins()
@@ -121,19 +125,7 @@ public sealed class PluginManager : IPluginManager
         return await JsonManager.ConvertFromJson<List<LocalPlugin>>(await File.ReadAllTextAsync(pluginDatabaseFile));
     }
 
-    public async Task<bool> IsPluginInstalled(string pluginName)
-    {
-        string? pluginDatabaseFile = _Configuration.Get<string>("PluginDatabase");
-        if (pluginDatabaseFile is null)
-        {
-            throw new Exception("Plugin database file not found");
-        }
-        
-        List<LocalPlugin> installedPlugins = await JsonManager.ConvertFromJson<List<LocalPlugin>>(await File.ReadAllTextAsync(pluginDatabaseFile));
-        return installedPlugins.Any(plugin => plugin.PluginName == pluginName);
-    }
-
-    public async Task<string?> GetDependencyLocation(string dependencyName)
+    public async Task<IResponse<string>> GetDependencyLocation(string dependencyName)
     {
         List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
 
@@ -142,14 +134,14 @@ public sealed class PluginManager : IPluginManager
             if (plugin.ListOfExecutableDependencies.TryGetValue(dependencyName, out var dependencyPath))
             {
                 string relativePath = GenerateDependencyRelativePath(plugin.PluginName, dependencyPath);
-                return relativePath;
+                return Response<string>.Success(relativePath);
             }
         }
 
-        return null;
+        return Response<string>.Failure($"Dependency {dependencyName} not found in the installed plugins.");
     }
     
-    public async Task<string?> GetDependencyLocation(string dependencyName, string pluginName)
+    public async Task<IResponse<string>> GetDependencyLocation(string dependencyName, string pluginName)
     {
         List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
 
@@ -159,11 +151,11 @@ public sealed class PluginManager : IPluginManager
             {
                 string dependencyPath     = plugin.ListOfExecutableDependencies[dependencyName];
                 string relativePath = GenerateDependencyRelativePath(pluginName, dependencyPath); 
-                return relativePath;
+                return Response<string>.Success(relativePath);
             }
         }
 
-        return null;
+        return Response<string>.Failure($"Dependency {dependencyName} not found in the installed plugins.");
     }
 
     public string GenerateDependencyRelativePath(string pluginName, string dependencyPath)
@@ -172,12 +164,22 @@ public sealed class PluginManager : IPluginManager
         return relative;
     }
 
-    public async Task InstallPlugin(OnlinePlugin plugin, IProgress<float> progress)
+    public async Task<IResponse<bool>> InstallPlugin(OnlinePlugin plugin, IProgress<float> progress)
     {
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
-            throw new Exception("Plugin folder not found");
+            return Response.Failure("Plugin folder path is not present in the config file");
+        }
+
+        var localPluginResponse = await GetLocalPluginByName(plugin.Name);
+        if (localPluginResponse is { IsSuccess: true, Data: not null })
+        {
+            var response = await IsNewVersion(localPluginResponse.Data.PluginVersion, plugin.Version);
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
         }
         
         List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
@@ -201,7 +203,9 @@ public sealed class PluginManager : IPluginManager
         await executor.ExecuteAllTasks();
         
         LocalPlugin localPlugin = LocalPlugin.FromOnlineInfo(plugin, dependencies, downloadLocation);
-        await AppendPluginToDatabase(localPlugin);
+        var result = await AppendPluginToDatabase(localPlugin);
+
+        return result;
     }
 
     public async Task SetEnabledStatus(string pluginName, bool status)
@@ -219,12 +223,19 @@ public sealed class PluginManager : IPluginManager
 
     }
 
-    public async Task<bool> UninstallPluginByName(string pluginName)
+    public async Task<IResponse<bool>> UninstallPluginByName(string pluginName)
     {
-        var localPlugin = await GetLocalPluginByName(pluginName);
-        if (localPlugin == null)
+        var localPluginResponse = await GetLocalPluginByName(pluginName);
+        if (!localPluginResponse.IsSuccess)
         {
-            return false;
+            return Response.Failure(localPluginResponse.Message);
+        }
+
+        var localPlugin = localPluginResponse.Data;
+        
+        if (localPlugin is null)
+        {
+            return Response.Failure($"Plugin {pluginName} not found in the database");
         }
         
         File.Delete(localPlugin.FilePath);
@@ -237,25 +248,49 @@ public sealed class PluginManager : IPluginManager
             }
         }
         
-        await RemovePluginFromDatabase(pluginName);
-        
-        _Logger.Log($"Plugin {pluginName} uninstalled successfully", this, LogType.Info);
-
-        return true;
+        var response = await RemovePluginFromDatabase(pluginName);
+        return response;
     }
 
-    public async Task<LocalPlugin?> GetLocalPluginByName(string pluginName)
+    public async Task<IResponse<LocalPlugin>> GetLocalPluginByName(string pluginName)
     {
         List<LocalPlugin> installedPlugins = await GetInstalledPlugins();
         var plugin = installedPlugins.Find(p => p.PluginName == pluginName);
 
-        if (plugin == null)
+        if (plugin is null)
         {
-            _Logger.Log($"Plugin {pluginName} not found in the database", this, LogType.Warning);
-            return null;
+            return Response<LocalPlugin>.Failure($"Plugin {pluginName} not found in the database");
         }
 
-        return plugin;
+        return Response<LocalPlugin>.Success(plugin);
+    }
+
+    private async Task<IResponse<bool>> IsNewVersion(string currentVersion, string newVersion)
+    {
+        // currentVersion = "1.0.0"
+        // newVersion = "1.0.1"
+        
+        var currentVersionParts = currentVersion.Split('.').Select(int.Parse).ToArray();
+        var newVersionParts = newVersion.Split('.').Select(int.Parse).ToArray();
+        
+        if (currentVersionParts.Length != 3 || newVersionParts.Length != 3)
+        {
+            return Response.Failure("Invalid version format");
+        }
+        
+        for (int i = 0; i < 3; i++)
+        {
+            if (newVersionParts[i] > currentVersionParts[i])
+            {
+                return Response.Success();
+            }
+            else if (newVersionParts[i] < currentVersionParts[i])
+            {
+                return Response.Failure("Current version is newer");
+            }
+        }
+        
+        return Response.Failure("Versions are the same");
     }
 
     private async Task<bool> CreateEmptyPluginDatabase()

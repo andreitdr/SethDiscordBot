@@ -1,0 +1,55 @@
+@using WebUI.Models
+@using WebUI.Services
+@inject NotificationService NotificationService
+
+@rendermode InteractiveServer
+
+<link rel="stylesheet" href="Components/Notification/NotificationDisplay.css" />
+
+<div class="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1050; display: flex; flex-direction: column; gap: 10px;">
+    @foreach (var notification in _Notifications)
+    {
+        <div class="notification-box @GetCssClass(notification.Type)">
+            <button class="close-button" @onclick="() => DismissNotification(notification)">×</button>
+            <div class="notification-message">@notification.Message</div>
+        </div>
+    }
+</div>
+
+
+@code {
+    private readonly List<Notification> _Notifications = new();
+
+    protected override void OnInitialized()
+    {
+        NotificationService.OnNotify += ShowNotification;
+    }
+
+    private void ShowNotification(Notification notification)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            _Notifications.Add(notification);
+            StateHasChanged();
+
+            await Task.Delay(notification.DelayMs);
+
+            _Notifications.Remove(notification);
+            StateHasChanged();
+        });
+    }
+
+    private string GetCssClass(NotificationType type) => type switch
+    {
+        NotificationType.Success => "alert-success",
+        NotificationType.Error=> "alert-danger",
+        NotificationType.Warning => "alert-warning",
+        NotificationType.Info => "alert-info",
+            _ => "alert-secondary"
+    };
+    
+    private void DismissNotification(Notification notification)
+    {
+        _Notifications.Remove(notification);
+    }
+}

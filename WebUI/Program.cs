@@ -1,5 +1,6 @@
 using DiscordBotCore.WebApplication;
 using WebUI.Components;
+using WebUI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.AddDiscordBotComponents();
+builder.Services.AddSingleton<NotificationService>();
+
 
 var app = builder.Build();
 

@@ -81,11 +81,11 @@
         
         Logger.Log($"Deleting plugin {pluginName}", this);
 
-        bool result = await PluginManager.UninstallPluginByName(pluginName);
+        var response = await PluginManager.UninstallPluginByName(pluginName);
         
-        if (!result)
+        if (!response.IsSuccess)
         {
-            Logger.Log($"Failed to delete plugin {pluginName}", this, LogType.Error);
+            Logger.Log(response.Message, this, LogType.Error);
             return;
         }
         
@@ -100,14 +100,14 @@
     private async Task PluginDetailsButtonClick(string pluginName)
     {
         Logger.Log($"Getting plugin details for {pluginName}", this);
-        var pluginDetails = await PluginManager.GetPluginDataByName(pluginName);
-        if (pluginDetails == null)
+        var response = await PluginManager.GetPluginDataByName(pluginName);
+        if (!response.IsSuccess)
         {
-            Logger.Log($"Failed to get details for plugin {pluginName}", this, LogType.Error);
+            Logger.Log(response.Message, this, LogType.Error);
             return;
         }
         
-        _selectedPluginDetails = pluginDetails;
+        _selectedPluginDetails = response.Data;
         _showPluginDetailsModal = true;
         
         Logger.Log($"Plugin details for {pluginName} retrieved", this);

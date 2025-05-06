@@ -1,10 +1,13 @@
 ﻿@page "/"
 @using DiscordBotCore.Bot
 @using DiscordBotCore.PluginManagement.Loading
+@using WebUI.Models
+@using WebUI.Services
 @inject IDiscordBotApplication DiscordBotApplication
 @inject IPluginLoader PluginLoader
 @inject DiscordBotCore.Logging.ILogger Logger
 @inject IJSRuntime JS
+@inject NotificationService NotificationService
 @rendermode InteractiveServer
 <h3>Console Log Viewer</h3>
 
@@ -78,6 +81,8 @@
         Logger.Log("Loading plugins", this);
         await PluginLoader.LoadPlugins();
         Logger.Log("Plugins loaded", this);
+        NotificationService.Notify("Plugins Loaded !", NotificationType.Success);
+        
     }
 
     private string GetLogStyle(string line)

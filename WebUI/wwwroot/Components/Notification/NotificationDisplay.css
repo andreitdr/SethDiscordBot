@@ -1,0 +1,45 @@
+.notification-box {
+    position: relative;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 250px;
+    max-width: 400px;
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-message {
+    padding-right: 1.5rem;
+}
+
+.close-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.8rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.alert-success {
+    background-color: #28a745;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+}
+
+.alert-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.alert-info {
+    background-color: #17a2b8;
+}
