@@ -12,6 +12,7 @@
         <div class="notification-box @GetCssClass(notification.Type)">
             <button class="close-button" @onclick="() => DismissNotification(notification)">×</button>
             <div class="notification-message">@notification.Message</div>
+            <div class="notification-timestamp">@notification.Timestamp.ToString("hh:mm:ss tt")</div>
         </div>
     }
 </div>

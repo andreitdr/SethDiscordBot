@@ -12,7 +12,6 @@
 @inject NotificationService NotificationService
 
 @rendermode InteractiveServer
-<h3>Console Log Viewer</h3>
 
 <div class="container mt-5">
     <div class="row">
@@ -30,9 +29,8 @@
             <h4>Controls</h4>
             <button class="btn btn-success mb-2" @onclick="StartApplication" disabled="@IsRunning">Start Application</button>
             <button class="btn btn-danger mb-2" @onclick="StopApplication" disabled="@(!IsRunning)">Stop Application</button>
-            <button class="btn btn-info mb-2" @onclick="LoadPlugins" disabled="@(!IsRunning)">Load Plugins</button>
+            <button class="btn btn-warning mb-2" @onclick="LoadPlugins" disabled="@(!IsRunning)">Load Plugins</button>
             <button class="btn btn-warning mb-2" @onclick="ClearLogs">Clear Logs</button>
-
         </div>
     </div>
 </div>
