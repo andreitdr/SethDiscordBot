@@ -19,7 +19,7 @@
         <div class="col-md-8">
             <h4>Console Log</h4>
             <div id="consoleLog" class="border p-3 bg-dark text-white" style="height: 400px; overflow-y: auto; font-family: monospace;">
-                @foreach (var line in _Logs)
+                @foreach (var line in Logger.LogMessages)
                 {
                     <div style="@GetLogStyle(line)">@line.Message</div>
                 }
@@ -49,8 +49,6 @@
 
 @code {
     private bool IsRunning { get; set; }
-    private List<ILogMessage> _Logs { get; set; } = new();
-    private const int MaxLogLines = 1000;
 
     protected override void OnInitialized()
     {
@@ -62,14 +60,8 @@
     {
         InvokeAsync(async () =>
         {
-            _Logs.Add(obj);
-            if (_Logs.Count > MaxLogLines)
-            {
-                _Logs.RemoveAt(0);
-            }
-            
-            StateHasChanged();
             await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
+            StateHasChanged();
         });
     }
 
@@ -120,6 +112,6 @@
 
     private void ClearLogs()
     {
-        _Logs.Clear();
+        Logger.LogMessages.Clear();
     }
 }

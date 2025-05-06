@@ -18,17 +18,22 @@ public static class Initializer
     private static readonly string DefaultConfigFile = "./Data/Resources/config.json";
     private static readonly string DefaultPluginFolder = "./Data/Plugins";
     private static readonly string DefaultPluginDatabaseFile = "./Data/Resources/plugins.json";
-
+    private static readonly string DefaultMaxHistorySize = "1000";
+    
     public static void AddDiscordBotComponents(this IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton<ILogger>(sp =>
         {
             string logFormat = builder.Configuration["Logger:LogFormat"] ?? DefaultLogFormat;
             string logFolder = builder.Configuration["Logger:LogFolder"] ?? DefaultLogFolder;
-
+            string maxHistorySize = builder.Configuration["Logger:MaxHistorySize"] ?? DefaultMaxHistorySize;
             Directory.CreateDirectory(logFolder);
-
-            ILogger logger = new Logger(logFolder, logFormat);
+            if (!int.TryParse(maxHistorySize, out int maxHistorySizeInt))
+            {
+                maxHistorySizeInt = int.Parse(DefaultMaxHistorySize);
+            }
+            
+            ILogger logger = new Logger(logFolder, logFormat, maxHistorySizeInt);
             logger.OnLogReceived += (logMessage) =>
             {
                 Console.WriteLine(logMessage.Message);

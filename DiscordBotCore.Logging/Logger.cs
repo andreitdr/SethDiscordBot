@@ -4,28 +4,26 @@ public sealed class Logger : ILogger
 {
     private readonly string _LogFile;
     private readonly string _LogMessageFormat;
+    private readonly int _MaxHistorySize;
     
     private readonly List<string> _logMessageProperties = typeof(ILogMessage)
                                 .GetProperties()
                                 .Select(p => p.Name)
                                 .ToList();
-    
-    
-    
+
+
+    public List<ILogMessage> LogMessages { get; set; }
     public event Action<ILogMessage>? OnLogReceived;
     
 
-    public Logger(string logFolder, string logMessageFormat)
+    public Logger(string logFolder, string logMessageFormat, int maxHistorySize)
     {
         this._LogMessageFormat = logMessageFormat;
         this._LogFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
+        this._MaxHistorySize = maxHistorySize;
+        LogMessages = new List<ILogMessage>();
     }
-
-    /// <summary>
-    /// Generate a formatted string based on the default parameters of the ILogMessage and a string defined as model
-    /// </summary>
-    /// <param name="message">The message</param>
-    /// <returns>A formatted string with the message values</returns>
+    
     private string GenerateLogMessage(ILogMessage message)
     {
         string messageAsString = new string(_LogMessageFormat);
@@ -48,6 +46,11 @@ public sealed class Logger : ILogger
     {
         var messageAsString = GenerateLogMessage(message);
         OnLogReceived?.Invoke(message);
+        LogMessages.Add(message);
+        if (LogMessages.Count > _MaxHistorySize)
+        {
+            LogMessages.RemoveAt(0);
+        }
         await LogToFile(messageAsString);
     }
 

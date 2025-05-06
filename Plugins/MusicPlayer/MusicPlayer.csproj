@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Platforms>AnyCPU;x64;ARM64</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,15 +13,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="libs\**"/>
+        <Compile Remove="libs\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Remove="libs\**"/>
+        <EmbeddedResource Remove="libs\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="libs\**"/>
+        <None Remove="libs\**" />
     </ItemGroup>
 
 </Project>

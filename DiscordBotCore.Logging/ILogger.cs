@@ -2,6 +2,7 @@
 
 public interface ILogger
 {
+    List<ILogMessage> LogMessages { get; protected set; }
     event Action<ILogMessage>? OnLogReceived;
 
     void Log(string message);
@@ -9,5 +10,4 @@ public interface ILogger
     void Log(string message, object sender);
     void Log(string message, object sender, LogType type);
     void LogException(Exception exception, object sender, bool logFullStack = false);
-   
 }
