@@ -1,13 +1,16 @@
 ﻿@page "/"
 @using DiscordBotCore.Bot
+@using DiscordBotCore.Logging
 @using DiscordBotCore.PluginManagement.Loading
 @using WebUI.Models
 @using WebUI.Services
+
 @inject IDiscordBotApplication DiscordBotApplication
 @inject IPluginLoader PluginLoader
-@inject DiscordBotCore.Logging.ILogger Logger
+@inject ILogger Logger
 @inject IJSRuntime JS
 @inject NotificationService NotificationService
+
 @rendermode InteractiveServer
 <h3>Console Log Viewer</h3>
 
@@ -16,9 +19,9 @@
         <div class="col-md-8">
             <h4>Console Log</h4>
             <div id="consoleLog" class="border p-3 bg-dark text-white" style="height: 400px; overflow-y: auto; font-family: monospace;">
-                @foreach (var line in Logs)
+                @foreach (var line in _Logs)
                 {
-                    <div style="@GetLogStyle(line)">@line</div>
+                    <div style="@GetLogStyle(line)">@line.Message</div>
                 }
             </div>
         </div>
@@ -44,16 +47,22 @@
 
 @code {
     private bool IsRunning { get; set; }
-    private List<string> Logs { get; set; } = new();
-    private Timer? _logTimer;
-    private int _lastLogCount = 0;
-    private readonly object _logLock = new();
+    private List<ILogMessage> _Logs { get; set; } = new();
 
     protected override void OnInitialized()
     {
         IsRunning = DiscordBotApplication.IsReady;
-        
-        _logTimer = new Timer(async _ => await RefreshLogsAsync(), null, 0, 2000);
+        Logger.OnLogReceived += LoggerOnLogReceived;
+    }
+
+    private void LoggerOnLogReceived(ILogMessage obj)
+    {
+        InvokeAsync(async () =>
+        {
+            _Logs.Add(obj);
+            StateHasChanged();
+            await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
+        });
     }
 
     private async Task StartApplication()
@@ -62,7 +71,9 @@
         {
             await DiscordBotApplication.StartAsync();
             Logger.Log("Application started", this);
+            NotificationService.Notify("Bot Started !", NotificationType.Success);
         }
+        
         IsRunning = DiscordBotApplication.IsReady;
     }
 
@@ -72,7 +83,9 @@
         {
             await DiscordBotApplication.StopAsync();
             Logger.Log("Application stopped", this);
+            NotificationService.Notify("Bot Stopped !", NotificationType.Success);
         }
+        
         IsRunning = DiscordBotApplication.IsReady;
     }
 
@@ -85,43 +98,15 @@
         
     }
 
-    private string GetLogStyle(string line)
+    private string GetLogStyle(ILogMessage logMessage)
     {
-        if (line.Contains("[Error]")) return "color: #ff4d4d;";
-        if (line.Contains("[Warning]")) return "color: #ffa500;";
-        if (line.Contains("[Debug]")) return "color: #88f;";
-        return "";
-    }
-
-    private async Task RefreshLogsAsync()
-    {
-        try
+        return logMessage.LogMessageType switch
         {
-            var logText = Logger.GetLogsHistory();
-            var newLogs = logText.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-
-            if (newLogs.Length != _lastLogCount)
-            {
-                lock (_logLock)
-                {
-                    Logs = newLogs.ToList();
-                    _lastLogCount = newLogs.Length;
-                }
-                await InvokeAsync(async () =>
-                {
-                    StateHasChanged();
-                    await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            
-        }
-    }
-
-    public void Dispose()
-    {
-        _logTimer?.Dispose();
+            LogType.Info => "color: white;",
+            LogType.Warning => "color: yellow;",
+            LogType.Error => "color: red;",
+            LogType.Critical => "color: purple;",
+            _ => ""
+        };
     }
 }

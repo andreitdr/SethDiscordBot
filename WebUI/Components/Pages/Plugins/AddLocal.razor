@@ -5,8 +5,11 @@
 @using DiscordBotCore.Logging
 @using DiscordBotCore.PluginManagement
 @using DiscordBotCore.PluginManagement.Models
+@using WebUI.Models
+@using WebUI.Services
 
 @inject NavigationManager Navigation
+@inject NotificationService NotificationService
 
 @inject IPluginManager PluginManager
 @inject IConfiguration Configuration
@@ -67,6 +70,7 @@
     {
         if (!IsValidVersion || selectedFile is null || string.IsNullOrEmpty(selectedFileName))
         {
+            NotificationService.Notify("Invalid field values. Please check the form.", NotificationType.Error);
             return;
         }
 
@@ -75,6 +79,7 @@
         if (string.IsNullOrEmpty(pluginsFolder))
         {
             Logger.Log("Plugins folder is not set in the configuration.", this, LogType.Error);
+            NotificationService.Notify("Plugins folder is not set in the configuration.", NotificationType.Error);
             return;
         }
         
@@ -86,6 +91,8 @@
 
         LocalPlugin plugin = new LocalPlugin(pluginModel.Name, pluginModel.Version, filePath, new(), true, pluginModel.IsEnabled);
         await PluginManager.AppendPluginToDatabase(plugin);
+        
+        NotificationService.Notify($"Plugin {pluginModel.Name} uploaded successfully!", NotificationType.Success);
 
         Navigation.NavigateTo("/");
     }

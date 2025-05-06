@@ -29,7 +29,10 @@ public static class Initializer
             Directory.CreateDirectory(logFolder);
 
             ILogger logger = new Logger(logFolder, logFormat);
-            logger.SetOutFunction((s, type) => { Console.WriteLine($"[{type}] {s}"); });
+            logger.OnLogReceived += (logMessage) =>
+            {
+                Console.WriteLine(logMessage.Message);
+            };
 
             return logger;
         });

@@ -2,23 +2,15 @@
 
 public sealed class Logger : ILogger
 {
-    private FileStream _logFileStream;
-
-    private readonly List<string>             _logMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
-    private          Action<string, LogType>? _outFunction;
+    private readonly string _LogFile;
+    private readonly List<string> _logMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
+    public event Action<ILogMessage>? OnLogReceived;
     public string LogMessageFormat { get ; set; }
 
-    public Logger(string logFolder, string logMessageFormat, Action<string, LogType>? outFunction = null)
+    public Logger(string logFolder, string logMessageFormat)
     {
         this.LogMessageFormat = logMessageFormat;
-        var logFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
-        _logFileStream = File.Open(logFile, FileMode.Append, FileAccess.Write, FileShare.Read);
-        this._outFunction = outFunction ?? DefaultLogFunction;
-    }
-
-    private void DefaultLogFunction(string message, LogType logType)
-    {
-        Console.WriteLine($"[{logType}] {message}");
+        this._LogFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
     }
 
     /// <summary>
@@ -38,15 +30,10 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
-    private async void LogToFile(string message)
+    private async Task LogToFile(string message)
     {
-        byte[] messageAsBytes = System.Text.Encoding.ASCII.GetBytes(message);
-        await _logFileStream.WriteAsync(messageAsBytes, 0, messageAsBytes.Length);
-
-        byte[] newLine = System.Text.Encoding.ASCII.GetBytes(Environment.NewLine);
-        await _logFileStream.WriteAsync(newLine, 0, newLine.Length);
-
-        await _logFileStream.FlushAsync();
+        await using var streamWriter = new StreamWriter(_LogFile, true);
+        await streamWriter.WriteLineAsync(message);
     }
 
     private string GenerateLogMessage(ILogMessage message, string customFormat)
@@ -61,17 +48,17 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
-    public void Log(ILogMessage message, string format)
+    private void Log(ILogMessage message, string format)
     {
         string messageAsString = GenerateLogMessage(message, format);
-        _outFunction?.Invoke(messageAsString, message.LogMessageType);
+        OnLogReceived?.Invoke(message);
         LogToFile(messageAsString);
     }
 
-    public void Log(ILogMessage message)
+    private void Log(ILogMessage message)
     {
         string messageAsString = GenerateLogMessage(message);
-        _outFunction?.Invoke(messageAsString, message.LogMessageType);
+        OnLogReceived?.Invoke(message);
         LogToFile(messageAsString);
         
     }
@@ -82,22 +69,4 @@ public sealed class Logger : ILogger
     public void Log(string message, object sender) => Log(new LogMessage(message, sender));
     public void Log(string message, object sender, LogType type) => Log(new LogMessage(message, sender, type));
     public void LogException(Exception exception, object sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, sender, logFullStack));
-
-    public void SetOutFunction(Action<string, LogType> outFunction)
-    {
-        this._outFunction = outFunction;
-    }
-    public string GetLogsHistory()
-    {
-        string fileName = _logFileStream.Name;
-        
-        //_logFileStream.Flush();
-        _logFileStream.Close();
-        
-        string[] logs = File.ReadAllLines(fileName);
-        _logFileStream = File.Open(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-        
-        return string.Join(Environment.NewLine, logs);
-        
-    }
 }

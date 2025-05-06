@@ -130,6 +130,7 @@ else
         if (pluginData is null)
         {
             Logger.Log("Plugin data is null.", this, LogType.Error);
+            NotificationService.Notify("Plugin data is null.", NotificationType.Error);
             return;
         }
 
