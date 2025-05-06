@@ -31,6 +31,8 @@
             <button class="btn btn-success mb-2" @onclick="StartApplication" disabled="@IsRunning">Start Application</button>
             <button class="btn btn-danger mb-2" @onclick="StopApplication" disabled="@(!IsRunning)">Stop Application</button>
             <button class="btn btn-info mb-2" @onclick="LoadPlugins" disabled="@(!IsRunning)">Load Plugins</button>
+            <button class="btn btn-warning mb-2" @onclick="ClearLogs">Clear Logs</button>
+
         </div>
     </div>
 </div>
@@ -48,6 +50,7 @@
 @code {
     private bool IsRunning { get; set; }
     private List<ILogMessage> _Logs { get; set; } = new();
+    private const int MaxLogLines = 1000;
 
     protected override void OnInitialized()
     {
@@ -60,6 +63,11 @@
         InvokeAsync(async () =>
         {
             _Logs.Add(obj);
+            if (_Logs.Count > MaxLogLines)
+            {
+                _Logs.RemoveAt(0);
+            }
+            
             StateHasChanged();
             await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
         });
@@ -108,5 +116,10 @@
             LogType.Critical => "color: purple;",
             _ => ""
         };
+    }
+
+    private void ClearLogs()
+    {
+        _Logs.Clear();
     }
 }

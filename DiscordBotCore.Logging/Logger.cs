@@ -3,13 +3,21 @@
 public sealed class Logger : ILogger
 {
     private readonly string _LogFile;
-    private readonly List<string> _logMessageProperties = typeof(ILogMessage).GetProperties().Select(p => p.Name).ToList();
+    private readonly string _LogMessageFormat;
+    
+    private readonly List<string> _logMessageProperties = typeof(ILogMessage)
+                                .GetProperties()
+                                .Select(p => p.Name)
+                                .ToList();
+    
+    
+    
     public event Action<ILogMessage>? OnLogReceived;
-    public string LogMessageFormat { get ; set; }
+    
 
     public Logger(string logFolder, string logMessageFormat)
     {
-        this.LogMessageFormat = logMessageFormat;
+        this._LogMessageFormat = logMessageFormat;
         this._LogFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
     }
 
@@ -20,7 +28,7 @@ public sealed class Logger : ILogger
     /// <returns>A formatted string with the message values</returns>
     private string GenerateLogMessage(ILogMessage message)
     {
-        string messageAsString = new string(LogMessageFormat);
+        string messageAsString = new string(_LogMessageFormat);
         foreach (var prop in _logMessageProperties)
         {
             Type messageType = typeof(ILogMessage);
@@ -36,35 +44,14 @@ public sealed class Logger : ILogger
         await streamWriter.WriteLineAsync(message);
     }
 
-    private string GenerateLogMessage(ILogMessage message, string customFormat)
+    private async void Log(ILogMessage message)
     {
-        string messageAsString = customFormat;
-        foreach (var prop in _logMessageProperties)
-        {
-            Type messageType = typeof(ILogMessage);
-            messageAsString = messageAsString.Replace("{" + prop + "}", messageType.GetProperty(prop)?.GetValue(message)?.ToString());
-        }
-
-        return messageAsString;
-    }
-
-    private void Log(ILogMessage message, string format)
-    {
-        string messageAsString = GenerateLogMessage(message, format);
+        var messageAsString = GenerateLogMessage(message);
         OnLogReceived?.Invoke(message);
-        LogToFile(messageAsString);
-    }
-
-    private void Log(ILogMessage message)
-    {
-        string messageAsString = GenerateLogMessage(message);
-        OnLogReceived?.Invoke(message);
-        LogToFile(messageAsString);
-        
+        await LogToFile(messageAsString);
     }
 
     public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.Info));
-    public void Log(string message, LogType logType, string format) => Log(new LogMessage(message, logType), format);
     public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
     public void Log(string message, object sender) => Log(new LogMessage(message, sender));
     public void Log(string message, object sender, LogType type) => Log(new LogMessage(message, sender, type));
