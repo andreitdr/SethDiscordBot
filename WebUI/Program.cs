@@ -1,4 +1,4 @@
-using DiscordBotCore.WebApplication;
+using WebUI;
 using WebUI.Components;
 using WebUI.Services;
 

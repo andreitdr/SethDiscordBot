@@ -1,14 +1,14 @@
-﻿using DiscordBotCore.Bot;
+using DiscordBotCore.Bot;
 using DiscordBotCore.Configuration;
 using DiscordBotCore.Logging;
 using DiscordBotCore.PluginManagement;
 using DiscordBotCore.PluginManagement.Helpers;
 using DiscordBotCore.PluginManagement.Loading;
+using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
+using ILogger = DiscordBotCore.Logging.ILogger;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+namespace WebUI;
 
-namespace DiscordBotCore.WebApplication;
 
 public static class Initializer
 {
@@ -47,7 +47,7 @@ public static class Initializer
             ILogger logger = sp.GetRequiredService<ILogger>();
             string configFile = builder.Configuration["ConfigFile"] ?? DefaultConfigFile;
             Directory.CreateDirectory(new FileInfo(configFile).DirectoryName);
-            IConfiguration configuration = Configuration.Configuration.CreateFromFile(logger, configFile, true);
+            IConfiguration configuration = Configuration.CreateFromFile(logger, configFile, true);
             return configuration;
         });
 
