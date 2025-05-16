@@ -15,4 +15,8 @@
       <ProjectReference Include="..\DiscordBotCore\DiscordBotCore.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Shared\" />
+    </ItemGroup>
+
 </Project>

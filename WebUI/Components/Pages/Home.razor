@@ -13,25 +13,46 @@
 
 @rendermode InteractiveServer
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8">
-            <h4>Console Log</h4>
-            <div id="consoleLog" class="border p-3 bg-dark text-white" style="height: 400px; overflow-y: auto; font-family: monospace;">
-                @foreach (var line in Logger.LogMessages)
-                {
-                    <div style="@GetLogStyle(line)">@line.Message</div>
-                }
-            </div>
-        </div>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="Components/Pages/Home.css" />
+<div class="container-fluid d-flex flex-column vh-100 p-3 mt-0">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-success"
+                @onclick="StartApplication"
+                disabled="@IsRunning">
+            <i class="bi bi-play-fill me-1"></i> Start Application
+        </button>
 
-        <div class="col-md-4">
-            <h4>Controls</h4>
-            <button class="btn btn-success mb-2" @onclick="StartApplication" disabled="@IsRunning">Start Application</button>
-            <button class="btn btn-danger mb-2" @onclick="StopApplication" disabled="@(!IsRunning)">Stop Application</button>
-            <button class="btn btn-warning mb-2" @onclick="LoadPlugins" disabled="@(!IsRunning)">Load Plugins</button>
-            <button class="btn btn-warning mb-2" @onclick="ClearLogs">Clear Logs</button>
-        </div>
+        <button class="btn btn-danger"
+                @onclick="StopApplication"
+                disabled="@(!IsRunning)">
+            <i class="bi bi-stop-fill me-1"></i> Stop Application
+        </button>
+
+        <button class="btn btn-warning text-dark"
+                @onclick="LoadPlugins"
+                disabled="@(!IsRunning)">
+            <i class="bi bi-plug-fill me-1"></i> Load Plugins
+        </button>
+
+        <button class="btn btn-secondary"
+                @onclick="ClearLogs">
+            <i class="bi bi-trash3-fill me-1"></i> Clear Logs
+        </button>
+    </div>
+    
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Console Log</h5>
+        <span class="badge bg-secondary">@Logger.LogMessages.Count()</span>
+    </div>
+    <div id="consoleLog"
+         class="bg-dark text-white p-3 flex-grow-1 overflow-auto"
+         style="font-family:monospace;">
+        @foreach (var line in Logger.LogMessages)
+        {
+            <div style="@GetLogStyle(line)">@line.Message</div>
+        }
     </div>
 </div>
 
