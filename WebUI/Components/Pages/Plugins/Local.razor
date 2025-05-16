@@ -35,8 +35,11 @@
             <td>@plugin.Version</td>
             <td>@(plugin.IsOfflineAdded ? "Yes" : "No")</td>
             <td>
-                <button class="btn btn-danger btn-sm" @onclick="async () => await DeletePluginButtonClick(plugin.Name)">Delete</button>
-                <button class="btn btn-info btn-sm" @onclick="async () => await PluginDetailsButtonClick(plugin.Name)">Details</button>
+                <button class="btn btn-danger btn-sm" @onclick="async () => await DeletePluginButtonClick(plugin)">Delete</button>
+                @if (!plugin.IsOfflineAdded)
+                {
+                    <button class="btn btn-info btn-sm" @onclick="async () => await PluginDetailsButtonClick(plugin)">Details</button>
+                }
             </td>
             <td></td>
         </tr>
@@ -74,13 +77,13 @@
     private bool _showPluginDetailsModal;
     private OnlinePlugin? _selectedPluginDetails;
 
-    private async Task DeletePluginButtonClick(string pluginName)
+    private async Task DeletePluginButtonClick(InstalledPlugin plugin)
     {   
         PluginLoader.UnloadAllPlugins();
         
-        Logger.Log($"Deleting plugin {pluginName}", this);
+        Logger.Log($"Deleting plugin {plugin.Name}", this);
 
-        var response = await PluginManager.UninstallPluginByName(pluginName);
+        var response = await PluginManager.UninstallPluginByName(plugin.Name);
         
         if (!response.IsSuccess)
         {
@@ -88,18 +91,18 @@
             return;
         }
         
-        _installedPlugins.RemoveAll(p => p.Name == pluginName);
-        Logger.Log($"Plugin {pluginName} deleted", this);
+        _installedPlugins.RemoveAll(p => p.Name == plugin.Name);
+        Logger.Log($"Plugin {plugin.Name} deleted", this);
 
         await PluginLoader.LoadPlugins();
         
         StateHasChanged();
     }
     
-    private async Task PluginDetailsButtonClick(string pluginName)
+    private async Task PluginDetailsButtonClick(InstalledPlugin plugin)
     {
-        Logger.Log($"Getting plugin details for {pluginName}", this);
-        var response = await PluginManager.GetPluginDataByName(pluginName);
+        Logger.Log($"Getting plugin details for {plugin.Name}", this);
+        var response = await PluginManager.GetPluginDataByName(plugin.Name);
         if (!response.IsSuccess)
         {
             Logger.Log(response.Message, this, LogType.Error);
@@ -109,7 +112,7 @@
         _selectedPluginDetails = response.Data;
         _showPluginDetailsModal = true;
         
-        Logger.Log($"Plugin details for {pluginName} retrieved", this);
+        Logger.Log($"Plugin details for {plugin.Name} retrieved", this);
         StateHasChanged();
     }
     
