@@ -14,8 +14,6 @@ public class DiscordBotApplication : IDiscordBotApplication
 {
     internal static IPluginLoader _InternalPluginLoader;
     
-    private static readonly string _DefaultPrefix = ";";
-    
     private CommandHandler _CommandServiceHandler;
     private CommandService _Service;
     private readonly ILogger _Logger;
@@ -88,7 +86,7 @@ public class DiscordBotApplication : IDiscordBotApplication
 
         await client.StartAsync();
 
-        _CommandServiceHandler = new CommandHandler(_Logger, _pluginLoader, _Configuration, _Service, _Configuration.Get<string>("prefix", _DefaultPrefix));
+        _CommandServiceHandler = new CommandHandler(_Logger, _pluginLoader, _Configuration, _Service);
 
         await _CommandServiceHandler.InstallCommandsAsync(client);
         

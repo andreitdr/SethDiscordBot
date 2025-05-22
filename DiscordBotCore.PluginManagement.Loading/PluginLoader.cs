@@ -12,6 +12,8 @@ namespace DiscordBotCore.PluginManagement.Loading;
 
 public class PluginLoader : IPluginLoader
 {
+    private static readonly string _HelpCommandNamespaceFullName = "DiscordBotCore.Commands.HelpCommand";
+    
     private readonly IPluginManager _PluginManager;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
@@ -62,11 +64,27 @@ public class PluginLoader : IPluginLoader
         _SlashCommands.Clear();
         
         await LoadPluginFiles();
-        
+
         LoadEverythingOfType<IDbEvent>();
+        var helpCommand = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(assembly => assembly.DefinedTypes.Any(type => type.FullName == _HelpCommandNamespaceFullName)
+                                        && assembly.FullName != null
+                                        && assembly.FullName.StartsWith("DiscordBotCore"));
+        
+        if (helpCommand is not null)
+        {
+            var helpCommandType = helpCommand.DefinedTypes.FirstOrDefault(type => type.FullName == _HelpCommandNamespaceFullName && 
+                                                                                 typeof(IDbCommand).IsAssignableFrom(type));
+            if (helpCommandType is not null)
+            {
+                InitializeType<IDbCommand>(helpCommandType);
+            }
+        }
+        
         LoadEverythingOfType<IDbCommand>();
         LoadEverythingOfType<IDbSlashCommand>();
         
+
         _Logger.Log("Loaded plugins", this);
     }
 
@@ -153,30 +171,33 @@ public class PluginLoader : IPluginLoader
             .SelectMany(s => s.GetTypes())
             .Where(p => typeof(T).IsAssignableFrom(p) && !p.IsInterface);
         
-
         foreach (var type in types)
         {
-            T? plugin = (T?)Activator.CreateInstance(type);
-            if (plugin is null)
-            {
-                _Logger.Log($"Failed to create instance of plugin with type {type.FullName} [{type.Assembly}]", this, LogType.Error);
-                continue;
-            }
+            InitializeType<T>(type);
+        }
+    }
+
+    private void InitializeType<T>(Type type)
+    {
+        T? plugin = (T?)Activator.CreateInstance(type);
+        if (plugin is null)
+        {
+            _Logger.Log($"Failed to create instance of plugin with type {type.FullName} [{type.Assembly}]", this, LogType.Error);
+        }
             
-            switch (plugin)
-            {
-                case IDbEvent dbEvent:
-                    InitializeEvent(dbEvent);
-                    break;
-                case IDbCommand dbCommand:
-                    InitializeDbCommand(dbCommand);
-                    break;
-                case IDbSlashCommand dbSlashCommand:
-                    InitializeSlashCommand(dbSlashCommand);
-                    break;
-                default:
-                    throw new PluginNotFoundException($"Unknown plugin type {plugin.GetType().FullName}");
-            }
+        switch (plugin)
+        {
+            case IDbEvent dbEvent:
+                InitializeEvent(dbEvent);
+                break;
+            case IDbCommand dbCommand:
+                InitializeDbCommand(dbCommand);
+                break;
+            case IDbSlashCommand dbSlashCommand:
+                InitializeSlashCommand(dbSlashCommand);
+                break;
+            default:
+                throw new PluginNotFoundException($"Unknown plugin type {plugin.GetType().FullName}");
         }
     }
     

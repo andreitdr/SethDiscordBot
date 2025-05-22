@@ -20,10 +20,10 @@ public interface IConfiguration
     /// Gets the value of a key in the custom settings dictionary. If the T type is different then the object type, it will try to convert it.
     /// </summary>
     /// <param name="key">The key</param>
-    /// <param name="defaulobject">The default value to be returned if the searched value is not found</param>
+    /// <param name="defaultObject">The default value to be returned if the searched value is not found</param>
     /// <typeparam name="T">The type of the returned value</typeparam>
     /// <returns></returns>
-    T Get<T>(string key, T defaulobject);
+    T Get<T>(string key, T defaultObject);
 
     /// <summary>
     /// Gets the value of a key in the custom settings dictionary. If the T type is different then the object type, it will try to convert it.
@@ -37,10 +37,10 @@ public interface IConfiguration
     /// Get a list of values from the custom settings dictionary
     /// </summary>
     /// <param name="key">The key</param>
-    /// <param name="defaulobject">The default list to be returned if nothing is found</param>
+    /// <param name="defaultObject">The default list to be returned if nothing is found</param>
     /// <typeparam name="T">The type of the returned value</typeparam>
     /// <returns></returns>
-    List<T> GetList<T>(string key, List<T> defaulobject);
+    List<T> GetList<T>(string key, List<T> defaultObject);
 
     /// <summary>
     /// Remove a key from the custom settings dictionary

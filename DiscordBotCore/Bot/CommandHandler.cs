@@ -18,7 +18,8 @@ namespace DiscordBotCore.Bot;
 
 internal class CommandHandler : ICommandHandler
 {
-    private readonly string                _botPrefix;
+    private static readonly string _DefaultPrefix = ";";
+    
     private readonly CommandService        _commandService;
     private readonly ILogger               _logger;
     private readonly IPluginLoader        _pluginLoader;
@@ -31,10 +32,9 @@ internal class CommandHandler : ICommandHandler
     /// <param name="commandService">The discord bot command service</param>
     /// <param name="botPrefix">The prefix to watch for</param>
     /// <param name="logger">The logger</param>
-    public CommandHandler(ILogger logger, IPluginLoader pluginLoader, IConfiguration configuration, CommandService commandService, string botPrefix)
+    public CommandHandler(ILogger logger, IPluginLoader pluginLoader, IConfiguration configuration, CommandService commandService)
     {
         _commandService = commandService;
-        _botPrefix      = botPrefix;
         _logger         = logger;
         _pluginLoader    = pluginLoader;
         _configuration  = configuration;
@@ -94,7 +94,9 @@ internal class CommandHandler : ICommandHandler
 
             var argPos = 0;
 
-            if (!message.Content.StartsWith(_botPrefix) && !message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
+            string botPrefix = this._configuration.Get<string>("prefix", _DefaultPrefix);
+
+            if (!message.Content.StartsWith(botPrefix) && !message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
                 return;
 
             var context = new SocketCommandContext(socketClient, message);
@@ -125,13 +127,13 @@ internal class CommandHandler : ICommandHandler
             {
                 plugin = _pluginLoader.Commands!
                                      .FirstOrDefault(p => p.Command ==
-                                                          message.Content.Split(' ')[0].Substring(_botPrefix.Length) ||
+                                                          message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
                                                           p.Aliases.Contains(
                                                               message.Content.Split(' ')[0]
-                                                                     .Substring(_botPrefix.Length)
+                                                                     .Substring(botPrefix.Length)
                                                           )
                                      );
-                cleanMessage = message.Content.Substring(_botPrefix.Length);
+                cleanMessage = message.Content.Substring(botPrefix.Length);
             }
 
             if (plugin is null)

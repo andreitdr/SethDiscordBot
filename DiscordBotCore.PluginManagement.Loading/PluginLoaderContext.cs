@@ -15,7 +15,7 @@ public class PluginLoaderContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
-        _logger.Log("Assembly load requested: " + assemblyName.Name, this);
+        //_logger.Log("Assembly load requested: " + assemblyName.Name, this);
         return base.Load(assemblyName);
     }
 }
