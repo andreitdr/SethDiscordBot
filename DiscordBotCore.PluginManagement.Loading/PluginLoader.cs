@@ -143,9 +143,16 @@ public class PluginLoader : IPluginLoader
 
     private void LoadEverythingOfType<T>()
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies()
+        if (PluginLoaderContext is null)
+        {
+            _Logger.Log("The plugins are not loaded. Please load the plugins before loading them.", this, LogType.Error);
+            return;
+        }
+        
+        var types = PluginLoaderContext.Assemblies
             .SelectMany(s => s.GetTypes())
             .Where(p => typeof(T).IsAssignableFrom(p) && !p.IsInterface);
+        
 
         foreach (var type in types)
         {

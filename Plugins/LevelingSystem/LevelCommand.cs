@@ -1,6 +1,4 @@
 ﻿using Discord;
-using DiscordBotCore.Logging;
-using DiscordBotCore.PluginCore.Helpers;
 using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
 using DiscordBotCore.PluginCore.Interfaces;
 
@@ -12,7 +10,7 @@ internal class LevelCommand: IDbCommand
 
     public List<string> Aliases => ["lvl", "rank"];
 
-    public string Description => "Display tour current level";
+    public string Description => "Display your current level";
 
     public string Usage => "level";
 
@@ -25,8 +23,7 @@ internal class LevelCommand: IDbCommand
             args.Logger.Log("Database is not initialized", this);
             return;
         }
-
-
+        
         object[]? user = await Variables.Database.ReadDataArrayAsync($"SELECT * FROM Levels WHERE UserID=@userId",
                                new KeyValuePair<string, object>("userId", args.Context.Message.Author.Id));
 
