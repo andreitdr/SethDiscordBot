@@ -35,10 +35,10 @@
             <td>@plugin.Version</td>
             <td>@(plugin.IsOfflineAdded ? "Yes" : "No")</td>
             <td>
-                <button class="btn btn-danger btn-sm" @onclick="async () => await DeletePluginButtonClick(plugin)">Delete</button>
+                <button class="btn btn-danger btn-sm m-1" @onclick="async () => await DeletePluginButtonClick(plugin)">Delete</button>
                 @if (!plugin.IsOfflineAdded)
                 {
-                    <button class="btn btn-info btn-sm" @onclick="async () => await PluginDetailsButtonClick(plugin)">Details</button>
+                    <button class="btn btn-info btn-sm m-1" @onclick="async () => await PluginDetailsButtonClick(plugin)">Details</button>
                 }
             </td>
             <td></td>
