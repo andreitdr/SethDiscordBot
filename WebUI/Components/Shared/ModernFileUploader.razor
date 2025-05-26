@@ -1,0 +1,78 @@
+@inject IJSRuntime JS
+
+<link rel="stylesheet" href="Components/Shared/ModernFileUploader/modernFileUploader.css" />
+
+<div class="upload-box p-8 border-2 border-dashed rounded-xl text-center transition relative"
+     id="dropzone"
+     style="cursor: pointer;"
+     @onclick="TriggerFileInputClick">
+    @if (string.IsNullOrEmpty(SelectedFileName))
+    {
+        <p class="text-gray-600 mb-2">Click to upload a file</p>
+    }
+    @if (!string.IsNullOrEmpty(SelectedFileName))
+    {
+        <p class="text-green-600 text-sm">Selected: @SelectedFileName</p>
+    }
+</div>
+
+<InputFile id="hiddenFileInput" accepts=".pdf" OnChange="HandleFileChange" class="hidden" hidden="true" />
+
+@if (!string.IsNullOrEmpty(UploadMessage))
+{
+    <p class="mt-2 text-sm text-red-600">@UploadMessage</p>
+}
+
+<script src="Components/Shared/ModernFileUploader/modernFileUploader.js"></script>
+
+@code {
+    private string? SelectedFileName;
+    private string? UploadMessage;
+
+    [Parameter] public List<string> AllowedFileTypes { get; set; } = new List<string>();
+    [Parameter] public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
+    [Parameter] public EventCallback<IBrowserFile> OnFileUploaded { get; set; }
+
+    private DotNetObjectReference<ModernFileUploader>? dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+        }
+    }
+
+    private async Task TriggerFileInputClick()
+    {
+        await JS.InvokeVoidAsync("triggerInputClick", "hiddenFileInput");
+    }
+
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        UploadMessage = null;
+        
+        if (AllowedFileTypes.Count > 0 && !AllowedFileTypes.Any(type => file.Name.EndsWith(type, StringComparison.OrdinalIgnoreCase)))
+        {
+            UploadMessage = $"Invalid file type. Allowed types: {string.Join(", ", AllowedFileTypes)}.";
+            SelectedFileName = null;
+            return;
+        }
+
+        if (file.Size > MaxFileSize)
+        {
+            UploadMessage = $"File too large. Max allowed size is {MaxFileSize / (1024 * 1024)} MB.";
+            SelectedFileName = null;
+            return;
+        }
+
+        SelectedFileName = file.Name;
+        await OnFileUploaded.InvokeAsync(file);
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
+    }
+}

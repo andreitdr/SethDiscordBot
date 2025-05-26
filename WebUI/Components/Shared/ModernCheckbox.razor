@@ -1,0 +1,28 @@
+<div class="form-check d-flex align-items-center gap-2">
+    <input 
+        class="form-check-input custom-checkbox" 
+        type="checkbox" 
+        id="@CheckboxId"
+        @bind="Checked" />
+        
+    <label class="form-check-label text-secondary" for="@CheckboxId">
+        @Label
+    </label>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+
+    private string CheckboxId { get; } = $"checkbox_{Guid.NewGuid().ToString("N")}";
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        if (e.Value is bool value)
+        {
+            Checked = value;
+            await CheckedChanged.InvokeAsync(value);
+        }
+    }
+}

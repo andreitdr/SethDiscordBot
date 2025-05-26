@@ -7,6 +7,7 @@
 @using DiscordBotCore.PluginManagement.Models
 @using WebUI.Models
 @using WebUI.Services
+@using WebUI.Components.Shared
 
 @inject NavigationManager Navigation
 @inject NotificationService NotificationService
@@ -17,58 +18,58 @@
 
 @rendermode InteractiveServer
 
-<h3>Upload Plugin</h3>
+<CenteredCard Title="Upload plugin">
+    <EditForm Model="@pluginModel" OnValidSubmit="HandleValidSubmit" FormName="pluginForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-<EditForm Model="@pluginModel" OnValidSubmit="HandleValidSubmit" FormName="pluginForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <div class="form-group">
+            <ModernLabel Text="Plugin Name"></ModernLabel>
+            <RoundedTextBox @bind-Value="pluginModel.Name" Placeholder="Example Plugin"></RoundedTextBox>
+        </div>
 
-    <div class="form-group">
-        <label>Plugin Name:</label>
-        <InputText @bind-Value="pluginModel.Name" class="form-control" />
-    </div>
+        <div class="form-group">
+            <ModernLabel Text="Plugin version"></ModernLabel>
+            <RoundedTextBox @bind-Value="pluginModel.Version" Placeholder="1.0.0"></RoundedTextBox>
+        </div>
 
-    <div class="form-group">
-        <label>Plugin Version:</label>
-        <InputText @bind-Value="pluginModel.Version" class="form-control" />
-        @if (!IsValidVersion)
-        {
-            <div class="text-danger">Version must be in format X.X.X</div>
-        }
-    </div>
+        <div class="form-group">
+            <ModernCheckbox @bind-Checked="pluginModel.IsEnabled" Label="Enable Plugin"></ModernCheckbox>
+        </div>
 
-    <div class="form-group">
-        <InputCheckbox @bind-Value="pluginModel.IsEnabled" /> Enable Plugin
-    </div>
+        <div class="form-group">
+            <ModernFileUploader OnFileUploaded="HandleUploadedFile" AllowedFileTypes="@allowedFileTypes"/>
+            @if (_message is not null)
+            {
+                <p class="mt-2 text-green-600">@_message</p>
+            }
 
-    <div class="form-group">
-        <label>Select DLL File:</label>
-        <InputFile OnChange="HandleFileSelected" />
-        @if (selectedFileName != null)
-        {
-            <div>Selected: @selectedFileName</div>
-        }
-    </div>
+        </div>
 
-    <button class="btn btn-primary" type="submit">Upload</button>
-</EditForm>
+        <button class="btn btn-primary" type="submit">Upload</button>
+    </EditForm>
+</CenteredCard>
 
 @code {
     private PluginUploadModel pluginModel = new();
     private IBrowserFile? selectedFile;
-    private string? selectedFileName;
+    
+    private List<string> allowedFileTypes { get; set; } = new List<string> { ".dll"};
+
+    private string? _message;
 
     private bool IsValidVersion => System.Text.RegularExpressions.Regex.IsMatch(pluginModel.Version ?? "", @"^\d+\.\d+\.\d+$");
 
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    private async Task HandleUploadedFile(IBrowserFile file)
     {
-        selectedFile = e.File;
-        selectedFileName = selectedFile.Name;
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream().ReadAsync(buffer);
+        _message = $"Uploaded file: {file.Name} ({file.Size} bytes)";
     }
 
     private async Task HandleValidSubmit()
     {
-        if (!IsValidVersion || selectedFile is null || string.IsNullOrEmpty(selectedFileName))
+        if (!IsValidVersion || selectedFile is null || string.IsNullOrEmpty(selectedFile.Name))
         {
             NotificationService.Notify("Invalid field values. Please check the form.", NotificationType.Error);
             return;
@@ -83,7 +84,7 @@
             return;
         }
         
-        string filePath = Path.Combine(pluginsFolder, selectedFileName);
+        string filePath = Path.Combine(pluginsFolder, selectedFile.Name);
         
         await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
         await using var fileStream = File.Create(filePath);

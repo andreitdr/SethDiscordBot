@@ -1,0 +1,24 @@
+<div class="form-group">
+    <input 
+        class="form-control rounded-pill shadow-sm px-4 py-2 border-0" 
+        placeholder="@Placeholder"
+        @bind="Value"
+        @oninput="OnInput" />
+</div>
+
+@code {
+    [Parameter] public string Placeholder { get; set; } = string.Empty;
+
+    [Parameter] public string Value { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        if (e.Value is string newValue)
+        {
+            Value = newValue;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+}
