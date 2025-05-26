@@ -13,7 +13,7 @@
 <h3>Available Plugins</h3>
 @if (_onlinePlugins.Any())
 {
-    <table class="table table-bordered">
+    <table class="table table-responsive text-center align-middle">
         <thead>
         <tr>
             <th>Name</th>
@@ -32,7 +32,9 @@
                 <td>@plugin.Author</td>
                 <td>@plugin.Version</td>
                 <td>
-                    <button type="button" class="btn" @onclick="async () => await InstallPlugin(plugin.Id)">Download</button>
+                    <button class="btn btn-outline-dark" @onclick="async () => await InstallPlugin(plugin.Id)">
+                        <span>Download</span>
+                    </button>
                 </td>
             </tr>
         }
