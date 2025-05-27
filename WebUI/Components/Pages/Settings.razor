@@ -15,21 +15,18 @@
             <ValidationSummary class="text-danger" />
 
             <div class="mb-3">
-                <label class="form-label" for="tokenInput">Token</label>
-                <InputText id="tokenInput" class="form-control" placeholder="Enter bot token"
-                           @bind-Value="_settingsViewModel.Token" />
+                <ModernLabel Text="Token"/>
+                <RoundedTextBox @bind-Value="_settingsViewModel.Token" Placeholder="Your bot token"/>
             </div>
 
             <div class="mb-3">
-                <label class="form-label" for="prefixInput">Prefix</label>
-                <InputText id="prefixInput" class="form-control" placeholder="!"
-                           @bind-Value="_settingsViewModel.Prefix" />
+                <ModernLabel Text="Prefix"/>
+                <RoundedTextBox @bind-Value="_settingsViewModel.Prefix" Placeholder="Your bot prefix"/>
             </div>
 
             <div class="mb-4">
-                <label class="form-label" for="serverIdsInput">Server IDs (comma-separated)</label>
-                <InputTextArea id="serverIdsInput" class="form-control" placeholder="12345, 67890" Rows="3"
-                               @bind-Value="_settingsViewModel.ServerIds" />
+                <ModernLabel Text="Server IDs (command-separated)"/>
+                <RoundedTextBox @bind-Value="_settingsViewModel.ServerIds" Placeholder="1234,5678" />
             </div>
 
             <button type="submit" class="btn btn-primary w-100">

@@ -102,9 +102,11 @@ public class MakePoll : IDbSlashCommand
 
         var state = new PollState(q, opts);
         Polls[msg.Id] = state;
-        
+
         if (timed)
+        {
             _ = ClosePollLaterAsync(log, msg, state, hours);
+        }
     }
     
     public async Task ExecuteInteraction(ILogger log, SocketInteraction interaction)
