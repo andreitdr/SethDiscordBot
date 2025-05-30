@@ -16,7 +16,7 @@ public abstract class ConfigurationBase : IConfiguration
         this._Logger      = logger;
     }
     
-    public virtual void Add(string key, object value)
+    public virtual void Add(string key, object? value)
     {
         if (_InternalDictionary.ContainsKey(key))
             return;

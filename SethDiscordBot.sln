@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8F27B3EA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.DiscordBotCore.Logging", "Tests\Tests.DiscordBotCore.Logging\Tests.DiscordBotCore.Logging.csproj", "{94238D37-60C6-4E40-80EC-4B4D242F5914}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.DiscordBotCore.Configuration", "Tests\Tests.DiscordBotCore.Configuration\Tests.DiscordBotCore.Configuration.csproj", "{52C59C73-C23C-4608-8827-383577DEB8D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,6 +233,18 @@ Global
 		{94238D37-60C6-4E40-80EC-4B4D242F5914}.Release|ARM64.Build.0 = Release|Any CPU
 		{94238D37-60C6-4E40-80EC-4B4D242F5914}.Release|x64.ActiveCfg = Release|Any CPU
 		{94238D37-60C6-4E40-80EC-4B4D242F5914}.Release|x64.Build.0 = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Debug|x64.Build.0 = Debug|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|ARM64.Build.0 = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|x64.ActiveCfg = Release|Any CPU
+		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -241,6 +255,7 @@ Global
 		{C67908F9-4A55-4DD8-B993-C26C648226F1} = {EA4FA308-7B2C-458E-8485-8747D745DD59}
 		{9A4B98C1-00AC-481C-BE55-A70C0B9D3BE7} = {5CF9AD7B-6BF0-4035-835F-722F989C01E1}
 		{94238D37-60C6-4E40-80EC-4B4D242F5914} = {8F27B3EA-F292-40DF-B9B3-4B0E6BEA4E70}
+		{52C59C73-C23C-4608-8827-383577DEB8D8} = {8F27B3EA-F292-40DF-B9B3-4B0E6BEA4E70}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}
