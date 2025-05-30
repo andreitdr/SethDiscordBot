@@ -1,6 +1,4 @@
-﻿using DiscordBotCore.Logging;
-using DiscordBotCore.PluginCore.Helpers;
-using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
+﻿using DiscordBotCore.PluginCore.Helpers.Execution.DbCommand;
 
 namespace DiscordBotCore.PluginCore.Interfaces;
 

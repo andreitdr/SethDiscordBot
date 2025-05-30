@@ -1,5 +1,4 @@
-﻿using DiscordBotCore.PluginCore.Helpers;
-using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
+﻿using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
 
 namespace DiscordBotCore.PluginCore.Interfaces;
 

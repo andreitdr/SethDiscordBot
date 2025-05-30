@@ -1,10 +1,10 @@
 using WebUI;
-using WebUI.Components;
 using WebUI.Services;
+using WebUI.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container.    
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.AddDiscordBotComponents();

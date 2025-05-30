@@ -13,18 +13,21 @@
 @inject NavigationManager Navigation
 
 <h3>Installed Plugins</h3>
-<table class="table table-responsive text-center align-middle">
+     <button class="btn btn-outline-success" @onclick="NavigateToAddPlugin">
+         <span class="bi me-1"></span> Add Local
+     </button>
+<table class="table table-responsive">
     <thead>
     <tr>
         <th>Name</th>
         <th>Version</th>
         <th>Offline Added</th>
         <th>Actions</th>
-        <th>
-            <button class="btn btn-outline-success" @onclick="NavigateToAddPlugin">
-                <span class="bi me-1"></span> Add Local
-            </button>
-        </th>
+        @* <th> *@
+        @*     <button class="btn btn-outline-success" @onclick="NavigateToAddPlugin"> *@
+        @*         <span class="bi me-1"></span> Add Local *@
+        @*     </button> *@
+        @* </th> *@
     </tr>
     </thead>
     <tbody>
@@ -34,14 +37,14 @@
             <td>@plugin.Name</td>
             <td>@plugin.Version</td>
             <td>@(plugin.IsOfflineAdded ? "Yes" : "No")</td>
-            <td>
+            <td >
                 <button class="btn btn-danger btn-sm m-1" @onclick="async () => await DeletePluginButtonClick(plugin)">Delete</button>
                 @if (!plugin.IsOfflineAdded)
                 {
                     <button class="btn btn-info btn-sm m-1" @onclick="async () => await PluginDetailsButtonClick(plugin)">Details</button>
                 }
             </td>
-            <td></td>
+            @* <td></td> *@
         </tr>
     }
     </tbody>

@@ -122,7 +122,6 @@ internal class CommandHandler : ICommandHandler
 
                 cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
             }
-
             else
             {
                 plugin = _pluginLoader.Commands!
@@ -137,16 +136,22 @@ internal class CommandHandler : ICommandHandler
             }
 
             if (plugin is null)
+            {
                 return;
+            }
 
             if (plugin.RequireAdmin && !context.Message.Author.IsAdmin())
+            {
                 return;
+            }
 
             var split = cleanMessage.Split(' ');
 
             string[]? argsClean = null;
             if (split.Length > 1)
+            {
                 argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
+            }
 
             DbCommandExecutingArgument cmd = new(_logger,
                 context,
@@ -162,8 +167,13 @@ internal class CommandHandler : ICommandHandler
             );
 
             if (context.Channel is SocketDMChannel)
+            {
                 await plugin.ExecuteDm(cmd);
-            else await plugin.ExecuteServer(cmd);
+            }
+            else
+            {
+                await plugin.ExecuteServer(cmd);
+            }
         }
         catch (Exception ex)
         {
