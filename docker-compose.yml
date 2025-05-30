@@ -1,24 +1,10 @@
-﻿services:
-#  discord-bot-client:
-#    build:
-#      context: ./DiscordBot
-#      dockerfile: Dockerfile
-#    tty: true
-#    stdin_open: true
-
-  discord-bot-webui:
+﻿name: Seth Docker Build
+services:
+  discord-bot:
     build:
       context: ./WebUI
       dockerfile: Dockerfile
     ports:
-      - '4444:8080'
-
-
-networks: 
-  custom_bridge:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.20.100.0/24"
-          gateway: "172.20.100.1"
+      - "8080:8080"
+    volumes:
+      - ./Data:/app/Data
