@@ -2,8 +2,8 @@
 services:
   discord-bot:
     build:
-      context: ./WebUI
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./WebUI/Dockerfile
     ports:
       - "8080:8080"
     volumes:
