@@ -1,0 +1,134 @@
+﻿@page "/"
+@using DiscordBotCore.Bot
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement.Loading
+@using WebUI.Models
+@using WebUI.Services
+
+@inject IDiscordBotApplication DiscordBotApplication
+@inject IPluginLoader PluginLoader
+@inject ILogger Logger
+@inject IJSRuntime JS
+@inject NotificationService NotificationService
+
+@rendermode InteractiveServer
+
+<link rel="stylesheet" href="Components/Pages/Home.css" />
+<div class="container-fluid d-flex flex-column p-3" style="height: 95vh;">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-success"
+                @onclick="StartApplication"
+                disabled="@IsRunning">
+            <i class="bi bi-play-fill me-1"></i> Start Application
+        </button>
+
+        <button class="btn btn-danger"
+                @onclick="StopApplication"
+                disabled="@(!IsRunning)">
+            <i class="bi bi-stop-fill me-1"></i> Stop Application
+        </button>
+
+        <button class="btn btn-warning text-dark"
+                @onclick="LoadPlugins"
+                disabled="@(!IsRunning)">
+            <i class="bi bi-plug-fill me-1"></i> Load Plugins
+        </button>
+
+        <button class="btn btn-secondary"
+                @onclick="ClearLogs">
+            <i class="bi bi-trash3-fill me-1"></i> Clear Logs
+        </button>
+    </div>
+    
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Console Log</h5>
+        <span class="badge bg-secondary">@Logger.LogMessages.Count()</span>
+    </div>
+    <div id="consoleLog"
+         class="bg-dark text-white p-3 flex-grow-1 overflow-auto"
+         style="font-family:monospace;">
+        @foreach (var line in Logger.LogMessages)
+        {
+            <div style="@GetLogStyle(line)">@line.Message</div>
+        }
+    </div>
+</div>
+
+<script>
+    window.scrollToBottom = function (elementId) {
+        var el = document.getElementById(elementId);
+        if (el) {
+            el.scrollTop = el.scrollHeight;
+        }
+    }
+</script>
+
+
+@code {
+    private bool IsRunning { get; set; }
+
+    protected override void OnInitialized()
+    {
+        IsRunning = DiscordBotApplication.IsReady;
+        Logger.OnLogReceived += LoggerOnLogReceived;
+    }
+
+    private void LoggerOnLogReceived(ILogMessage obj)
+    {
+        InvokeAsync(async () =>
+        {
+            await JS.InvokeVoidAsync("scrollToBottom", "consoleLog");
+            StateHasChanged();
+        });
+    }
+
+    private async Task StartApplication()
+    {
+        if (!DiscordBotApplication.IsReady)
+        {
+            await DiscordBotApplication.StartAsync();
+            Logger.Log("Application started", this);
+            NotificationService.Notify("Bot Started !", NotificationType.Success);
+        }
+        
+        IsRunning = DiscordBotApplication.IsReady;
+    }
+
+    private async Task StopApplication()
+    {
+        if (DiscordBotApplication.IsReady)
+        {
+            await DiscordBotApplication.StopAsync();
+            Logger.Log("Application stopped", this);
+            NotificationService.Notify("Bot Stopped !", NotificationType.Success);
+        }
+        
+        IsRunning = DiscordBotApplication.IsReady;
+    }
+
+    private async Task LoadPlugins()
+    {
+        Logger.Log("Loading plugins", this);
+        await PluginLoader.LoadPlugins();
+        Logger.Log("Plugins loaded", this);
+        NotificationService.Notify("Plugins Loaded !", NotificationType.Success);
+        
+    }
+
+    private string GetLogStyle(ILogMessage logMessage)
+    {
+        return logMessage.LogMessageType switch
+        {
+            LogType.Info => "color: white;",
+            LogType.Warning => "color: yellow;",
+            LogType.Error => "color: red;",
+            LogType.Critical => "color: purple;",
+            _ => ""
+        };
+    }
+
+    private void ClearLogs()
+    {
+        Logger.LogMessages.Clear();
+    }
+}

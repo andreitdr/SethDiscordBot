@@ -1,0 +1,10 @@
+#consoleLog::-webkit-scrollbar {
+    width: 0.4rem;
+}
+#consoleLog::-webkit-scrollbar-track {
+    background: #212529;
+}
+#consoleLog::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 0.25rem;
+}

@@ -1,0 +1,10 @@
+﻿name: Seth Docker Build
+services:
+  discord-bot:
+    build:
+      context: .
+      dockerfile: ./WebUI/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Data:/app/Data

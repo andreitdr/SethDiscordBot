@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Platforms>AnyCPU;x64;ARM64</Platforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DiscordBotCore.Configuration\DiscordBotCore.Configuration.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.Logging\DiscordBotCore.Logging.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.Networking\DiscordBotCore.Networking.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.Utilities\DiscordBotCore.Utilities.csproj" />
+    </ItemGroup>
+
+</Project>

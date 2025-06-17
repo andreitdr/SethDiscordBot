@@ -1,0 +1,14 @@
+<div class="container-fluid d-flex justify-content-center align-items-center" style="height: 95vh;">
+    <div class="card shadow-lg border-0" style="max-width: 500px; width: 100%;">
+        <div class="card-body p-4">
+            <h2 class="card-title text-center mb-4 fw-semibold">@Title</h2>
+                @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+}

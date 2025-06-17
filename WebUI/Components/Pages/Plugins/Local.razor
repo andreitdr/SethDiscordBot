@@ -1,0 +1,169 @@
+@page "/plugins/local"
+@rendermode InteractiveServer
+
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement
+@using DiscordBotCore.PluginManagement.Loading
+@using DiscordBotCore.PluginManagement.Models
+
+@inject IPluginManager PluginManager
+@inject ILogger Logger
+@inject IPluginLoader PluginLoader
+
+@inject NavigationManager Navigation
+
+<h3>Installed Plugins</h3>
+     <button class="btn btn-outline-success" @onclick="NavigateToAddPlugin">
+         <span class="bi me-1"></span> Add Local
+     </button>
+<table class="table table-responsive">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Version</th>
+        <th>Offline Added</th>
+        <th>Actions</th>
+        @* <th> *@
+        @*     <button class="btn btn-outline-success" @onclick="NavigateToAddPlugin"> *@
+        @*         <span class="bi me-1"></span> Add Local *@
+        @*     </button> *@
+        @* </th> *@
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var plugin in _installedPlugins)
+    {
+        <tr>
+            <td>@plugin.Name</td>
+            <td>@plugin.Version</td>
+            <td>@(plugin.IsOfflineAdded ? "Yes" : "No")</td>
+            <td >
+                <button class="btn btn-danger btn-sm m-1" @onclick="async () => await DeletePluginButtonClick(plugin)">Delete</button>
+                @if (!plugin.IsOfflineAdded)
+                {
+                    <button class="btn btn-info btn-sm m-1" @onclick="async () => await PluginDetailsButtonClick(plugin)">Details</button>
+                }
+            </td>
+            @* <td></td> *@
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_showPluginDetailsModal && _selectedPluginDetails != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Plugin Details: @_selectedPluginDetails.Name</h5>
+                    <button type="button" class="btn-close" @onclick="ClosePluginDetailsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Version:</strong> @_selectedPluginDetails.Version</p>
+                    <p><strong>Author:</strong> @_selectedPluginDetails.Author</p>
+                    <p><strong>Description:</strong> @_selectedPluginDetails.Description</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="ClosePluginDetailsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+
+    private readonly List<InstalledPlugin> _installedPlugins = new List<InstalledPlugin>();
+    
+    private bool _showPluginDetailsModal;
+    private OnlinePlugin? _selectedPluginDetails;
+
+    private async Task DeletePluginButtonClick(InstalledPlugin plugin)
+    {   
+        await PluginLoader.UnloadAllPlugins();
+        
+        Logger.Log($"Deleting plugin {plugin.Name}", this);
+
+        var response = await PluginManager.UninstallPluginByName(plugin.Name);
+        
+        if (!response.IsSuccess)
+        {
+            Logger.Log(response.Message, this, LogType.Error);
+            return;
+        }
+        
+        _installedPlugins.RemoveAll(p => p.Name == plugin.Name);
+        Logger.Log($"Plugin {plugin.Name} deleted", this);
+
+        await PluginLoader.LoadPlugins();
+        
+        StateHasChanged();
+    }
+    
+    private async Task PluginDetailsButtonClick(InstalledPlugin plugin)
+    {
+        Logger.Log($"Getting plugin details for {plugin.Name}", this);
+        var response = await PluginManager.GetPluginDataByName(plugin.Name);
+        if (!response.IsSuccess)
+        {
+            Logger.Log(response.Message, this, LogType.Error);
+            return;
+        }
+        
+        _selectedPluginDetails = response.Data;
+        _showPluginDetailsModal = true;
+        
+        Logger.Log($"Plugin details for {plugin.Name} retrieved", this);
+        StateHasChanged();
+    }
+    
+    private void ClosePluginDetailsModal()
+    {
+        Logger.Log("Closing plugin details modal", this);
+        _showPluginDetailsModal = false;
+        _selectedPluginDetails = null;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.Log("Local plugins page initialized", this);
+        var plugins = await PluginManager.GetInstalledPlugins();
+        if (!plugins.Any())
+        {
+            Logger.Log("No plugins found", this, LogType.Warning);
+            return;
+        }
+        
+        Logger.Log($"Found {plugins.Count} plugins", this);
+        _installedPlugins.Clear();
+        
+        foreach (var plugin in plugins)
+        {
+            var installedPlugin = new InstalledPlugin
+            {
+                Name = plugin.PluginName,
+                Version = plugin.PluginVersion,
+                IsOfflineAdded = plugin.IsOfflineAdded
+            };
+            _installedPlugins.Add(installedPlugin);
+        }
+        
+        StateHasChanged();
+    }
+
+    private class InstalledPlugin
+    {
+        public string Name { get; set; }
+        public string Version { get; set; }
+        public bool IsOfflineAdded { get; set; }
+    }
+
+    private void NavigateToAddPlugin()
+    {
+        Navigation.NavigateTo("/plugins/add-local");
+    }
+
+}

@@ -1,0 +1,173 @@
+@page "/plugins/online"
+@rendermode InteractiveServer
+
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement
+
+@using WebUI.Models
+@using WebUI.Services
+
+@inject NotificationService NotificationService
+
+
+<h3>Available Plugins</h3>
+@if (_onlinePlugins.Any())
+{
+    <table class="table table-responsive text-center align-middle">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Author</th>
+            <th>Version</th>
+            <th>Download</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var plugin in _onlinePlugins)
+        {
+            <tr>
+                <td>@plugin.Name</td>
+                <td>@plugin.Description</td>
+                <td>@plugin.Author</td>
+                <td>@plugin.Version</td>
+                <td>
+                    <button class="btn btn-outline-dark" @onclick="async () => await InstallPlugin(plugin.Id)">
+                        <span>Download</span>
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+@if (_showInstallPercentage)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Installing Plugin...</h5>
+                    <button type="button" class="btn-close" @onclick="CloseInstallPercentageModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Progress: @($"{_installPercentage:F0}")%</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: @_installPercentage%" 
+                             aria-valuenow="@_installPercentage" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseInstallPercentageModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject]
+    public IPluginManager PluginManager { get; set; }
+
+    [Inject]
+    public ILogger Logger { get; set; }
+
+    private bool _showInstallPercentage;
+    private float _installPercentage = 0f;
+
+    private readonly List<OnlinePluginModel> _onlinePlugins = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.Log("Getting online plugins...", this);
+        var plugins = await PluginManager.GetPluginsList();
+
+        if (!plugins.Any())
+        {
+            Logger.Log("No online plugins found.", this);
+            return;
+        }
+
+        _onlinePlugins.Clear();
+
+        foreach (var plugin in plugins)
+        {
+            var onlinePlugin = new OnlinePluginModel
+            {
+                Id = plugin.Id,
+                Name = plugin.Name,
+                Description = plugin.Description,
+                Author = plugin.Author,
+                Version = plugin.Version,
+            };
+            _onlinePlugins.Add(onlinePlugin);
+        }
+        
+        Logger.Log($"Found {_onlinePlugins.Count} online plugins.", this);
+        StateHasChanged();
+    }
+
+    private async Task InstallPlugin(int pluginId)
+    {
+        var response = await PluginManager.GetPluginDataById(pluginId);
+        if (!response.IsSuccess)
+        {
+            Logger.Log(response.Message, this);
+            return;
+        }
+        
+        var pluginData = response.Data;
+        
+        if (pluginData is null)
+        {
+            Logger.Log("Plugin data is null.", this, LogType.Error);
+            NotificationService.Notify("Plugin data is null.", NotificationType.Error);
+            return;
+        }
+
+        Logger.Log($"Installing plugin {pluginData.Name}...", this);
+        _showInstallPercentage = true;
+
+        IProgress<float> progress = new Progress<float>(percent =>
+        {
+            _installPercentage = percent;
+            StateHasChanged();
+        });
+
+        await PluginManager.InstallPlugin(pluginData, progress);
+
+        Logger.Log($"Plugin {pluginData.Name} installed successfully.", this);
+        
+        NotificationService.Notify($"Plugin {pluginData.Name} installed successfully!", NotificationType.Success);
+        
+        CloseInstallPercentageModal();
+        StateHasChanged();
+    }
+
+    private void CloseInstallPercentageModal()
+    {
+        Logger.Log("Closing install percentage modal", this);
+        _showInstallPercentage = false;
+        _installPercentage = 0f;
+    }
+
+    private class OnlinePluginModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Author { get; set; }
+        public string Version { get; set; }
+    }
+}

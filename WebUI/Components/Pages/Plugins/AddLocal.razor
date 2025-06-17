@@ -1,0 +1,111 @@
+@page "/plugins/add-local"
+@using System.ComponentModel.DataAnnotations
+
+@using DiscordBotCore.Configuration
+@using DiscordBotCore.Logging
+@using DiscordBotCore.PluginManagement
+@using DiscordBotCore.PluginManagement.Models
+@using WebUI.Models
+@using WebUI.Services
+@using WebUI.Components.Shared
+
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+@inject IPluginManager PluginManager
+@inject IConfiguration Configuration
+@inject ILogger Logger
+
+@rendermode InteractiveServer
+
+<CenteredCard Title="Upload plugin">
+    <EditForm Model="@pluginModel" OnValidSubmit="HandleValidSubmit" FormName="pluginForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <ModernLabel Text="Plugin Name"></ModernLabel>
+            <RoundedTextBox @bind-Value="pluginModel.Name" Placeholder="Example Plugin"></RoundedTextBox>
+        </div>
+
+        <div class="form-group">
+            <ModernLabel Text="Plugin version"></ModernLabel>
+            <RoundedTextBox @bind-Value="pluginModel.Version" Placeholder="1.0.0"></RoundedTextBox>
+        </div>
+
+        <div class="form-group">
+            <ModernCheckbox @bind-Checked="pluginModel.IsEnabled" Label="Enable Plugin"></ModernCheckbox>
+        </div>
+
+        <div class="form-group">
+            <ModernFileUploader OnFileUploaded="HandleUploadedFile" AllowedFileTypes="@allowedFileTypes"/>
+            @if (_message is not null)
+            {
+                <p class="mt-2 text-green-600">@_message</p>
+            }
+
+        </div>
+
+        <button class="btn btn-primary" type="submit">Upload</button>
+    </EditForm>
+</CenteredCard>
+
+@code {
+    private PluginUploadModel pluginModel = new();
+    private IBrowserFile? selectedFile;
+    
+    private List<string> allowedFileTypes { get; set; } = new List<string> { ".dll"};
+
+    private string? _message;
+
+    private bool IsValidVersion => System.Text.RegularExpressions.Regex.IsMatch(pluginModel.Version ?? "", @"^\d+\.\d+\.\d+$");
+
+    private async Task HandleUploadedFile(IBrowserFile file)
+    {
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream().ReadAsync(buffer);
+        _message = $"Uploaded file: {file.Name} ({file.Size} bytes)";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (!IsValidVersion || selectedFile is null || string.IsNullOrEmpty(selectedFile.Name))
+        {
+            NotificationService.Notify("Invalid field values. Please check the form.", NotificationType.Error);
+            return;
+        }
+
+        string? pluginsFolder = Configuration.Get<string>("PluginFolder");
+        
+        if (string.IsNullOrEmpty(pluginsFolder))
+        {
+            Logger.Log("Plugins folder is not set in the configuration.", this, LogType.Error);
+            NotificationService.Notify("Plugins folder is not set in the configuration.", NotificationType.Error);
+            return;
+        }
+        
+        string filePath = Path.Combine(pluginsFolder, selectedFile.Name);
+        
+        await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        await using var fileStream = File.Create(filePath);
+        await stream.CopyToAsync(fileStream);
+
+        LocalPlugin plugin = new LocalPlugin(pluginModel.Name, pluginModel.Version, filePath, new(), true, pluginModel.IsEnabled);
+        await PluginManager.AppendPluginToDatabase(plugin);
+        
+        NotificationService.Notify($"Plugin {pluginModel.Name} uploaded successfully!", NotificationType.Success);
+
+        Navigation.NavigateTo("/");
+    }
+
+    public class PluginUploadModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string Version { get; set; } = string.Empty;
+
+        public bool IsEnabled { get; set; }
+    }
+}
