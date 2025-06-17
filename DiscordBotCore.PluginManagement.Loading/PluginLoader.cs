@@ -7,6 +7,7 @@ using DiscordBotCore.Logging;
 using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
 using DiscordBotCore.PluginCore.Interfaces;
 using DiscordBotCore.PluginManagement.Loading.Exceptions;
+using DiscordBotCore.Utilities.Responses;
 
 namespace DiscordBotCore.PluginManagement.Loading;
 
@@ -24,8 +25,7 @@ public class PluginLoader : IPluginLoader
     private readonly List<IDbCommand> _Commands = new List<IDbCommand>();
     private readonly List<IDbEvent> _Events = new List<IDbEvent>();
     private readonly List<IDbSlashCommand> _SlashCommands = new List<IDbSlashCommand>();
-    
-    private bool _IsFirstLoad = true;
+    private readonly List<SocketApplicationCommand> _ApplicationCommands = new List<SocketApplicationCommand>();
 
     public PluginLoader(IPluginManager pluginManager, ILogger logger, IConfiguration configuration)
     {
@@ -57,11 +57,16 @@ public class PluginLoader : IPluginLoader
 
     public async Task LoadPlugins()
     {
-        UnloadAllPlugins();
+        if (PluginLoaderContext is not null)
+        {
+            _Logger.Log("The plugins are already loaded", this, LogType.Error);
+            return;
+        }
         
         _Events.Clear();
         _Commands.Clear();
         _SlashCommands.Clear();
+        _ApplicationCommands.Clear();
         
         await LoadPluginFiles();
 
@@ -88,37 +93,45 @@ public class PluginLoader : IPluginLoader
         _Logger.Log("Loaded plugins", this);
     }
 
-    public void UnloadAllPlugins()
+    public async Task UnloadAllPlugins()
     {
-        if (_IsFirstLoad)
-        {
-            // Allow unloading only after the first load
-            _IsFirstLoad = false;
-            return;
-        }
-        
         if (PluginLoaderContext is null)
         {
             _Logger.Log("The plugins are not loaded. Please load the plugins before unloading them.", this, LogType.Error);
             return;
         }
         
+        await UnloadSlashCommands();
+        
         PluginLoaderContext.Unload();
+        PluginLoaderContext = null;
+        
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         
-        PluginLoaderContext = null;
+        
+    }
+
+    private async Task UnloadSlashCommands()
+    {
+        if (_DiscordClient is null)
+        {
+            _Logger.Log("The client is not set. Please set the client before unloading slash commands.", this, LogType.Error);
+            return;
+        }
+
+        foreach (SocketApplicationCommand command in _ApplicationCommands)
+        {
+            await command.DeleteAsync();
+        }
+        
+        _ApplicationCommands.Clear();
+        _Logger.Log("Unloaded all slash commands", this);
     }
 
     private async Task LoadPluginFiles()
     {
-        if (PluginLoaderContext is not null)
-        {
-            _Logger.Log("The plugins are already loaded", this, LogType.Error);
-            return;
-        }
-        
         var installedPlugins = await _PluginManager.GetInstalledPlugins();
 
         if (installedPlugins.Count == 0)
@@ -314,34 +327,45 @@ public class PluginLoader : IPluginLoader
             builder.WithContextTypes(InteractionContextType.Guild);
 
         List<ulong> serverIds = _Configuration.GetList("ServerIds", new List<ulong>());
-            
-        foreach(ulong guildId in serverIds)
-        {
-            bool result = await EnableSlashCommandPerGuild(guildId, builder);
-                
-            if (!result)
-            {
-                _Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", this, LogType.Error);
-                return false;
-            }
-        }
-            
-        await _DiscordClient.CreateGlobalApplicationCommandAsync(builder.Build());
 
+        if (serverIds.Any())
+        {
+            foreach(ulong guildId in serverIds)
+            {
+                IResponse<SocketApplicationCommand> result = await EnableSlashCommandPerGuild(guildId, builder);
+                
+                if (!result.IsSuccess)
+                {
+                    _Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", this, LogType.Error);
+                    continue;
+                }
+
+                if (result.Data is null)
+                {
+                    continue;
+                }
+                
+                _ApplicationCommands.Add(result.Data);
+            }
+
+            return true;
+        }
+        
+        var command = await _DiscordClient.CreateGlobalApplicationCommandAsync(builder.Build());
+        _ApplicationCommands.Add(command);
         return true;
     }
 
-    private async Task<bool> EnableSlashCommandPerGuild(ulong guildId, SlashCommandBuilder builder)
+    private async Task<IResponse<SocketApplicationCommand>> EnableSlashCommandPerGuild(ulong guildId, SlashCommandBuilder builder)
     {
         SocketGuild? guild = _DiscordClient?.GetGuild(guildId);
         if (guild is null)
         {
             _Logger.Log("Failed to get guild with ID " + guildId, this, LogType.Error);
-            return false;
+            return Response<SocketApplicationCommand>.Failure("Failed to get guild with ID " + guildId);
         }
         
-        await guild.CreateApplicationCommandAsync(builder.Build());
-        
-        return true;
+        var command = await guild.CreateApplicationCommandAsync(builder.Build());
+        return Response<SocketApplicationCommand>.Success(command);
     }
 }

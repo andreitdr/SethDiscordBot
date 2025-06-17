@@ -44,6 +44,8 @@ public class DiscordBotApplication : IDiscordBotApplication
             return;
         }
         
+        await _PluginLoader.UnloadAllPlugins();
+        
         await Client.LogoutAsync();
         await Client.StopAsync();
             
@@ -53,6 +55,7 @@ public class DiscordBotApplication : IDiscordBotApplication
         Client.Disconnected -= Client_Disconnected;
             
         await Client.DisposeAsync();
+        
         
         IsReady = false;
         
@@ -73,7 +76,7 @@ public class DiscordBotApplication : IDiscordBotApplication
         };
 
         DiscordSocketClient client  = new DiscordSocketClient(config);
-        Client = client;
+        
         
         _Service = new CommandService();
         
@@ -82,8 +85,8 @@ public class DiscordBotApplication : IDiscordBotApplication
         client.Ready        += Ready;
         client.Disconnected += Client_Disconnected;
 
+        Client = client;
         await client.LoginAsync(TokenType.Bot, _Configuration.Get<string>("token"));
-
         await client.StartAsync();
 
         _CommandServiceHandler = new CommandHandler(_Logger, _PluginLoader, _Configuration, _Service);

@@ -23,5 +23,5 @@ public interface IPluginLoader
     /// <summary>
     /// Unload all plugins from the plugin manager.
     /// </summary>
-    public void UnloadAllPlugins();
+    public Task UnloadAllPlugins();
 }

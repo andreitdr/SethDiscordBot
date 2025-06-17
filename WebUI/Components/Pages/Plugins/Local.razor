@@ -82,7 +82,7 @@
 
     private async Task DeletePluginButtonClick(InstalledPlugin plugin)
     {   
-        PluginLoader.UnloadAllPlugins();
+        await PluginLoader.UnloadAllPlugins();
         
         Logger.Log($"Deleting plugin {plugin.Name}", this);
 
