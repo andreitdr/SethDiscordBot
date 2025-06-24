@@ -46,30 +46,28 @@ internal class ExternalApplicationManager
         _Logger.Log($"Application with id {applicationId} freed successfully");
     }
     
-    public void ExecuteApplicationFunctionWithParameter(Guid appId, string functionName, ref object parameter)
+    public T GetFunctionDelegate<T>(Guid applicationId, string functionName) where T : Delegate
     {
-        var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
+        var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == applicationId, null);
         if(application is null)
         {
-            _Logger.Log($"Couldn't find application with id {appId}");
-            return;
+            _Logger.Log($"Couldn't find application with id {applicationId}");
+            return default!;
         }
         
-        application.CallFunction(functionName, ref parameter);
+        return application.GetDelegateForFunctionPointer<T>(functionName);
     }
     
-    public void ExecuteApplicationFunctionWithoutParameter(Guid appId, string functionName)
+    public object? SetExternFunctionToPointToFunction<TLocalFunctionDelegate>(Guid applicationId, string externalFunctionName, TLocalFunctionDelegate localFunction) where TLocalFunctionDelegate : Delegate
     {
-        var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == appId);
+        var application = _ExternalApplications.FirstOrDefault(app => app.ApplicationId == applicationId, null);
         if(application is null)
         {
-            _Logger.Log($"Couldn't find application with id {appId}");
-            return;
+            _Logger.Log($"Couldn't find application with id {applicationId}");
+            return null;
         }
         
-        application.CallFunction(functionName);
-        
+        return application.SetExternFunctionToPointToFunction<TLocalFunctionDelegate>(externalFunctionName, localFunction);
     }
-    
     
 }

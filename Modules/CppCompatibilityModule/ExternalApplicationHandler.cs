@@ -43,25 +43,26 @@ public class ExternalApplicationHandler
         _ExternalApplicationManager.FreeApplication(applicationId);
     }
 
-    public void CallFunctionWithParameter(Guid appId, string functionName, ref object parameter)
+    public T GetFunctionDelegate<T>(Guid applicationId, string functionName) where T : Delegate
     {
         if (_ExternalApplicationManager is null)
         {
-            _Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
-            return;
+            _Logger.Log("Failed to get function delegate because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
+            return default!;
         }
-
-        _ExternalApplicationManager.ExecuteApplicationFunctionWithParameter(appId, functionName, ref parameter);
+        
+        return _ExternalApplicationManager.GetFunctionDelegate<T>(applicationId, functionName);
     }
 
-    public void CallFunctionWithoutParameter(Guid appId, string functionName)
+    public object? SetExternFunctionToPointToFunction<TLocalFunctionDelegate>(Guid applicationId, string functionName,
+        TLocalFunctionDelegate localFunction) where TLocalFunctionDelegate : Delegate
     {
-        if (_ExternalApplicationManager is null)
+        if(_ExternalApplicationManager is null)
         {
-            _Logger.Log("Failed to call function because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
-            return;
+            _Logger.Log("Failed to set external function pointer because the manager is not initialized. This should have never happened in the first place!!!", this, LogType.Critical);
+            return null;
         }
-
-        _ExternalApplicationManager.ExecuteApplicationFunctionWithoutParameter(appId, functionName);
+        
+        return _ExternalApplicationManager.SetExternFunctionToPointToFunction(applicationId, functionName, localFunction);
     }
 }

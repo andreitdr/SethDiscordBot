@@ -116,23 +116,6 @@ namespace CppCompatibilityModule.Extern
 
             return result;
         }
-
-        public void CallFunction(string methodName, ref object parameter)
-        {
-            var functionDelegate = GetDelegateForFunctionPointer<Delegates.ProcessObject>(methodName);
-
-            functionDelegate(ref parameter);
-
-            _Logger.Log($"Function {methodName} called successfully with parameter");
-        }
         
-        public void CallFunction(string methodName)
-        {
-            var functionDelegate = GetDelegateForFunctionPointer<Delegates.ExecuteDelegateFunction>(methodName);
-
-            functionDelegate();
-
-            _Logger.Log($"Function {methodName} called successfully");
-        }
     }
 }

@@ -65,6 +65,7 @@
         var buffer = new byte[file.Size];
         await file.OpenReadStream().ReadAsync(buffer);
         _message = $"Uploaded file: {file.Name} ({file.Size} bytes)";
+        selectedFile = file;
     }
 
     private async Task HandleValidSubmit()

@@ -5,9 +5,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBotCore", "DiscordBotCore\DiscordBotCore.csproj", "{5A99BFC3-EB39-4AEF-8D61-3CE22D013B02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{5CF9AD7B-6BF0-4035-835F-722F989C01E1}"
-	ProjectSection(SolutionItems) = preProject
-		Plugins\README.md = Plugins\README.md
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{EA4FA308-7B2C-458E-8485-8747D745DD59}"
 EndProject
@@ -40,6 +37,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.DiscordBotCore.Logging", "Tests\Tests.DiscordBotCore.Logging\Tests.DiscordBotCore.Logging.csproj", "{94238D37-60C6-4E40-80EC-4B4D242F5914}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.DiscordBotCore.Configuration", "Tests\Tests.DiscordBotCore.Configuration\Tests.DiscordBotCore.Configuration.csproj", "{52C59C73-C23C-4608-8827-383577DEB8D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppModuleDemo", "Plugins\CppModuleDemo\CppModuleDemo.csproj", "{55425935-456E-4ED4-9283-2CB6A6C7AC7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -231,6 +230,18 @@ Global
 		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|ARM64.Build.0 = Release|Any CPU
 		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|x64.ActiveCfg = Release|Any CPU
 		{52C59C73-C23C-4608-8827-383577DEB8D8}.Release|x64.Build.0 = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Debug|x64.Build.0 = Debug|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|ARM64.Build.0 = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|x64.ActiveCfg = Release|Any CPU
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -241,6 +252,7 @@ Global
 		{9A4B98C1-00AC-481C-BE55-A70C0B9D3BE7} = {5CF9AD7B-6BF0-4035-835F-722F989C01E1}
 		{94238D37-60C6-4E40-80EC-4B4D242F5914} = {8F27B3EA-F292-40DF-B9B3-4B0E6BEA4E70}
 		{52C59C73-C23C-4608-8827-383577DEB8D8} = {8F27B3EA-F292-40DF-B9B3-4B0E6BEA4E70}
+		{55425935-456E-4ED4-9283-2CB6A6C7AC7D} = {5CF9AD7B-6BF0-4035-835F-722F989C01E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FB3C5DE-ED21-4D2E-ABDD-3A00EE4A2FFF}

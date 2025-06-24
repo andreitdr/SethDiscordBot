@@ -17,24 +17,14 @@ public class ExternalApplication
         this._Logger = logger;
     }
     
-    internal void CallFunction(string methodName, ref object parameter)
-    {
-        _ExternLibrary.CallFunction(methodName, ref parameter);
-    }
-    
-    internal void CallFunction(string methodName)
-    {
-        _ExternLibrary.CallFunction(methodName);
-    }
-    
     internal T GetDelegateForFunctionPointer<T>(string methodName) where T : Delegate
     {
         return _ExternLibrary.GetDelegateForFunctionPointer<T>(methodName);
     }
     
-    internal void SetExternFunctionToPointToFunction(string externalFunctionName, Delegates.CsharpFunctionDelegate localFunction)
+    internal object? SetExternFunctionToPointToFunction<TLocalFunctionDelegate>(string externalFunctionName, TLocalFunctionDelegate localFunction) where TLocalFunctionDelegate : Delegate
     {
-        _ExternLibrary.SetExternFunctionSetterPointerToCustomDelegate<Delegates.SetExternFunctionPointerDelegate, Delegates.CsharpFunctionDelegate>(externalFunctionName, localFunction);
+        return _ExternLibrary.SetExternFunctionSetterPointerToCustomDelegate<Delegates.SetExternFunctionPointerDelegate, TLocalFunctionDelegate>(externalFunctionName, localFunction);
     }
     
     internal void FreeLibrary()
