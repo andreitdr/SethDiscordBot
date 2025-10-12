@@ -24,6 +24,13 @@ public sealed class Logger : ILogger
         LogMessages = new List<ILogMessage>();
     }
     
+    public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.Info));
+    public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
+    public void Log(string message, object sender) => Log(new LogMessage(message, sender));
+    public void Log(string message, object sender, LogType type) => Log(new LogMessage(message, sender, type));
+    public void LogException(Exception exception, object sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, sender, logFullStack));
+
+    
     private string GenerateLogMessage(ILogMessage message)
     {
         string messageAsString = new string(_LogMessageFormat);
@@ -54,9 +61,4 @@ public sealed class Logger : ILogger
         await LogToFile(messageAsString);
     }
 
-    public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.Info));
-    public void Log(string message, LogType logType) => Log(new LogMessage(message, logType));
-    public void Log(string message, object sender) => Log(new LogMessage(message, sender));
-    public void Log(string message, object sender, LogType type) => Log(new LogMessage(message, sender, type));
-    public void LogException(Exception exception, object sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, sender, logFullStack));
 }

@@ -39,24 +39,21 @@ static Assembly? LoadFromSameFolder(object? sender, ResolveEventArgs args, strin
         string assemblyPath = Path.Combine(librariesFolder, assemblyFileName);
 
         Console.WriteLine($"Attempting to load from: {assemblyPath}");
-
-        if (File.Exists(assemblyPath))
-        {
-            try
-            {
-                var fileAssembly = Assembly.LoadFrom(assemblyPath);
-                Console.WriteLine($"Successfully loaded Assembly: {fileAssembly.FullName}");
-                return fileAssembly;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading assembly from '{assemblyPath}': {ex.Message}");
-                // Optionally log the full exception for debugging
-            }
-        }
-        else
+        
+        if (!File.Exists(assemblyPath))
         {
             Console.WriteLine($"File not found: {assemblyPath}");
+            continue;
+        }
+
+        try
+        {
+            Assembly assembly = Assembly.LoadFrom(assemblyPath);
+            return assembly;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load assembly: {assemblyPath}. Error message: {ex.Message}");
         }
     }
 
