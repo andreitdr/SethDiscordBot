@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.DiscordBotCore.Config
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppModuleDemo", "Plugins\CppModuleDemo\CppModuleDemo.csproj", "{55425935-456E-4ED4-9283-2CB6A6C7AC7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBotCore.Resources", "DiscordBotCore.Resources\DiscordBotCore.Resources.csproj", "{767C22E7-8FFC-42F8-B222-4EADF1411314}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -242,6 +244,18 @@ Global
 		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|ARM64.Build.0 = Release|Any CPU
 		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|x64.ActiveCfg = Release|Any CPU
 		{55425935-456E-4ED4-9283-2CB6A6C7AC7D}.Release|x64.Build.0 = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Debug|x64.Build.0 = Debug|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|Any CPU.Build.0 = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|ARM64.Build.0 = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|x64.ActiveCfg = Release|Any CPU
+		{767C22E7-8FFC-42F8-B222-4EADF1411314}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

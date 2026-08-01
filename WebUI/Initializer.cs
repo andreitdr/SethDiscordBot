@@ -4,6 +4,7 @@ using DiscordBotCore.Logging;
 using DiscordBotCore.PluginManagement;
 using DiscordBotCore.PluginManagement.Helpers;
 using DiscordBotCore.PluginManagement.Loading;
+using DiscordBotCore.Resources;
 using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
 using ILogger = DiscordBotCore.Logging.ILogger;
 
@@ -12,25 +13,22 @@ namespace WebUI;
 
 public static class Initializer
 {
-    private static readonly string DefaultLogFormat = "{ThrowTime} {SenderName} {Message}";
-    private static readonly string DefaultLogFolder = "./Data/Logs";
-    private static readonly string DefaultResourcesFolder = "./Data/Resources";
-    private static readonly string DefaultConfigFile = "./Data/Resources/config.json";
-    private static readonly string DefaultPluginFolder = "./Data/Plugins";
-    private static readonly string DefaultPluginDatabaseFile = "./Data/Resources/plugins.json";
-    private static readonly string DefaultMaxHistorySize = "1000";
+    private static readonly string ConfigurationLoggerLogFormatStringPattern = "Logger:LogFormat";
+    private static readonly string ConfigurationLoggerLogFolderStringPattern = "Logger:LogFolder";
+    private static readonly string ConfigurationLoggerMaxHistorySizeStringPattern = "Logger:LogFolder";
+    private static readonly string ConfigurationConfigFileStringPattern = "ConfigFile";
     
     public static void AddDiscordBotComponents(this IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton<ILogger>(sp =>
         {
-            string logFormat = builder.Configuration["Logger:LogFormat"] ?? DefaultLogFormat;
-            string logFolder = builder.Configuration["Logger:LogFolder"] ?? DefaultLogFolder;
-            string maxHistorySize = builder.Configuration["Logger:MaxHistorySize"] ?? DefaultMaxHistorySize;
+            string logFormat = builder.Configuration[ConfigurationLoggerLogFormatStringPattern] ?? DefaultConfigurationValues.DefaultLogFormat;
+            string logFolder = builder.Configuration[ConfigurationLoggerLogFolderStringPattern] ?? DefaultConfigurationValues.DefaultLogFolder;
+            string maxHistorySize = builder.Configuration[ConfigurationLoggerMaxHistorySizeStringPattern] ?? DefaultConfigurationValues.DefaultMaxHistorySize;
             Directory.CreateDirectory(logFolder);
             if (!int.TryParse(maxHistorySize, out int maxHistorySizeInt))
             {
-                maxHistorySizeInt = int.Parse(DefaultMaxHistorySize);
+                maxHistorySizeInt = int.Parse(DefaultConfigurationValues.DefaultMaxHistorySize);
             }
             
             ILogger logger = new Logger(logFolder, logFormat, maxHistorySizeInt);
@@ -45,7 +43,7 @@ public static class Initializer
         builder.Services.AddSingleton<IConfiguration>(sp =>
         {
             ILogger logger = sp.GetRequiredService<ILogger>();
-            string configFile = builder.Configuration["ConfigFile"] ?? DefaultConfigFile;
+            string configFile = builder.Configuration[ConfigurationConfigFileStringPattern] ?? DefaultConfigurationValues.DefaultConfigFile;
             Directory.CreateDirectory(new FileInfo(configFile).DirectoryName);
             IConfiguration configuration = Configuration.CreateFromFile(logger, configFile, true);
             return configuration;
@@ -55,7 +53,7 @@ public static class Initializer
         {
             IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
             Dictionary<string, string>? remotePluginConnectionConfigurationDetails =
-                configuration.Get<Dictionary<string, string>>("RemotePluginConnectionConfigurationDetails");
+                configuration.Get<Dictionary<string, string>>(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.Details);
 
             if (remotePluginConnectionConfigurationDetails is null)
             {
@@ -63,9 +61,9 @@ public static class Initializer
             }
 
             return new PluginRepositoryConfiguration(
-                remotePluginConnectionConfigurationDetails["Baseurl"],
-                remotePluginConnectionConfigurationDetails["PluginsEndpoint"],
-                remotePluginConnectionConfigurationDetails["DependenciesEndpoint"]
+                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.BaseUrl],
+                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.PluginsEndpoint],
+                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.DependenciesEndpoint]
             );
         });
 
@@ -78,22 +76,29 @@ public static class Initializer
             return pluginRepository;
         });
 
+        builder.Services.AddSingleton<ILocalPluginRepository>(sp =>
+        {
+            IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+            string pluginDatabaseFile = configuration.Get<string>(DefaultConfigurationKeys.PluginsDatabaseFile, DefaultConfigurationValues.DefaultPluginDatabaseFile);
+            Directory.CreateDirectory(new FileInfo(pluginDatabaseFile).DirectoryName);
+            return new LocalPluginRepository(pluginDatabaseFile);
+        });
+
         builder.Services.AddSingleton<IPluginManager>(sp =>
         {
             IPluginRepository pluginRepository = sp.GetRequiredService<IPluginRepository>();
+            ILocalPluginRepository localPluginRepository = sp.GetRequiredService<ILocalPluginRepository>();
             ILogger logger = sp.GetRequiredService<ILogger>();
             IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+            
 
-            string pluginFolder = configuration.Get<string>("PluginFolder", DefaultPluginFolder);
+            string pluginFolder = configuration.Get<string>(DefaultConfigurationKeys.PluginFolder, DefaultConfigurationValues.DefaultPluginFolder);
             Directory.CreateDirectory(pluginFolder);
 
-            string resourcesFolder = configuration.Get<string>("ResourcesFolder", DefaultResourcesFolder);
+            string resourcesFolder = configuration.Get<string>(DefaultConfigurationKeys.ResourcesFolder, DefaultConfigurationValues.DefaultResourcesFolder);
             Directory.CreateDirectory(resourcesFolder);
-
-            string pluginDatabaseFile = configuration.Get<string>("PluginDatabase", DefaultPluginDatabaseFile);
-            Directory.CreateDirectory(new FileInfo(pluginDatabaseFile).DirectoryName);
-
-            IPluginManager pluginManager = new PluginManager(pluginRepository, logger, configuration);
+            
+            IPluginManager pluginManager = new PluginManager(pluginRepository, localPluginRepository, logger, configuration);
             return pluginManager;
         });
 

@@ -12,6 +12,7 @@
       <ProjectReference Include="..\DiscordBotCore.Database.Sqlite\DiscordBotCore.Database.Sqlite.csproj" />
       <ProjectReference Include="..\DiscordBotCore.Logging\DiscordBotCore.Logging.csproj" />
       <ProjectReference Include="..\DiscordBotCore.PluginManagement\DiscordBotCore.PluginManagement.csproj" />
+      <ProjectReference Include="..\DiscordBotCore.Resources\DiscordBotCore.Resources.csproj" />
       <ProjectReference Include="..\DiscordBotCore\DiscordBotCore.csproj" />
       
     </ItemGroup>
@@ -20,6 +21,11 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Data\Resources\config.json" />
+      <_ContentIncludedByDefault Remove="Data\Resources\plugins.json" />
     </ItemGroup>
 
 </Project>

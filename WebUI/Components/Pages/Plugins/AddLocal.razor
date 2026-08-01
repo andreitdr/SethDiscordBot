@@ -91,8 +91,8 @@
         await using var fileStream = File.Create(filePath);
         await stream.CopyToAsync(fileStream);
 
-        LocalPlugin plugin = new LocalPlugin(pluginModel.Name, pluginModel.Version, filePath, new(), true, pluginModel.IsEnabled);
-        await PluginManager.AppendPluginToDatabase(plugin);
+        var plugin = await PluginManager.CreateOfflineLocalPlugin(pluginModel.Name, filePath, pluginModel.Version, pluginModel.IsEnabled);
+        await PluginManager.AppendPluginToDatabase(plugin, []);
         
         NotificationService.Notify($"Plugin {pluginModel.Name} uploaded successfully!", NotificationType.Success);
 

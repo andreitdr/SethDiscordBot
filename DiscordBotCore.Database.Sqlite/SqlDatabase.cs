@@ -678,7 +678,7 @@ public class SqlDatabase
         var reader = await command.ExecuteReaderAsync();
         //
         if (!reader.HasRows)
-            return null;
+            return new List<T>();
 
         List<T> rows = new();
         while (await reader.ReadAsync())

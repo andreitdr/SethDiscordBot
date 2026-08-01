@@ -105,7 +105,7 @@
     private async Task PluginDetailsButtonClick(InstalledPlugin plugin)
     {
         Logger.Log($"Getting plugin details for {plugin.Name}", this);
-        var response = await PluginManager.GetPluginDataByName(plugin.Name);
+        var response = await PluginManager.GetOnlinePluginDataByName(plugin.Name);
         if (!response.IsSuccess)
         {
             Logger.Log(response.Message, this, LogType.Error);

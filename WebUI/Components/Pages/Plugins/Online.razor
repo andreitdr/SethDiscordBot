@@ -91,7 +91,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Logger.Log("Getting online plugins...", this);
-        var plugins = await PluginManager.GetPluginsList();
+        var plugins = await PluginManager.GetOnlinePluginsList();
 
         if (!plugins.Any())
         {
@@ -120,7 +120,7 @@ else
 
     private async Task InstallPlugin(int pluginId)
     {
-        var response = await PluginManager.GetPluginDataById(pluginId);
+        var response = await PluginManager.GetOnlinePluginDataById(pluginId);
         if (!response.IsSuccess)
         {
             Logger.Log(response.Message, this);
