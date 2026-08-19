@@ -58,5 +58,9 @@ public class StartupEvent : IDbEvent
     private static void OnManagedCallbackInvoked()
     {
         InternalSettings.ManagedCallbackInvocationCount++;
+
+        var timestamp = DateTime.UtcNow.ToString("O");
+        Console.WriteLine($"[C# callback] C++ called managed code at {timestamp}. Invocation count: {InternalSettings.ManagedCallbackInvocationCount}");
+        Console.WriteLine($"[C# callback] Current thread ID: {Environment.CurrentManagedThreadId}");
     }
 }
