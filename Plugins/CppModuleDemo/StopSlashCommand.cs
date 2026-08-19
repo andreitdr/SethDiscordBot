@@ -30,6 +30,8 @@ public class StopSlashCommand : IDbSlashCommand
 
         InternalSettings.ExternalApplicationHandler.StopApplication(id);
         InternalSettings.DemoModuleInternalId = Guid.Empty;
+        InternalSettings.ManagedCallbackReference = null;
+        InternalSettings.ManagedCallbackInvocationCount = 0;
         logger.Log("CppModuleDemo stopped successfully.", this);
 
         await context.Channel.SendMessageAsync("CppModuleDemo has been stopped and resources cleaned up.");

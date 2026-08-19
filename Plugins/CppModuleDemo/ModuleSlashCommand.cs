@@ -69,10 +69,25 @@ public class ModuleSlashCommand : IDbSlashCommand
         
         modifyComplexObject(ref complexObject);
 
+        Delegates.InvokeManagedCallback? invokeManagedCallback =
+            InternalSettings.ExternalApplicationHandler?.GetFunctionDelegate<Delegates.InvokeManagedCallback>(
+                InternalSettings.DemoModuleInternalId, "invokeManagedCallback");
+
+        if (invokeManagedCallback is null)
+        {
+            await context.Channel.SendMessageAsync(
+                "Failed to retrieve the native callback invoker function. Please check the C++ module integration.");
+            return;
+        }
+
+        int nativeCallbackResult = invokeManagedCallback();
+
         await context.Channel.SendMessageAsync("CppModuleDemo command executed successfully! New values are:\n" +
                                                $"Integer Value: {((ExampleComplexObject)complexObject).IntegerValue}\n" +
                                                $"Number Value: {((ExampleComplexObject)complexObject).DoubleValue}\n" +
-                                               $"String Value: {((ExampleComplexObject)complexObject).StringValue}");
+                                               $"String Value: {((ExampleComplexObject)complexObject).StringValue}\n" +
+                                               $"Native callback result: {nativeCallbackResult}\n" +
+                                               $"Managed callback invocation count: {InternalSettings.ManagedCallbackInvocationCount}");
 
     }
 }

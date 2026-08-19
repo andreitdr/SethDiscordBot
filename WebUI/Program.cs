@@ -49,6 +49,7 @@ static Assembly? LoadFromSameFolder(object? sender, ResolveEventArgs args, strin
         try
         {
             Assembly assembly = Assembly.LoadFrom(assemblyPath);
+            Console.WriteLine($"Assembly loaded successfully: {assembly.FullName} from {assemblyPath}");
             return assembly;
         }
         catch (Exception ex)
