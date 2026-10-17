@@ -39,7 +39,8 @@ The bot is a library (`DiscordBotCore`) hosted by a Blazor Server app (`WebUI`).
 - `DiscordBotCore.PluginManagement.Loading` — `PluginLoader`: loads enabled plugin DLLs into a collectible `AssemblyLoadContext` and instantiates types by reflection.
 - `DiscordBotCore` — `DiscordBotApplication` (Discord.Net socket client lifecycle), `CommandHandler` (prefix/mention parsing and dispatch), built-in `HelpCommand`.
 - `Modules/CppCompatibilityModule` — helper library for plugins that call into native shared libraries via function pointers/delegates.
-- `Plugins/*` — sample plugins (LevelingSystem, PollMaker, CppModuleDemo).
+- `Modules/PluginPages.Abstractions` / `Modules/PluginPages.Hosting` — reusable runtime plugin web pages (see "Plugin web pages").
+- `Plugins/*` — sample plugins (LevelingSystem, PollMaker, CppModuleDemo, WebPagesDemo).
 
 ### Plugin lifecycle (spans several projects)
 
@@ -50,6 +51,18 @@ The bot is a library (`DiscordBotCore`) hosted by a Blazor Server app (`WebUI`).
 5. Slash commands are registered per guild for each ID in the `ServerIds` config list, or globally if that list is empty. `UnloadAllPlugins` deletes those application commands and unloads the load context.
 
 Per-plugin data directories: events get `<ResourcesFolder>/<plugin assembly name>`, commands get `<ResourcesFolder>/<IDbCommand.Command>`.
+
+### Plugin web pages
+
+A plugin's main DLL can also contain Razor components that the WebUI mounts while plugins are loaded. The mechanism lives in two reusable modules with no Discord dependency: `Modules/PluginPages.Abstractions` (what plugins reference) and `Modules/PluginPages.Hosting` (host side).
+
+- A page is a public component with `[PluginPage("/route", Title = …, Icon = …)]` (or `@attribute [PluginPage(...)]` in a `.razor` file). Don't use `@page` in plugins; the host router never sees plugin assemblies. Routes are ASP.NET Core templates relative to the plugin: `/settings` is served at `/plugin/<LocalPlugin.Id>/settings`, and `/` is the plugin's index page.
+- The WebUI has one catch-all page, `Components/Pages/PluginPage.razor` (`/plugin/{PluginKey}/{*PluginPath}`), which renders `PluginPageOutlet`. The outlet resolves the component through `IPluginPageRegistry` and renders it with `DynamicComponent`. Don't add other WebUI pages under `/plugin`.
+- `PluginLoader` raises `PluginsLoaded` (after load, with `LoadedPlugins` = each plugin's `LocalPlugin` + main `Assembly`) and `PluginsUnloading` (before the load context unloads). `WebUI/Services/PluginPagesBridge.cs` registers and clears the pages on those events. On clear, the registry purges Blazor's static per-type caches (`PluginComponentCaches`) so the collectible context can be collected; `Tests.PluginPages` has a test that checks this.
+- Validation happens per plugin at registration: the route syntax, the reserved first segment `_assets`, that inline constraints resolve, the component type itself, and overlaps (routes with the same shape after normalizing parameters). The first type by full name wins an overlap. Rejections are logged and listed in the Plugin pages panel.
+- Pages get a cascading `PluginPageContext` (`Href(...)` for links, since the app uses `<base href="/">`, and `AssetUrl(...)`). Host services can be injected. Route values bind to `[Parameter]` properties by name.
+- Static files are embedded resources with logical names `wwwroot/...`, served at `/plugin/<id>/_assets/<path>`. Use `<PluginStylesheet Href="x.css"/>` for CSS and `AssetUrl` for JS module imports. CSS isolation (`.razor.css`) is not supported.
+- Reference the contract assemblies with `Private="false"`. A plugin that ships its own copy of `PluginPages.Abstractions` gets its pages rejected with a type identity error. `Plugins/WebPagesDemo` is the reference csproj and the reference set of pages.
 
 ### Native dependencies
 

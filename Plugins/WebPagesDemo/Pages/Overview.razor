@@ -1,0 +1,39 @@
+@attribute [PluginPage("/", Title = "Overview", Icon = "dashboard", Order = 0)]
+@inject DiscordBotCore.Configuration.IConfiguration Configuration
+
+<PluginStylesheet Href="demo.css"/>
+
+<div class="demo-page">
+    <h1>Web pages demo</h1>
+    <p>
+        This page lives inside <code>WebPagesDemo.dll</code>. The WebUI found it when the plugin loaded and mounted it at
+        <code>@Context.BasePath</code>.
+    </p>
+
+    <dl class="demo-facts">
+        <dt>Plugin</dt><dd>@Context.PluginName</dd>
+        <dt>Plugin id</dt><dd><code>@Context.PluginKey</code></dd>
+        <dt>Bot prefix</dt><dd><code>@Configuration.Get("prefix", ";")</code> (read from the host's configuration)</dd>
+    </dl>
+
+    <h2>Interactive</h2>
+    <p>Rendered with the host's interactive server mode, so events work like in any other page.</p>
+    <button class="demo-button" @onclick="() => _Clicks++">Clicked @_Clicks time@(_Clicks == 1 ? "" : "s")</button>
+
+    <h2>Route parameters</h2>
+    <ul class="demo-links">
+        @foreach (int id in new[] { 1, 2, 42 })
+        {
+            <li><a href="@Context.Href($"items/{id}")">Item @id</a></li>
+        }
+        <li><a href="@Context.Href("items/not-a-number")">items/not-a-number</a> (fails the <code>int</code> constraint, so it's not found)</li>
+    </ul>
+
+    <p><a href="@Context.Href("about")">About this demo</a></p>
+</div>
+
+@code {
+    [CascadingParameter] public PluginPageContext Context { get; set; } = default!;
+
+    private int _Clicks;
+}

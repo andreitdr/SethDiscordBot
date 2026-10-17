@@ -1,0 +1,5 @@
+@* Example of a rejected page. Remove the comment around the attribute below and reload plugins: /items/{number}
+   matches the same paths as Item.razor's /items/{id:int}, so the WebUI rejects it and logs why. *@
+@* @attribute [PluginPage("/items/{number}", Title = "Conflicting item")] *@
+
+<p>This page is never shown.</p>

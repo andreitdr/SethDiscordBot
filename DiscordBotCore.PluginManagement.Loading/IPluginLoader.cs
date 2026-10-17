@@ -10,6 +10,23 @@ public interface IPluginLoader
     public IReadOnlyList<IDbSlashCommand> SlashCommands { get; }
 
     /// <summary>
+    /// The main assembly of every plugin loaded by the last <see cref="LoadPlugins"/>, paired with its database entry.
+    /// Empty while no plugins are loaded.
+    /// </summary>
+    public IReadOnlyList<LoadedPluginAssembly> LoadedPlugins { get; }
+
+    /// <summary>
+    /// Raised at the end of <see cref="LoadPlugins"/>, once <see cref="LoadedPlugins"/> is filled.
+    /// </summary>
+    public event Action? PluginsLoaded;
+
+    /// <summary>
+    /// Raised at the start of <see cref="UnloadAllPlugins"/>, before the load context is unloaded. Subscribers must drop
+    /// every reference to plugin types here, or the context can't be collected.
+    /// </summary>
+    public event Action? PluginsUnloading;
+
+    /// <summary>
     /// True between a completed <see cref="LoadPlugins"/> and the next <see cref="UnloadAllPlugins"/>.
     /// </summary>
     public bool IsLoaded { get; }

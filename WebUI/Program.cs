@@ -1,4 +1,5 @@
 using System.Reflection;
+using PluginPages;
 using WebUI;
 using Radzen;
 using WebUI.Services;
@@ -83,6 +84,10 @@ builder.Services.AddSingleton<LogStreamService>();
 // One per circuit: the panel layout belongs to the browser that arranged it.
 builder.Services.AddScoped<DashboardLayoutService>();
 
+// Plugin web pages: registered from the loaded plugin assemblies, served under /plugin/<plugin id>/.
+builder.Services.AddPluginPages();
+builder.Services.AddHostedService<PluginPagesBridge>();
+
 
 var app = builder.Build();
 
@@ -100,6 +105,7 @@ app.UseAntiforgery();
 
 // Fingerprinted static assets: the browser never keeps a stale app.css or JS module after an update.
 app.MapStaticAssets();
+app.MapPluginPageAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

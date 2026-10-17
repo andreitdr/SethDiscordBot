@@ -8,6 +8,8 @@
 @* Resolving it is what makes Radzen read and write the theme cookie. *@
 @inject CookieThemeService ThemeCookie
 @inject IJSRuntime Js
+@inject IPluginPageRegistry PluginPages
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <RadzenComponents/>
@@ -15,8 +17,10 @@
 <div class="app-shell">
     <header class="app-header">
         <div class="app-brand">
-            <RadzenIcon Icon="smart_toy" class="app-brand-icon"/>
-            <span class="app-brand-name">Seth Discord Bot</span>
+            <a href="" class="app-brand-link" title="Dashboard">
+                <RadzenIcon Icon="smart_toy" class="app-brand-icon"/>
+                <span class="app-brand-name">Seth Discord Bot</span>
+            </a>
             <StatusPill/>
         </div>
 
@@ -39,12 +43,23 @@
 
             <span class="app-header-divider"></span>
 
-            <RadzenButton Text="Panels" Icon="dashboard_customize" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
-                          Click="OpenPanelsMenu" aria-haspopup="menu"/>
-            <RadzenButton Icon="@(Layout.Locked ? "lock" : "lock_open")" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
-                          title="@(Layout.Locked ? "Unlock layout" : "Lock layout")"
-                          aria-label="@(Layout.Locked ? "Unlock layout" : "Lock layout")" aria-pressed="@Layout.Locked"
-                          Click="() => Layout.SetLockedAsync(!Layout.Locked)"/>
+            <RadzenButton Text="Pages" Icon="web" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                          Disabled="@(!HasMenuPages)" title="@(HasMenuPages ? null : "No plugin pages are loaded")"
+                          Click="OpenPagesMenu" aria-haspopup="menu"/>
+            @if (IsDashboard)
+            {
+                <RadzenButton Text="Panels" Icon="dashboard_customize" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                              Click="OpenPanelsMenu" aria-haspopup="menu"/>
+                <RadzenButton Icon="@(Layout.Locked ? "lock" : "lock_open")" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                              title="@(Layout.Locked ? "Unlock layout" : "Lock layout")"
+                              aria-label="@(Layout.Locked ? "Unlock layout" : "Lock layout")" aria-pressed="@Layout.Locked"
+                              Click="() => Layout.SetLockedAsync(!Layout.Locked)"/>
+            }
+            else
+            {
+                <RadzenButton Text="Dashboard" Icon="dashboard" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                              Click="@(() => Navigation.NavigateTo(""))"/>
+            }
             <RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base"/>
         </div>
     </header>
@@ -67,6 +82,33 @@
     {
         Bot.Changed += OnStateChanged;
         Layout.Changed += OnStateChanged;
+        PluginPages.Changed += OnStateChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private bool IsDashboard => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Length == 0;
+
+    private bool HasMenuPages => PluginPages.Pages.Any(p => p.ShowInMenu);
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => OnStateChanged();
+
+    private void OpenPagesMenu(MouseEventArgs args)
+    {
+        var items = new List<ContextMenuItem>();
+        foreach (var plugin in PluginPages.Pages.Where(p => p.ShowInMenu).GroupBy(p => p.PluginKey))
+        {
+            items.Add(new ContextMenuItem { Text = plugin.First().PluginName, Icon = "extension", Disabled = true });
+            items.AddRange(plugin.Select(page => new ContextMenuItem { Text = page.Title, Value = page.Href, Icon = page.Icon ?? "article" }));
+        }
+
+        ContextMenu.Open(args, items, e =>
+        {
+            ContextMenu.Close();
+            if (e.Value is string href)
+            {
+                Navigation.NavigateTo(href.TrimStart('/'));
+            }
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -155,5 +197,7 @@
     {
         Bot.Changed -= OnStateChanged;
         Layout.Changed -= OnStateChanged;
+        PluginPages.Changed -= OnStateChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

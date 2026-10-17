@@ -1,0 +1,19 @@
+@attribute [PluginPage("/items/{id:int}", Title = "Item")]
+
+<PluginStylesheet Href="demo.css"/>
+
+<div class="demo-page">
+    <h1>Item @Id</h1>
+    <p>The route <code>/items/{id:int}</code> captured <code>@Context.RouteValues["id"]</code>, converted to the <code>int</code> parameter <code>Id</code>.</p>
+    <p>
+        <a href="@Context.Href($"items/{Id - 1}")">Previous</a> ·
+        <a href="@Context.Href($"items/{Id + 1}")">Next</a> ·
+        <a href="@Context.Href()">Back to overview</a>
+    </p>
+</div>
+
+@code {
+    [CascadingParameter] public PluginPageContext Context { get; set; } = default!;
+
+    [Parameter] public int Id { get; set; }
+}

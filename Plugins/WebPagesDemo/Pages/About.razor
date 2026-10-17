@@ -1,0 +1,15 @@
+@attribute [PluginPage("/about", Title = "About", Icon = "info", Order = 1)]
+
+<PluginStylesheet Href="demo.css"/>
+
+<div class="demo-page">
+    <h1>About</h1>
+    <p>A plugin page is a Razor component with a <code>[PluginPage("/route")]</code> attribute. Routes are relative to the
+        plugin, so this one is <code>@Context.Href("about")</code>.</p>
+    <p>Stylesheets and scripts are embedded in the DLL under <code>wwwroot/</code> and served from <code>@Context.AssetsPath</code>.</p>
+    <p><a href="@Context.Href()">Back to overview</a></p>
+</div>
+
+@code {
+    [CascadingParameter] public PluginPageContext Context { get; set; } = default!;
+}

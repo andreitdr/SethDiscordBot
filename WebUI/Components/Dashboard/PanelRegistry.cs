@@ -25,6 +25,7 @@ public static class PanelRegistry
         new("installed", "Installed plugins", "extension", typeof(InstalledPluginsPanel), X: 0, Y: 9, W: 7, H: 6, MinW: 4, MinH: 3),
         new("loaded", "Loaded components", "deployed_code", typeof(LoadedComponentsPanel), X: 7, Y: 9, W: 5, H: 6, MinW: 3, MinH: 3),
         new("marketplace", "Marketplace", "storefront", typeof(MarketplacePanel), X: 0, Y: 15, W: 12, H: 6, MinW: 4, MinH: 3),
+        new("plugin-pages", "Plugin pages", "web", typeof(PluginPagesPanel), X: 0, Y: 21, W: 6, H: 5, MinW: 3, MinH: 3),
     ];
 
     public static PanelDefinition? Find(string id) => All.FirstOrDefault(p => p.Id == id);

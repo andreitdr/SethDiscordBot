@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Platforms>AnyCPU;x64;ARM64</Platforms>
+        <!-- The host serves only what is inside the DLL: no scoped CSS bundle, no static web assets. -->
+        <ScopedCssEnabled>false</ScopedCssEnabled>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <!-- Contract assemblies come from the host at runtime. Private="false" keeps copies out of the plugin output, so
+         the plugin can never load a second copy with a different type identity. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\DiscordBotCore.PluginCore\DiscordBotCore.PluginCore.csproj" Private="false" />
+        <ProjectReference Include="..\..\DiscordBotCore.Logging\DiscordBotCore.Logging.csproj" Private="false" />
+        <ProjectReference Include="..\..\DiscordBotCore.Configuration\DiscordBotCore.Configuration.csproj" Private="false" />
+        <ProjectReference Include="..\..\Modules\PluginPages.Abstractions\PluginPages.Abstractions.csproj" Private="false" />
+    </ItemGroup>
+
+    <!-- Files under wwwroot/ are embedded in the DLL and served at /plugin/<id>/_assets/<path>. -->
+    <ItemGroup>
+        <Content Remove="wwwroot\**" />
+        <EmbeddedResource Include="wwwroot\**" LogicalName="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+</Project>

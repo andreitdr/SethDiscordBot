@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Loader;
 using Discord;
 using Discord.WebSocket;
 using DiscordBotCore.Configuration;
@@ -27,6 +28,10 @@ public class PluginLoader : IPluginLoader
     private readonly List<IDbSlashCommand> _SlashCommands = new List<IDbSlashCommand>();
     private readonly List<SocketApplicationCommand> _ApplicationCommands = new List<SocketApplicationCommand>();
     private readonly List<Func<SocketInteraction, Task>> _InteractionHandlers = new List<Func<SocketInteraction, Task>>();
+    private readonly List<LoadedPluginAssembly> _LoadedPlugins = new List<LoadedPluginAssembly>();
+
+    public event Action? PluginsLoaded;
+    public event Action? PluginsUnloading;
 
     public PluginLoader(IPluginManager pluginManager, ILogger logger, IConfiguration configuration)
     {
@@ -38,6 +43,7 @@ public class PluginLoader : IPluginLoader
     public IReadOnlyList<IDbCommand> Commands => _Commands;
     public IReadOnlyList<IDbEvent> Events => _Events;
     public IReadOnlyList<IDbSlashCommand> SlashCommands => _SlashCommands;
+    public IReadOnlyList<LoadedPluginAssembly> LoadedPlugins => _LoadedPlugins;
     public bool IsLoaded => _IsLoaded;
 
     public void SetDiscordClient(DiscordSocketClient discordSocketClient)
@@ -75,6 +81,7 @@ public class PluginLoader : IPluginLoader
         _SlashCommands.Clear();
         _ApplicationCommands.Clear();
         _InteractionHandlers.Clear();
+        _LoadedPlugins.Clear();
 
         await LoadPluginFiles();
 
@@ -107,6 +114,8 @@ public class PluginLoader : IPluginLoader
 
         _IsLoaded = true;
         _Logger.Log("Loaded plugins", this);
+
+        RaiseSafely(PluginsLoaded, nameof(PluginsLoaded));
     }
 
     public async Task UnloadAllPlugins()
@@ -116,11 +125,14 @@ public class PluginLoader : IPluginLoader
             return;
         }
 
+        RaiseSafely(PluginsUnloading, nameof(PluginsUnloading));
+
         await UnloadSlashCommands();
 
         _Commands.Clear();
         _Events.Clear();
         _SlashCommands.Clear();
+        _LoadedPlugins.Clear();
 
         PluginLoaderContext?.Unload();
         PluginLoaderContext = null;
@@ -131,6 +143,26 @@ public class PluginLoader : IPluginLoader
         GC.Collect();
 
         _Logger.Log("Unloaded plugins", this);
+    }
+
+    private void RaiseSafely(Action? handlers, string eventName)
+    {
+        if (handlers is null)
+        {
+            return;
+        }
+
+        foreach (Action handler in handlers.GetInvocationList().Cast<Action>())
+        {
+            try
+            {
+                handler();
+            }
+            catch (Exception ex)
+            {
+                _Logger.Log($"A {eventName} handler failed: {ex.Message}", this, LogType.Error);
+            }
+        }
     }
 
     private async Task UnloadSlashCommands()
@@ -189,7 +221,8 @@ public class PluginLoader : IPluginLoader
 
             try
             {
-                PluginLoaderContext.LoadFromAssemblyPath(fullFilePath);
+                Assembly assembly = LoadFromMemory(PluginLoaderContext, fullFilePath);
+                _LoadedPlugins.Add(new LoadedPluginAssembly(plugin, assembly));
             }
             catch (Exception ex)
             {
@@ -198,6 +231,26 @@ public class PluginLoader : IPluginLoader
         }
 
         _Logger.Log($"Loaded {PluginLoaderContext.Assemblies.Count()} assemblies", this);
+    }
+
+    /// <summary>
+    /// Loads the plugin from a copy in memory instead of from its path. The runtime shares an assembly image by path
+    /// while any earlier load context that loaded it is still alive, and an unloaded context is only collected some time
+    /// later, so loading by path after a plugin's file was replaced would keep returning the old version. It also
+    /// leaves the file unlocked, so it can be replaced while the plugin is loaded.
+    /// </summary>
+    private static Assembly LoadFromMemory(AssemblyLoadContext context, string assemblyPath)
+    {
+        using var assemblyStream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+
+        string symbolsPath = Path.ChangeExtension(assemblyPath, ".pdb");
+        if (!File.Exists(symbolsPath))
+        {
+            return context.LoadFromStream(assemblyStream);
+        }
+
+        using var symbolsStream = new MemoryStream(File.ReadAllBytes(symbolsPath));
+        return context.LoadFromStream(assemblyStream, symbolsStream);
     }
 
     private List<T> CreateEverythingOfType<T>() where T : class

@@ -1,0 +1,57 @@
+@* The single entry point for every plugin page. The routes must match PluginPagesOptions.BasePath; WebUI must not define
+   any other page under /plugin. *@
+@page "/plugin/{PluginKey}"
+@page "/plugin/{PluginKey}/{*PluginPath}"
+@inject IPluginPageRegistry Registry
+
+<PageTitle>@(_Match?.Page.Title ?? PluginName ?? "Plugin page") · Seth Discord Bot</PageTitle>
+
+<div class="plugin-page">
+    <nav class="plugin-page-breadcrumb" aria-label="Breadcrumb">
+        <a href="">Dashboard</a>
+        @if (PluginName is not null)
+        {
+            <RadzenIcon Icon="chevron_right"/>
+            <a href="@_BasePath">@PluginName</a>
+        }
+        @if (_Match?.Page.Title is { } title && _Match.Page.Route != "/")
+        {
+            <RadzenIcon Icon="chevron_right"/>
+            <span aria-current="page">@title</span>
+        }
+    </nav>
+
+    <div class="plugin-page-body">
+        <PluginPageOutlet PluginKey="@PluginKey" PluginPath="@PluginPath" MatchChanged="OnMatchChanged">
+            <NotLoaded>
+                <EmptyState Icon="extension_off" Title="This plugin isn't loaded"
+                            Text="Plugin pages are available while plugins are loaded. Start the bot and load plugins, then come back."/>
+            </NotLoaded>
+            <NotFound>
+                <EmptyState Icon="link_off" Title="Page not found" Text="@($"{PluginName} has no page at this address.")">
+                    <RadzenButton Text="Plugin home" Icon="home" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="GoToPluginHome"/>
+                </EmptyState>
+            </NotFound>
+            <Error Context="exception">
+                <EmptyState Icon="error" Title="This page failed" Text="@exception.Message"/>
+            </Error>
+        </PluginPageOutlet>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string PluginKey { get; set; } = default!;
+    [Parameter] public string? PluginPath { get; set; }
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private PluginPageMatch? _Match;
+
+    private string? PluginName => Registry.TryGetPluginName(PluginKey, out string name) ? name : null;
+
+    private string _BasePath => $"plugin/{PluginKey}";
+
+    private void OnMatchChanged(PluginPageMatch? match) => _Match = match;
+
+    private void GoToPluginHome() => Navigation.NavigateTo(_BasePath);
+}

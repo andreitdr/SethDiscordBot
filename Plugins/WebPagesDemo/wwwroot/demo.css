@@ -1,0 +1,12 @@
+.demo-page { max-width: 720px; line-height: 1.55; }
+.demo-page h1 { font-size: 24px; margin: 0 0 8px; }
+.demo-page h2 { font-size: 16px; margin: 24px 0 6px; }
+.demo-page a { color: var(--rz-primary); }
+.demo-facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; padding: 12px 16px;
+    border: 1px solid var(--rz-base-300, #8884); border-radius: 8px; }
+.demo-facts dt { font-weight: 600; color: var(--rz-text-secondary-color); }
+.demo-facts dd { margin: 0; }
+.demo-button { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--rz-primary); background: transparent;
+    color: var(--rz-primary); font: inherit; cursor: pointer; }
+.demo-button:hover { background: color-mix(in srgb, var(--rz-primary) 12%, transparent); }
+.demo-links { padding-left: 18px; }

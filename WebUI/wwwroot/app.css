@@ -448,3 +448,34 @@ code { font-family: var(--app-mono); font-size: 0.92em; }
 .confirm-message { margin: 0; line-height: 1.5; }
 
 .console-panel .rz-selectbar .rz-button:not(.rz-state-active) { opacity: 0.45; background: transparent; }
+
+/* ---------- Plugin pages ---------- */
+
+.app-brand-link { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; min-width: 0; }
+.app-brand-link:hover .app-brand-name { color: var(--rz-primary); }
+
+.plugin-page { max-width: 1200px; margin: 0 auto; padding: 6px 8px 24px; display: flex; flex-direction: column; gap: 12px; }
+.plugin-page-breadcrumb { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--app-muted); flex-wrap: wrap; }
+.plugin-page-breadcrumb a { color: var(--app-muted); text-decoration: none; }
+.plugin-page-breadcrumb a:hover { color: var(--rz-primary); text-decoration: underline; }
+.plugin-page-breadcrumb .rzi { font-size: 16px; opacity: 0.7; }
+.plugin-page-breadcrumb [aria-current] { color: var(--rz-text-color); font-weight: 500; }
+.plugin-page-body { min-height: 200px; }
+.plugin-page-body > .empty-state { padding-block: 48px; }
+
+.plugin-pages-list { padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 14px; }
+.plugin-pages-group ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.plugin-pages-group li { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; font-size: 13px; }
+.plugin-pages-group li:hover { background: var(--app-hover); }
+.plugin-pages-group li > .rzi { font-size: 17px; color: var(--app-muted); }
+.plugin-pages-group code { font-family: var(--app-mono); font-size: 12px; color: var(--app-muted); margin-left: auto; }
+.plugin-pages-plugin { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--rz-text-secondary-color); }
+.plugin-pages-plugin .rzi { font-size: 16px; color: var(--rz-primary); }
+.plugin-pages-title { color: var(--rz-text-color); text-decoration: none; font-weight: 500; }
+a.plugin-pages-title:hover { color: var(--rz-primary); text-decoration: underline; }
+.plugin-pages-rejected .plugin-pages-plugin .rzi { color: var(--rz-warning); }
+.plugin-pages-rejected li { align-items: flex-start; }
+.plugin-pages-rejected code { margin-left: 6px; }
+.plugin-pages-type { font-size: 12px; color: var(--app-muted); margin-left: 6px; }
+.plugin-pages-reason { font-size: 12.5px; color: var(--rz-text-secondary-color); margin-top: 2px; }

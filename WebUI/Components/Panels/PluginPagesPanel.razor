@@ -1,0 +1,88 @@
+@inherits PanelBase
+@inject BotStateService Bot
+@inject IPluginPageRegistry Registry
+
+@{
+    var pages = Registry.Pages;
+    var rejections = Registry.Rejections;
+}
+@if (pages.Count == 0 && rejections.Count == 0)
+{
+    <EmptyState Icon="web" Title="No plugin pages"
+                Text="@(Bot.PluginsLoaded ? "None of the loaded plugins has web pages." : "Plugin pages appear here once plugins are loaded.")"/>
+}
+else
+{
+    <div class="plugin-pages-list">
+        @foreach (var group in pages.GroupBy(p => p.PluginKey))
+        {
+            <section class="plugin-pages-group">
+                <h3 class="plugin-pages-plugin">
+                    <RadzenIcon Icon="extension"/>
+                    <span>@group.First().PluginName</span>
+                </h3>
+                <ul>
+                    @foreach (var entry in group)
+                    {
+                        <li>
+                            <RadzenIcon Icon="@(entry.Icon ?? "article")"/>
+                            @if (entry.Route.Contains('{'))
+                            {
+                                <span class="plugin-pages-title">@(entry.Title ?? entry.ComponentTypeName)</span>
+                                <code title="Needs route values">@entry.Route</code>
+                            }
+                            else
+                            {
+                                <a href="@entry.Href.TrimStart('/')" class="plugin-pages-title">@(entry.Title ?? entry.ComponentTypeName)</a>
+                                <code>@entry.Route</code>
+                            }
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        @if (rejections.Count > 0)
+        {
+            <section class="plugin-pages-group plugin-pages-rejected">
+                <h3 class="plugin-pages-plugin">
+                    <RadzenIcon Icon="warning"/>
+                    <span>Rejected (@rejections.Count)</span>
+                </h3>
+                <ul>
+                    @foreach (var rejection in rejections)
+                    {
+                        <li>
+                            <div>
+                                <span class="cell-strong">@rejection.PluginName</span>
+                                @if (rejection.Route is not null)
+                                {
+                                    <code>@rejection.Route</code>
+                                }
+                                @if (rejection.ComponentTypeName is not null)
+                                {
+                                    <span class="plugin-pages-type">@rejection.ComponentTypeName</span>
+                                }
+                                <div class="plugin-pages-reason">@rejection.Reason</div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        Observe(Bot);
+        Registry.Changed += OnObservedChanged;
+    }
+
+    public override void Dispose()
+    {
+        Registry.Changed -= OnObservedChanged;
+        base.Dispose();
+    }
+}
