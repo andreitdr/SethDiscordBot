@@ -36,6 +36,8 @@ public class StartupEvent : IDbEvent
         args.Logger.Log($"CppModuleDemo started successfully with application ID: {id}", this);
 
         InternalSettings.ManagedCallbackReference = OnManagedCallbackInvoked;
+        
+        
         try
         {
             InternalSettings.ExternalApplicationHandler.SetExternFunctionToPointToFunction(

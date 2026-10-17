@@ -210,7 +210,7 @@ public class PluginLoader : IPluginLoader
                 InitializeSlashCommand(dbSlashCommand);
                 break;
             default:
-                throw new PluginNotFoundException($"Unknown plugin type {plugin.GetType().FullName}");
+                throw new PluginNotFoundException(type.FullName);
         }
     }
     
