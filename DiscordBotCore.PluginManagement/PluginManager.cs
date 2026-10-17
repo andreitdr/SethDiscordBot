@@ -269,7 +269,8 @@ public sealed class PluginManager : IPluginManager
             {
                 return Response.Success();
             }
-            else if (newVersionParts[i] < currentVersionParts[i])
+            
+            if (newVersionParts[i] < currentVersionParts[i])
             {
                 return Response.Failure("Current version is newer");
             }

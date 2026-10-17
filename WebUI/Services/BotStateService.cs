@@ -43,7 +43,7 @@ public sealed class BotStateService : IStateNotifier, IDisposable
 
     public BotStatus Status { get; private set; } = BotStatus.Offline;
     public DateTime? OnlineSince { get; private set; }
-    public bool PluginsLoaded { get; private set; }
+    public bool PluginsLoaded => _PluginLoader.IsLoaded;
     public bool PluginsBusy { get; private set; }
 
     public bool IsRunning => Status is BotStatus.Online or BotStatus.Reconnecting;
@@ -158,7 +158,6 @@ public sealed class BotStateService : IStateNotifier, IDisposable
 
             // The core StopAsync unloads the plugins before logging out.
             await _Bot.StopAsync();
-            PluginsLoaded = false;
             _Logger.Log("Application stopped", this);
             return Response.Success();
         }
@@ -195,7 +194,6 @@ public sealed class BotStateService : IStateNotifier, IDisposable
             if (wasLoaded)
             {
                 await _PluginLoader.UnloadAllPlugins();
-                PluginsLoaded = false;
             }
 
             return await action();
@@ -235,7 +233,6 @@ public sealed class BotStateService : IStateNotifier, IDisposable
                 }
 
                 await _PluginLoader.UnloadAllPlugins();
-                PluginsLoaded = false;
             }
 
             return await LoadPluginsCore();
@@ -253,7 +250,6 @@ public sealed class BotStateService : IStateNotifier, IDisposable
         {
             _Logger.Log("Loading plugins", this);
             await _PluginLoader.LoadPlugins();
-            PluginsLoaded = true;
             _Logger.Log("Plugins loaded", this);
             return Response.Success();
         }
@@ -272,7 +268,10 @@ public sealed class BotStateService : IStateNotifier, IDisposable
             {
                 await client.StopAsync();
                 await client.LogoutAsync();
+                await client.DisposeAsync();
             }
+
+            _PluginLoader.ClearDiscordClient();
         }
         catch (Exception ex)
         {

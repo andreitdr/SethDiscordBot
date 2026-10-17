@@ -166,7 +166,7 @@ public sealed partial class PluginCatalogService : IStateNotifier
                 var response = await _PluginManager.UninstallPluginByName(pluginName);
                 if (!response.IsSuccess)
                 {
-                    _Logger.Log(response.Message, this, LogType.Error);
+                    _Logger.Log(response.Message, this, LogType.Warning);
                     return Response.Failure(response.Message);
                 }
 

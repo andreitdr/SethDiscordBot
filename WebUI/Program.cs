@@ -16,50 +16,47 @@ currentDomain.AssemblyResolve += (sender, args) => LoadFromSameFolder(sender,arg
 
 static Assembly? LoadFromSameFolder(object? sender, ResolveEventArgs args, string[] extensions)
 {
-    string? requestingAssemblyName = args.RequestingAssembly?.GetName().Name;
-    string executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
-    string? executingAssemblyDirectory = Path.GetDirectoryName(executingAssemblyLocation);
+    string? requestedAssemblyName = new AssemblyName(args.Name).Name;
 
-    if (string.IsNullOrEmpty(executingAssemblyDirectory))
+    // Satellite resource assemblies are probed for every culture and missing ones are normal; the runtime falls back
+    // to the neutral resources on its own.
+    if (string.IsNullOrEmpty(requestedAssemblyName) || requestedAssemblyName.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
     {
-        Console.WriteLine($"Error: Could not determine the directory of the executing assembly.");
         return null;
     }
 
-    string librariesFolder = Path.Combine(executingAssemblyDirectory, "Libraries", requestingAssemblyName ?? "");
-    string requestedAssemblyNameWithoutExtension = new AssemblyName(args.Name).Name;
+    string? requestingAssemblyName = args.RequestingAssembly?.GetName().Name;
+    string? executingAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-    Console.WriteLine($"Requesting Assembly: {requestingAssemblyName}");
-    Console.WriteLine($"Requested Assembly Name (without extension): {requestedAssemblyNameWithoutExtension}");
-    Console.WriteLine($"Searching in folder: {librariesFolder}");
-    Console.WriteLine($"Searching for extensions: {string.Join(", ", extensions)}");
+    if (string.IsNullOrEmpty(executingAssemblyDirectory) || string.IsNullOrEmpty(requestingAssemblyName))
+    {
+        return null;
+    }
+
+    string librariesFolder = Path.Combine(executingAssemblyDirectory, "Libraries", requestingAssemblyName);
+    if (!Directory.Exists(librariesFolder))
+    {
+        return null;
+    }
 
     foreach (string extension in extensions)
     {
-        string assemblyFileName = requestedAssemblyNameWithoutExtension + extension;
-        string assemblyPath = Path.Combine(librariesFolder, assemblyFileName);
-
-        Console.WriteLine($"Attempting to load from: {assemblyPath}");
-        
+        string assemblyPath = Path.Combine(librariesFolder, requestedAssemblyName + extension);
         if (!File.Exists(assemblyPath))
         {
-            Console.WriteLine($"File not found: {assemblyPath}");
             continue;
         }
 
         try
         {
-            Assembly assembly = Assembly.LoadFrom(assemblyPath);
-            Console.WriteLine($"Assembly loaded successfully: {assembly.FullName} from {assemblyPath}");
-            return assembly;
+            return Assembly.LoadFrom(assemblyPath);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to load assembly: {assemblyPath}. Error message: {ex.Message}");
+            Console.WriteLine($"Failed to load {assemblyPath} for {requestingAssemblyName}: {ex.Message}");
         }
     }
 
-    Console.WriteLine($"Failed to load assembly '{args.Name}' from the specified locations.");
     return null;
 }
 #endregion

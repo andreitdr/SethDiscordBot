@@ -19,6 +19,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
     private readonly IPluginLoader _PluginLoader;
+    private bool _IsStopping;
     
     public bool IsReady { get; private set; }
     
@@ -40,25 +41,35 @@ public class DiscordBotApplication : IDiscordBotApplication
     {
         if (!IsReady)
         {
-            _Logger.Log("Can not stop the bot. It is not yet initialized.", this, LogType.Error);
+            _Logger.Log("Can not stop the bot. It is not yet initialized.", this, LogType.Warning);
             return;
         }
-        
-        await _PluginLoader.UnloadAllPlugins();
-        
-        await Client.LogoutAsync();
-        await Client.StopAsync();
-            
-        Client.Log          -= Log;
-        Client.LoggedIn     -= LoggedIn;
-        Client.Ready        -= Ready;
-        Client.Disconnected -= Client_Disconnected;
-            
-        await Client.DisposeAsync();
-        
-        
-        IsReady = false;
-        
+
+        _IsStopping = true;
+        try
+        {
+            if (_PluginLoader.IsLoaded)
+            {
+                await _PluginLoader.UnloadAllPlugins();
+            }
+
+            await Client.LogoutAsync();
+            await Client.StopAsync();
+
+            Client.Log          -= Log;
+            Client.LoggedIn     -= LoggedIn;
+            Client.Ready        -= Ready;
+            Client.Disconnected -= Client_Disconnected;
+
+            await Client.DisposeAsync();
+            _PluginLoader.ClearDiscordClient();
+
+            IsReady = false;
+        }
+        finally
+        {
+            _IsStopping = false;
+        }
     }
 
     /// <summary>
@@ -99,9 +110,9 @@ public class DiscordBotApplication : IDiscordBotApplication
         }
     }
 
-    private async Task Client_Disconnected(Exception arg)
+    private async Task Client_Disconnected(Exception? arg)
     {
-        if (arg.Message.Contains("401"))
+        if (arg is not null && arg.Message.Contains("401"))
         {
             _Configuration.Set("token", string.Empty);
             _Logger.Log("The token is invalid.", this, LogType.Critical);
@@ -124,21 +135,48 @@ public class DiscordBotApplication : IDiscordBotApplication
 
     private Task Log(LogMessage message)
     {
+        if (message.Severity is LogSeverity.Verbose or LogSeverity.Debug)
+        {
+            return Task.CompletedTask;
+        }
+
+        string text = string.IsNullOrWhiteSpace(message.Message)
+            ? $"{message.Source}: {message.Exception?.Message ?? "no details"}"
+            : message.Message;
+
+        // Closing the gateway on purpose makes Discord.Net report the cancelled socket; that is not an error.
+        if (_IsStopping && IsExpectedShutdownException(message.Exception))
+        {
+            _Logger.Log(text, this, LogType.Info);
+            return Task.CompletedTask;
+        }
+
         switch (message.Severity)
         {
             case LogSeverity.Error:
             case LogSeverity.Critical:
-                _Logger.Log(message.Message, this, LogType.Error);
+                if (message.Exception is not null && !string.IsNullOrWhiteSpace(message.Message))
+                    _Logger.Log($"{text}: {message.Exception.Message}", this, LogType.Error);
+                else
+                    _Logger.Log(text, this, LogType.Error);
+                break;
+
+            case LogSeverity.Warning:
+                if (message.Exception is not null && !string.IsNullOrWhiteSpace(message.Message))
+                    _Logger.Log($"{text}: {message.Exception.Message}", this, LogType.Warning);
+                else
+                    _Logger.Log(text, this, LogType.Warning);
                 break;
 
             case LogSeverity.Info:
-            case LogSeverity.Debug:
-                _Logger.Log(message.Message, this, LogType.Info);
-
-
+                _Logger.Log(text, this, LogType.Info);
                 break;
         }
 
         return Task.CompletedTask;
     }
+
+    private static bool IsExpectedShutdownException(Exception? exception) =>
+        exception is null or OperationCanceledException or GatewayReconnectException
+            or Discord.Net.WebSocketClosedException or System.Net.WebSockets.WebSocketException;
 }

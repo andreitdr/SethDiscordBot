@@ -58,7 +58,10 @@ internal class CommandHandler : ICommandHandler
             var plugin = _pluginLoader.SlashCommands.FirstOrDefault(p => p.Name == arg.Data.Name);
 
             if (plugin is null)
-                throw new Exception("Failed to run command !");
+            {
+                _logger.Log($"Received slash command /{arg.Data.Name}, but no loaded plugin handles it.", this, LogType.Warning);
+                return Task.CompletedTask;
+            }
 
             if (arg.Channel is SocketDMChannel)
                 plugin.ExecuteDm(_logger, arg);

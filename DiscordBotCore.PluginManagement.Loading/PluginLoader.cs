@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Reflection;
 using Discord;
 using Discord.WebSocket;
@@ -6,7 +5,7 @@ using DiscordBotCore.Configuration;
 using DiscordBotCore.Logging;
 using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
 using DiscordBotCore.PluginCore.Interfaces;
-using DiscordBotCore.PluginManagement.Loading.Exceptions;
+using DiscordBotCore.PluginManagement.Models;
 using DiscordBotCore.Utilities.Responses;
 
 namespace DiscordBotCore.PluginManagement.Loading;
@@ -14,18 +13,20 @@ namespace DiscordBotCore.PluginManagement.Loading;
 public class PluginLoader : IPluginLoader
 {
     private static readonly string _HelpCommandNamespaceFullName = "DiscordBotCore.Commands.HelpCommand";
-    
+
     private readonly IPluginManager _PluginManager;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
-    
+
     private DiscordSocketClient? _DiscordClient;
     private PluginLoaderContext? PluginLoaderContext;
-    
+    private bool _IsLoaded;
+
     private readonly List<IDbCommand> _Commands = new List<IDbCommand>();
     private readonly List<IDbEvent> _Events = new List<IDbEvent>();
     private readonly List<IDbSlashCommand> _SlashCommands = new List<IDbSlashCommand>();
     private readonly List<SocketApplicationCommand> _ApplicationCommands = new List<SocketApplicationCommand>();
+    private readonly List<Func<SocketInteraction, Task>> _InteractionHandlers = new List<Func<SocketInteraction, Task>>();
 
     public PluginLoader(IPluginManager pluginManager, ILogger logger, IConfiguration configuration)
     {
@@ -33,10 +34,11 @@ public class PluginLoader : IPluginLoader
         _Logger = logger;
         _Configuration = configuration;
     }
-    
+
     public IReadOnlyList<IDbCommand> Commands => _Commands;
     public IReadOnlyList<IDbEvent> Events => _Events;
     public IReadOnlyList<IDbSlashCommand> SlashCommands => _SlashCommands;
+    public bool IsLoaded => _IsLoaded;
 
     public void SetDiscordClient(DiscordSocketClient discordSocketClient)
     {
@@ -45,7 +47,7 @@ public class PluginLoader : IPluginLoader
             _Logger.Log("A client is already set. Please set the client only once.", this, LogType.Warning);
             return;
         }
-        
+
         if (discordSocketClient.LoginState != LoginState.LoggedIn)
         {
             _Logger.Log("The client must be logged in before setting it.", this, LogType.Error);
@@ -55,107 +57,133 @@ public class PluginLoader : IPluginLoader
         _DiscordClient = discordSocketClient;
     }
 
+    public void ClearDiscordClient()
+    {
+        _DiscordClient = null;
+    }
+
     public async Task LoadPlugins()
     {
-        if (PluginLoaderContext is not null)
+        if (_IsLoaded)
         {
-            _Logger.Log("The plugins are already loaded", this, LogType.Error);
+            _Logger.Log("The plugins are already loaded", this, LogType.Warning);
             return;
         }
-        
+
         _Events.Clear();
         _Commands.Clear();
         _SlashCommands.Clear();
         _ApplicationCommands.Clear();
-        
+        _InteractionHandlers.Clear();
+
         await LoadPluginFiles();
 
-        LoadEverythingOfType<IDbEvent>();
+        foreach (IDbEvent dbEvent in CreateEverythingOfType<IDbEvent>())
+        {
+            InitializeEvent(dbEvent);
+        }
+
         var helpCommand = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(assembly => assembly.DefinedTypes.Any(type => type.FullName == _HelpCommandNamespaceFullName)
                                         && assembly.FullName != null
                                         && assembly.FullName.StartsWith("DiscordBotCore"));
-        
+
         if (helpCommand is not null)
         {
-            var helpCommandType = helpCommand.DefinedTypes.FirstOrDefault(type => type.FullName == _HelpCommandNamespaceFullName && 
+            var helpCommandType = helpCommand.DefinedTypes.FirstOrDefault(type => type.FullName == _HelpCommandNamespaceFullName &&
                                                                                  typeof(IDbCommand).IsAssignableFrom(type));
-            if (helpCommandType is not null)
+            if (helpCommandType is not null && TryCreateInstance(helpCommandType, out IDbCommand? helpCommandInstance))
             {
-                InitializeType<IDbCommand>(helpCommandType);
+                InitializeDbCommand(helpCommandInstance);
             }
         }
-        
-        LoadEverythingOfType<IDbCommand>();
-        LoadEverythingOfType<IDbSlashCommand>();
-        
 
+        foreach (IDbCommand command in CreateEverythingOfType<IDbCommand>())
+        {
+            InitializeDbCommand(command);
+        }
+
+        await LoadSlashCommands(CreateEverythingOfType<IDbSlashCommand>());
+
+        _IsLoaded = true;
         _Logger.Log("Loaded plugins", this);
     }
 
     public async Task UnloadAllPlugins()
     {
-        if (PluginLoaderContext is null)
+        if (!_IsLoaded)
         {
-            _Logger.Log("The plugins are not loaded. Please load the plugins before unloading them.", this, LogType.Error);
             return;
         }
-        
+
         await UnloadSlashCommands();
-        
-        PluginLoaderContext.Unload();
+
+        _Commands.Clear();
+        _Events.Clear();
+        _SlashCommands.Clear();
+
+        PluginLoaderContext?.Unload();
         PluginLoaderContext = null;
-        
+        _IsLoaded = false;
+
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        
-        
+
+        _Logger.Log("Unloaded plugins", this);
     }
 
     private async Task UnloadSlashCommands()
     {
-        if (_DiscordClient is null)
+        if (_DiscordClient is not null)
         {
-            _Logger.Log("The client is not set. Please set the client before unloading slash commands.", this, LogType.Error);
-            return;
+            foreach (var handler in _InteractionHandlers)
+            {
+                _DiscordClient.InteractionCreated -= handler;
+            }
+
+            foreach (SocketApplicationCommand command in _ApplicationCommands)
+            {
+                try
+                {
+                    await command.DeleteAsync();
+                }
+                catch (Exception ex)
+                {
+                    _Logger.Log($"Failed to delete slash command {command.Name}: {ex.Message}", this, LogType.Warning);
+                }
+            }
         }
 
-        foreach (SocketApplicationCommand command in _ApplicationCommands)
-        {
-            await command.DeleteAsync();
-        }
-        
+        _InteractionHandlers.Clear();
         _ApplicationCommands.Clear();
-        _Logger.Log("Unloaded all slash commands", this);
     }
 
     private async Task LoadPluginFiles()
     {
-        var installedPlugins = await _PluginManager.GetInstalledPlugins();
+        PluginLoaderContext = new PluginLoaderContext(_Logger, "PluginLoader");
 
-        if (installedPlugins.Count == 0)
+        List<LocalPlugin> installedPlugins = await _PluginManager.GetInstalledPlugins();
+        List<LocalPlugin> enabledPlugins = installedPlugins.Where(plugin => plugin.IsEnabled).ToList();
+
+        if (enabledPlugins.Count == 0)
         {
-            _Logger.Log("No plugin files found. Please check the plugin files.", this, LogType.Error);
+            _Logger.Log(installedPlugins.Count == 0 ? "No plugins installed" : "No enabled plugins", this);
             return;
         }
-        
-        var files = installedPlugins.Where(plugin => plugin.IsEnabled).Select(plugin => plugin.FilePath);
-        
-        PluginLoaderContext = new PluginLoaderContext(_Logger, "PluginLoader");
-        
-        foreach (var file in files)
+
+        foreach (LocalPlugin plugin in enabledPlugins)
         {
-            string fullFilePath = Path.GetFullPath(file);
-            if (string.IsNullOrEmpty(fullFilePath))
+            if (string.IsNullOrWhiteSpace(plugin.FilePath))
             {
-                _Logger.Log("The file path is empty. Please check the plugin file path.", PluginLoaderContext, LogType.Error);
+                _Logger.Log($"Plugin {plugin.PluginName} has no file path. Reinstall or re-add it.", this, LogType.Error);
                 continue;
             }
-            
+
+            string fullFilePath = Path.GetFullPath(plugin.FilePath);
             if (!File.Exists(fullFilePath))
             {
-                _Logger.Log("The file does not exist. Please check the plugin file path.", PluginLoaderContext, LogType.Error);
+                _Logger.Log($"Plugin {plugin.PluginName}: file {fullFilePath} does not exist.", this, LogType.Error);
                 continue;
             }
 
@@ -165,95 +193,145 @@ public class PluginLoader : IPluginLoader
             }
             catch (Exception ex)
             {
-                _Logger.LogException(ex, this);
+                _Logger.Log($"Plugin {plugin.PluginName}: failed to load {fullFilePath}: {ex.Message}", this, LogType.Error);
             }
         }
-        
+
         _Logger.Log($"Loaded {PluginLoaderContext.Assemblies.Count()} assemblies", this);
     }
 
-    private void LoadEverythingOfType<T>()
+    private List<T> CreateEverythingOfType<T>() where T : class
     {
+        var instances = new List<T>();
         if (PluginLoaderContext is null)
         {
-            _Logger.Log("The plugins are not loaded. Please load the plugins before loading them.", this, LogType.Error);
-            return;
+            return instances;
         }
-        
-        var types = PluginLoaderContext.Assemblies
-            .SelectMany(s => s.GetTypes())
-            .Where(p => typeof(T).IsAssignableFrom(p) && !p.IsInterface);
-        
-        foreach (var type in types)
+
+        foreach (Assembly assembly in PluginLoaderContext.Assemblies)
         {
-            InitializeType<T>(type);
+            foreach (Type type in GetLoadableTypes(assembly))
+            {
+                if (!type.IsClass || type.IsAbstract || !typeof(T).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+
+                if (TryCreateInstance(type, out T? instance))
+                {
+                    instances.Add(instance);
+                }
+            }
+        }
+
+        return instances;
+    }
+
+    private IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            string reasons = string.Join("; ", ex.LoaderExceptions.Where(e => e is not null).Select(e => e!.Message).Distinct().Take(3));
+            _Logger.Log($"Some types in {assembly.GetName().Name} could not be loaded: {reasons}", this, LogType.Warning);
+            return ex.Types.Where(type => type is not null).Cast<Type>();
         }
     }
 
-    private void InitializeType<T>(Type type)
+    private bool TryCreateInstance<T>(Type type, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T? instance) where T : class
     {
-        T? plugin = (T?)Activator.CreateInstance(type);
-        if (plugin is null)
+        instance = null;
+        try
         {
-            _Logger.Log($"Failed to create instance of plugin with type {type.FullName} [{type.Assembly}]", this, LogType.Error);
+            instance = Activator.CreateInstance(type) as T;
         }
-            
-        switch (plugin)
+        catch (Exception ex)
         {
-            case IDbEvent dbEvent:
-                InitializeEvent(dbEvent);
-                break;
-            case IDbCommand dbCommand:
-                InitializeDbCommand(dbCommand);
-                break;
-            case IDbSlashCommand dbSlashCommand:
-                InitializeSlashCommand(dbSlashCommand);
-                break;
-            default:
-                throw new PluginNotFoundException(type.FullName);
+            _Logger.Log($"Failed to create instance of plugin type {type.FullName} [{type.Assembly.GetName().Name}]: {(ex.InnerException ?? ex).Message}", this, LogType.Error);
+            return false;
         }
+
+        if (instance is null)
+        {
+            _Logger.Log($"Failed to create instance of plugin type {type.FullName} [{type.Assembly.GetName().Name}]", this, LogType.Error);
+            return false;
+        }
+
+        return true;
     }
-    
+
     private void InitializeDbCommand(IDbCommand command)
     {
         _Commands.Add(command);
         _Logger.Log("Command loaded: " + command.Command, this);
     }
-    
+
     private void InitializeEvent(IDbEvent eEvent)
     {
         if (!TryStartEvent(eEvent))
         {
             return;
         }
-        
+
         _Events.Add(eEvent);
-        _Logger.Log("Event loaded: " + eEvent, this);
+        _Logger.Log("Event loaded: " + eEvent.Name, this);
     }
 
-    private async void InitializeSlashCommand(IDbSlashCommand slashCommand)
+    private async Task LoadSlashCommands(List<IDbSlashCommand> slashCommands)
     {
-        bool result = await TryStartSlashCommand(slashCommand);
-
-        if (!result)
+        if (slashCommands.Count == 0)
         {
             return;
         }
 
         if (_DiscordClient is null)
         {
+            _Logger.Log($"Skipping {slashCommands.Count} slash command(s): the Discord client is not set.", this, LogType.Warning);
+            return;
+        }
+
+        if (_DiscordClient.Guilds.Count == 0)
+        {
+            _Logger.Log($"Skipping {slashCommands.Count} slash command(s): the bot is not in any guild.", this, LogType.Warning);
+            return;
+        }
+
+        foreach (IDbSlashCommand slashCommand in slashCommands)
+        {
+            try
+            {
+                await InitializeSlashCommand(_DiscordClient, slashCommand);
+            }
+            catch (Exception ex)
+            {
+                _Logger.Log($"Failed to register slash command {slashCommand.Name}: {ex.Message}", this, LogType.Error);
+            }
+        }
+    }
+
+    private async Task InitializeSlashCommand(DiscordSocketClient client, IDbSlashCommand slashCommand)
+    {
+        bool result = await TryStartSlashCommand(client, slashCommand);
+
+        if (!result)
+        {
             return;
         }
 
         if (slashCommand.HasInteraction)
         {
-            _DiscordClient.InteractionCreated += interaction => slashCommand.ExecuteInteraction(_Logger, interaction);
+            Func<SocketInteraction, Task> handler = interaction => slashCommand.ExecuteInteraction(_Logger, interaction);
+            client.InteractionCreated += handler;
+            _InteractionHandlers.Add(handler);
         }
-        
+
         _SlashCommands.Add(slashCommand);
         _Logger.Log("Slash command loaded: " + slashCommand.Name, this);
     }
-    
+
     private bool TryStartEvent(IDbEvent dbEvent)
     {
         string? botPrefix = _Configuration.Get<string>("prefix");
@@ -262,60 +340,51 @@ public class PluginLoader : IPluginLoader
             _Logger.Log("Bot prefix is not set. Please set the bot prefix in the configuration.", this, LogType.Error);
             return false;
         }
-        
+
         if (_DiscordClient is null)
         {
-            _Logger.Log("Discord client is not set. Please set the discord client before starting events.", this, LogType.Error);
+            _Logger.Log($"Skipping event {dbEvent.Name}: the Discord client is not set.", this, LogType.Warning);
             return false;
         }
-        
+
         string? resourcesFolder = _Configuration.Get<string>("ResourcesFolder");
         if (string.IsNullOrEmpty(resourcesFolder))
         {
             _Logger.Log("Resources folder is not set. Please set the resources folder in the configuration.", this, LogType.Error);
             return false;
         }
-        
+
         if (!Directory.Exists(resourcesFolder))
         {
             _Logger.Log("Resources folder does not exist. Please create the resources folder.", this, LogType.Error);
             return false;
         }
-        
-        string? eventConfigDirectory = Path.Combine(resourcesFolder, dbEvent.GetType().Assembly.GetName().Name);
-        
-        Directory.CreateDirectory(eventConfigDirectory);
-        
-        IDbEventExecutingArgument args = new DbEventExecutingArgument(
-            _Logger,
-            _DiscordClient, 
-            botPrefix,
-            new DirectoryInfo(eventConfigDirectory));
-        
-        dbEvent.Start(args);
+
+        string eventConfigDirectory = Path.Combine(resourcesFolder, dbEvent.GetType().Assembly.GetName().Name ?? dbEvent.Name);
+
+        try
+        {
+            Directory.CreateDirectory(eventConfigDirectory);
+
+            IDbEventExecutingArgument args = new DbEventExecutingArgument(
+                _Logger,
+                _DiscordClient,
+                botPrefix,
+                new DirectoryInfo(eventConfigDirectory));
+
+            dbEvent.Start(args);
+        }
+        catch (Exception ex)
+        {
+            _Logger.Log($"Event {dbEvent.Name} failed to start: {ex.Message}", this, LogType.Error);
+            return false;
+        }
+
         return true;
     }
-    
-    private async Task<bool> TryStartSlashCommand(IDbSlashCommand? dbSlashCommand)
+
+    private async Task<bool> TryStartSlashCommand(DiscordSocketClient client, IDbSlashCommand dbSlashCommand)
     {
-        if (dbSlashCommand is null)
-        {
-            _Logger.Log("The loaded slash command was null. Please check the plugin.", this, LogType.Error);
-            return false;
-        }
-
-        if (_DiscordClient is null)
-        {
-            _Logger.Log("The client is not set. Please set the client before starting slash commands.", this, LogType.Error);
-            return false;
-        }
-
-        if (_DiscordClient.Guilds.Count == 0)
-        {
-            _Logger.Log("The client is not connected to any guilds. Please check the client.", this, LogType.Error);
-            return false;
-        }
-
         var builder = new SlashCommandBuilder();
         builder.WithName(dbSlashCommand.Name);
         builder.WithDescription(dbSlashCommand.Description);
@@ -323,7 +392,7 @@ public class PluginLoader : IPluginLoader
 
         if (dbSlashCommand.CanUseDm)
             builder.WithContextTypes(InteractionContextType.BotDm, InteractionContextType.Guild);
-        else 
+        else
             builder.WithContextTypes(InteractionContextType.Guild);
 
         List<ulong> serverIds = _Configuration.GetList("ServerIds", new List<ulong>());
@@ -332,11 +401,11 @@ public class PluginLoader : IPluginLoader
         {
             foreach(ulong guildId in serverIds)
             {
-                IResponse<SocketApplicationCommand> result = await EnableSlashCommandPerGuild(guildId, builder);
-                
+                IResponse<SocketApplicationCommand> result = await EnableSlashCommandPerGuild(client, guildId, builder);
+
                 if (!result.IsSuccess)
                 {
-                    _Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}", this, LogType.Error);
+                    _Logger.Log($"Failed to enable slash command {dbSlashCommand.Name} for guild {guildId}: {result.Message}", this, LogType.Warning);
                     continue;
                 }
 
@@ -344,27 +413,26 @@ public class PluginLoader : IPluginLoader
                 {
                     continue;
                 }
-                
+
                 _ApplicationCommands.Add(result.Data);
             }
 
             return true;
         }
-        
-        var command = await _DiscordClient.CreateGlobalApplicationCommandAsync(builder.Build());
+
+        var command = await client.CreateGlobalApplicationCommandAsync(builder.Build());
         _ApplicationCommands.Add(command);
         return true;
     }
 
-    private async Task<IResponse<SocketApplicationCommand>> EnableSlashCommandPerGuild(ulong guildId, SlashCommandBuilder builder)
+    private static async Task<IResponse<SocketApplicationCommand>> EnableSlashCommandPerGuild(DiscordSocketClient client, ulong guildId, SlashCommandBuilder builder)
     {
-        SocketGuild? guild = _DiscordClient?.GetGuild(guildId);
+        SocketGuild? guild = client.GetGuild(guildId);
         if (guild is null)
         {
-            _Logger.Log("Failed to get guild with ID " + guildId, this, LogType.Error);
-            return Response<SocketApplicationCommand>.Failure("Failed to get guild with ID " + guildId);
+            return Response<SocketApplicationCommand>.Failure("the bot is not in a guild with this ID");
         }
-        
+
         var command = await guild.CreateApplicationCommandAsync(builder.Build());
         return Response<SocketApplicationCommand>.Success(command);
     }
