@@ -10,10 +10,16 @@
 @inject ILogger Logger
 @inject IJSRuntime Js
 @inject NotificationService NotificationService
+@implements IDisposable
 
 @rendermode InteractiveServer
 
 <link rel="stylesheet" href="Components/Pages/Home.css" />
+@{
+    // One snapshot per render: the logger is written to from Discord.Net's gateway threads.
+    var logMessages = Logger.LogMessages;
+}
+
 <div class="container-fluid d-flex flex-column p-3" style="height: 95vh;">
     <div class="d-flex flex-wrap gap-2 mb-3">
         <button class="btn btn-success"
@@ -42,12 +48,12 @@
     
     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Console Log</h5>
-        <span class="badge bg-secondary">@Logger.LogMessages.Count()</span>
+        <span class="badge bg-secondary">@logMessages.Count</span>
     </div>
     <div id="consoleLog"
          class="bg-dark text-white p-3 flex-grow-1 overflow-auto"
          style="font-family:monospace;">
-        @foreach (var line in Logger.LogMessages)
+        @foreach (var line in logMessages)
         {
             <div style="@GetLogStyle(line)">@line.Message</div>
         }
@@ -75,10 +81,17 @@
 
     private void LoggerOnLogReceived(ILogMessage obj)
     {
-        InvokeAsync(async () =>
+        _ = InvokeAsync(async () =>
         {
-            await Js.InvokeVoidAsync("scrollToBottom", "consoleLog");
             StateHasChanged();
+            try
+            {
+                await Js.InvokeVoidAsync("scrollToBottom", "consoleLog");
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser went away before this component was disposed.
+            }
         });
     }
 
@@ -129,6 +142,11 @@
 
     private void ClearLogs()
     {
-        Logger.LogMessages.Clear();
+        Logger.ClearLogMessages();
+    }
+
+    public void Dispose()
+    {
+        Logger.OnLogReceived -= LoggerOnLogReceived;
     }
 }

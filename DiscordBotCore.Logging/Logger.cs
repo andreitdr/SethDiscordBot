@@ -12,7 +12,20 @@ public sealed class Logger : ILogger
                                 .ToList();
 
 
-    public List<ILogMessage> LogMessages { get; set; }
+    private readonly List<ILogMessage> _LogMessages = new List<ILogMessage>();
+    private readonly object _LogMessagesLock = new object();
+
+    public IReadOnlyList<ILogMessage> LogMessages
+    {
+        get
+        {
+            lock (_LogMessagesLock)
+            {
+                return _LogMessages.ToArray();
+            }
+        }
+    }
+
     public event Action<ILogMessage>? OnLogReceived;
     
 
@@ -21,7 +34,6 @@ public sealed class Logger : ILogger
         this._LogMessageFormat = logMessageFormat;
         this._LogFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
         this._MaxHistorySize = maxHistorySize;
-        LogMessages = new List<ILogMessage>();
     }
     
     public void Log(string message) => Log(new LogMessage(message, string.Empty, LogType.Info));
@@ -31,6 +43,14 @@ public sealed class Logger : ILogger
     public void LogException(Exception exception, object sender, bool logFullStack = false) => Log(LogMessage.CreateFromException(exception, sender, logFullStack));
 
     
+    public void ClearLogMessages()
+    {
+        lock (_LogMessagesLock)
+        {
+            _LogMessages.Clear();
+        }
+    }
+
     private string GenerateLogMessage(ILogMessage message)
     {
         string messageAsString = new string(_LogMessageFormat);
@@ -52,12 +72,16 @@ public sealed class Logger : ILogger
     private async void Log(ILogMessage message)
     {
         var messageAsString = GenerateLogMessage(message);
-        OnLogReceived?.Invoke(message);
-        LogMessages.Add(message);
-        if (LogMessages.Count > _MaxHistorySize)
+        lock (_LogMessagesLock)
         {
-            LogMessages.RemoveAt(0);
+            _LogMessages.Add(message);
+            if (_LogMessages.Count > _MaxHistorySize)
+            {
+                _LogMessages.RemoveAt(0);
+            }
         }
+        
+        OnLogReceived?.Invoke(message);
         await LogToFile(messageAsString);
     }
 
