@@ -1,0 +1,21 @@
+@using DiscordBotCore.PluginManagement.Models
+
+<dl class="details-list">
+    <dt>Version</dt>
+    <dd>
+        @Plugin.Version
+        @if (InstalledVersion is not null && InstalledVersion != Plugin.Version)
+        {
+            <RadzenBadge Text="@($"installed {InstalledVersion}")" BadgeStyle="BadgeStyle.Warning" Variant="Variant.Outlined"/>
+        }
+    </dd>
+    <dt>Author</dt>
+    <dd>@Plugin.Author</dd>
+    <dt>Description</dt>
+    <dd>@(string.IsNullOrWhiteSpace(Plugin.Description) ? "—" : Plugin.Description)</dd>
+</dl>
+
+@code {
+    [Parameter, EditorRequired] public OnlinePlugin Plugin { get; set; } = default!;
+    [Parameter] public string? InstalledVersion { get; set; }
+}

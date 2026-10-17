@@ -1,0 +1,16 @@
+<div class="empty-state">
+    <RadzenIcon Icon="@Icon"/>
+    <p class="empty-state-title">@Title</p>
+    @if (Text is not null)
+    {
+        <p class="empty-state-text">@Text</p>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Icon { get; set; } = default!;
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

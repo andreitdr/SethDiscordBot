@@ -1,0 +1,56 @@
+@inherits PanelBase
+@inject BotStateService Bot
+
+@if (!Bot.IsRunning)
+{
+    <EmptyState Icon="cloud_off" Title="Not connected" Text="Gateway latency and servers show up once the bot is online."/>
+}
+else
+{
+    var history = Bot.LatencyHistory;
+    var guilds = Bot.Guilds;
+    <div class="stats-panel">
+        <div class="stats-tiles">
+            <div class="stat-tile">
+                <span class="stat-label">Latency</span>
+                <span class="stat-value @LatencyClass(Bot.Latency)">@(Bot.Latency is { } ms ? $"{ms} ms" : "—")</span>
+                <Sparkline Values="history"/>
+            </div>
+            <div class="stat-tile">
+                <span class="stat-label">Servers</span>
+                <span class="stat-value">@guilds.Count</span>
+                <span class="stat-hint">@guilds.Sum(g => g.MemberCount).ToString("N0") members</span>
+            </div>
+        </div>
+
+        <ul class="guild-list" aria-label="Servers">
+            @foreach (var guild in guilds)
+            {
+                <li class="guild-row">
+                    @if (guild.IconUrl is { } icon)
+                    {
+                        <img class="guild-icon" src="@icon" alt="" loading="lazy"/>
+                    }
+                    else
+                    {
+                        <span class="guild-icon guild-icon-fallback" aria-hidden="true">@guild.Name[..1]</span>
+                    }
+                    <span class="guild-name" title="@guild.Name">@guild.Name</span>
+                    <span class="guild-members">@guild.MemberCount.ToString("N0")</span>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Observe(Bot);
+
+    private static string LatencyClass(int? ms) => ms switch
+    {
+        null => "",
+        < 150 => "is-good",
+        < 400 => "is-warn",
+        _ => "is-bad"
+    };
+}

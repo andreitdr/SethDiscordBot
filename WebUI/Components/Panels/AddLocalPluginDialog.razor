@@ -1,0 +1,144 @@
+@inject PluginCatalogService Catalog
+@inject DialogService Dialogs
+
+<form class="dialog-form" @onsubmit="Submit" @onsubmit:preventDefault>
+    <div class="field">
+        <label for="add-local-name">Name</label>
+        <RadzenTextBox id="add-local-name" @bind-Value="_Name" Immediate="true" Placeholder="Example Plugin"/>
+        @if (_Submitted && string.IsNullOrWhiteSpace(_Name))
+        {
+            <span class="field-error">A name is required.</span>
+        }
+        else if (!string.IsNullOrWhiteSpace(_Name) && Catalog.IsInstalled(_Name))
+        {
+            <span class="field-error">A plugin with this name is already installed.</span>
+        }
+    </div>
+
+    <div class="field">
+        <label for="add-local-version">Version</label>
+        <RadzenTextBox id="add-local-version" @bind-Value="_Version" Immediate="true" Placeholder="1.0.0"/>
+        @if ((_Submitted || _Version.Length > 0) && !PluginCatalogService.IsValidVersion(_Version))
+        {
+            <span class="field-error">Use major.minor.patch, e.g. 1.0.0.</span>
+        }
+    </div>
+
+    <div class="field">
+        <label>Plugin file</label>
+        <label class="drop-zone @(_File is not null ? "has-file" : null)">
+            <InputFile OnChange="OnFileSelected" accept=".dll" class="drop-zone-input"/>
+            <RadzenIcon Icon="@(_File is null ? "upload_file" : "description")"/>
+            @if (_File is null)
+            {
+                <span>Drop a <strong>.dll</strong> here or click to browse</span>
+            }
+            else
+            {
+                <span><strong>@_File.Name</strong> · @FormatSize(_File.Size)</span>
+            }
+        </label>
+        @if (_FileError is not null)
+        {
+            <span class="field-error">@_FileError</span>
+        }
+    </div>
+
+    <div class="field field-inline">
+        <RadzenSwitch @bind-Value="_Enabled" id="add-local-enabled"/>
+        <label for="add-local-enabled">Enable after adding</label>
+    </div>
+
+    @if (_Error is not null)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Size="AlertSize.Small" AllowClose="false">@_Error</RadzenAlert>
+    }
+
+    <div class="dialog-footer">
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Click="() => Dialogs.Close()"/>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Add plugin" Icon="add" ButtonStyle="ButtonStyle.Primary"
+                      IsBusy="_Saving" BusyText="Adding…"/>
+    </div>
+</form>
+
+@code {
+    private string _Name = string.Empty;
+    private string _Version = "1.0.0";
+    private bool _Enabled = true;
+    private IBrowserFile? _File;
+    private string? _FileError;
+    private string? _Error;
+    private bool _Submitted;
+    private bool _Saving;
+
+    private bool IsValid =>
+        !string.IsNullOrWhiteSpace(_Name)
+        && !Catalog.IsInstalled(_Name)
+        && PluginCatalogService.IsValidVersion(_Version)
+        && _File is not null;
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        _FileError = null;
+        if (!file.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        {
+            _FileError = "Pick a .dll file.";
+            _File = null;
+            return;
+        }
+
+        if (file.Size > PluginCatalogService.MaxLocalPluginSize)
+        {
+            _FileError = $"The file is larger than {FormatSize(PluginCatalogService.MaxLocalPluginSize)}.";
+            _File = null;
+            return;
+        }
+
+        _File = file;
+        if (string.IsNullOrWhiteSpace(_Name))
+        {
+            _Name = Path.GetFileNameWithoutExtension(file.Name);
+        }
+    }
+
+    private async Task Submit()
+    {
+        _Submitted = true;
+        _Error = null;
+        if (_File is null)
+        {
+            _FileError ??= "Pick the plugin's .dll file.";
+        }
+
+        if (!IsValid)
+        {
+            return;
+        }
+
+        _Saving = true;
+        try
+        {
+            await using var stream = _File!.OpenReadStream(PluginCatalogService.MaxLocalPluginSize);
+            var result = await Catalog.AddLocalAsync(_Name, _Version, _Enabled, _File.Name, stream);
+            if (result.IsSuccess)
+            {
+                Dialogs.Close(_Name.Trim());
+                return;
+            }
+
+            _Error = result.Message;
+        }
+        catch (Exception ex)
+        {
+            _Error = ex.Message;
+        }
+        finally
+        {
+            _Saving = false;
+        }
+    }
+
+    private static string FormatSize(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.#} MB" : $"{Math.Max(1, bytes / 1024)} KB";
+}

@@ -1,0 +1,13 @@
+@using DiscordBotCore.Logging
+
+<div class="log-details">
+    @if (!string.IsNullOrEmpty(Message.SenderName))
+    {
+        <p class="log-details-sender">From <strong>@Message.SenderName</strong></p>
+    }
+    <pre class="log-details-message">@Message.Message</pre>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ILogMessage Message { get; set; } = default!;
+}

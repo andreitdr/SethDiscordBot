@@ -1,0 +1,149 @@
+@using DiscordBotCore.PluginManagement.Models
+@inherits PanelBase
+@inject PluginCatalogService Catalog
+@inject BotStateService Bot
+
+@{
+    var plugins = Catalog.Installed
+        .Where(p => string.IsNullOrWhiteSpace(_Search) || p.PluginName.Contains(_Search, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+}
+<div class="table-panel">
+    <div class="panel-toolbar">
+        <RadzenTextBox @bind-Value="_Search" Immediate="true" Placeholder="Filter plugins" class="toolbar-search" aria-label="Filter installed plugins"/>
+        <span class="toolbar-spacer"></span>
+        @if (_EnabledChangedWhileRunning && Bot.IsRunning)
+        {
+            <RadzenButton Text="Reload to apply" Icon="refresh" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Small"
+                          IsBusy="Bot.PluginsBusy" Click="ReloadPlugins"/>
+        }
+        <RadzenButton Text="Add local" Icon="upload_file" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Small"
+                      Click="OpenAddLocal"/>
+    </div>
+
+    @if (!Catalog.InstalledLoaded)
+    {
+        <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>
+    }
+    else if (Catalog.Installed.Count == 0)
+    {
+        <EmptyState Icon="extension_off" Title="No plugins installed" Text="Install one from the Marketplace or add a .dll you built.">
+            <RadzenButton Text="Add local plugin" Icon="upload_file" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="OpenAddLocal"/>
+        </EmptyState>
+    }
+    else
+    {
+        <RadzenDataGrid Data="plugins" TItem="LocalPlugin" Density="Density.Compact" AllowSorting="true" class="fill-grid"
+                        EmptyText="No plugins match the filter.">
+            <Columns>
+                <RadzenDataGridColumn TItem="LocalPlugin" Property="PluginName" Title="Name">
+                    <Template Context="p"><span class="cell-strong">@p.PluginName</span></Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="LocalPlugin" Property="PluginVersion" Title="Version" Width="100px"/>
+                <RadzenDataGridColumn TItem="LocalPlugin" Property="IsOfflineAdded" Title="Source" Width="110px">
+                    <Template Context="p">
+                        <RadzenBadge Text="@(p.IsOfflineAdded ? "Local" : "Marketplace")" Variant="Variant.Outlined"
+                                     BadgeStyle="@(p.IsOfflineAdded ? BadgeStyle.Secondary : BadgeStyle.Info)"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="LocalPlugin" Property="IsEnabled" Title="Enabled" Width="96px" TextAlign="TextAlign.Center">
+                    <Template Context="p">
+                        <RadzenSwitch Value="p.IsEnabled" Change="@(v => SetEnabled(p, v))" Disabled="@(_Busy.Contains(p.PluginName))"
+                                      InputAttributes="@(new Dictionary<string, object?> { ["aria-label"] = $"Enable {p.PluginName}" })"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="LocalPlugin" Title="" Width="96px" Sortable="false" TextAlign="TextAlign.End">
+                    <Template Context="p">
+                        @if (!p.IsOfflineAdded)
+                        {
+                            <RadzenButton Icon="info" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
+                                          title="Details" aria-label="@($"Details for {p.PluginName}")" Click="() => ShowDetails(p)"/>
+                        }
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
+                                      title="Delete" aria-label="@($"Delete {p.PluginName}")"
+                                      IsBusy="@(_Busy.Contains(p.PluginName))" Click="() => Delete(p)"/>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>
+
+@code {
+    private string _Search = string.Empty;
+    private readonly HashSet<string> _Busy = new();
+    private bool _EnabledChangedWhileRunning;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Observe(Catalog, Bot);
+        await Catalog.EnsureInstalledLoadedAsync();
+    }
+
+    private async Task SetEnabled(LocalPlugin plugin, bool enabled)
+    {
+        _Busy.Add(plugin.PluginName);
+        try
+        {
+            var result = await Catalog.SetEnabledAsync(plugin.PluginName, enabled);
+            Report(result);
+            _EnabledChangedWhileRunning |= result.IsSuccess && Bot.PluginsLoaded;
+        }
+        finally
+        {
+            _Busy.Remove(plugin.PluginName);
+        }
+    }
+
+    private async Task ReloadPlugins()
+    {
+        var result = await Bot.ReloadPluginsAsync();
+        Report(result, "Plugins reloaded");
+        _EnabledChangedWhileRunning &= !result.IsSuccess;
+    }
+
+    private async Task Delete(LocalPlugin plugin)
+    {
+        string extra = Bot.PluginsLoaded ? " Plugins are reloaded afterwards." : "";
+        if (!await ConfirmAsync($"Delete {plugin.PluginName} {plugin.PluginVersion}? Its files are removed.{extra}", "Delete plugin", "Delete"))
+        {
+            return;
+        }
+
+        _Busy.Add(plugin.PluginName);
+        try
+        {
+            Report(await Catalog.UninstallAsync(plugin.PluginName), $"{plugin.PluginName} deleted");
+        }
+        finally
+        {
+            _Busy.Remove(plugin.PluginName);
+        }
+    }
+
+    private async Task ShowDetails(LocalPlugin plugin)
+    {
+        var response = await Catalog.GetOnlineDetailsAsync(plugin.PluginName);
+        if (!response.IsSuccess || response.Data is null)
+        {
+            ShowError(string.IsNullOrEmpty(response.Message) ? "No details available for this plugin." : response.Message);
+            return;
+        }
+
+        await Dialogs.OpenAsync<PluginDetailsDialog>(response.Data.Name,
+            new Dictionary<string, object?>
+            {
+                [nameof(PluginDetailsDialog.Plugin)] = response.Data,
+                [nameof(PluginDetailsDialog.InstalledVersion)] = plugin.PluginVersion
+            },
+            new DialogOptions { Width = "480px", CloseDialogOnOverlayClick = true });
+    }
+
+    private async Task OpenAddLocal()
+    {
+        if (await Dialogs.OpenAsync<AddLocalPluginDialog>("Add local plugin", options: new DialogOptions { Width = "460px" }) is string name)
+        {
+            Toasts.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = $"{name} added", Duration = 3000 });
+        }
+    }
+}

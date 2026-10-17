@@ -1,0 +1,399 @@
+using Discord;
+using Discord.WebSocket;
+using DiscordBotCore.Bot;
+using DiscordBotCore.Logging;
+using DiscordBotCore.PluginCore.Interfaces;
+using DiscordBotCore.PluginManagement.Loading;
+using DiscordBotCore.Utilities.Responses;
+using IConfiguration = DiscordBotCore.Configuration.IConfiguration;
+using ILogger = DiscordBotCore.Logging.ILogger;
+
+namespace WebUI.Services;
+
+/// <summary>
+/// The single owner of the bot lifecycle for the WebUI. Every panel and every browser tab goes through this service,
+/// so the status they show is always the same and concurrent clicks can't start, stop or load plugins twice.
+/// </summary>
+public sealed class BotStateService : IStateNotifier, IDisposable
+{
+    private static readonly TimeSpan StartTimeout = TimeSpan.FromSeconds(30);
+    private const int LatencyHistorySize = 40;
+
+    private readonly IDiscordBotApplication _Bot;
+    private readonly IPluginLoader _PluginLoader;
+    private readonly IConfiguration _Configuration;
+    private readonly ILogger _Logger;
+
+    private readonly SemaphoreSlim _Gate = new(1, 1);
+    private readonly object _LatencyLock = new();
+    private readonly Queue<int> _LatencyHistory = new();
+
+    private DiscordSocketClient? _Client;
+    private Task? _PendingStart;
+
+    public event Action? Changed;
+
+    public BotStateService(IDiscordBotApplication bot, IPluginLoader pluginLoader, IConfiguration configuration, ILogger logger)
+    {
+        _Bot = bot;
+        _PluginLoader = pluginLoader;
+        _Configuration = configuration;
+        _Logger = logger;
+    }
+
+    public BotStatus Status { get; private set; } = BotStatus.Offline;
+    public DateTime? OnlineSince { get; private set; }
+    public bool PluginsLoaded { get; private set; }
+    public bool PluginsBusy { get; private set; }
+
+    public bool IsRunning => Status is BotStatus.Online or BotStatus.Reconnecting;
+    public bool IsTransitioning => Status is BotStatus.Connecting or BotStatus.Stopping;
+    public bool HasToken => !string.IsNullOrWhiteSpace(_Configuration.Get<string>("token"));
+
+    public IReadOnlyList<IDbCommand> Commands => PluginsLoaded ? _PluginLoader.Commands.ToArray() : [];
+    public IReadOnlyList<IDbEvent> Events => PluginsLoaded ? _PluginLoader.Events.ToArray() : [];
+    public IReadOnlyList<IDbSlashCommand> SlashCommands => PluginsLoaded ? _PluginLoader.SlashCommands.ToArray() : [];
+
+    public int? Latency => IsRunning ? _Client?.Latency : null;
+
+    public IReadOnlyList<int> LatencyHistory
+    {
+        get
+        {
+            lock (_LatencyLock)
+            {
+                return _LatencyHistory.ToArray();
+            }
+        }
+    }
+
+    public IReadOnlyList<GuildSummary> Guilds =>
+        _Client is { } client && IsRunning
+            ? client.Guilds
+                .Select(g => new GuildSummary(g.Id, g.Name, g.IconUrl, g.MemberCount))
+                .OrderByDescending(g => g.MemberCount)
+                .ToArray()
+            : [];
+
+    public string? BotUserName => IsRunning ? _Client?.CurrentUser?.Username : null;
+
+    public async Task<IResponse<bool>> StartAsync()
+    {
+        if (!await _Gate.WaitAsync(0))
+        {
+            return Response.Failure("Another bot operation is already in progress.");
+        }
+
+        try
+        {
+            if (_Bot.IsReady)
+            {
+                AttachClient(_Bot.Client);
+                return Response.Success();
+            }
+
+            if (_PendingStart is { IsCompleted: false })
+            {
+                return Response.Failure("The bot is still connecting.");
+            }
+
+            if (!HasToken)
+            {
+                return Response.Failure("Set a bot token in Settings first.");
+            }
+
+            SetStatus(BotStatus.Connecting);
+
+            // The core StartAsync only returns once the gateway is Ready and never returns if that doesn't happen,
+            // so wait for it with a timeout instead of freezing the UI in "Connecting".
+            Task start = _Bot.StartAsync();
+            _PendingStart = start;
+
+            if (await Task.WhenAny(start, Task.Delay(StartTimeout)) != start)
+            {
+                _ = start.ContinueWith(_ => CompleteLateStart(), TaskScheduler.Default);
+                _Logger.Log("The bot hasn't reached Ready yet. It keeps trying in the background.", this, LogType.Warning);
+                return Response.Failure("The bot is taking long to connect. Check the token, the privileged intents and your network, or cancel.");
+            }
+
+            await start;
+            AttachClient(_Bot.Client);
+            _Logger.Log("Application started", this);
+            return Response.Success();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogException(ex, this);
+            SetStatus(BotStatus.Offline);
+            return Response.Failure(DescribeStartFailure(ex));
+        }
+        finally
+        {
+            _Gate.Release();
+        }
+    }
+
+    public async Task<IResponse<bool>> StopAsync()
+    {
+        if (!await _Gate.WaitAsync(0))
+        {
+            return Response.Failure("Another bot operation is already in progress.");
+        }
+
+        try
+        {
+            if (Status == BotStatus.Connecting)
+            {
+                return await CancelStartAsync();
+            }
+
+            if (!_Bot.IsReady)
+            {
+                SetStatus(BotStatus.Offline);
+                return Response.Success();
+            }
+
+            SetStatus(BotStatus.Stopping);
+            DetachClient();
+
+            // The core StopAsync unloads the plugins before logging out.
+            await _Bot.StopAsync();
+            PluginsLoaded = false;
+            _Logger.Log("Application stopped", this);
+            return Response.Success();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogException(ex, this);
+            return Response.Failure(ex.Message);
+        }
+        finally
+        {
+            SetStatus(_Bot.IsReady ? BotStatus.Online : BotStatus.Offline);
+            _Gate.Release();
+        }
+    }
+
+    /// <summary>Re-renders everything that depends on configuration, such as whether a token is set.</summary>
+    public void NotifySettingsChanged() => Changed?.Invoke();
+
+    public Task<IResponse<bool>> LoadPluginsAsync() => RunPluginOperation(reload: false);
+
+    public Task<IResponse<bool>> ReloadPluginsAsync() => RunPluginOperation(reload: true);
+
+    /// <summary>
+    /// Unloads the plugins (if loaded), runs <paramref name="action"/> and loads them back.
+    /// Used when a plugin's files or enabled state change while the bot is running.
+    /// </summary>
+    public async Task<IResponse<bool>> WithPluginsUnloadedAsync(Func<Task<IResponse<bool>>> action)
+    {
+        await _Gate.WaitAsync();
+        bool wasLoaded = PluginsLoaded;
+        try
+        {
+            SetPluginsBusy(true);
+            if (wasLoaded)
+            {
+                await _PluginLoader.UnloadAllPlugins();
+                PluginsLoaded = false;
+            }
+
+            return await action();
+        }
+        finally
+        {
+            if (wasLoaded && _Bot.IsReady)
+            {
+                await LoadPluginsCore();
+            }
+
+            SetPluginsBusy(false);
+            _Gate.Release();
+        }
+    }
+
+    private async Task<IResponse<bool>> RunPluginOperation(bool reload)
+    {
+        if (!_Bot.IsReady)
+        {
+            return Response.Failure("Start the bot before loading plugins.");
+        }
+
+        if (!await _Gate.WaitAsync(0))
+        {
+            return Response.Failure("Another bot operation is already in progress.");
+        }
+
+        try
+        {
+            SetPluginsBusy(true);
+            if (PluginsLoaded)
+            {
+                if (!reload)
+                {
+                    return Response.Success();
+                }
+
+                await _PluginLoader.UnloadAllPlugins();
+                PluginsLoaded = false;
+            }
+
+            return await LoadPluginsCore();
+        }
+        finally
+        {
+            SetPluginsBusy(false);
+            _Gate.Release();
+        }
+    }
+
+    private async Task<IResponse<bool>> LoadPluginsCore()
+    {
+        try
+        {
+            _Logger.Log("Loading plugins", this);
+            await _PluginLoader.LoadPlugins();
+            PluginsLoaded = true;
+            _Logger.Log("Plugins loaded", this);
+            return Response.Success();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogException(ex, this);
+            return Response.Failure($"Loading plugins failed: {ex.Message}");
+        }
+    }
+
+    private async Task<IResponse<bool>> CancelStartAsync()
+    {
+        try
+        {
+            if (_Bot.Client is { } client)
+            {
+                await client.StopAsync();
+                await client.LogoutAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogException(ex, this);
+        }
+
+        _Logger.Log("Connection attempt cancelled", this, LogType.Warning);
+        SetStatus(BotStatus.Offline);
+        return Response.Success();
+    }
+
+    private void CompleteLateStart()
+    {
+        if (_Bot.IsReady && Status == BotStatus.Connecting)
+        {
+            AttachClient(_Bot.Client);
+            _Logger.Log("Application started", this);
+        }
+    }
+
+    private void AttachClient(DiscordSocketClient client)
+    {
+        if (!ReferenceEquals(_Client, client))
+        {
+            DetachClient();
+            _Client = client;
+            client.Connected += OnConnected;
+            client.Disconnected += OnDisconnected;
+            client.LatencyUpdated += OnLatencyUpdated;
+            client.JoinedGuild += OnGuildsChanged;
+            client.LeftGuild += OnGuildsChanged;
+            client.GuildAvailable += OnGuildsChanged;
+            client.GuildUnavailable += OnGuildsChanged;
+        }
+
+        OnlineSince ??= DateTime.Now;
+        SetStatus(client.ConnectionState == ConnectionState.Connected ? BotStatus.Online : BotStatus.Reconnecting);
+    }
+
+    private void DetachClient()
+    {
+        if (_Client is { } client)
+        {
+            client.Connected -= OnConnected;
+            client.Disconnected -= OnDisconnected;
+            client.LatencyUpdated -= OnLatencyUpdated;
+            client.JoinedGuild -= OnGuildsChanged;
+            client.LeftGuild -= OnGuildsChanged;
+            client.GuildAvailable -= OnGuildsChanged;
+            client.GuildUnavailable -= OnGuildsChanged;
+        }
+
+        _Client = null;
+        OnlineSince = null;
+        lock (_LatencyLock)
+        {
+            _LatencyHistory.Clear();
+        }
+    }
+
+    private Task OnConnected()
+    {
+        if (Status == BotStatus.Reconnecting)
+        {
+            SetStatus(BotStatus.Online);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnDisconnected(Exception _)
+    {
+        if (Status == BotStatus.Online)
+        {
+            SetStatus(BotStatus.Reconnecting);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnLatencyUpdated(int _, int latency)
+    {
+        lock (_LatencyLock)
+        {
+            _LatencyHistory.Enqueue(latency);
+            while (_LatencyHistory.Count > LatencyHistorySize)
+            {
+                _LatencyHistory.Dequeue();
+            }
+        }
+
+        Changed?.Invoke();
+        return Task.CompletedTask;
+    }
+
+    private Task OnGuildsChanged(SocketGuild _)
+    {
+        Changed?.Invoke();
+        return Task.CompletedTask;
+    }
+
+    private void SetStatus(BotStatus status)
+    {
+        Status = status;
+        Changed?.Invoke();
+    }
+
+    private void SetPluginsBusy(bool busy)
+    {
+        PluginsBusy = busy;
+        Changed?.Invoke();
+    }
+
+    private static string DescribeStartFailure(Exception ex) =>
+        ex.Message.Contains("401") ? "Discord rejected the token. Update it in Settings." : ex.Message;
+
+    public void Dispose()
+    {
+        DetachClient();
+        _Gate.Dispose();
+    }
+}
+
+public sealed record GuildSummary(ulong Id, string Name, string? IconUrl, int MemberCount);

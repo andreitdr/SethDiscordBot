@@ -15,7 +15,7 @@ public static class Initializer
 {
     private static readonly string ConfigurationLoggerLogFormatStringPattern = "Logger:LogFormat";
     private static readonly string ConfigurationLoggerLogFolderStringPattern = "Logger:LogFolder";
-    private static readonly string ConfigurationLoggerMaxHistorySizeStringPattern = "Logger:LogFolder";
+    private static readonly string ConfigurationLoggerMaxHistorySizeStringPattern = "Logger:MaxHistorySize";
     private static readonly string ConfigurationConfigFileStringPattern = "ConfigFile";
     
     public static void AddDiscordBotComponents(this IHostApplicationBuilder builder)

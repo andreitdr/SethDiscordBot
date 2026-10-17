@@ -1,0 +1,27 @@
+@* A tiny latency trend line; drawn by hand so it uses the theme's colours. *@
+@if (Values.Count >= 2)
+{
+    <svg class="sparkline" viewBox="0 0 @Width @Height" preserveAspectRatio="none" role="img" aria-label="Latency trend">
+        <polyline points="@Points" fill="none" vector-effect="non-scaling-stroke"/>
+    </svg>
+}
+
+@code {
+    private const int Width = 100;
+    private const int Height = 24;
+
+    [Parameter, EditorRequired] public IReadOnlyList<int> Values { get; set; } = [];
+
+    private string Points
+    {
+        get
+        {
+            int max = Math.Max(Values.Max(), 1);
+            int min = Values.Min();
+            double range = Math.Max(max - min, 1);
+            double step = (double)Width / (Values.Count - 1);
+            return string.Join(' ', Values.Select((v, i) =>
+                FormattableString.Invariant($"{i * step:0.#},{Height - 2 - (v - min) / range * (Height - 4):0.#}")));
+        }
+    }
+}

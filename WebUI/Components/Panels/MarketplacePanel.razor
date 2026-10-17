@@ -1,0 +1,86 @@
+@using DiscordBotCore.PluginManagement.Models
+@inherits PanelBase
+@inject PluginCatalogService Catalog
+
+@{
+    var plugins = Catalog.Online
+        .Where(p => string.IsNullOrWhiteSpace(_Search)
+                    || p.Name.Contains(_Search, StringComparison.OrdinalIgnoreCase)
+                    || (p.Description?.Contains(_Search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (p.Author?.Contains(_Search, StringComparison.OrdinalIgnoreCase) ?? false))
+        .ToList();
+}
+<div class="table-panel">
+    <div class="panel-toolbar">
+        <RadzenTextBox @bind-Value="_Search" Immediate="true" Placeholder="Search by name, description or author" class="toolbar-search"
+                       aria-label="Search the marketplace"/>
+        <span class="toolbar-spacer"></span>
+        <RadzenButton Icon="refresh" Text="Refresh" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                      IsBusy="Catalog.OnlineLoading" BusyText="Loading…" Click="Catalog.RefreshOnlineAsync"/>
+    </div>
+
+    @if (!Catalog.OnlineLoaded || (Catalog.OnlineLoading && Catalog.Online.Count == 0))
+    {
+        <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>
+    }
+    else if (Catalog.OnlineError is not null && Catalog.Online.Count == 0)
+    {
+        <EmptyState Icon="cloud_off" Title="Marketplace unavailable" Text="@Catalog.OnlineError">
+            <RadzenButton Text="Try again" Icon="refresh" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="Catalog.RefreshOnlineAsync"/>
+        </EmptyState>
+    }
+    else if (Catalog.Online.Count == 0)
+    {
+        <EmptyState Icon="storefront" Title="No plugins available"
+                    Text="Nothing is published for this OS yet, or the repository can't be reached. Check the console for details.">
+            <RadzenButton Text="Refresh" Icon="refresh" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="Catalog.RefreshOnlineAsync"/>
+        </EmptyState>
+    }
+    else
+    {
+        <RadzenDataGrid Data="plugins" TItem="OnlinePlugin" Density="Density.Compact" AllowSorting="true" AllowPaging="true" PageSize="25"
+                        PagerHorizontalAlign="HorizontalAlign.Right" class="fill-grid" EmptyText="No plugins match the search.">
+            <Columns>
+                <RadzenDataGridColumn TItem="OnlinePlugin" Property="Name" Title="Name" Width="200px">
+                    <Template Context="p"><span class="cell-strong">@p.Name</span></Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="OnlinePlugin" Property="Description" Title="Description">
+                    <Template Context="p"><span class="cell-wrap">@p.Description</span></Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="OnlinePlugin" Property="Author" Title="Author" Width="150px"/>
+                <RadzenDataGridColumn TItem="OnlinePlugin" Property="Version" Title="Version" Width="100px"/>
+                <RadzenDataGridColumn TItem="OnlinePlugin" Title="" Width="150px" Sortable="false" TextAlign="TextAlign.End">
+                    <Template Context="p">
+                        @if (Catalog.TryGetInstallProgress(p.Id, out float percent))
+                        {
+                            <RadzenProgressBar Value="percent" Max="100" ShowValue="false" class="install-progress"
+                                               aria-label="@($"Installing {p.Name}")"/>
+                        }
+                        else if (Catalog.IsInstalled(p.Name))
+                        {
+                            <span class="installed-label"><RadzenIcon Icon="check_circle"/> Installed</span>
+                        }
+                        else
+                        {
+                            <RadzenButton Text="Install" Icon="download" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined"
+                                          Size="ButtonSize.ExtraSmall" Click="() => Install(p)"/>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>
+
+@code {
+    private string _Search = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Observe(Catalog);
+        await Task.WhenAll(Catalog.EnsureInstalledLoadedAsync(), Catalog.EnsureOnlineLoadedAsync());
+    }
+
+    private async Task Install(OnlinePlugin plugin) =>
+        Report(await Catalog.InstallAsync(plugin), $"{plugin.Name} installed");
+}

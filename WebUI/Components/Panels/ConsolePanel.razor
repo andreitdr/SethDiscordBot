@@ -1,0 +1,180 @@
+@using DiscordBotCore.Logging
+@inherits PanelBase
+@inject LogStreamService Logs
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+@{
+    var all = Logs.Messages;
+    var visible = Filter(all);
+}
+<div class="console-panel">
+    <div class="panel-toolbar">
+        <RadzenSelectBar @bind-Value="_Levels" TValue="IEnumerable<LogType>" Multiple="true" Size="ButtonSize.ExtraSmall"
+                         Data="LevelOptions" TextProperty="Text" ValueProperty="Value" AriaLabel="Log levels"/>
+        <RadzenTextBox Placeholder="Search messages or senders" class="toolbar-search" aria-label="Search the console"
+                       @bind-Value="_Search" Immediate="true"/>
+        <span class="toolbar-count" title="Shown / total">@visible.Count / @all.Count</span>
+        <RadzenButton Icon="content_copy" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                      title="Copy shown lines" aria-label="Copy shown lines" Click="() => Copy(visible)"/>
+        <RadzenButton Icon="delete_sweep" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                      title="Clear console" aria-label="Clear console" Click="Logs.Clear"/>
+    </div>
+
+    <div class="console-scroll" @ref="_ScrollElement" tabindex="0" aria-label="Console output" role="log">
+        @if (visible.Count == 0)
+        {
+            <div class="console-empty">@(all.Count == 0 ? "No log messages yet." : "No lines match the filters.")</div>
+        }
+        else
+        {
+            <Virtualize Items="visible" ItemSize="RowHeight" OverscanCount="20" Context="line">
+                <div class="console-row level-@line.LogMessageType.ToString().ToLowerInvariant()"
+                     @onclick="() => ShowDetails(line)" title="Click for details">
+                    <span class="console-time">@line.ThrowTime.ToString("HH:mm:ss")</span>
+                    <span class="console-level">@LevelLabel(line.LogMessageType)</span>
+                    @if (!string.IsNullOrEmpty(line.SenderName))
+                    {
+                        <span class="console-sender" title="@line.SenderName">@ShortSender(line.SenderName)</span>
+                    }
+                    <span class="console-message">@line.Message</span>
+                </div>
+            </Virtualize>
+        }
+    </div>
+
+    @if (!_StickToBottom && visible.Count > 0)
+    {
+        <RadzenButton class="console-jump" Text="Jump to latest" Icon="arrow_downward" Size="ButtonSize.Small"
+                      ButtonStyle="ButtonStyle.Primary" Click="JumpToLatest"/>
+    }
+</div>
+
+@code {
+    private const float RowHeight = 24;
+
+    private static readonly IReadOnlyList<LevelOption> LevelOptions =
+    [
+        new("Info", LogType.Info),
+        new("Warn", LogType.Warning),
+        new("Error", LogType.Error),
+        new("Critical", LogType.Critical),
+    ];
+
+    private IEnumerable<LogType> _Levels = Enum.GetValues<LogType>();
+    private string _Search = string.Empty;
+    private bool _StickToBottom = true;
+
+    private ElementReference _ScrollElement;
+    private IJSObjectReference? _Module;
+    private DotNetObjectReference<ConsolePanel>? _SelfReference;
+
+    protected override void OnInitialized() => Observe(Logs);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                _Module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/console.js");
+                _SelfReference = DotNetObjectReference.Create(this);
+                await _Module.InvokeVoidAsync("attach", _ScrollElement, _SelfReference);
+            }
+
+            if (_StickToBottom && _Module is not null)
+            {
+                await _Module.InvokeVoidAsync("scrollToBottom", _ScrollElement);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    [JSInvokable]
+    public void OnStickToBottomChanged(bool atBottom)
+    {
+        if (_StickToBottom != atBottom)
+        {
+            _StickToBottom = atBottom;
+            StateHasChanged();
+        }
+    }
+
+    private List<ILogMessage> Filter(IReadOnlyList<ILogMessage> messages)
+    {
+        var levels = _Levels as ICollection<LogType> ?? _Levels.ToList();
+        bool hasSearch = !string.IsNullOrWhiteSpace(_Search);
+        return messages
+            .Where(m => levels.Contains(m.LogMessageType))
+            .Where(m => !hasSearch
+                        || m.Message.Contains(_Search, StringComparison.OrdinalIgnoreCase)
+                        || (m.SenderName?.Contains(_Search, StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+    }
+
+    private async Task JumpToLatest()
+    {
+        _StickToBottom = true;
+        if (_Module is not null)
+        {
+            await _Module.InvokeVoidAsync("scrollToBottom", _ScrollElement);
+        }
+    }
+
+    private async Task Copy(IReadOnlyList<ILogMessage> lines)
+    {
+        if (_Module is null)
+        {
+            return;
+        }
+
+        string text = string.Join(Environment.NewLine, lines.Select(l => $"{l.ThrowTime:HH:mm:ss} [{l.LogMessageType}] {l.SenderName} {l.Message}"));
+        try
+        {
+            await _Module.InvokeVoidAsync("copyText", text);
+            Toasts.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = $"Copied {lines.Count} lines", Duration = 2000 });
+        }
+        catch (JSException)
+        {
+            ShowError("The browser didn't allow copying to the clipboard.");
+        }
+    }
+
+    private Task ShowDetails(ILogMessage line) =>
+        Dialogs.OpenAsync<LogDetailsDialog>($"{line.LogMessageType} · {line.ThrowTime:yyyy-MM-dd HH:mm:ss}",
+            new Dictionary<string, object?> { [nameof(LogDetailsDialog.Message)] = line },
+            new DialogOptions { Width = "720px", CloseDialogOnOverlayClick = true });
+
+    // "DiscordBotCore.Bot.DiscordBotApplication" -> "DiscordBotApplication"; the full name is in the tooltip.
+    private static string ShortSender(string sender) => sender[(sender.LastIndexOf('.') + 1)..];
+
+    private static string LevelLabel(LogType type) => type switch
+    {
+        LogType.Warning => "WARN",
+        LogType.Error => "ERROR",
+        LogType.Critical => "CRIT",
+        _ => "INFO"
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        base.Dispose();
+        if (_Module is not null)
+        {
+            try
+            {
+                await _Module.InvokeVoidAsync("detach", _ScrollElement);
+                await _Module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+
+        _SelfReference?.Dispose();
+    }
+
+    private sealed record LevelOption(string Text, LogType Value);
+}

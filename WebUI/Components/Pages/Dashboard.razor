@@ -1,0 +1,51 @@
+@page "/"
+@inject DashboardLayoutService Layout
+@implements IDisposable
+
+<PageTitle>Seth Discord Bot</PageTitle>
+
+<div class="grid-stack dashboard-grid" @ref="_GridElement">
+    @if (Layout.IsLoaded)
+    {
+        @foreach (var panel in Layout.VisiblePanels)
+        {
+            <DashboardPanel @key="panel.Id" Definition="panel"/>
+        }
+    }
+</div>
+
+@if (Layout.IsLoaded && !Layout.VisiblePanels.Any())
+{
+    <div class="dashboard-empty">
+        <RadzenIcon Icon="dashboard_customize"/>
+        <p>All panels are hidden.</p>
+        <RadzenButton Text="Restore default layout" Icon="restart_alt" Click="Layout.ResetAsync"/>
+    </div>
+}
+
+@code {
+    private ElementReference _GridElement;
+
+    protected override void OnInitialized()
+    {
+        Layout.Changed += OnLayoutChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Layout.InitializeAsync(_GridElement);
+            return;
+        }
+
+        await Layout.AfterRenderAsync();
+    }
+
+    private void OnLayoutChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Layout.Changed -= OnLayoutChanged;
+    }
+}

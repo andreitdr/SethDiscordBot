@@ -28,4 +28,8 @@
       <_ContentIncludedByDefault Remove="Data\Resources\plugins.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Radzen.Blazor" Version="12.1.4" />
+    </ItemGroup>
+
 </Project>

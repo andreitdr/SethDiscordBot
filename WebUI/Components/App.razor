@@ -1,22 +1,41 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <base href="/"/>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" href="app.css"/>
-    <link rel="stylesheet" href="WebUI.styles.css"/>
-    <link rel="icon" type="image/png" href="favicon.png"/>
-    <HeadOutlet/>
+    <title>Seth Discord Bot</title>
+    <RadzenTheme Theme="material-dark" @rendermode="PageRenderMode"/>
+    <link rel="stylesheet" href="@Assets["lib/gridstack/gridstack.min.css"]"/>
+    <link rel="stylesheet" href="@Assets["app.css"]"/>
+    <link rel="stylesheet" href="@Assets["WebUI.styles.css"]"/>
+    <link rel="icon" type="image/png" href="@Assets["favicon.png"]"/>
+    <ImportMap/>
+    <HeadOutlet @rendermode="PageRenderMode"/>
 </head>
 
 <body>
-<Routes/>
+<Routes @rendermode="PageRenderMode"/>
+
+<div id="components-reconnect-modal" class="reconnect-banner" aria-live="polite">
+    <span class="reconnect-show">Connection lost. Reconnecting…</span>
+    <span class="reconnect-failed">Couldn't reconnect. <a href="" onclick="location.reload(); return false;">Reload</a></span>
+    <span class="reconnect-rejected">The session expired. <a href="" onclick="location.reload(); return false;">Reload</a></span>
+</div>
+
+<script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+<script src="@Assets["lib/gridstack/gridstack-all.js"]"></script>
 <script src="_framework/blazor.web.js"></script>
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Everything is interactive except pages that opt out (the static error page).
+    // Prerendering is off: the dashboard layout lives in localStorage, so a server prerender would only flash the defaults.
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? new InteractiveServerRenderMode(prerender: false) : null;
+}

@@ -1,0 +1,20 @@
+@inherits PanelBase
+@inject BotStateService Bot
+
+<span class="status-pill status-@Bot.Status.ToString().ToLowerInvariant()" role="status" aria-live="polite">
+    <span class="status-dot"></span>
+    @Label
+</span>
+
+@code {
+    protected override void OnInitialized() => Observe(Bot);
+
+    private string Label => Bot.Status switch
+    {
+        BotStatus.Online => "Online",
+        BotStatus.Connecting => "Connecting…",
+        BotStatus.Reconnecting => "Reconnecting…",
+        BotStatus.Stopping => "Stopping…",
+        _ => "Offline"
+    };
+}

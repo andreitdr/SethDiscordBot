@@ -1,0 +1,15 @@
+@inject DialogService Dialogs
+
+<div class="dialog-form">
+    <p class="confirm-message">@Message</p>
+    <div class="dialog-footer">
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Click="() => Dialogs.Close(false)"/>
+        <RadzenButton Text="@OkText" ButtonStyle="@(Destructive ? ButtonStyle.Danger : ButtonStyle.Primary)" Click="() => Dialogs.Close(true)"/>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Message { get; set; } = default!;
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public bool Destructive { get; set; }
+}

@@ -1,0 +1,44 @@
+@inject DashboardLayoutService Layout
+
+@{
+    var state = Layout[Definition.Id];
+}
+<div class="grid-stack-item @(state.Collapsed ? "is-collapsed" : null)"
+     @key="Definition.Id"
+     gs-id="@Definition.Id"
+     gs-x="@(state.AutoPosition ? null : state.X)"
+     gs-y="@(state.AutoPosition ? null : state.Y)"
+     gs-w="@state.W"
+     gs-h="@state.H"
+     gs-min-w="@Definition.MinW"
+     gs-min-h="@(state.Collapsed ? 1 : Definition.MinH)"
+     gs-auto-position="@(state.AutoPosition ? "true" : null)"
+     gs-no-resize="@(state.Collapsed ? "true" : null)">
+    <section class="grid-stack-item-content panel" aria-labelledby="panel-title-@Definition.Id">
+        <header class="panel-header">
+            <div class="panel-drag-handle" title="@(Layout.Locked ? null : "Drag to move")">
+                <RadzenIcon Icon="@Definition.Icon" class="panel-icon"/>
+                <h2 id="panel-title-@Definition.Id" class="panel-title">@Definition.Title</h2>
+            </div>
+            <div class="panel-actions">
+                <RadzenButton Icon="@(state.Collapsed ? "expand_more" : "expand_less")"
+                              ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
+                              title="@(state.Collapsed ? "Expand" : "Collapse")"
+                              aria-label="@(state.Collapsed ? $"Expand {Definition.Title}" : $"Collapse {Definition.Title}")"
+                              Click="@(() => Layout.ToggleCollapsedAsync(Definition.Id))"/>
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
+                              title="Hide panel" aria-label="@($"Hide {Definition.Title}")"
+                              Click="@(() => Layout.HideAsync(Definition.Id))"/>
+            </div>
+        </header>
+        @* Kept mounted while collapsed so the panel keeps its state (unsaved form input, filters). *@
+        <div class="panel-body" hidden="@state.Collapsed">
+            <DynamicComponent Type="Definition.ComponentType"/>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PanelDefinition Definition { get; set; } = default!;
+}

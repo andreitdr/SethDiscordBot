@@ -1,5 +1,6 @@
 using System.Reflection;
 using WebUI;
+using Radzen;
 using WebUI.Services;
 using WebUI.Components;
 
@@ -70,7 +71,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.AddDiscordBotComponents();
-builder.Services.AddSingleton<NotificationService>();
+
+builder.Services.AddRadzenComponents();
+builder.Services.AddRadzenCookieThemeService(options =>
+{
+    options.Name = "SethDiscordBot.Theme";
+    options.Duration = TimeSpan.FromDays(365);
+});
+
+// Shared across every browser tab, so all open dashboards see the same bot and plugin state.
+builder.Services.AddSingleton<BotStateService>();
+builder.Services.AddSingleton<PluginCatalogService>();
+builder.Services.AddSingleton<LogStreamService>();
+// One per circuit: the panel layout belongs to the browser that arranged it.
+builder.Services.AddScoped<DashboardLayoutService>();
 
 
 var app = builder.Build();
@@ -85,9 +99,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
 app.UseAntiforgery();
 
+// Fingerprinted static assets: the browser never keeps a stale app.css or JS module after an update.
+app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

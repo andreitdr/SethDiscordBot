@@ -1,0 +1,77 @@
+@using DiscordBotCore.PluginCore.Interfaces
+@inherits PanelBase
+@inject BotStateService Bot
+
+@if (!Bot.PluginsLoaded)
+{
+    <EmptyState Icon="deployed_code" Title="No plugins loaded"
+                Text="@(Bot.IsRunning ? "Load the enabled plugins to see their commands and events." : "Start the bot, then load plugins.")">
+        @if (Bot.IsRunning)
+        {
+            <RadzenButton Text="Load now" Icon="power" Variant="Variant.Outlined" Size="ButtonSize.Small" IsBusy="Bot.PluginsBusy" Click="Load"/>
+        }
+    </EmptyState>
+}
+else
+{
+    var commands = Bot.Commands;
+    var events = Bot.Events;
+    var slashCommands = Bot.SlashCommands;
+    <RadzenTabs class="fill-tabs" RenderMode="TabRenderMode.Client">
+        <Tabs>
+            <RadzenTabsItem Text="@($"Commands ({commands.Count})")">
+                <RadzenDataGrid Data="commands" TItem="IDbCommand" Density="Density.Compact" AllowSorting="true" class="fill-grid" EmptyText="No commands.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="IDbCommand" Property="Command" Title="Command" Width="120px">
+                            <Template Context="c"><code>@Prefix@c.Command</code></Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="IDbCommand" Title="Aliases" Width="110px" Sortable="false">
+                            <Template Context="c"><span class="cell-wrap">@string.Join(", ", c.Aliases ?? [])</span></Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="IDbCommand" Property="Usage" Title="Usage">
+                            <Template Context="c"><code class="cell-wrap">@c.Usage</code></Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="IDbCommand" Property="Description" Title="Description">
+                            <Template Context="c"><span class="cell-wrap">@c.Description</span></Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="@($"Events ({events.Count})")">
+                <RadzenDataGrid Data="events" TItem="IDbEvent" Density="Density.Compact" AllowSorting="true" class="fill-grid" EmptyText="No events.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="IDbEvent" Property="Name" Title="Name" Width="180px"/>
+                        <RadzenDataGridColumn TItem="IDbEvent" Property="Description" Title="Description">
+                            <Template Context="e"><span class="cell-wrap">@e.Description</span></Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="@($"Slash ({slashCommands.Count})")">
+                <RadzenDataGrid Data="slashCommands" TItem="IDbSlashCommand" Density="Density.Compact" AllowSorting="true" class="fill-grid" EmptyText="No slash commands.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="IDbSlashCommand" Property="Name" Title="Name" Width="160px">
+                            <Template Context="s"><code>/@s.Name</code></Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="IDbSlashCommand" Property="Description" Title="Description">
+                            <Template Context="s"><span class="cell-wrap">@s.Description</span></Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="IDbSlashCommand" Property="CanUseDm" Title="DMs" Width="70px">
+                            <Template Context="s">@(s.CanUseDm ? "Yes" : "No")</Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+}
+
+@code {
+    [Inject] private DiscordBotCore.Configuration.IConfiguration Configuration { get; set; } = default!;
+
+    private string Prefix => Configuration.Get("prefix", ";");
+
+    protected override void OnInitialized() => Observe(Bot);
+
+    private async Task Load() => Report(await Bot.LoadPluginsAsync(), "Plugins loaded");
+}

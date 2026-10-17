@@ -1,0 +1,203 @@
+@inherits PanelBase
+@inject BotStateService Bot
+@inject ILogger Logger
+@inject DiscordBotCore.Configuration.IConfiguration Configuration
+
+<form class="settings-panel" @onsubmit="Save" @onsubmit:preventDefault>
+    <div class="field">
+        <label for="settings-token">Bot token</label>
+        <div class="field-row">
+            @if (_ShowToken)
+            {
+                <RadzenTextBox id="settings-token" @bind-Value="_Token" Immediate="true"
+                               Placeholder="@TokenPlaceholder" autocomplete="off" class="field-grow"/>
+            }
+            else
+            {
+                <RadzenPassword id="settings-token" @bind-Value="_Token" Immediate="true"
+                                Placeholder="@TokenPlaceholder" autocomplete="new-password" class="field-grow"/>
+            }
+            <RadzenButton Icon="@(_ShowToken ? "visibility_off" : "visibility")" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text"
+                          Size="ButtonSize.Small" aria-label="@(_ShowToken ? "Hide token" : "Show token")"
+                          Click="() => _ShowToken = !_ShowToken"/>
+        </div>
+        <span class="field-hint">
+            @if (_HasSavedToken)
+            {
+                <RadzenIcon Icon="check_circle" class="hint-ok"/>
+                <span>A token is saved. Leave empty to keep it.</span>
+            }
+            else
+            {
+                <span>From the Discord developer portal → Bot → Reset Token.</span>
+            }
+        </span>
+    </div>
+
+    <div class="field">
+        <label for="settings-prefix">Command prefix</label>
+        <RadzenTextBox id="settings-prefix" @bind-Value="_Prefix" Immediate="true"
+                       MaxLength="MaxPrefixLength" Placeholder=";" class="field-prefix"/>
+        @if (string.IsNullOrWhiteSpace(_Prefix))
+        {
+            <span class="field-error">A prefix is required.</span>
+        }
+    </div>
+
+    <div class="field">
+        <label for="settings-server">Slash command servers</label>
+        <div class="field-row">
+            <RadzenTextBox id="settings-server" @bind-Value="_NewServerId" Immediate="true"
+                           @onkeydown="OnServerIdKeyDown"
+                           Placeholder="Server ID, then Enter" class="field-grow" inputmode="numeric"/>
+            <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Base" Variant="Variant.Outlined" Size="ButtonSize.Small"
+                          aria-label="Add server ID" Disabled="@string.IsNullOrWhiteSpace(_NewServerId)" Click="AddServerId"/>
+        </div>
+        @if (_ServerIdError is not null)
+        {
+            <span class="field-error">@_ServerIdError</span>
+        }
+        <div class="chip-list">
+            @if (_ServerIds.Count == 0)
+            {
+                <span class="field-hint">None: slash commands register globally (can take up to an hour to appear).</span>
+            }
+            @foreach (var id in _ServerIds)
+            {
+                <span class="chip">
+                    @id
+                    <button type="button" class="chip-remove" aria-label="@($"Remove {id}")" @onclick="() => _ServerIds.Remove(id)">✕</button>
+                </span>
+            }
+        </div>
+    </div>
+
+    <div class="settings-footer">
+        @if (IsDirty && Bot.IsRunning)
+        {
+            <span class="field-hint"><RadzenIcon Icon="info"/> Restart the bot to apply.</span>
+        }
+        <RadzenButton Text="Discard" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Disabled="!IsDirty" Click="LoadFromConfiguration"/>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@(!IsDirty || !IsValid)" IsBusy="_Saving" BusyText="Saving…"/>
+    </div>
+</form>
+
+@code {
+    private const int MaxPrefixLength = 5;
+
+    private string _Token = string.Empty;
+    private string _Prefix = string.Empty;
+    private List<ulong> _ServerIds = new();
+    private string _NewServerId = string.Empty;
+    private string? _ServerIdError;
+    private bool _ShowToken;
+    private bool _HasSavedToken;
+    private bool _Saving;
+    // Enter in the server ID field adds the ID; the form submit it also triggers is skipped.
+    private bool _SkipNextSubmit;
+
+    private string _SavedPrefix = string.Empty;
+    private List<ulong> _SavedServerIds = new();
+
+    private string TokenPlaceholder => _HasSavedToken ? "••••••••••••••••" : "Paste your bot token";
+
+    private bool IsDirty =>
+        !string.IsNullOrWhiteSpace(_Token)
+        || _Prefix != _SavedPrefix
+        || !_ServerIds.SequenceEqual(_SavedServerIds);
+
+    private bool IsValid => !string.IsNullOrWhiteSpace(_Prefix) && (_HasSavedToken || !string.IsNullOrWhiteSpace(_Token));
+
+    protected override void OnInitialized()
+    {
+        Observe(Bot);
+        LoadFromConfiguration();
+    }
+
+    private void LoadFromConfiguration()
+    {
+        _HasSavedToken = !string.IsNullOrWhiteSpace(Configuration.Get<string>("token"));
+        _SavedPrefix = Configuration.Get("prefix", ";");
+        _SavedServerIds = Configuration.GetList("ServerIds", new List<ulong>());
+
+        _Token = string.Empty;
+        _Prefix = _SavedPrefix;
+        _ServerIds = _SavedServerIds.ToList();
+        _NewServerId = string.Empty;
+        _ServerIdError = null;
+    }
+
+    private void OnServerIdKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_NewServerId))
+        {
+            _SkipNextSubmit = true;
+            AddServerId();
+        }
+    }
+
+    private void AddServerId()
+    {
+        string value = _NewServerId.Trim();
+        if (value.Length == 0)
+        {
+            return;
+        }
+
+        if (!ulong.TryParse(value, out ulong id) || id == 0)
+        {
+            _ServerIdError = "A server ID is a number, e.g. 1234567890123456789.";
+            return;
+        }
+
+        if (!_ServerIds.Contains(id))
+        {
+            _ServerIds.Add(id);
+        }
+
+        _ServerIdError = null;
+        _NewServerId = string.Empty;
+    }
+
+    private async Task Save()
+    {
+        if (_SkipNextSubmit)
+        {
+            _SkipNextSubmit = false;
+            return;
+        }
+
+        if (!IsDirty || !IsValid)
+        {
+            return;
+        }
+
+        _Saving = true;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_Token))
+            {
+                Configuration.Set("token", _Token.Trim());
+            }
+
+            Configuration.Set("prefix", _Prefix.Trim());
+            Configuration.Set("ServerIds", _ServerIds.ToList());
+            await Configuration.SaveToFile();
+
+            Logger.Log("Settings saved successfully.", this);
+            Bot.NotifySettingsChanged();
+            Toasts.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Settings saved", Duration = 3000 });
+            LoadFromConfiguration();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogException(ex, this);
+            ShowError($"Couldn't save the settings: {ex.Message}");
+        }
+        finally
+        {
+            _Saving = false;
+        }
+    }
+}

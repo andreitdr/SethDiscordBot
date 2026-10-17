@@ -1,0 +1,128 @@
+@inherits PanelBase
+@inject BotStateService Bot
+
+<div class="status-panel">
+    <div class="status-hero status-@Bot.Status.ToString().ToLowerInvariant()">
+        <span class="status-hero-dot"></span>
+        <div>
+            <div class="status-hero-label">@StatusText</div>
+            <div class="status-hero-sub">
+                @if (Bot.OnlineSince is { } since)
+                {
+                    <span>Up @FormatUptime(DateTime.Now - since)</span>
+                    @if (Bot.BotUserName is { } user)
+                    {
+                        <span> · @user</span>
+                    }
+                }
+                else if (!Bot.HasToken)
+                {
+                    <span>Set a bot token in Settings to start.</span>
+                }
+                else
+                {
+                    <span>Ready to start.</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="status-actions">
+        @if (Bot.IsRunning || Bot.Status == BotStatus.Stopping)
+        {
+            <RadzenButton Text="Stop" Icon="stop" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined"
+                          IsBusy="@(Bot.Status == BotStatus.Stopping)" BusyText="Stopping…" Click="Stop"/>
+        }
+        else if (Bot.Status == BotStatus.Connecting)
+        {
+            <RadzenButton Text="Cancel" Icon="close" ButtonStyle="ButtonStyle.Light" Click="Stop"/>
+        }
+        else
+        {
+            <RadzenButton Text="Start" Icon="play_arrow" ButtonStyle="ButtonStyle.Success" Disabled="@(!Bot.HasToken)" Click="Start"/>
+        }
+
+        <RadzenButton Text="@(Bot.PluginsLoaded ? "Reload plugins" : "Load plugins")"
+                      Icon="@(Bot.PluginsLoaded ? "refresh" : "power")"
+                      ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
+                      Disabled="@(!Bot.IsRunning)" IsBusy="Bot.PluginsBusy" BusyText="Working…"
+                      title="@(Bot.IsRunning ? null : "Start the bot first")"
+                      Click="LoadOrReload"/>
+    </div>
+
+    <div class="status-counters">
+        <div><strong>@Bot.Commands.Count</strong><span>commands</span></div>
+        <div><strong>@Bot.Events.Count</strong><span>events</span></div>
+        <div><strong>@Bot.SlashCommands.Count</strong><span>slash</span></div>
+    </div>
+</div>
+
+@code {
+    private PeriodicTimer? _UptimeTimer;
+    private CancellationTokenSource? _UptimeCts;
+
+    protected override void OnInitialized()
+    {
+        Observe(Bot);
+        _UptimeCts = new CancellationTokenSource();
+        _UptimeTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        _ = TickUptime(_UptimeCts.Token);
+    }
+
+    private async Task TickUptime(CancellationToken token)
+    {
+        try
+        {
+            while (await _UptimeTimer!.WaitForNextTickAsync(token))
+            {
+                if (Bot.OnlineSince is not null)
+                {
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private string StatusText => Bot.Status switch
+    {
+        BotStatus.Online => "Online",
+        BotStatus.Connecting => "Connecting to Discord…",
+        BotStatus.Reconnecting => "Reconnecting…",
+        BotStatus.Stopping => "Stopping…",
+        _ => "Offline"
+    };
+
+    private async Task Start() => Report(await Bot.StartAsync(), "Bot started");
+
+    private async Task Stop()
+    {
+        if (Bot.IsRunning && !await ConfirmAsync("Stop the bot? Loaded plugins are unloaded.", "Stop bot", "Stop"))
+        {
+            return;
+        }
+
+        Report(await Bot.StopAsync(), Bot.IsRunning ? null : "Bot stopped");
+    }
+
+    private async Task LoadOrReload()
+    {
+        bool reload = Bot.PluginsLoaded;
+        Report(reload ? await Bot.ReloadPluginsAsync() : await Bot.LoadPluginsAsync(), reload ? "Plugins reloaded" : "Plugins loaded");
+    }
+
+    private static string FormatUptime(TimeSpan t) =>
+        t.TotalDays >= 1 ? $"{(int)t.TotalDays}d {t.Hours}h {t.Minutes}m"
+        : t.TotalHours >= 1 ? $"{t.Hours}h {t.Minutes}m {t.Seconds}s"
+        : $"{t.Minutes}m {t.Seconds}s";
+
+    public override void Dispose()
+    {
+        _UptimeCts?.Cancel();
+        _UptimeTimer?.Dispose();
+        _UptimeCts?.Dispose();
+        base.Dispose();
+    }
+}

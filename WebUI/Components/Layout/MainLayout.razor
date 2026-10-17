@@ -1,21 +1,159 @@
-﻿@using WebUI.Components.Notification
 @inherits LayoutComponentBase
+@inject BotStateService Bot
+@inject DashboardLayoutService Layout
+@inject ContextMenuService ContextMenu
+@inject NotificationService Toasts
+@inject DialogService Dialogs
+@inject ThemeService Themes
+@* Resolving it is what makes Radzen read and write the theme cookie. *@
+@inject CookieThemeService ThemeCookie
+@inject IJSRuntime Js
+@implements IDisposable
 
-<NotificationDisplay />
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+<RadzenComponents/>
 
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
+<div class="app-shell">
+    <header class="app-header">
+        <div class="app-brand">
+            <RadzenIcon Icon="smart_toy" class="app-brand-icon"/>
+            <span class="app-brand-name">Seth Discord Bot</span>
+            <StatusPill/>
+        </div>
+
+        <div class="app-header-actions">
+            @if (Bot.IsRunning || Bot.Status == BotStatus.Stopping)
+            {
+                <RadzenButton Text="Stop" Icon="stop" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Small"
+                              IsBusy="@(Bot.Status == BotStatus.Stopping)" BusyText="Stopping…" Click="StopBot"/>
+            }
+            else
+            {
+                <RadzenButton Text="@(Bot.Status == BotStatus.Connecting ? "Cancel" : "Start")"
+                              Icon="@(Bot.Status == BotStatus.Connecting ? "close" : "play_arrow")"
+                              ButtonStyle="@(Bot.Status == BotStatus.Connecting ? ButtonStyle.Light : ButtonStyle.Success)"
+                              Variant="Variant.Flat" Size="ButtonSize.Small"
+                              Disabled="@(!Bot.HasToken && Bot.Status == BotStatus.Offline)"
+                              title="@(Bot.HasToken ? null : "Set a bot token in Settings first")"
+                              Click="StartOrCancel"/>
+            }
+
+            <span class="app-header-divider"></span>
+
+            <RadzenButton Text="Panels" Icon="dashboard_customize" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                          Click="OpenPanelsMenu" aria-haspopup="menu"/>
+            <RadzenButton Icon="@(Layout.Locked ? "lock" : "lock_open")" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
+                          title="@(Layout.Locked ? "Unlock layout" : "Lock layout")"
+                          aria-label="@(Layout.Locked ? "Unlock layout" : "Lock layout")" aria-pressed="@Layout.Locked"
+                          Click="() => Layout.SetLockedAsync(!Layout.Locked)"/>
+            <RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base"/>
+        </div>
+    </header>
+
+    <main class="app-main">
+        @Body
     </main>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
+<div id="blazor-error-ui" class="error-banner" role="alert">
+    Something went wrong in the dashboard.
     <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <button type="button" class="dismiss" aria-label="Dismiss">✕</button>
 </div>
+
+@code {
+    private const string ThemeCookieName = "SethDiscordBot.Theme";
+
+    protected override void OnInitialized()
+    {
+        Bot.Changed += OnStateChanged;
+        Layout.Changed += OnStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            await using var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/theme.js");
+            string? systemTheme = await module.InvokeAsync<string?>("needsSystemTheme", ThemeCookieName);
+            if (systemTheme == "light")
+            {
+                Themes.SetTheme("material");
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    private void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task StartOrCancel()
+    {
+        var result = Bot.Status == BotStatus.Connecting ? await Bot.StopAsync() : await Bot.StartAsync();
+        if (!result.IsSuccess)
+        {
+            Toasts.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = result.Message, Duration = 6000 });
+        }
+    }
+
+    private async Task StopBot()
+    {
+        bool confirmed = await Dialogs.OpenAsync<ConfirmDialog>("Stop bot",
+            new Dictionary<string, object?>
+            {
+                [nameof(ConfirmDialog.Message)] = "Stop the bot? Loaded plugins are unloaded.",
+                [nameof(ConfirmDialog.OkText)] = "Stop",
+                [nameof(ConfirmDialog.Destructive)] = true
+            },
+            new DialogOptions { Width = "420px", CloseDialogOnEsc = true }) is true;
+        if (!confirmed)
+        {
+            return;
+        }
+
+        var result = await Bot.StopAsync();
+        if (!result.IsSuccess)
+        {
+            Toasts.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = result.Message, Duration = 6000 });
+        }
+    }
+
+    private void OpenPanelsMenu(MouseEventArgs args)
+    {
+        var items = PanelRegistry.All
+            .Select(p => new ContextMenuItem
+            {
+                Text = p.Title,
+                Value = p.Id,
+                Icon = Layout[p.Id].Visible ? "check_box" : "check_box_outline_blank"
+            })
+            .Append(new ContextMenuItem { Text = "Reset layout", Value = ResetValue, Icon = "restart_alt" })
+            .ToList();
+
+        ContextMenu.Open(args, items, async e =>
+        {
+            ContextMenu.Close();
+            if (Equals(e.Value, ResetValue))
+            {
+                await Layout.ResetAsync();
+            }
+            else if (e.Value is string id)
+            {
+                await Layout.ToggleVisibilityAsync(id);
+            }
+        });
+    }
+
+    private const string ResetValue = "__reset";
+
+    public void Dispose()
+    {
+        Bot.Changed -= OnStateChanged;
+        Layout.Changed -= OnStateChanged;
+    }
+}
