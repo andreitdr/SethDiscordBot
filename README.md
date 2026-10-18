@@ -1,6 +1,7 @@
 # Seth Discord Bot
 
-A Discord bot written in C# whose features come from **plugins**. The bot connects to Discord, dispatches commands and hosts plugins; everything else (commands, event handlers, slash commands, even pages in its web dashboard) is added by plugin DLLs that you can install, enable, disable and reload at runtime.
+A Discord bot written in C# whose features come from **plugins**.
+The bot connects to Discord, dispatches commands and hosts plugins; everything else (commands, event handlers, slash commands, even pages in its web dashboard) is added by plugin DLLs that you can install, enable, disable and reload at runtime.
 
 ![The WebUI dashboard](docs/images/dashboard-overview.jpg)
 
