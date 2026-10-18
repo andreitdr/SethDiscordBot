@@ -6,7 +6,7 @@ public interface ILocalPluginRepository
 {
     public Task<List<LocalPlugin>> GetAllPluginsAsync();
     public Task<LocalPlugin?> GetPluginByNameAsync(string name);
-    public Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(int pluginId);
+    public Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(Guid pluginId);
     public Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(string pluginName);
     
     public Task<Guid> AddPluginAsync(LocalPlugin plugin);

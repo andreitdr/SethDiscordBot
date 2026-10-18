@@ -18,13 +18,25 @@ Run one test:
 dotnet test Tests/Tests.DiscordBotCore.Configuration --filter "FullyQualifiedName~ConfigurationTests.Add_ShouldAddKeyValuePair"
 ```
 
+Every library has its own test project under `Tests/`:
+
 | Test project | Covers |
 | --- | --- |
-| `Tests.DiscordBotCore.Configuration` | `ConfigurationBase` (through a `TestableConfigurationBase` subclass). |
-| `Tests.DiscordBotCore.Logging` | The logger. |
-| `Tests.PluginPages` | Route parsing and matching, registry validation, the WebPagesDemo pages, and that unregistering pages releases the plugin's load context. |
+| `Tests.DiscordBotCore.Logging` | History, overloads, the log file format, one file per day, logging from many threads. |
+| `Tests.DiscordBotCore.Configuration` | `ConfigurationBase` (through a `TestableConfigurationBase` subclass), and the JSON `Configuration`: loading, saving, nested objects, Discord IDs, auto-added defaults. |
+| `Tests.DiscordBotCore.Utilities` | Responses, `Result`, `OneOf`, `Option`, `OperatingSystem`, `JsonManager`, `ArchiveManager` (including zip-slip protection). |
+| `Tests.DiscordBotCore.Networking` | `FileDownloader` and `ParallelDownloadExecutor` against a fake HTTP handler: error statuses, progress, the parallelism limit. |
+| `Tests.DiscordBotCore.Database.Sqlite` | `SqlDatabase` on a real SQLite file. |
+| `Tests.DiscordBotCore.Resources` | Default paths and configuration key names. |
+| `Tests.DiscordBotCore.PluginCore` | The plugin contract's default members and argument types. |
+| `Tests.DiscordBotCore.PluginManagement` | `PluginManager` (installs, upgrades, unsafe names and paths), `LocalPluginRepository` on a real `plugins.db`, `PluginRepository` against a fake repository server. |
+| `Tests.DiscordBotCore.PluginManagement.Loading` | `PluginLoader` with the fixture plugin in `Tests/TestPlugins/Tests.FixturePlugin`: discovery, broken plugins, events starting and stopping, reloads, collecting the load context. |
+| `Tests.DiscordBotCore` | Prefix and mention command parsing, the help command, permissions, starting and cancelling the bot without Discord. |
+| `Tests.CppCompatibilityModule` | Loading a native library and calling into it (the system C runtime's `abs`). |
+| `Tests.PluginPages` | Route parsing and matching, registry validation, the WebPagesDemo pages and their asset endpoint, page context, and that unregistering pages releases the plugin's load context. |
+| `Tests.WebUI` | Sign-in through the real HTTP pipeline, `BotStateService`, auto-start, the plugin catalog, the log stream and the panel layout. |
 
-Tests use xUnit and Moq.
+Tests use xUnit and Moq. Nothing connects to Discord: code that needs a client gets one that never logs in. Tests that touch files use their own temporary folder.
 
 ## Run the dashboard
 

@@ -41,7 +41,7 @@ public abstract class ConfigurationBase : IConfiguration
     {
         if (_InternalDictionary.TryGetValue(key, out var value))
         {
-            return (T)Convert.ChangeType(value, typeof(T));
+            return ConvertValue<T>(value);
         }
         
         return defaulobject;
@@ -51,10 +51,30 @@ public abstract class ConfigurationBase : IConfiguration
     {
         if (_InternalDictionary.TryGetValue(key, out var value))
         {
-            return (T)Convert.ChangeType(value, typeof(T));
+            return ConvertValue<T>(value);
         }
         
         return default;
+    }
+
+    /// <summary>
+    /// Simple values go through <see cref="Convert.ChangeType(object, Type)"/>. Lists and objects read from JSON are
+    /// stored as <c>List&lt;object&gt;</c> / <c>Dictionary&lt;string, object&gt;</c>, so they are converted through JSON
+    /// to the requested collection type (for example <c>Dictionary&lt;string, string&gt;</c>).
+    /// </summary>
+    private static T ConvertValue<T>(object value)
+    {
+        if (value is T typed)
+        {
+            return typed;
+        }
+
+        if (value is IConvertible)
+        {
+            return (T)Convert.ChangeType(value, Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T));
+        }
+
+        return Newtonsoft.Json.Linq.JToken.FromObject(value).ToObject<T>()!;
     }
     
     public virtual IDictionary<TSubKey, TSubValue> GetDictionary<TSubKey, TSubValue>(string key)

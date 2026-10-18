@@ -55,15 +55,19 @@ public static class Initializer
             Dictionary<string, string>? remotePluginConnectionConfigurationDetails =
                 configuration.Get<Dictionary<string, string>>(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.Details);
 
-            if (remotePluginConnectionConfigurationDetails is null)
+            // Without a BaseUrl the marketplace shows "No plugin repository configured" and requests nothing
+            if (remotePluginConnectionConfigurationDetails is null ||
+                !remotePluginConnectionConfigurationDetails.TryGetValue(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.BaseUrl, out string? baseUrl) ||
+                string.IsNullOrWhiteSpace(baseUrl))
             {
                 return PluginRepositoryConfiguration.Default;
             }
 
+            PluginRepositoryConfiguration defaults = PluginRepositoryConfiguration.Default;
             return new PluginRepositoryConfiguration(
-                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.BaseUrl],
-                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.PluginsEndpoint],
-                remotePluginConnectionConfigurationDetails[DefaultConfigurationKeys.RemotePluginConnectionConfiguration.DependenciesEndpoint]
+                baseUrl,
+                remotePluginConnectionConfigurationDetails.GetValueOrDefault(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.PluginsEndpoint, defaults.PluginRepositoryLocation),
+                remotePluginConnectionConfigurationDetails.GetValueOrDefault(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.DependenciesEndpoint, defaults.DependenciesRepositoryLocation)
             );
         });
 

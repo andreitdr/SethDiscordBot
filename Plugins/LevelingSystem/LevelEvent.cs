@@ -15,6 +15,9 @@ internal class LevelEvent : IDbEvent
     public string Name => "Leveling System Event Handler";
     public string Description => "The Leveling System Event Handler";
 
+    private DiscordSocketClient? _Client;
+    private Func<SocketMessage, Task>? _MessageHandler;
+
     public async void Start(IDbEventExecutingArgument args)
     {
         args.Logger.Log("Starting Leveling System Event Handler", this);
@@ -44,7 +47,21 @@ internal class LevelEvent : IDbEvent
         if (!await Database.TableExistsAsync("Users"))
             await Database.CreateTableAsync("Users", "UserID VARCHAR(128)", "UserMention VARCHAR(128)", "Username VARCHAR(128)", "Discriminator VARCHAR(128)");
 
-        args.Client.MessageReceived += (message) => ClientOnMessageReceived(message, args.BotPrefix);
+        _Client = args.Client;
+        _MessageHandler = message => ClientOnMessageReceived(message, args.BotPrefix);
+        _Client.MessageReceived += _MessageHandler;
+    }
+
+    public void Stop()
+    {
+        if (_Client is not null && _MessageHandler is not null)
+        {
+            _Client.MessageReceived -= _MessageHandler;
+        }
+
+        Database?.Stop();
+        Database = null;
+        WaitingList.Clear();
     }
 
     private async Task ClientOnMessageReceived(SocketMessage arg, string botPrefix)
@@ -77,7 +94,7 @@ internal class LevelEvent : IDbEvent
         }
         else await Database.ExecuteAsync($"UPDATE Levels SET EXP={exp + random} WHERE UserID='{userID}'");
 
-        WaitingList.Add(arg.Author.Id, DateTime.Now);
+        WaitingList[arg.Author.Id] = DateTime.Now;
     }
 
 }

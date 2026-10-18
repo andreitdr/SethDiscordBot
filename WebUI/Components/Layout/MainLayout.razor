@@ -10,6 +10,7 @@
 @inject IJSRuntime Js
 @inject IPluginPageRegistry PluginPages
 @inject NavigationManager Navigation
+@inject DashboardAccess Access
 @implements IDisposable
 
 <RadzenComponents/>
@@ -61,6 +62,14 @@
                               Click="@(() => Navigation.NavigateTo(""))"/>
             }
             <RadzenAppearanceToggle LightTheme="material" DarkTheme="material-dark" Variant="Variant.Text" ButtonStyle="ButtonStyle.Base"/>
+            @if (Access.IsPasswordRequired)
+            {
+                @* A plain form post: signing out clears the cookie, which only the server can do. *@
+                <form method="post" action="logout" class="app-header-form">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="logout" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text"
+                                  Size="ButtonSize.Small" title="Sign out" aria-label="Sign out"/>
+                </form>
+            }
         </div>
     </header>
 

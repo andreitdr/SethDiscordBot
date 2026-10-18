@@ -1,0 +1,85 @@
+@page "/login"
+@attribute [ExcludeFromInteractiveRouting]
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@layout Layout.LoginLayout
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject DashboardAccess Access
+@inject NavigationManager Navigation
+@inject ILogger Logger
+
+<PageTitle>Sign in · Seth Discord Bot</PageTitle>
+
+<div class="login-card">
+    <div class="app-brand login-brand">
+        <RadzenIcon Icon="smart_toy" class="app-brand-icon"/>
+        <span class="app-brand-name">Seth Discord Bot</span>
+    </div>
+
+    @if (Access.IsPasswordRequired)
+    {
+        <EditForm Model="Input!" FormName="login" method="post" OnSubmit="SignInAsync" class="login-form">
+            <div class="field">
+                <label for="login-password">Password</label>
+                <InputText id="login-password" type="password" @bind-Value="Input!.Password"
+                           autocomplete="current-password" autofocus required class="rz-textbox"/>
+                @if (_Failed)
+                {
+                    <span class="field-error" role="alert">Wrong password.</span>
+                }
+            </div>
+            <button type="submit" class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default login-submit">
+                Sign in
+            </button>
+        </EditForm>
+    }
+    else
+    {
+        <p class="field-hint">No dashboard password is set. Set the <code>Dashboard__Password</code> environment variable to require one.</p>
+        <a href="" class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default login-submit">Open the dashboard</a>
+    }
+</div>
+
+@code {
+    // Slows down password guessing on top of the per-address rate limit.
+    private static readonly TimeSpan FailedSignInDelay = TimeSpan.FromSeconds(1);
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm] private LoginInput? Input { get; set; }
+
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+
+    private bool _Failed;
+
+    protected override void OnInitialized() => Input ??= new();
+
+    private async Task SignInAsync()
+    {
+        if (!Access.Verify(Input?.Password))
+        {
+            _Failed = true;
+            Logger.Log($"Failed dashboard sign-in from {HttpContext.Connection.RemoteIpAddress}", this, DiscordBotCore.Logging.LogType.Warning);
+            await Task.Delay(FailedSignInDelay);
+            return;
+        }
+
+        var identity = new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.Name, "admin"),
+                new Claim(DashboardAccess.PasswordStampClaimType, Access.PasswordStamp!)
+            ],
+            CookieAuthenticationDefaults.AuthenticationScheme);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity),
+            new AuthenticationProperties { IsPersistent = true });
+
+        Navigation.NavigateTo(DashboardAuthentication.IsLocalUrl(ReturnUrl) ? ReturnUrl! : "", forceLoad: true);
+    }
+
+    private sealed class LoginInput
+    {
+        public string? Password { get; set; }
+    }
+}

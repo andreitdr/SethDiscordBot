@@ -46,7 +46,7 @@ The `Data` folder is then created inside `publish/`. Keep it when you update: pu
 
 To keep the bot running after you log out, run it as a service (systemd on Linux, a Windows service, launchd on macOS) or use [Docker](run-with-docker.md).
 
-> **Security**: the dashboard has **no login**. Anyone who can open it can read logs, change the token and upload a plugin DLL, which is code that runs on your machine. Keep it on `localhost`, or put it behind a reverse proxy that adds authentication (and HTTPS) before exposing it to a network. See [Host settings](../configuration/host-settings.md#exposing-the-dashboard).
+> **Security**: without a password the dashboard only answers `localhost`. Anyone who can use it can read logs, change the token and upload a plugin DLL, which is code that runs on your machine. To open it from other devices, set the `Dashboard__Password` environment variable and serve it over HTTPS. See [Dashboard password](../configuration/host-settings.md#dashboard-password).
 
 ---
 

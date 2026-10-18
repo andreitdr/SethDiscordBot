@@ -25,17 +25,18 @@ You don't need to create this file. Missing keys are added with their default va
 | --- | --- | --- | --- |
 | `token` | *(none)* | The bot token. Set it in **Settings**. | When the bot starts. If Discord rejects it (HTTP 401) on disconnect, the bot clears it and saves the file. |
 | `prefix` | `;` | The text that starts a prefix command. Up to 5 characters in the dashboard. | On every message, and when events start (they receive it in `BotPrefix`). |
+| `AutoStart` | `false` | Start the bot and load the plugins when the app starts. Set it in **Settings** (*Start automatically*). | At app startup. |
 | `ServerIds` | `[]` | IDs of the servers to register slash commands on. Empty means global registration. | When plugins load. |
 | `PluginFolder` | `./Data/Plugins` | Where plugin DLLs are stored (uploads and marketplace downloads). | When a plugin is added or installed. |
 | `ResourcesFolder` | `./Data/Resources` | The parent of each plugin's private data folder. | When plugins load and commands run. |
 | `PluginDatabase` | `./Data/Resources/plugins.db` | The SQLite database that lists installed plugins. | At startup. |
-| `RemotePluginConnectionConfigurationDetails` | see below | Where the marketplace downloads plugins from. | At startup. |
+| `RemotePluginConnectionConfigurationDetails` | *(none)* | Where the marketplace downloads plugins from. See below. | At startup. |
 
 Relative paths are resolved from the process working directory (see [The Data folder](data-folder.md)).
 
 ## Marketplace repository
 
-The marketplace talks to a plugin repository server. Without configuration it uses `http://localhost:8080/api/v1/`. To point it elsewhere, add:
+The marketplace talks to a plugin repository server. None is configured by default: the Marketplace panel shows *No plugin repository configured* and nothing is requested. To use one, add:
 
 ```json
 "RemotePluginConnectionConfigurationDetails": {
@@ -45,7 +46,7 @@ The marketplace talks to a plugin repository server. Without configuration it us
 }
 ```
 
-All three keys are required when the object is present. Keep the trailing slashes: endpoint URLs are built by concatenation, for example `BaseUrl` + `plugin/` + `get-all-plugins`. The repository's API is described in [Marketplace and plugin repository](../using-plugins/marketplace.md#repository-api).
+`BaseUrl` is required and must be an absolute `http://` or `https://` URL; `PluginsEndpoint` and `DependenciesEndpoint` default to `plugin/` and `dependency/`. Keep the trailing slashes: endpoint URLs are built by concatenation, for example `BaseUrl` + `plugin/` + `get-all-plugins`. The repository's API is described in [Marketplace and plugin repository](../using-plugins/marketplace.md#repository-api).
 
 ## Changing the config file location
 

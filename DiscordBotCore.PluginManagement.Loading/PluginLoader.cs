@@ -63,6 +63,14 @@ public class PluginLoader : IPluginLoader
         _DiscordClient = discordSocketClient;
     }
 
+    /// <summary>
+    /// For tests: sets a client that never logged in, so events and slash commands can be loaded without Discord.
+    /// </summary>
+    internal void SetDiscordClientWithoutLoginCheck(DiscordSocketClient discordSocketClient)
+    {
+        _DiscordClient = discordSocketClient;
+    }
+
     public void ClearDiscordClient()
     {
         _DiscordClient = null;
@@ -128,6 +136,7 @@ public class PluginLoader : IPluginLoader
         RaiseSafely(PluginsUnloading, nameof(PluginsUnloading));
 
         await UnloadSlashCommands();
+        StopEvents();
 
         _Commands.Clear();
         _Events.Clear();
@@ -189,6 +198,21 @@ public class PluginLoader : IPluginLoader
 
         _InteractionHandlers.Clear();
         _ApplicationCommands.Clear();
+    }
+
+    private void StopEvents()
+    {
+        foreach (IDbEvent dbEvent in _Events)
+        {
+            try
+            {
+                dbEvent.Stop();
+            }
+            catch (Exception ex)
+            {
+                _Logger.Log($"Event {dbEvent.Name} failed to stop: {ex.Message}", this, LogType.Warning);
+            }
+        }
     }
 
     private async Task LoadPluginFiles()

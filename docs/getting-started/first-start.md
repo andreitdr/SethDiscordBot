@@ -1,6 +1,6 @@
 # First start
 
-When the WebUI opens for the first time, the bot is **Offline** and has no token. Three steps get it online with plugins.
+When the WebUI opens for the first time, the bot is **Offline** and has no token. Three steps get it online with plugins. (If you set a [dashboard password](../configuration/host-settings.md#dashboard-password), sign in first.)
 
 ![The dashboard on first start](../images/dashboard-overview.jpg)
 
@@ -13,6 +13,7 @@ In the **Settings** panel:
 1. **Bot token**: paste the token from the Developer Portal ([how to get it](create-discord-application.md#2-get-the-bot-token)). The field is masked; the eye button shows it. After saving, the field stays empty and says *A token is saved*. Leave it empty to keep the saved token.
 2. **Command prefix**: the text that starts a command, `;` by default (so `;help`). Up to 5 characters.
 3. **Slash command servers**: paste a server ID and press Enter (or `+`). Slash commands are then registered on those servers only and show up immediately. With no IDs, they are registered globally, which can take up to an hour to appear in Discord.
+4. **Start automatically** (optional): start the bot and load plugins every time the app starts, for example after a reboot or a container restart.
 4. Click **Save**.
 
 Settings are written to `Data/Resources/config.json`. If the bot is already running, the panel reminds you to restart it: the token is only read when the bot starts, the server list when plugins load, and events receive the prefix when they start. (Prefix commands pick up a new prefix on the next message.)

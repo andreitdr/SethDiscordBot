@@ -19,4 +19,11 @@ public interface IDbEvent
     /// </summary>
     /// <param name="args">The arguments for the start method</param>
     void Start(IDbEventExecutingArgument args);
+
+    /// <summary>
+    ///     The method that is invoked before the event is unloaded (on reload, delete or when the bot stops).
+    ///     Detach every handler that <see cref="Start"/> attached to the client and release what it opened,
+    ///     or the old code keeps running next to the reloaded one.
+    /// </summary>
+    void Stop() { }
 }

@@ -57,6 +57,9 @@ internal static class OnlineFunctions
     {
         using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellation))
         {
+            // An error page must not be saved as the requested file
+            response.EnsureSuccessStatusCode();
+
             var contentLength = response.Content.Headers.ContentLength;
 
             using (var download = await response.Content.ReadAsStreamAsync(cancellation))

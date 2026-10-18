@@ -84,11 +84,16 @@ Slash commands are dispatched by name from `SlashCommandExecuted` to `ExecuteSer
 
 1. Raise `PluginsUnloading`; `PluginPagesBridge` clears the page registry and Blazor's per-type caches.
 2. Detach interaction handlers and delete every registered slash command from Discord.
-3. Clear the command, event and slash command lists.
-4. Unload the load context and run the garbage collector so the assemblies can be collected.
+3. Call `Stop()` on every event (exceptions are logged), so they detach their client handlers and release what they opened.
+4. Clear the command, event and slash command lists.
+5. Unload the load context and run the garbage collector so the assemblies can be collected.
 
-What is **not** undone: handlers that events attached to the client, timers and tasks they started, native libraries they loaded, and assemblies loaded from `Libraries/`. **Stop** disposes the client, which removes the client handlers.
+What the loader can't undo by itself: anything an event's `Stop()` doesn't clean up (client handlers, timers, tasks, native libraries), and assemblies loaded from `Libraries/`. A plugin that keeps a handler attached also keeps its load context alive. **Stop** disposes the client, which removes any client handlers left.
 
 ## 6. Stopping the bot
 
 **Stop** → `DiscordBotApplication.StopAsync()`: unload plugins if loaded, log out, stop and dispose the client, clear the loader's client reference. The next **Start** creates a new client; plugins must be loaded again.
+
+`StartAsync(cancellationToken)` completes when the client is *Ready*. If login fails or the token is cancelled first (the dashboard's **Cancel**), it tears the client down the same way and throws, so a new **Start** can follow.
+
+`BotLifetimeService` (WebUI) runs **Start** and **Load plugins** when the app starts if `AutoStart` is on, and **Stop** when the app shuts down, so the bot logs out and removes its slash commands.

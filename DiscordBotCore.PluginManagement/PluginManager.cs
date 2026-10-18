@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using DiscordBotCore.Logging;
 using DiscordBotCore.Networking;
 using DiscordBotCore.PluginManagement.Helpers;
@@ -19,18 +20,33 @@ public sealed class PluginManager : IPluginManager
     private readonly ILocalPluginRepository _LocalPluginRepository;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
+    private readonly HttpClient _HttpClient;
     
 
     public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration)
+        : this(pluginRepository, localPluginRepository, logger, configuration, new HttpClient())
     {
+    }
+
+    /// <param name="httpClient">Downloads plugin and dependency files.</param>
+    public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration, HttpClient httpClient)
+    {
+        _HttpClient = httpClient;
         _PluginRepository = pluginRepository;
         _Logger = logger;
         _Configuration = configuration;
         _LocalPluginRepository = localPluginRepository;
     }
 
+    public bool IsRepositoryConfigured => _PluginRepository.IsConfigured;
+
     public async Task<List<OnlinePlugin>> GetOnlinePluginsList()
     {
+        if (!IsRepositoryConfigured)
+        {
+            return [];
+        }
+
         int os = OperatingSystem.GetOperatingSystemInt();
         var onlinePlugins = await _PluginRepository.GetAllPlugins(os, false);
         
@@ -45,6 +61,11 @@ public sealed class PluginManager : IPluginManager
 
     public async Task<IResponse<OnlinePlugin>> GetOnlinePluginDataByName(string pluginName)
     {
+        if (!IsRepositoryConfigured)
+        {
+            return Response<OnlinePlugin>.Failure("No plugin repository is configured.");
+        }
+
         int os = OperatingSystem.GetOperatingSystemInt();
         var plugin = await _PluginRepository.GetPluginByName(pluginName, os, false);
 
@@ -58,6 +79,11 @@ public sealed class PluginManager : IPluginManager
 
     public async Task<IResponse<OnlinePlugin>> GetOnlinePluginDataById(int pluginId)
     {
+        if (!IsRepositoryConfigured)
+        {
+            return Response<OnlinePlugin>.Failure("No plugin repository is configured.");
+        }
+
         var plugin = await _PluginRepository.GetPluginById(pluginId);
         if (plugin is null)
         {
@@ -138,6 +164,11 @@ public sealed class PluginManager : IPluginManager
 
     public async Task<IResponse<bool>> InstallPlugin(OnlinePlugin plugin, IProgress<float> progress)
     {
+        if (!IsRepositoryConfigured)
+        {
+            return Response.Failure("No plugin repository is configured.");
+        }
+
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
@@ -148,30 +179,47 @@ public sealed class PluginManager : IPluginManager
         var installedPlugin = await _LocalPluginRepository.GetPluginByNameAsync(plugin.Name);
         if (installedPlugin is not null)
         {
-            var response = await IsNewVersion(installedPlugin.PluginVersion, plugin.Version);
+            var response = IsNewVersion(installedPlugin.PluginVersion, plugin.Version);
             if (!response.IsSuccess)
             {
                 return response;
             }
         }
         
+        // The name and the dependency locations come from the repository and become file paths
+        string? librariesFolder = GetPluginLibrariesFolder(_LibrariesBaseFolder, plugin.Name);
+        if (librariesFolder is null || plugin.Name.IndexOfAny(['/', '\\']) >= 0)
+        {
+            return Response.Failure($"The plugin name {plugin.Name} can't be used as a file name.");
+        }
+
         List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
+        if (dependencies.FirstOrDefault(d => GetPluginLibrariesFolder(librariesFolder, d.DownloadLocation) is null) is { } unsafeDependency)
+        {
+            return Response.Failure($"The dependency {unsafeDependency.DependencyName} would be saved outside the plugin's folder ({unsafeDependency.DownloadLocation}).");
+        }
         
         string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
         
-        IProgress<float> downloadProgress = new Progress<float>(progress.Report);
-        
-        FileDownloader fileDownloader = new FileDownloader(plugin.DownloadLink, downloadLocation);
-        await fileDownloader.DownloadFile(downloadProgress.Report);
-
-        ParallelDownloadExecutor executor = new ParallelDownloadExecutor();
-        foreach (var dependency in dependencies)
+        try
         {
-            string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
-            executor.AddTask(dependency.DownloadLink, dependencyLocation, progress.Report);
+            FileDownloader fileDownloader = new FileDownloader(plugin.DownloadLink, downloadLocation, _HttpClient);
+            await fileDownloader.DownloadFile(progress.Report);
+
+            ParallelDownloadExecutor executor = new ParallelDownloadExecutor(_HttpClient);
+            foreach (var dependency in dependencies)
+            {
+                string dependencyLocation = GenerateDependencyRelativePath(plugin.Name, dependency.DownloadLocation);
+                executor.AddTask(dependency.DownloadLink, dependencyLocation, progress.Report);
+            }
+            
+            await executor.ExecuteAllTasks();
         }
-        
-        await executor.ExecuteAllTasks();
+        catch (HttpRequestException ex)
+        {
+            _Logger.Log($"Downloading {plugin.Name} failed: {ex.Message}", this, LogType.Error);
+            return Response.Failure($"Download failed: {ex.Message}");
+        }
         
         LocalPlugin localPlugin = new LocalPlugin()
         {
@@ -231,11 +279,20 @@ public sealed class PluginManager : IPluginManager
 
         File.Delete(localPlugin.FilePath);
 
-        if (Directory.Exists($"./{_LibrariesBaseFolder}/{pluginName}"))
+        string? librariesFolder = GetPluginLibrariesFolder(_LibrariesBaseFolder, pluginName);
+        if (librariesFolder is null)
         {
-            foreach (var file in Directory.EnumerateFiles($"./{_LibrariesBaseFolder}/{pluginName}"))
+            _Logger.Log($"Plugin name {pluginName} doesn't map to a folder inside {_LibrariesBaseFolder}. Its libraries were not deleted.", this, LogType.Warning);
+        }
+        else if (Directory.Exists(librariesFolder))
+        {
+            try
             {
-                File.Delete(file);
+                Directory.Delete(librariesFolder, true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _Logger.Log($"Couldn't delete the libraries of {pluginName}: {ex.Message}", this, LogType.Warning);
             }
         }
         
@@ -258,32 +315,56 @@ public sealed class PluginManager : IPluginManager
         return Task.FromResult<LocalPlugin>(plugin);
     }
 
-    private async Task<IResponse<bool>> IsNewVersion(string currentVersion, string newVersion)
+    /// <summary>
+    /// The plugin's folder under <paramref name="librariesBaseFolder"/>, or null when the name would point outside it
+    /// (empty, ".", "..", rooted paths and the like).
+    /// </summary>
+    internal static string? GetPluginLibrariesFolder(string librariesBaseFolder, string pluginName)
+    {
+        string librariesRoot = Path.GetFullPath(librariesBaseFolder);
+        string pluginFolder = Path.GetFullPath(Path.Combine(librariesRoot, pluginName));
+
+        string rootWithSeparator = Path.EndsInDirectorySeparator(librariesRoot) ? librariesRoot : librariesRoot + Path.DirectorySeparatorChar;
+        if (!pluginFolder.StartsWith(rootWithSeparator, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return pluginFolder;
+    }
+
+    internal static IResponse<bool> IsNewVersion(string currentVersion, string newVersion)
     {
         // currentVersion = "1.0.0"
         // newVersion = "1.0.1"
-        
-        var currentVersionParts = currentVersion.Split('.').Select(int.Parse).ToArray();
-        var newVersionParts = newVersion.Split('.').Select(int.Parse).ToArray();
-        
-        if (currentVersionParts.Length != 3 || newVersionParts.Length != 3)
+
+        if (!TryParseVersion(currentVersion, out Version? current))
         {
-            return Response.Failure("Invalid version format");
+            return Response.Failure($"Invalid installed version: {currentVersion}");
         }
-        
-        for (int i = 0; i < 3; i++)
+
+        if (!TryParseVersion(newVersion, out Version? next))
         {
-            if (newVersionParts[i] > currentVersionParts[i])
-            {
-                return Response.Success();
-            }
-            
-            if (newVersionParts[i] < currentVersionParts[i])
-            {
-                return Response.Failure("Current version is newer");
-            }
+            return Response.Failure($"Invalid version: {newVersion}");
         }
-        
-        return Response.Failure("Versions are the same");
+
+        int comparison = next.CompareTo(current);
+        if (comparison > 0)
+        {
+            return Response.Success();
+        }
+
+        return Response.Failure(comparison < 0 ? "Current version is newer" : "Versions are the same");
+    }
+
+    private static bool TryParseVersion(string? version, [NotNullWhen(true)] out Version? parsed)
+    {
+        parsed = null;
+        if (string.IsNullOrWhiteSpace(version) || version.Split('.').Length != 3)
+        {
+            return false;
+        }
+
+        return Version.TryParse(version, out parsed);
     }
 }

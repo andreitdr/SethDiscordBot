@@ -46,6 +46,7 @@ Edits the bot configuration (`config.json`):
 - **Bot token**: masked; leave empty to keep the saved token.
 - **Command prefix**: required, up to 5 characters.
 - **Slash command servers**: server IDs to register slash commands on; none means global.
+- **Start automatically**: start the bot and load plugins whenever the app starts (the `AutoStart` key).
 
 **Save** is enabled once something changed and the form is valid; **Discard** reverts the form. See [Bot configuration](../configuration/bot-configuration.md) for when each setting takes effect.
 

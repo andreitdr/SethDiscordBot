@@ -479,3 +479,24 @@ a.plugin-pages-title:hover { color: var(--rz-primary); text-decoration: underlin
 .plugin-pages-rejected code { margin-left: 6px; }
 .plugin-pages-type { font-size: 12px; color: var(--app-muted); margin-left: 6px; }
 .plugin-pages-reason { font-size: 12.5px; color: var(--rz-text-secondary-color); margin-top: 2px; }
+
+/* ---------- Sign in ---------- */
+
+.login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.login-card {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    border: 1px solid var(--app-line);
+    border-radius: var(--app-radius);
+    background: var(--rz-base-background-color);
+}
+.login-brand { justify-content: center; }
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+.login-form .rz-textbox { width: 100%; }
+.login-submit { width: 100%; justify-content: center; text-decoration: none; }
+
+.app-header-form { display: contents; }

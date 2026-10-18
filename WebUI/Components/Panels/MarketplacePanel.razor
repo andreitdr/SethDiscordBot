@@ -16,10 +16,15 @@
                        aria-label="Search the marketplace"/>
         <span class="toolbar-spacer"></span>
         <RadzenButton Icon="refresh" Text="Refresh" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.Small"
-                      IsBusy="Catalog.OnlineLoading" BusyText="Loading…" Click="Catalog.RefreshOnlineAsync"/>
+                      IsBusy="Catalog.OnlineLoading" BusyText="Loading…" Click="Catalog.RefreshOnlineAsync" Disabled="!Catalog.RepositoryConfigured"/>
     </div>
 
-    @if (!Catalog.OnlineLoaded || (Catalog.OnlineLoading && Catalog.Online.Count == 0))
+    @if (!Catalog.RepositoryConfigured)
+    {
+        <EmptyState Icon="storefront" Title="No plugin repository configured"
+                    Text="Set RemotePluginConnectionConfigurationDetails.BaseUrl in config.json and restart to browse and install plugins. Local plugins still work."/>
+    }
+    else if (!Catalog.OnlineLoaded || (Catalog.OnlineLoading && Catalog.Online.Count == 0))
     {
         <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>
     }

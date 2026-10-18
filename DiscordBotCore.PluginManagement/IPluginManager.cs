@@ -5,6 +5,11 @@ namespace DiscordBotCore.PluginManagement;
 
 public interface IPluginManager
 {
+    /// <summary>
+    /// False when no plugin repository is configured: online lookups return nothing and installs fail.
+    /// </summary>
+    bool IsRepositoryConfigured { get; }
+
     Task<List<OnlinePlugin>> GetOnlinePluginsList();
     Task<IResponse<OnlinePlugin>> GetOnlinePluginDataByName(string pluginName);
     Task<IResponse<OnlinePlugin>> GetOnlinePluginDataById(int pluginId);

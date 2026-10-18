@@ -76,9 +76,11 @@ object[]? row = await db.ReadDataArrayAsync("SELECT * FROM Points WHERE UserId =
     new KeyValuePair<string, object>("id", userId.ToString()));
 ```
 
-Other helpers: `ReadDataAsync` (first column of the first row), `ReadAllRowsAsync`, `ReadObjectOfTypeAsync<T>` / `ReadListOfTypeAsync<T>` (map rows with a converter), `KeyExistsAsync`, `SetValueAsync`, `GetValueAsync`, `AddColumnsToTableAsync`. Integer columns come back as `long`.
+Other helpers: `ReadDataAsync` (the first row, its values joined by spaces), `ReadAllRowsAsync` (every row, as text), `ReadObjectOfTypeAsync<T>` / `ReadListOfTypeAsync<T>` (map rows with a converter), `InsertAsync`, `KeyExistsAsync`, `SetValueAsync`, `GetValueAsync`, `RemoveKeyAsync`, `AddColumnsToTableAsync`. Integer columns come back as `long`, and a `null` parameter is stored as `NULL`.
 
-Open the database once (in an event's `Start`) and share it through a static field, as `Plugins/LevelingSystem` does.
+The helpers send values as parameters, so quotes in user input are safe. Table and column names are written into the SQL as given: never take them from user input.
+
+Open the database once (in an event's `Start`) and share it through a static field, as `Plugins/LevelingSystem` does. Close it in the event's `Stop` with `await db.CloseAsync()` (or `DisposeAsync`), so a reload doesn't leave the file open.
 
 ## Reading the bot configuration
 

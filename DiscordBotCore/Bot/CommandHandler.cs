@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -99,49 +100,22 @@ internal class CommandHandler : ICommandHandler
 
             string botPrefix = this._configuration.Get<string>("prefix", _DefaultPrefix);
 
-            if (!message.Content.StartsWith(botPrefix) && !message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
+            // HasMentionPrefix accepts both <@id> and <@!id> and sets argPos to the first character after the mention
+            bool isMention = message.HasMentionPrefix(socketClient.CurrentUser, ref argPos);
+            if (!isMention && !message.Content.StartsWith(botPrefix))
                 return;
 
             var context = new SocketCommandContext(socketClient, message);
 
             await _commandService.ExecuteAsync(context, argPos, null);
 
-            IDbCommand? plugin;
-            var        cleanMessage = "";
-
-            if (message.HasMentionPrefix(socketClient.CurrentUser, ref argPos))
-            {
-                var mentionPrefix = "<@" + socketClient.CurrentUser.Id + ">";
-
-                plugin = _pluginLoader.Commands!
-                                     .FirstOrDefault(plug => plug.Command ==
-                                                             message.Content.Substring(mentionPrefix.Length + 1)
-                                                                    .Split(' ')[0] ||
-                                                             plug.Aliases.Contains(message.CleanContent
-                                                                                          .Substring(mentionPrefix.Length + 1)
-                                                                                          .Split(' ')[0]
-                                                             )
-                                     );
-
-                cleanMessage = message.Content.Substring(mentionPrefix.Length + 1);
-            }
-            else
-            {
-                plugin = _pluginLoader.Commands!
-                                     .FirstOrDefault(p => p.Command ==
-                                                          message.Content.Split(' ')[0].Substring(botPrefix.Length) ||
-                                                          p.Aliases.Contains(
-                                                              message.Content.Split(' ')[0]
-                                                                     .Substring(botPrefix.Length)
-                                                          )
-                                     );
-                cleanMessage = message.Content.Substring(botPrefix.Length);
-            }
-
-            if (plugin is null)
+            ParsedCommand? parsed = ParseCommand(message.Content, botPrefix, isMention ? argPos : null, _pluginLoader.Commands);
+            if (parsed is null)
             {
                 return;
             }
+
+            IDbCommand plugin = parsed.Command;
 
             bool isDm = context.Channel is SocketDMChannel;
 
@@ -151,19 +125,11 @@ internal class CommandHandler : ICommandHandler
                 return;
             }
 
-            var split = cleanMessage.Split(' ');
-
-            string[]? argsClean = null;
-            if (split.Length > 1)
-            {
-                argsClean = string.Join(' ', split, 1, split.Length - 1).Split(' ');
-            }
-
             DbCommandExecutingArgument cmd = new(_logger,
                 context,
-                cleanMessage,
-                split[0],
-                argsClean,
+                parsed.CleanContent,
+                parsed.CommandUsed,
+                parsed.Arguments,
                 new DirectoryInfo(Path.Combine(_configuration.Get<string>("ResourcesFolder"), plugin.Command)));
 
             string source = isDm ? "DM" : $"Guild \"{context.Guild.Name}\"";
@@ -187,4 +153,50 @@ internal class CommandHandler : ICommandHandler
             _logger.LogException(ex, this);
         }
     }
+
+    /// <summary>
+    ///     Finds the command a message asks for.
+    /// </summary>
+    /// <param name="content">The message text</param>
+    /// <param name="prefix">The command prefix</param>
+    /// <param name="mentionEnd">Where the text after a leading bot mention starts, or null if the message doesn't start with one</param>
+    /// <param name="commands">The loaded commands, matched by name or alias (case-sensitive)</param>
+    /// <returns>The command and its arguments, or null if the message isn't a known command</returns>
+    internal static ParsedCommand? ParseCommand(string content, string prefix, int? mentionEnd, IEnumerable<IDbCommand> commands)
+    {
+        string cleanMessage;
+        if (mentionEnd is int argPos)
+        {
+            cleanMessage = content.Substring(argPos).TrimStart();
+        }
+        else if (prefix.Length > 0 && content.StartsWith(prefix))
+        {
+            cleanMessage = content.Substring(prefix.Length);
+        }
+        else
+        {
+            return null;
+        }
+
+        string[] split = cleanMessage.Split(' ');
+        string commandName = split[0];
+        if (string.IsNullOrWhiteSpace(commandName))
+        {
+            return null;
+        }
+
+        IDbCommand? command = commands.FirstOrDefault(p => p.Command == commandName || p.Aliases.Contains(commandName));
+        if (command is null)
+        {
+            return null;
+        }
+
+        return new ParsedCommand(command, cleanMessage, commandName, split.Length > 1 ? split[1..] : null);
+    }
 }
+
+/// <param name="Command">The matched command</param>
+/// <param name="CleanContent">The message without the prefix or mention</param>
+/// <param name="CommandUsed">The name or alias that was typed</param>
+/// <param name="Arguments">The words after the command, or null if there are none</param>
+internal sealed record ParsedCommand(IDbCommand Command, string CleanContent, string CommandUsed, string[]? Arguments);

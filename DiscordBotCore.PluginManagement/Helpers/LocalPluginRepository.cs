@@ -21,7 +21,7 @@ Dependencies:
 
 */
 
-public class LocalPluginRepository : ILocalPluginRepository
+public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
 {
     private readonly SqlDatabase _LocalPluginDatabase;
 
@@ -38,12 +38,12 @@ public class LocalPluginRepository : ILocalPluginRepository
 
     public async Task<LocalPlugin?> GetPluginByNameAsync(string name)
     {
-        return await _LocalPluginDatabase.ReadObjectOfTypeAsync("select * from Plugins where name = @name", PluginConvertor, new KeyValuePair<string, object>("name", name));
+        return await _LocalPluginDatabase.ReadObjectOfTypeAsync("select * from Plugins where name = @name", PluginConvertor, Parameter("name", name));
     }
 
-    public async Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(int pluginId)
+    public async Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(Guid pluginId)
     {
-        return await _LocalPluginDatabase.ReadListOfTypeAsync("select * from Dependencies where plugin_id=@pluginId", DependencyConvertor, new KeyValuePair<string, object>("plugin_id", pluginId));
+        return await _LocalPluginDatabase.ReadListOfTypeAsync("select * from Dependencies where plugin_id = @pluginId", DependencyConvertor, IdParameter("pluginId", pluginId));
     }
 
     public async Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(string pluginName)
@@ -55,20 +55,20 @@ public class LocalPluginRepository : ILocalPluginRepository
             return new List<LocalDependencyInfo>();
         }
         
-        return await _LocalPluginDatabase.ReadListOfTypeAsync("select * from Dependencies where plugin_id=@pluginId", DependencyConvertor, new KeyValuePair<string, object>("pluginId", plugin.Id));
+        return await GetDependenciesForPluginAsync(plugin.Id);
     }
 
     public async Task<Guid> AddPluginAsync(LocalPlugin plugin)
     {
-        string sql = "insert into Plugins (id, name, version, file_path, is_offline_added, is_enabled) values (@id, @name, @version, @file_path, @is_offline_added, @is_enabled)  returning id;";
+        string sql = "insert into Plugins (id, name, version, file_path, is_offline_added, is_enabled) values (@id, @name, @version, @filePath, @isOfflineAdded, @isEnabled)";
         var guid = Guid.CreateVersion7();
         int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql, 
-            new  KeyValuePair<string, object>("id", guid.ToString()),
-            new KeyValuePair<string, object>("name", plugin.PluginName),
-            new KeyValuePair<string, object>("version", plugin.PluginVersion),
-            new KeyValuePair<string, object>("file_path", plugin.FilePath),
-            new KeyValuePair<string, object>("is_offline_added", plugin.IsOfflineAdded),
-            new KeyValuePair<string, object>("is_enabled", plugin.IsEnabled));
+            IdParameter("id", guid),
+            Parameter("name", plugin.PluginName),
+            Parameter("version", plugin.PluginVersion),
+            Parameter("filePath", plugin.FilePath),
+            Parameter("isOfflineAdded", plugin.IsOfflineAdded),
+            Parameter("isEnabled", plugin.IsEnabled));
         
         if(result <= 0)
         {
@@ -81,42 +81,36 @@ public class LocalPluginRepository : ILocalPluginRepository
     public async Task<bool> UpdatePluginAsync(LocalPlugin plugin)
     {
         string sql =
-            "update Plugins set name=@name, version=@version, file_path=@filePath, is_offline_added=@isOfflineAdded, is_enabled=@isEnabled where id=@pluginId; ";
+            "update Plugins set name = @name, version = @version, file_path = @filePath, is_offline_added = @isOfflineAdded, is_enabled = @isEnabled where id = @pluginId";
 
-        var parameters = new[]
-        {
-            new KeyValuePair<string, object>("name", plugin.PluginName),
-            new KeyValuePair<string, object>("version", plugin.PluginVersion),
-            new KeyValuePair<string, object>("file_path", plugin.FilePath),
-            new KeyValuePair<string, object>("is_offline_added", plugin.IsOfflineAdded),
-            new KeyValuePair<string, object>("is_enabled", plugin.IsEnabled),
-        };
-        
-        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql, parameters);
+        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql,
+            Parameter("name", plugin.PluginName),
+            Parameter("version", plugin.PluginVersion),
+            Parameter("filePath", plugin.FilePath),
+            Parameter("isOfflineAdded", plugin.IsOfflineAdded),
+            Parameter("isEnabled", plugin.IsEnabled),
+            IdParameter("pluginId", plugin.Id));
         return result > 0;
     }
 
     public async Task<bool> DeletePluginAsync(Guid pluginId)
     {
-        string sql = "delete from Plugins where plugin_id=@pluginId; ";
-        var parameters = new[]
-        {
-            new KeyValuePair<string, object>("pluginId", pluginId)
-        };
-        
-        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql, parameters);
+        // Dependencies reference the plugin, so they go first
+        await DeleteAllDependenciesForPluginAsync(pluginId);
+
+        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync("delete from Plugins where id = @pluginId", IdParameter("pluginId", pluginId));
         return result > 0;
     }
 
     public async Task<Guid> AddDependencyAsync(LocalDependencyInfo dependency)
     {
-        string sql = "insert into Dependencies (name, file_path, plugin_id) values (@name, @filePath, @pluginId) returning id";
+        string sql = "insert into Dependencies (id, name, file_path, plugin_id) values (@id, @name, @filePath, @pluginId)";
         var guid = Guid.CreateVersion7();
         var result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql,
-            new KeyValuePair<string, object>("id", guid.ToString()),
-            new KeyValuePair<string, object>("name", dependency.DependencyName),
-            new KeyValuePair<string, object>("filePath", dependency.DependencyLocation),
-            new KeyValuePair<string, object>("pluginId", dependency.PluginId)
+            IdParameter("id", guid),
+            Parameter("name", dependency.DependencyName),
+            Parameter("filePath", dependency.DependencyLocation),
+            IdParameter("pluginId", dependency.PluginId)
         );
 
         if (result <= 0)
@@ -129,27 +123,22 @@ public class LocalPluginRepository : ILocalPluginRepository
 
     public async Task<bool> DeleteDependencyAsync(Guid dependencyId)
     {
-        string sql = "delete from Dependencies where id=@dependencyId; ";
-        var parameters = new[]
-        {
-            new KeyValuePair<string, object>("dependencyId", dependencyId)
-        };
-        
-        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql, parameters);
+        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync("delete from Dependencies where id = @dependencyId", IdParameter("dependencyId", dependencyId));
         return result > 0;
     }
 
     public async Task<bool> DeleteAllDependenciesForPluginAsync(Guid pluginId)
     {
-        string sql = "delete from Dependencies where plugin_id=@pluginId; ";
-        var parameters = new[]
-        {
-            new KeyValuePair<string, object>("pluginId", pluginId)
-        };
-
-        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql, parameters);
+        int result = await _LocalPluginDatabase.ExecuteNonQueryAsync("delete from Dependencies where plugin_id = @pluginId", IdParameter("pluginId", pluginId));
         return result > 0;
     }
+
+    private static KeyValuePair<string, object> Parameter(string name, object value) => new(name, value);
+
+    // Ids are stored as lowercase text; a Guid parameter would be bound differently and never match
+    private static KeyValuePair<string, object> IdParameter(string name, Guid id) => new(name, id.ToString());
+
+    public ValueTask DisposeAsync() => _LocalPluginDatabase.DisposeAsync();
 
     private LocalPlugin PluginConvertor(object[] values)
     {

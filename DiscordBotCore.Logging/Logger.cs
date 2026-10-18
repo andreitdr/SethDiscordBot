@@ -2,7 +2,7 @@
 
 public sealed class Logger : ILogger
 {
-    private readonly string _LogFile;
+    private readonly string _LogFolder;
     private readonly string _LogMessageFormat;
     private readonly int _MaxHistorySize;
     
@@ -14,6 +14,9 @@ public sealed class Logger : ILogger
 
     private readonly List<ILogMessage> _LogMessages = new List<ILogMessage>();
     private readonly object _LogMessagesLock = new object();
+    // Messages come from many threads (gateway, dashboard, plugins); appending to the file one at a time keeps
+    // lines whole and avoids "file in use" errors.
+    private readonly SemaphoreSlim _FileLock = new SemaphoreSlim(1, 1);
 
     public IReadOnlyList<ILogMessage> LogMessages
     {
@@ -32,7 +35,7 @@ public sealed class Logger : ILogger
     public Logger(string logFolder, string logMessageFormat, int maxHistorySize)
     {
         this._LogMessageFormat = logMessageFormat;
-        this._LogFile = Path.Combine(logFolder, $"{DateTime.Now:yyyy-MM-dd}.log");
+        this._LogFolder = logFolder;
         this._MaxHistorySize = maxHistorySize;
     }
     
@@ -63,10 +66,24 @@ public sealed class Logger : ILogger
         return messageAsString;
     }
 
-    private async Task LogToFile(string message)
+    /// <summary>The file a message is written to: one per day, named after the day the message was logged.</summary>
+    public string GetLogFilePath(DateTime time) => Path.Combine(_LogFolder, $"{time:yyyy-MM-dd}.log");
+
+    private async Task LogToFile(string message, DateTime time)
     {
-        await using var streamWriter = new StreamWriter(_LogFile, true);
-        await streamWriter.WriteLineAsync(message);
+        await _FileLock.WaitAsync();
+        try
+        {
+            await File.AppendAllTextAsync(GetLogFilePath(time), message + Environment.NewLine);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Logging must never take the app down; the message is still in memory and on the console.
+        }
+        finally
+        {
+            _FileLock.Release();
+        }
     }
 
     private async void Log(ILogMessage message)
@@ -82,7 +99,7 @@ public sealed class Logger : ILogger
         }
         
         OnLogReceived?.Invoke(message);
-        await LogToFile(messageAsString);
+        await LogToFile(messageAsString, message.ThrowTime);
     }
 
 }

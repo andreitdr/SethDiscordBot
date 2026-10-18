@@ -2,7 +2,6 @@ using System.Net.Mime;
 using DiscordBotCore.Logging;
 using DiscordBotCore.PluginManagement.Models;
 using DiscordBotCore.Utilities;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace DiscordBotCore.PluginManagement.Helpers;
 
@@ -13,15 +12,30 @@ public class PluginRepository : IPluginRepository
     private readonly ILogger _logger;
 
     public PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration, ILogger logger)
+        : this(pluginRepositoryConfiguration, logger, new HttpClient())
+    {
+    }
+
+    public PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration, ILogger logger, HttpClient httpClient)
     {
         _pluginRepositoryConfiguration = pluginRepositoryConfiguration;
-        _httpClient = new HttpClient();
-        _httpClient.BaseAddress = new Uri(_pluginRepositoryConfiguration.BaseUrl);
+        _httpClient = httpClient;
+        if (_pluginRepositoryConfiguration.IsConfigured)
+        {
+            _httpClient.BaseAddress = new Uri(_pluginRepositoryConfiguration.BaseUrl);
+        }
         _logger = logger;
     }
+
+    public bool IsConfigured => _pluginRepositoryConfiguration.IsConfigured;
     
     public async Task<List<OnlinePlugin>> GetAllPlugins(int operatingSystem, bool includeNotApproved)
     {
+        if (!IsConfigured)
+        {
+            return [];
+        }
+
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.PluginRepositoryLocation,
             "get-all-plugins", new Dictionary<string, string>
             {
@@ -43,7 +57,7 @@ public class PluginRepository : IPluginRepository
 
             return plugins;
         }
-        catch (HttpRequestException exception)
+        catch (Exception exception) when (exception is HttpRequestException or System.Text.Json.JsonException)
         {
             _logger.LogException(exception,this);
             return [];
@@ -53,6 +67,11 @@ public class PluginRepository : IPluginRepository
 
     public async Task<OnlinePlugin?> GetPluginById(int pluginId)
     {
+        if (!IsConfigured)
+        {
+            return null;
+        }
+
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.PluginRepositoryLocation,
             "get-by-id", new Dictionary<string, string>
             {
@@ -74,7 +93,7 @@ public class PluginRepository : IPluginRepository
 
             return plugin;
         }
-        catch (HttpRequestException exception)
+        catch (Exception exception) when (exception is HttpRequestException or System.Text.Json.JsonException)
         {
             _logger.LogException(exception, this);
             return null;
@@ -84,6 +103,11 @@ public class PluginRepository : IPluginRepository
 
     public async Task<OnlinePlugin?> GetPluginByName(string pluginName, int operatingSystem, bool includeNotApproved)
     {
+        if (!IsConfigured)
+        {
+            return null;
+        }
+
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.PluginRepositoryLocation,
             "get-by-name", new Dictionary<string, string>
             {
@@ -107,7 +131,7 @@ public class PluginRepository : IPluginRepository
 
             return plugin;
         }
-        catch (HttpRequestException exception)
+        catch (Exception exception) when (exception is HttpRequestException or System.Text.Json.JsonException)
         {
             _logger.LogException(exception, this);
             return null;
@@ -117,6 +141,11 @@ public class PluginRepository : IPluginRepository
 
     public async Task<List<OnlineDependencyInfo>> GetDependenciesForPlugin(int pluginId)
     {
+        if (!IsConfigured)
+        {
+            return [];
+        }
+
         string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.DependenciesRepositoryLocation,
             "get-by-plugin-id", new Dictionary<string, string>
             {
@@ -137,7 +166,7 @@ public class PluginRepository : IPluginRepository
         
             return dependencies;
         }
-        catch(HttpRequestException exception)
+        catch (Exception exception) when (exception is HttpRequestException or System.Text.Json.JsonException)
         {
             _logger.LogException(exception, this);
             return [];
@@ -145,16 +174,16 @@ public class PluginRepository : IPluginRepository
 
     }
 
-    private string CreateUrlWithQueryParams(string baseUrl, string endpoint, Dictionary<string, string> queryParams)
+    internal static string CreateUrlWithQueryParams(string baseUrl, string endpoint, Dictionary<string, string> queryParams)
     {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        foreach (var(key,value) in queryParams)
+        string queryString = string.Join("&", queryParams.Select(pair =>
+            $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
+
+        string url = baseUrl + endpoint;
+        if (queryString.Length > 0)
         {
-            queryBuilder.Add(key, value);
+            url += "?" + queryString;
         }
-        
-        string queryString = queryBuilder.ToQueryString().ToString();
-        string url = baseUrl + endpoint + queryString;
         
         return url;
     }

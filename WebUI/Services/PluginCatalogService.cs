@@ -44,6 +44,9 @@ public sealed partial class PluginCatalogService : IStateNotifier
     public bool OnlineLoading { get; private set; }
     public string? OnlineError { get; private set; }
 
+    /// <summary>False when no plugin repository URL is set; the marketplace then requests nothing.</summary>
+    public bool RepositoryConfigured => _PluginManager.IsRepositoryConfigured;
+
     public bool IsInstalled(string pluginName) =>
         Installed.Any(p => string.Equals(p.PluginName, pluginName, StringComparison.OrdinalIgnoreCase));
 
@@ -85,6 +88,15 @@ public sealed partial class PluginCatalogService : IStateNotifier
 
     public async Task RefreshOnlineAsync()
     {
+        if (!RepositoryConfigured)
+        {
+            Online = [];
+            OnlineError = null;
+            OnlineLoaded = true;
+            Changed?.Invoke();
+            return;
+        }
+
         if (!await _OnlineGate.WaitAsync(0))
         {
             return;

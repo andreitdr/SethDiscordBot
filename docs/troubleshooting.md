@@ -14,7 +14,7 @@ The `Data` folder is relative to the working directory. With `dotnet run --proje
 
 ### The dashboard isn't reachable from another computer
 
-By default it listens on `localhost` only. Use `--urls http://0.0.0.0:5028` to listen on all interfaces, but read [Exposing the dashboard](configuration/host-settings.md#exposing-the-dashboard) first: there is no login.
+By default it listens on `localhost` only. Use `--urls http://0.0.0.0:5028` to listen on all interfaces, and set a [dashboard password](configuration/host-settings.md#dashboard-password): without one, other machines get *403 Forbidden*.
 
 ## Connecting
 
@@ -76,7 +76,7 @@ A slash command must respond within 3 seconds. Call `RespondAsync` first, or `De
 
 ### Things happen twice after reloading
 
-An event subscribed to the client again on reload while its old handler is still attached. Restart the bot (**Stop**, **Start**, **Load plugins**) after changing event plugins ([Events](creating-plugins/events.md#unloading-and-reloading)).
+An event attached a handler to the client in `Start` and doesn't detach it in `Stop`, so after a reload the old handler runs next to the new one. Implement `Stop` ([Events](creating-plugins/events.md#unloading-and-reloading)), or restart the bot (**Stop**, **Start**, **Load plugins**) after changing that plugin.
 
 ### The bot process crashed
 
@@ -84,7 +84,7 @@ Usually an exception in an `async void` method (an event's `Start` or a slash co
 
 ### The Marketplace is empty or unavailable
 
-- The marketplace needs a [plugin repository](using-plugins/marketplace.md) server. Without configuration it tries `http://localhost:8080/api/v1/`; *Connection refused* in the console means nothing is listening there.
+- The marketplace needs a [plugin repository](using-plugins/marketplace.md) server. *No plugin repository configured* means `RemotePluginConnectionConfigurationDetails.BaseUrl` is missing or isn't an absolute `http(s)` URL. *Connection refused* in the console means nothing is listening at the configured URL.
 - Only approved plugins for the current OS are listed.
 
 ## Plugin web pages

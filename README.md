@@ -13,7 +13,7 @@ Built with:
 
 ## Features
 
-- **Web dashboard**: start and stop the bot, watch the live console, edit settings, see latency and servers. Panels can be moved, resized, collapsed and hidden; light and dark themes.
+- **Web dashboard**: start and stop the bot, watch the live console, edit settings, see latency and servers. Panels can be moved, resized, collapsed and hidden; light and dark themes. Password sign-in, and the bot can start by itself when the app starts.
 - **Plugins** with three kinds of components: prefix **commands** (`;level`), **events** (react to anything the Discord client exposes) and **slash commands** with buttons and menus.
 - **Hot reload**: add a DLL from the browser, enable or disable plugins and reload them without restarting the app.
 - **Plugin web pages**: plugins can ship Razor pages that appear in the dashboard.
@@ -41,7 +41,7 @@ Open <http://localhost:5028>, then:
 
 The full walkthrough is in [Getting started](docs/getting-started/requirements.md). To run in a container, see [Run with Docker](docs/getting-started/run-with-docker.md).
 
-> The dashboard has no login. Keep it on `localhost` or behind an authenticating reverse proxy; see [Exposing the dashboard](docs/configuration/host-settings.md#exposing-the-dashboard).
+> Without a password the dashboard only answers `localhost`. To use it from other devices, set the `Dashboard__Password` environment variable and serve it over HTTPS; see [Dashboard password](docs/configuration/host-settings.md#dashboard-password).
 
 ## Writing a plugin
 

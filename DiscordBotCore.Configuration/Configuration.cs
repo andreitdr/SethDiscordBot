@@ -22,7 +22,7 @@ public class Configuration : ConfigurationBase
     {
         T value = base.Get(key, defaultValue);
         
-        if (_EnableAutoAddOnGetWithDefault && value.Equals(defaultValue))
+        if (_EnableAutoAddOnGetWithDefault && EqualityComparer<T>.Default.Equals(value, defaultValue))
         {
             Add(key, defaultValue);
         }
@@ -85,7 +85,11 @@ public class Configuration : ConfigurationBase
         else
         {
             if (kvp.Value.Type == JTokenType.Integer)
-                dict[kvp.Key] = kvp.Value.Value<int>();
+            {
+                // Discord IDs don't fit in an int
+                long number = kvp.Value.Value<long>();
+                dict[kvp.Key] = number is >= int.MinValue and <= int.MaxValue ? (int)number : number;
+            }
             else if (kvp.Value.Type == JTokenType.Float)
                 dict[kvp.Key] = kvp.Value.Value<float>();
             else if (kvp.Value.Type == JTokenType.Boolean)

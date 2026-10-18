@@ -9,9 +9,10 @@ public interface IDiscordBotApplication
     public DiscordSocketClient Client { get; }
     
     /// <summary>
-    ///     The start method for the bot. This method is used to load the bot
+    ///     Logs in and waits until the client is Ready. Cancelling <paramref name="cancellationToken"/> abandons the
+    ///     attempt, disconnects the client and throws <see cref="System.OperationCanceledException"/>.
     /// </summary>
-    Task StartAsync();
+    Task StartAsync(System.Threading.CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stops the bot and cleans up resources.

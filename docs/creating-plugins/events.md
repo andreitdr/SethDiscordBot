@@ -12,6 +12,7 @@ public interface IDbEvent
     string Name { get; }          // shown in the dashboard and the logs
     string Description { get; }
     void Start(IDbEventExecutingArgument args);
+    void Stop() { }               // optional: undo what Start did, see "Unloading and reloading"
 }
 ```
 
@@ -99,10 +100,37 @@ Exceptions thrown synchronously from `Start` are caught: the event is logged as 
 
 ## Unloading and reloading
 
-There is no `Stop` method. When plugins are unloaded, the bot forgets the event object, but **handlers it attached to the client stay attached** until the bot stops (the client is disposed on **Stop**). So:
+Before plugins are unloaded (**Reload plugins**, deleting a plugin, **Stop**), the loader calls each event's `Stop()`. It has an empty default body, so implementing it is optional, but the client outlives your plugin: **handlers you attached in `Start` stay attached until you detach them**. Without `Stop`, a reload leaves the old handler running next to the new one.
 
-- after changing an event plugin, restart the bot (**Stop**, **Start**, **Load plugins**) instead of **Reload plugins**, or the old handlers keep running alongside the new ones;
-- timers and background tasks you start also keep running. Make them check a cancellation flag, or tie them to the client's lifetime (for example stop when `Client.LoginState` is no longer `LoggedIn`).
+Keep the delegate you attached so you can remove the same one:
+
+```csharp
+public class GreetingEvent : IDbEvent
+{
+    public string Name => "Greeting";
+    public string Description => "Greets new members";
+
+    private DiscordSocketClient? _Client;
+
+    public void Start(IDbEventExecutingArgument args)
+    {
+        _Client = args.Client;
+        _Client.UserJoined += OnUserJoined;
+    }
+
+    public void Stop()
+    {
+        if (_Client is not null)
+        {
+            _Client.UserJoined -= OnUserJoined;
+        }
+    }
+
+    private Task OnUserJoined(SocketGuildUser user) => user.Guild.DefaultChannel.SendMessageAsync($"Welcome, {user.Mention}!");
+}
+```
+
+Also stop timers and background tasks, and close files, databases and native libraries you opened. Exceptions thrown from `Stop` are logged and the unload goes on. LevelingSystem and CppModuleDemo are samples of both.
 
 ## Things to know
 

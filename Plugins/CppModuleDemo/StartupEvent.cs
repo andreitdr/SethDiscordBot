@@ -57,6 +57,17 @@ public class StartupEvent : IDbEvent
         InternalSettings.DemoModuleInternalId = id;
     }
 
+    public void Stop()
+    {
+        if (InternalSettings.DemoModuleInternalId != Guid.Empty)
+        {
+            InternalSettings.ExternalApplicationHandler?.StopApplication(InternalSettings.DemoModuleInternalId);
+        }
+
+        InternalSettings.DemoModuleInternalId = Guid.Empty;
+        InternalSettings.ManagedCallbackReference = null;
+    }
+
     private static void OnManagedCallbackInvoked()
     {
         InternalSettings.ManagedCallbackInvocationCount++;

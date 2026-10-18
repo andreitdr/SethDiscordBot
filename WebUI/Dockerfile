@@ -2,7 +2,6 @@
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -31,7 +30,12 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./WebUI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-EXPOSE 8080
 WORKDIR /app
 COPY --from=publish /app/publish .
+# The app runs as the non-root $APP_UID and writes to ./Data and ./Libraries. Create them owned by that user;
+# a named volume mounted there starts with the same ownership.
+USER root
+RUN mkdir -p /app/Data /app/Libraries && chown -R $APP_UID /app/Data /app/Libraries
+USER $APP_UID
+VOLUME ["/app/Data", "/app/Libraries"]
 ENTRYPOINT ["dotnet", "WebUI.dll"]

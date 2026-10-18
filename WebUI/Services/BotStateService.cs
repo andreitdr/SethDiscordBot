@@ -16,7 +16,6 @@ namespace WebUI.Services;
 /// </summary>
 public sealed class BotStateService : IStateNotifier, IDisposable
 {
-    private static readonly TimeSpan StartTimeout = TimeSpan.FromSeconds(30);
     private const int LatencyHistorySize = 40;
 
     private readonly IDiscordBotApplication _Bot;
@@ -29,7 +28,8 @@ public sealed class BotStateService : IStateNotifier, IDisposable
     private readonly Queue<int> _LatencyHistory = new();
 
     private DiscordSocketClient? _Client;
-    private Task? _PendingStart;
+    private Task<IResponse<bool>>? _PendingStart;
+    private CancellationTokenSource? _StartCancellation;
 
     public event Action? Changed;
 
@@ -40,6 +40,9 @@ public sealed class BotStateService : IStateNotifier, IDisposable
         _Configuration = configuration;
         _Logger = logger;
     }
+
+    /// <summary>How long <see cref="StartAsync"/> waits for Ready before returning; the attempt goes on after that.</summary>
+    internal TimeSpan StartTimeout { get; init; } = TimeSpan.FromSeconds(30);
 
     public BotStatus Status { get; private set; } = BotStatus.Offline;
     public DateTime? OnlineSince { get; private set; }
@@ -104,28 +107,20 @@ public sealed class BotStateService : IStateNotifier, IDisposable
 
             SetStatus(BotStatus.Connecting);
 
-            // The core StartAsync only returns once the gateway is Ready and never returns if that doesn't happen,
-            // so wait for it with a timeout instead of freezing the UI in "Connecting".
-            Task start = _Bot.StartAsync();
+            var cancellation = new CancellationTokenSource();
+            _StartCancellation = cancellation;
+            Task<IResponse<bool>> start = RunStartAsync(cancellation);
             _PendingStart = start;
 
+            // The core StartAsync only returns once the gateway is Ready, so wait for it with a timeout instead of
+            // freezing the UI in "Connecting". The attempt goes on in the background until it succeeds or is cancelled.
             if (await Task.WhenAny(start, Task.Delay(StartTimeout)) != start)
             {
-                _ = start.ContinueWith(_ => CompleteLateStart(), TaskScheduler.Default);
                 _Logger.Log("The bot hasn't reached Ready yet. It keeps trying in the background.", this, LogType.Warning);
                 return Response.Failure("The bot is taking long to connect. Check the token, the privileged intents and your network, or cancel.");
             }
 
-            await start;
-            AttachClient(_Bot.Client);
-            _Logger.Log("Application started", this);
-            return Response.Success();
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogException(ex, this);
-            SetStatus(BotStatus.Offline);
-            return Response.Failure(DescribeStartFailure(ex));
+            return await start;
         }
         finally
         {
@@ -133,8 +128,23 @@ public sealed class BotStateService : IStateNotifier, IDisposable
         }
     }
 
+    /// <summary>
+    /// Waits for a connection attempt that outlived <see cref="StartAsync"/>'s timeout to succeed, fail or be cancelled.
+    /// </summary>
+    public Task<IResponse<bool>> WaitForPendingStartAsync() =>
+        _PendingStart ?? Task.FromResult<IResponse<bool>>(Response.Failure("The bot isn't connecting."));
+
     public async Task<IResponse<bool>> StopAsync()
     {
+        // Cancelling a connection attempt doesn't wait for the gate: StartAsync holds it while it waits for Ready.
+        if (Status == BotStatus.Connecting && _StartCancellation is { } cancellation && _PendingStart is { } pendingStart)
+        {
+            cancellation.Cancel();
+            // The attempt tears the client down and sets the status; if it ended another way, it reported that already.
+            await pendingStart;
+            return Response.Success();
+        }
+
         if (!await _Gate.WaitAsync(0))
         {
             return Response.Failure("Another bot operation is already in progress.");
@@ -142,11 +152,6 @@ public sealed class BotStateService : IStateNotifier, IDisposable
 
         try
         {
-            if (Status == BotStatus.Connecting)
-            {
-                return await CancelStartAsync();
-            }
-
             if (!_Bot.IsReady)
             {
                 SetStatus(BotStatus.Offline);
@@ -260,35 +265,34 @@ public sealed class BotStateService : IStateNotifier, IDisposable
         }
     }
 
-    private async Task<IResponse<bool>> CancelStartAsync()
+    /// <summary>
+    /// Runs one connection attempt to the end and sets the final status itself, so it is right whether the attempt
+    /// finishes while the user waits, after the timeout, or because it was cancelled.
+    /// </summary>
+    private async Task<IResponse<bool>> RunStartAsync(CancellationTokenSource cancellation)
     {
         try
         {
-            if (_Bot.Client is { } client)
-            {
-                await client.StopAsync();
-                await client.LogoutAsync();
-                await client.DisposeAsync();
-            }
-
-            _PluginLoader.ClearDiscordClient();
+            await _Bot.StartAsync(cancellation.Token);
+            AttachClient(_Bot.Client);
+            _Logger.Log("Application started", this);
+            return Response.Success();
+        }
+        catch (OperationCanceledException)
+        {
+            _Logger.Log("Connection attempt cancelled", this, LogType.Warning);
+            SetStatus(BotStatus.Offline);
+            return Response.Failure("The connection attempt was cancelled.");
         }
         catch (Exception ex)
         {
             _Logger.LogException(ex, this);
+            SetStatus(BotStatus.Offline);
+            return Response.Failure(DescribeStartFailure(ex));
         }
-
-        _Logger.Log("Connection attempt cancelled", this, LogType.Warning);
-        SetStatus(BotStatus.Offline);
-        return Response.Success();
-    }
-
-    private void CompleteLateStart()
-    {
-        if (_Bot.IsReady && Status == BotStatus.Connecting)
+        finally
         {
-            AttachClient(_Bot.Client);
-            _Logger.Log("Application started", this);
+            Interlocked.CompareExchange(ref _StartCancellation, null, cancellation);
         }
     }
 

@@ -9,17 +9,43 @@ public class FileDownloader
     
     private readonly HttpClient _HttpClient;
     
-    public FileDownloader(string downloadUrl, string downloadLocation)
+    public FileDownloader(string downloadUrl, string downloadLocation) : this(downloadUrl, downloadLocation, new HttpClient())
+    {
+    }
+
+    public FileDownloader(string downloadUrl, string downloadLocation, HttpClient httpClient)
     {
         _DownloadUrl = downloadUrl;
         _DownloadLocation = downloadLocation;
         
-        _HttpClient = new HttpClient();
+        _HttpClient = httpClient;
     }
     
-    public async Task DownloadFile(Action<float> progressCallback)
+    /// <summary>
+    /// Downloads the file. An HTTP error status throws <see cref="HttpRequestException"/>, and a failed download
+    /// doesn't leave a partial file behind.
+    /// </summary>
+    public Task DownloadFile(Action<float> progressCallback) =>
+        DownloadToFileAsync(_HttpClient, _DownloadUrl, _DownloadLocation, new Progress<float>(progressCallback));
+
+    internal static async Task DownloadToFileAsync(HttpClient httpClient, string url, string location, IProgress<float>? progress)
     {
-        await using var fileStream = new FileStream(_DownloadLocation, FileMode.Create, FileAccess.Write, FileShare.None);
-        await _HttpClient.DownloadFileAsync(_DownloadUrl, fileStream, new Progress<float>(progressCallback));
+        try
+        {
+            await using var fileStream = new FileStream(location, FileMode.Create, FileAccess.Write, FileShare.None);
+            await httpClient.DownloadFileAsync(url, fileStream, progress);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(location);
+            }
+            catch (IOException)
+            {
+            }
+
+            throw;
+        }
     }
 }

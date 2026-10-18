@@ -46,7 +46,7 @@ public static class JsonManager
         {
             WriteIndented = false,
         });
-        var result = Encoding.ASCII.GetString(str.ToArray());
+        var result = Encoding.UTF8.GetString(str.ToArray());
         await str.FlushAsync();
         str.Close();
         return result;
@@ -84,7 +84,7 @@ public static class JsonManager
         if (File.Exists(input))
             text = new MemoryStream(await File.ReadAllBytesAsync(input));
         else
-            text = new MemoryStream(Encoding.ASCII.GetBytes(input));
+            text = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
         text.Position = 0;
 

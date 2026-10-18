@@ -6,12 +6,13 @@ Everything the bot stores lives under `./Data`, **relative to the working direct
 | --- | --- | --- |
 | `dotnet run --project WebUI` | `WebUI/` | `WebUI/Data/` |
 | `dotnet WebUI.dll` from `publish/` | `publish/` | `publish/Data/` |
-| Docker | `/app` | `/app/Data` (mounted from `./Data`) |
+| Docker | `/app` | `/app/Data` (the `seth-data` volume) |
 
 ## Layout
 
 ```text
 Data/
+├── Keys/                       keys that encrypt the sign-in cookie (keep them private)
 ├── Logs/
 │   └── 2026-10-18.log          one file per day
 ├── Plugins/

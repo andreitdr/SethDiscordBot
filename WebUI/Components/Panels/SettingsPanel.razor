@@ -72,6 +72,14 @@
         </div>
     </div>
 
+    <div class="field">
+        <div class="field-inline">
+            <RadzenSwitch @bind-Value="_AutoStart" id="settings-autostart"/>
+            <label for="settings-autostart">Start automatically</label>
+        </div>
+        <span class="field-hint">Start the bot and load plugins whenever the app starts.</span>
+    </div>
+
     <div class="settings-footer">
         @if (IsDirty && Bot.IsRunning)
         {
@@ -97,15 +105,19 @@
     // Enter in the server ID field adds the ID; the form submit it also triggers is skipped.
     private bool _SkipNextSubmit;
 
+    private bool _AutoStart;
+
     private string _SavedPrefix = string.Empty;
     private List<ulong> _SavedServerIds = new();
+    private bool _SavedAutoStart;
 
     private string TokenPlaceholder => _HasSavedToken ? "••••••••••••••••" : "Paste your bot token";
 
     private bool IsDirty =>
         !string.IsNullOrWhiteSpace(_Token)
         || _Prefix != _SavedPrefix
-        || !_ServerIds.SequenceEqual(_SavedServerIds);
+        || !_ServerIds.SequenceEqual(_SavedServerIds)
+        || _AutoStart != _SavedAutoStart;
 
     private bool IsValid => !string.IsNullOrWhiteSpace(_Prefix) && (_HasSavedToken || !string.IsNullOrWhiteSpace(_Token));
 
@@ -120,10 +132,12 @@
         _HasSavedToken = !string.IsNullOrWhiteSpace(Configuration.Get<string>("token"));
         _SavedPrefix = Configuration.Get("prefix", ";");
         _SavedServerIds = Configuration.GetList("ServerIds", new List<ulong>());
+        _SavedAutoStart = Configuration.Get(BotLifetimeService.AutoStartConfigurationKey, false);
 
         _Token = string.Empty;
         _Prefix = _SavedPrefix;
         _ServerIds = _SavedServerIds.ToList();
+        _AutoStart = _SavedAutoStart;
         _NewServerId = string.Empty;
         _ServerIdError = null;
     }
@@ -183,6 +197,7 @@
 
             Configuration.Set("prefix", _Prefix.Trim());
             Configuration.Set("ServerIds", _ServerIds.ToList());
+            Configuration.Set(BotLifetimeService.AutoStartConfigurationKey, _AutoStart);
             await Configuration.SaveToFile();
 
             Logger.Log("Settings saved successfully.", this);

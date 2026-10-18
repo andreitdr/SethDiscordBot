@@ -461,3 +461,5 @@ $RECYCLE.BIN/
 /WebUI_Old/bin
 Data/
 /WebUI/Libraries
+# Docker Compose secrets (DASHBOARD_PASSWORD)
+.env

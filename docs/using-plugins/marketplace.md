@@ -4,7 +4,7 @@ The **Marketplace** panel lists plugins published on a **plugin repository**: a 
 
 ## Configure the repository
 
-By default the bot uses `http://localhost:8080/api/v1/`, with the endpoints `plugin/` and `dependency/`. To use another server, add this to [`config.json`](../configuration/bot-configuration.md#marketplace-repository) and restart the WebUI:
+No repository is configured by default. The Marketplace panel then shows **No plugin repository configured** and makes no requests; plugins added with **Add local** still work. To use a server, add this to [`config.json`](../configuration/bot-configuration.md#marketplace-repository) and restart the WebUI:
 
 ```json
 "RemotePluginConnectionConfigurationDetails": {
@@ -13,6 +13,8 @@ By default the bot uses `http://localhost:8080/api/v1/`, with the endpoints `plu
   "DependenciesEndpoint": "dependency/"
 }
 ```
+
+`BaseUrl` must be an absolute `http://` or `https://` URL; anything else counts as not configured. `PluginsEndpoint` and `DependenciesEndpoint` default to `plugin/` and `dependency/` when left out.
 
 > Installing a plugin downloads a DLL and runs it inside the bot. Only use a repository you trust.
 
@@ -29,7 +31,7 @@ Only **approved** plugins built for the **current operating system** (Windows, L
 3. downloads each dependency to `./Libraries/<name>/<dependency location>`, in parallel,
 4. adds the plugin to the database, enabled, and records its *executable* dependencies.
 
-If a plugin with the same name is already installed, Install only proceeds when the marketplace version is newer (versions are `major.minor.patch`); it then replaces the old database entry and keeps its enabled state. Installing the same or an older version fails with *Versions are the same* or *Current version is newer*.
+If a plugin with the same name is already installed, Install only proceeds when the marketplace version is newer (versions are numeric `major.minor.patch`); it then replaces the old database entry and keeps its enabled state. Installing the same or an older version fails with *Versions are the same* or *Current version is newer*, and a version that isn't numeric `major.minor.patch` (such as `1.0.0-beta`) fails with *Invalid version*.
 
 Then load or reload plugins. The ⓘ button in **Installed plugins** shows the repository's details of a marketplace plugin.
 
@@ -43,6 +45,8 @@ A plugin repository must answer these `GET` requests. `{BaseUrl}`, `{PluginsEndp
 | `{BaseUrl}{PluginsEndpoint}get-by-id?pluginId={id}&includeNotApproved=false` | one plugin |
 | `{BaseUrl}{PluginsEndpoint}get-by-name?pluginName={name}&operatingSystem={os}&includeNotApproved=False` | one plugin |
 | `{BaseUrl}{DependenciesEndpoint}get-by-plugin-id?pluginId={id}` | array of dependencies |
+
+Query values are URL-encoded (a plugin name with a space is sent as `My%20Plugin`).
 
 `operatingSystem` is `0` for Windows, `1` for Linux and `2` for macOS. A non-success status code means "none" (an empty list, or no plugin).
 

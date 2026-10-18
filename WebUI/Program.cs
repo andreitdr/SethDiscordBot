@@ -87,6 +87,11 @@ builder.Services.AddScoped<DashboardLayoutService>();
 // Plugin web pages: registered from the loaded plugin assemblies, served under /plugin/<plugin id>/.
 builder.Services.AddPluginPages();
 builder.Services.AddHostedService<PluginPagesBridge>();
+// Starts the bot on launch when AutoStart is on, and stops it cleanly on shutdown.
+builder.Services.AddHostedService<BotLifetimeService>();
+
+// Password sign-in (Dashboard__Password); without a password only this machine can open the dashboard.
+builder.AddDashboardAuthentication();
 
 
 var app = builder.Build();
@@ -101,10 +106,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDashboardAuthentication();
 app.UseAntiforgery();
 
 // Fingerprinted static assets: the browser never keeps a stale app.css or JS module after an update.
-app.MapStaticAssets();
+// The sign-in page needs them too, so they don't require a sign-in.
+app.MapStaticAssets().AllowAnonymous();
+app.MapDashboardLogout();
 app.MapPluginPageAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

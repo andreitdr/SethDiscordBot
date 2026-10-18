@@ -1,28 +1,34 @@
-using DiscordBotCore.Networking.Helpers;
-
 namespace DiscordBotCore.Networking;
 
 public class ParallelDownloadExecutor
 {
     private readonly List<Task> _listOfTasks;
+    // Downloads only start in StartTasks/ExecuteAllTasks, so maxDegreeOfParallelism really limits them
+    private readonly List<Func<Task>> _pendingDownloads = new();
     private readonly HttpClient _httpClient;
     private Action? OnFinishAction { get; set; }
     
-    public ParallelDownloadExecutor(List<Task> listOfTasks)
+    public ParallelDownloadExecutor(List<Task> listOfTasks) : this(listOfTasks, new HttpClient())
     {
-        _httpClient = new HttpClient();
-        _listOfTasks = listOfTasks;
     }
 
-    public ParallelDownloadExecutor()
+    public ParallelDownloadExecutor() : this(new List<Task>(), new HttpClient())
     {
-        _httpClient = new HttpClient();
-        _listOfTasks = new List<Task>();
+    }
+
+    public ParallelDownloadExecutor(HttpClient httpClient) : this(new List<Task>(), httpClient)
+    {
+    }
+
+    private ParallelDownloadExecutor(List<Task> listOfTasks, HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+        _listOfTasks = listOfTasks;
     }
     
     public async Task StartTasks()
     {
-        await Task.WhenAll(_listOfTasks);
+        await Task.WhenAll(_listOfTasks.Concat(TakePendingDownloads().Select(download => download())));
         OnFinishAction?.Invoke();
     }
     
@@ -30,12 +36,12 @@ public class ParallelDownloadExecutor
     {
         using var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
         
-        var tasks = _listOfTasks.Select(async task =>
+        var downloads = TakePendingDownloads().Select(async download =>
         {
             await semaphore.WaitAsync();
             try
             {
-                await task;
+                await download();
             }
             finally
             {
@@ -43,7 +49,7 @@ public class ParallelDownloadExecutor
             }
         });
         
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(_listOfTasks.Concat(downloads));
         OnFinishAction?.Invoke();
     }
     
@@ -54,36 +60,32 @@ public class ParallelDownloadExecutor
 
     public void AddTask(string downloadLink, string downloadLocation)
     {
-        if (string.IsNullOrEmpty(downloadLink) || string.IsNullOrEmpty(downloadLocation))
-            throw new ArgumentException("Download link or location cannot be null or empty.");
-        
-        if (Directory.Exists(Path.GetDirectoryName(downloadLocation)) == false)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(downloadLocation));
-        }
-        
-        var task = CreateDownloadTask(downloadLink, downloadLocation, null);
-        _listOfTasks.Add(task);
+        AddDownload(downloadLink, downloadLocation, null);
     }
     
     public void AddTask(string downloadLink, string downloadLocation, Action<float> progressCallback)
     {
+        AddDownload(downloadLink, downloadLocation, new Progress<float>(progressCallback));
+    }
+
+    private void AddDownload(string downloadLink, string downloadLocation, IProgress<float>? progress)
+    {
         if (string.IsNullOrEmpty(downloadLink) || string.IsNullOrEmpty(downloadLocation))
             throw new ArgumentException("Download link or location cannot be null or empty.");
-        
-        if (Directory.Exists(Path.GetDirectoryName(downloadLocation)) == false)
+
+        string? directory = Path.GetDirectoryName(downloadLocation);
+        if (!string.IsNullOrEmpty(directory))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(downloadLocation));
+            Directory.CreateDirectory(directory);
         }
-        
-        var task = CreateDownloadTask(downloadLink, downloadLocation, new Progress<float>(progressCallback));
-        _listOfTasks.Add(task);
+
+        _pendingDownloads.Add(() => FileDownloader.DownloadToFileAsync(_httpClient, downloadLink, downloadLocation, progress));
     }
-    
-    private Task CreateDownloadTask(string downloadLink, string downloadLocation, IProgress<float> progress)
+
+    private List<Func<Task>> TakePendingDownloads()
     {
-        var fileStream = new FileStream(downloadLocation, FileMode.Create, FileAccess.Write, FileShare.None);
-        return _httpClient.DownloadFileAsync(downloadLink, fileStream, progress);
+        var downloads = _pendingDownloads.ToList();
+        _pendingDownloads.Clear();
+        return downloads;
     }
-    
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,18 +36,30 @@ public class HelpCommand : IDbCommand
             return;
         }
         
-        if (DiscordBotApplication._InternalPluginLoader.Commands.Count == 0)
+        EmbedBuilder? commandList = GenerateCommandList(DiscordBotApplication._InternalPluginLoader.Commands);
+        if (commandList is null)
         {
             await args.Context.Channel.SendMessageAsync("No commands found.");
             return;
         }
-        
+
+        await args.Context.Channel.SendMessageAsync(embed: commandList.Build());
+    }
+
+    /// <summary>The list of commands, admin commands apart, or null if there are none.</summary>
+    internal static EmbedBuilder? GenerateCommandList(IReadOnlyCollection<IDbCommand> commands)
+    {
+        if (commands.Count == 0)
+        {
+            return null;
+        }
+
         var embedBuilder = new EmbedBuilder();
 
         var adminCommands  = "";
         var normalCommands = "";
 
-        foreach (var cmd in DiscordBotApplication._InternalPluginLoader.Commands)
+        foreach (var cmd in commands)
             if (cmd.RequireAdmin)
                 adminCommands += cmd.Command + " ";
             else
@@ -58,10 +70,10 @@ public class HelpCommand : IDbCommand
             embedBuilder.AddField("Admin Commands", adminCommands);
         if (normalCommands.Length > 0)
             embedBuilder.AddField("Normal Commands", normalCommands);
-        await args.Context.Channel.SendMessageAsync(embed: embedBuilder.Build());
+        return embedBuilder;
     }
     
-    private EmbedBuilder GenerateHelpCommand(IDbCommand command)
+    internal static EmbedBuilder GenerateHelpCommand(IDbCommand command)
     {
         EmbedBuilder builder = new();
         builder.WithTitle($"Command: {command.Command}");

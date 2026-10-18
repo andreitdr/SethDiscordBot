@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -20,6 +21,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private readonly IConfiguration _Configuration;
     private readonly IPluginLoader _PluginLoader;
     private bool _IsStopping;
+    private TaskCompletionSource? _ReadySignal;
     
     public bool IsReady { get; private set; }
     
@@ -45,37 +47,19 @@ public class DiscordBotApplication : IDiscordBotApplication
             return;
         }
 
-        _IsStopping = true;
-        try
+        if (_PluginLoader.IsLoaded)
         {
-            if (_PluginLoader.IsLoaded)
-            {
-                await _PluginLoader.UnloadAllPlugins();
-            }
-
-            await Client.LogoutAsync();
-            await Client.StopAsync();
-
-            Client.Log          -= Log;
-            Client.LoggedIn     -= LoggedIn;
-            Client.Ready        -= Ready;
-            Client.Disconnected -= Client_Disconnected;
-
-            await Client.DisposeAsync();
-            _PluginLoader.ClearDiscordClient();
-
-            IsReady = false;
+            await _PluginLoader.UnloadAllPlugins();
         }
-        finally
-        {
-            _IsStopping = false;
-        }
+
+        await TearDownClientAsync(Client);
     }
 
     /// <summary>
-    ///     The start method for the bot. This method is used to load the bot
+    ///     Logs in and connects to the gateway. Completes once the client is Ready. If the login fails or
+    ///     <paramref name="cancellationToken"/> is cancelled first, the client is torn down and the exception is rethrown.
     /// </summary>
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         var config = new DiscordSocketConfig
         {
@@ -88,8 +72,8 @@ public class DiscordBotApplication : IDiscordBotApplication
 
         DiscordSocketClient client  = new DiscordSocketClient(config);
         
-        
         _Service = new CommandService();
+        _ReadySignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         
         client.Log          += Log;
         client.LoggedIn     += LoggedIn;
@@ -97,16 +81,49 @@ public class DiscordBotApplication : IDiscordBotApplication
         client.Disconnected += Client_Disconnected;
 
         Client = client;
-        await client.LoginAsync(TokenType.Bot, _Configuration.Get<string>("token"));
-        await client.StartAsync();
-
-        _CommandServiceHandler = new CommandHandler(_Logger, _PluginLoader, _Configuration, _Service);
-
-        await _CommandServiceHandler.InstallCommandsAsync(client);
-        
-        while (!IsReady)
+        try
         {
-            await Task.Delay(100);
+            await client.LoginAsync(TokenType.Bot, _Configuration.Get<string>("token"));
+            await client.StartAsync();
+
+            _CommandServiceHandler = new CommandHandler(_Logger, _PluginLoader, _Configuration, _Service);
+            await _CommandServiceHandler.InstallCommandsAsync(client);
+
+            // Ready only comes once the gateway accepts the session. Missing privileged intents or a network problem
+            // mean it never does, so the caller decides how long to wait.
+            await _ReadySignal.Task.WaitAsync(cancellationToken);
+        }
+        catch
+        {
+            await TearDownClientAsync(client);
+            throw;
+        }
+    }
+
+    private async Task TearDownClientAsync(DiscordSocketClient client)
+    {
+        _IsStopping = true;
+        try
+        {
+            await client.LogoutAsync();
+            await client.StopAsync();
+        }
+        catch (Exception ex)
+        {
+            _Logger.Log($"Disconnecting the client failed: {ex.Message}", this, LogType.Warning);
+        }
+        finally
+        {
+            client.Log          -= Log;
+            client.LoggedIn     -= LoggedIn;
+            client.Ready        -= Ready;
+            client.Disconnected -= Client_Disconnected;
+
+            await client.DisposeAsync();
+            _PluginLoader.ClearDiscordClient();
+
+            IsReady = false;
+            _IsStopping = false;
         }
     }
 
@@ -123,6 +140,7 @@ public class DiscordBotApplication : IDiscordBotApplication
     private Task Ready()
     {
         IsReady = true;
+        _ReadySignal?.TrySetResult();
         return Task.CompletedTask;
     }
 

@@ -1,4 +1,4 @@
-﻿name: Seth Docker Build
+name: Seth Docker Build
 services:
   discord-bot:
     build:
@@ -6,5 +6,14 @@ services:
       dockerfile: ./WebUI/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      # The dashboard password. Set DASHBOARD_PASSWORD in a .env file next to this one (or in your shell).
+      Dashboard__Password: ${DASHBOARD_PASSWORD:?Set DASHBOARD_PASSWORD in .env or the environment}
     volumes:
-      - ./Data:/app/Data
+      - seth-data:/app/Data
+      - seth-libraries:/app/Libraries
+    restart: unless-stopped
+
+volumes:
+  seth-data:
+  seth-libraries:

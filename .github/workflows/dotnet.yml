@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "preview" ]
+    branches: [ "main", "preview" ]
   pull_request:
-    branches: [ "preview" ]
+    branches: [ "main", "preview" ]
 
 jobs:
   build:
@@ -25,4 +25,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal --blame-hang-timeout 5m

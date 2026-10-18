@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- A plugin for the loader tests: never referenced, only loaded into a plugin load context. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>false</IsTestProject>
+    </PropertyGroup>
+
+    <!-- Like a real plugin, the contract comes from the host at runtime -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\DiscordBotCore.PluginCore\DiscordBotCore.PluginCore.csproj" Private="false" />
+        <ProjectReference Include="..\..\..\DiscordBotCore.Logging\DiscordBotCore.Logging.csproj" Private="false" />
+    </ItemGroup>
+
+</Project>

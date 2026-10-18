@@ -4,7 +4,7 @@ using Moq;
 
 namespace Tests.DiscordBotCore.Configuration;
 
-public class ConfigurationTests
+public class ConfigurationTests : IDisposable
 {
     private readonly Mock<ILogger> _loggerMock;
     private readonly string _testFilePath;
@@ -13,6 +13,11 @@ public class ConfigurationTests
     {
         _loggerMock = new Mock<ILogger>();
         _testFilePath = Path.GetTempFileName();
+    }
+
+    public void Dispose()
+    {
+        File.Delete(_testFilePath);
     }
 
     #region Basic Operations
@@ -32,6 +37,65 @@ public class ConfigurationTests
         var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
         config.Add("Key1", null);
         Assert.False(config.ContainsKey("Key1"));
+    }
+
+    [Fact]
+    public void Add_ShouldNotOverrideAnExistingKey()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Add("Key1", 1);
+        config.Add("Key1", 2);
+        Assert.Equal(1, config.Get("Key1"));
+    }
+
+    [Fact]
+    public void Set_ShouldAddAMissingKey()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Set("Key1", "value");
+        Assert.Equal("value", config.Get("Key1"));
+    }
+
+    [Fact]
+    public void Remove_ShouldIgnoreAMissingKey()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Remove("Missing");
+        Assert.False(config.ContainsKey("Missing"));
+    }
+
+    [Fact]
+    public void Get_WithoutDefault_ShouldReturnDefaultForMissingKey()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        Assert.Null(config.Get<string>("Missing"));
+        Assert.Equal(0, config.Get<int>("Missing"));
+    }
+
+    [Fact]
+    public void Get_ShouldThrowForMissingKeyWithoutType()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        Assert.Throws<KeyNotFoundException>(() => config.Get("Missing"));
+    }
+
+    [Fact]
+    public void Get_ShouldReturnAValueThatIsAlreadyOfTheRequestedType()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        var list = new List<ulong> { 1, 2 };
+        config.Set("List", list);
+        Assert.Same(list, config.Get<List<ulong>>("List"));
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("False", false)]
+    public void Get_ShouldConvertStringsToBooleans(string stored, bool expected)
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Set("Flag", stored);
+        Assert.Equal(expected, config.Get("Flag", !expected));
     }
 
     [Fact]
@@ -143,6 +207,39 @@ public class ConfigurationTests
     }
 
     [Fact]
+    public void GetList_ShouldConvertEachItem()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Set("ServerIds", new List<object> { 1234567890123456789L, "42" });
+        Assert.Equal(new List<ulong> { 1234567890123456789UL, 42UL }, config.GetList("ServerIds", new List<ulong>()));
+    }
+
+    [Fact]
+    public void GetList_ShouldThrowIfNotList()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Set("NotList", 123);
+        Assert.Throws<Exception>(() => config.GetList("NotList", new List<int>()));
+    }
+
+    [Fact]
+    public void GetDictionary_ShouldReturnEmptyForMissingKey()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        Assert.Empty(config.GetDictionary<string, string>("Missing"));
+    }
+
+    [Fact]
+    public void GetDictionary_ShouldConvertKeysAndValues()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Set("Dict", new Dictionary<string, object> { { "1", "10" }, { "2", 20 } });
+        var result = config.GetDictionary<int, int>("Dict");
+        Assert.Equal(10, result[1]);
+        Assert.Equal(20, result[2]);
+    }
+
+    [Fact]
     public void GetDictionary_ShouldReturnStoredDictionary()
     {
         var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
@@ -225,6 +322,50 @@ public class ConfigurationTests
         config.Add("B", 2);
         var result = config.FirstOrDefault(pair => (int)pair.Value == 2);
         Assert.Equal("B", result.Key);
+    }
+
+    [Fact]
+    public void Where_WithIndexedPredicate_ShouldPassTheIndex()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Add("A", 1);
+        config.Add("B", 2);
+        var result = config.Where((pair, index) => index == 1).ToList();
+        Assert.Equal("B", Assert.Single(result).Key);
+    }
+
+    [Fact]
+    public void Where_WithIndexedSelector_ShouldPassTheIndex()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Add("A", 1);
+        config.Add("B", 2);
+        Assert.Equal(["0:A", "1:B"], config.Where((pair, index) => $"{index}:{pair.Key}"));
+    }
+
+    [Fact]
+    public void FirstOrDefault_ShouldReturnDefaultWhenEmpty()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        Assert.Null(config.FirstOrDefault().Key);
+        Assert.Null(config.FirstOrDefault(pair => pair.Key == "X").Key);
+    }
+
+    [Fact]
+    public void GetEnumerator_ShouldEnumerateEveryPair()
+    {
+        var config = new TestableConfigurationBase(_loggerMock.Object, _testFilePath);
+        config.Add("A", 1);
+        config.Add("B", 2);
+
+        var keys = new List<string>();
+        using var enumerator = config.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            keys.Add(enumerator.Current.Key);
+        }
+
+        Assert.Equal(["A", "B"], keys);
     }
 
     [Fact]

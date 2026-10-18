@@ -20,7 +20,7 @@ public class ArchiveManager
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-        var archiveName = folder + Path.GetFileNameWithoutExtension(file) + ".zip";
+        var archiveName = Path.Combine(folder, Path.GetFileNameWithoutExtension(file) + ".zip");
         if (File.Exists(archiveName))
             File.Delete(archiveName);
 
@@ -106,9 +106,9 @@ public class ArchiveManager
         }
         catch (Exception ex)
         {
+            // A corrupt archive stays corrupt: retrying would never end
             _Logger.LogException(ex, this);
-            await Task.Delay(100);
-            return await ReadFromPakAsync(fileName, archFile);
+            throw;
         }
     }
 
@@ -125,65 +125,64 @@ public class ArchiveManager
         UnzipProgressType type)
     {
         Directory.CreateDirectory(folder);
-        using var archive       = ZipFile.OpenRead(zip);
-        var       totalZipFiles = archive.Entries.Count();
-        if (type == UnzipProgressType.PercentageFromNumberOfFiles)
+        using var archive = ZipFile.OpenRead(zip);
+
+        int totalFiles = archive.Entries.Count;
+        long totalSize = archive.Entries.Sum(entry => entry.CompressedLength);
+        int extractedFiles = 0;
+        long extractedSize = 0;
+
+        foreach (var entry in archive.Entries)
         {
-            var currentZipFile = 0;
-            foreach (var entry in archive.Entries)
-            {
-                if (entry.FullName.EndsWith("/")) // it is a folder
-                    Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
+            ExtractEntry(entry, folder);
 
-                else
-                    try
-                    {
-                        entry.ExtractToFile(Path.Combine(folder, entry.FullName), true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _Logger.LogException(ex, this);
-                    }
+            extractedFiles++;
+            extractedSize += entry.CompressedLength;
+            await Task.Delay(10);
 
-                currentZipFile++;
-                await Task.Delay(10);
-                if (progress != null)
-                    progress.Report((float)currentZipFile / totalZipFiles * 100);
-            }
+            float percent = type == UnzipProgressType.PercentageFromNumberOfFiles
+                ? (float)extractedFiles / totalFiles * 100
+                : totalSize == 0 ? 100f : (float)extractedSize / totalSize * 100;
+            progress?.Report(percent);
         }
-        else if (type == UnzipProgressType.PercentageFromTotalSize)
+    }
+
+    private void ExtractEntry(ZipArchiveEntry entry, string folder)
+    {
+        string? destination = GetSafeDestination(folder, entry.FullName);
+        if (destination is null)
         {
-            ulong zipSize = 0;
-
-            foreach (var entry in archive.Entries)
-                zipSize += (ulong)entry.CompressedLength;
-
-            ulong currentSize = 0;
-            foreach (var entry in archive.Entries)
-            {
-                if (entry.FullName.EndsWith("/"))
-                {
-                    Directory.CreateDirectory(Path.Combine(folder, entry.FullName));
-                    continue;
-                }
-
-                try
-                {
-                    string path = Path.Combine(folder, entry.FullName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
-                    
-                    entry.ExtractToFile(path, true);
-                    currentSize += (ulong)entry.CompressedLength;
-                }
-                catch (Exception ex)
-                {
-                    _Logger.LogException(ex, this);
-                }
-
-                await Task.Delay(10);
-                if (progress != null)
-                    progress.Report((float)currentSize / zipSize * 100);
-            }
+            _Logger.Log($"Skipped archive entry {entry.FullName}: it points outside {folder}.", this, LogType.Warning);
+            return;
         }
+
+        try
+        {
+            if (entry.FullName.EndsWith('/'))
+            {
+                Directory.CreateDirectory(destination);
+                return;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            entry.ExtractToFile(destination, true);
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogException(ex, this);
+        }
+    }
+
+    /// <summary>
+    /// Where an entry goes inside <paramref name="folder"/>, or null for names such as <c>../file</c> that would land
+    /// outside it ("zip slip").
+    /// </summary>
+    internal static string? GetSafeDestination(string folder, string entryName)
+    {
+        string root = Path.GetFullPath(folder);
+        string rootWithSeparator = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
+        string destination = Path.GetFullPath(Path.Combine(root, entryName));
+
+        return destination.StartsWith(rootWithSeparator, StringComparison.Ordinal) ? destination : null;
     }
 }
