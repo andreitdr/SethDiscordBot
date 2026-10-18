@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Discord;
 using Discord.WebSocket;
 
@@ -55,6 +55,6 @@ public static class DiscordPermissions
     /// <returns></returns>
     public static bool IsAdmin(this SocketUser user)
     {
-        return IsAdmin((SocketGuildUser)user);
+        return user is SocketGuildUser guildUser && guildUser.IsAdmin();
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -143,7 +143,10 @@ internal class CommandHandler : ICommandHandler
                 return;
             }
 
-            if (plugin.RequireAdmin && !context.Message.Author.IsAdmin())
+            bool isDm = context.Channel is SocketDMChannel;
+
+            // Admin rights only exist inside a guild, so admin commands never run in DMs
+            if (plugin.RequireAdmin && (isDm || !context.Message.Author.IsAdmin()))
             {
                 return;
             }
@@ -163,13 +166,14 @@ internal class CommandHandler : ICommandHandler
                 argsClean,
                 new DirectoryInfo(Path.Combine(_configuration.Get<string>("ResourcesFolder"), plugin.Command)));
 
+            string source = isDm ? "DM" : $"Guild \"{context.Guild.Name}\"";
             _logger.Log(
-                $"User ({context.User.Username}) from Guild \"{context.Guild.Name}\" executed command \"{cmd.CleanContent}\"",
+                $"User ({context.User.Username}) from {source} executed command \"{cmd.CleanContent}\"",
                 this,
                 LogType.Info
             );
 
-            if (context.Channel is SocketDMChannel)
+            if (isDm)
             {
                 await plugin.ExecuteDm(cmd);
             }

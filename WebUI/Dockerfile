@@ -1,12 +1,13 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["global.json", "./"]
 COPY ["WebUI/WebUI.csproj", "WebUI/"]
 COPY ["DiscordBotCore.Configuration/DiscordBotCore.Configuration.csproj", "DiscordBotCore.Configuration/"]
 COPY ["DiscordBotCore.Logging/DiscordBotCore.Logging.csproj", "DiscordBotCore.Logging/"]
@@ -17,6 +18,9 @@ COPY ["DiscordBotCore.Utilities/DiscordBotCore.Utilities.csproj", "DiscordBotCor
 COPY ["DiscordBotCore/DiscordBotCore.csproj", "DiscordBotCore/"]
 COPY ["DiscordBotCore.PluginCore/DiscordBotCore.PluginCore.csproj", "DiscordBotCore.PluginCore/"]
 COPY ["DiscordBotCore.PluginManagement.Loading/DiscordBotCore.PluginManagement.Loading.csproj", "DiscordBotCore.PluginManagement.Loading/"]
+COPY ["DiscordBotCore.Resources/DiscordBotCore.Resources.csproj", "DiscordBotCore.Resources/"]
+COPY ["Modules/PluginPages.Abstractions/PluginPages.Abstractions.csproj", "Modules/PluginPages.Abstractions/"]
+COPY ["Modules/PluginPages.Hosting/PluginPages.Hosting.csproj", "Modules/PluginPages.Hosting/"]
 RUN dotnet restore "WebUI/WebUI.csproj"
 COPY . .
 WORKDIR "/src/WebUI"

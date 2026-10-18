@@ -18,7 +18,7 @@ Native part of the C++ demo plugin (CMake, C++17, produces a shared library):
 cmake -S Plugins/CppModuleDemo/Native -B Plugins/CppModuleDemo/Native/build && cmake --build Plugins/CppModuleDemo/Native/build
 ```
 
-All projects target **net10.0** (`global.json` pins SDK 10.0.0 with `rollForward: latestMajor`). The README, `.github/workflows/dotnet.yml` and `WebUI/Dockerfile` still reference .NET 8 and are out of date; the README's plugin examples also use the old `PluginManager`/`DBCommand` API — the current API is described below.
+All projects target **net10.0** (`global.json` pins SDK 10.0.0 with `rollForward: latestMajor`). `WebUI/Dockerfile` uses the .NET 10 images and copies every referenced csproj before restore; keep that list in sync when adding a project WebUI depends on.
 
 ## Architecture
 

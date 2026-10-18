@@ -144,16 +144,15 @@ public sealed class PluginManager : IPluginManager
             return Response.Failure("Plugin folder path is not present in the config file");
         }
 
-        var localPluginResponse = await _LocalPluginRepository.GetPluginByNameAsync(plugin.Name);
-        if (localPluginResponse is null)
+        // A plugin that is already installed is only replaced by a newer version
+        var installedPlugin = await _LocalPluginRepository.GetPluginByNameAsync(plugin.Name);
+        if (installedPlugin is not null)
         {
-            return Response.Failure($"Plugin {plugin.Name} not found in the repository");
-        }
-        
-        var response = await IsNewVersion(localPluginResponse.PluginVersion, plugin.Version);
-        if (!response.IsSuccess)
-        {
-            return response;
+            var response = await IsNewVersion(installedPlugin.PluginVersion, plugin.Version);
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
         }
         
         List<OnlineDependencyInfo> dependencies = await _PluginRepository.GetDependenciesForPlugin(plugin.Id);
@@ -180,8 +179,17 @@ public sealed class PluginManager : IPluginManager
             PluginVersion = plugin.Version,
             FilePath = downloadLocation,
             IsOfflineAdded = false,
-            IsEnabled = true
+            IsEnabled = installedPlugin?.IsEnabled ?? true
         };
+
+        if (installedPlugin is not null)
+        {
+            var removeResponse = await RemovePluginFromDatabase(installedPlugin.PluginName);
+            if (!removeResponse.IsSuccess)
+            {
+                return removeResponse;
+            }
+        }
         
         var pluginId = await _LocalPluginRepository.AddPluginAsync(localPlugin);
 
