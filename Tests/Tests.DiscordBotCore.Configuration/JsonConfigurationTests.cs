@@ -154,6 +154,23 @@ public class JsonConfigurationTests : IDisposable
     }
 
     [Fact]
+    public async Task MergeFromFile_AppliesTheFileAndKeepsUnsavedValues()
+    {
+        var config = JsonConfiguration.CreateFromFile(_logger, _file, false);
+        config.Set("saved", "old");
+        await config.SaveToFile();
+
+        config.Add("unsaved", "kept");
+        await File.WriteAllTextAsync(_file, """{ "saved": "new", "added": "fromFile" }""");
+
+        config.MergeFromFile();
+
+        Assert.Equal("new", config.Get<string>("saved"));
+        Assert.Equal("fromFile", config.Get<string>("added"));
+        Assert.Equal("kept", config.Get<string>("unsaved"));
+    }
+
+    [Fact]
     public async Task LoadFromFile_ReplacesTheInMemoryValues()
     {
         var config = JsonConfiguration.CreateFromFile(_logger, _file, false);

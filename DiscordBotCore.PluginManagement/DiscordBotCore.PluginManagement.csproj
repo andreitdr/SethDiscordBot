@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -11,6 +11,13 @@
       <InternalsVisibleTo Include="Tests.DiscordBotCore.PluginManagement" />
       <InternalsVisibleTo Include="Tests.DiscordBotCore.PluginManagement.Loading" />
       <InternalsVisibleTo Include="Tests.WebUI" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NuGet.Packaging" Version="7.9.0" />
+      <PackageReference Include="NuGet.Protocol" Version="7.9.0" />
+      <!-- NuGet.Packaging brings in 8.0.1, which has known vulnerabilities -->
+      <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     </ItemGroup>
 
     <ItemGroup>

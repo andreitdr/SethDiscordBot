@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using DiscordBotCore.Logging;
 using DiscordBotCore.Networking;
@@ -21,7 +21,8 @@ public sealed class PluginManager : IPluginManager
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
     private readonly HttpClient _HttpClient;
-    
+    private readonly INuGetDependencyInstaller _NuGetInstaller;
+
 
     public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration)
         : this(pluginRepository, localPluginRepository, logger, configuration, new HttpClient())
@@ -29,9 +30,11 @@ public sealed class PluginManager : IPluginManager
     }
 
     /// <param name="httpClient">Downloads plugin and dependency files.</param>
-    public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration, HttpClient httpClient)
+    /// <param name="nuGetInstaller">Installs a plugin's NuGet packages; from nuget.org when not given.</param>
+    public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration, HttpClient httpClient, INuGetDependencyInstaller? nuGetInstaller = null)
     {
         _HttpClient = httpClient;
+        _NuGetInstaller = nuGetInstaller ?? new NuGetDependencyInstaller(new NuGetOrgPackageSource(), logger);
         _PluginRepository = pluginRepository;
         _Logger = logger;
         _Configuration = configuration;
@@ -39,6 +42,9 @@ public sealed class PluginManager : IPluginManager
     }
 
     public bool IsRepositoryConfigured => _PluginRepository.IsConfigured;
+
+    public Task<RepositoryCompatibility> CheckRepositoryCompatibility(bool recheck = false) =>
+        _PluginRepository.CheckCompatibilityAsync(recheck);
 
     public async Task<List<OnlinePlugin>> GetOnlinePluginsList()
     {
@@ -169,6 +175,12 @@ public sealed class PluginManager : IPluginManager
             return Response.Failure("No plugin repository is configured.");
         }
 
+        RepositoryCompatibility compatibility = await _PluginRepository.CheckCompatibilityAsync();
+        if (compatibility != RepositoryCompatibility.Compatible)
+        {
+            return Response.Failure(compatibility.Describe());
+        }
+
         string? pluginsFolder = _Configuration.Get<string>("PluginFolder");
         if (pluginsFolder is null)
         {
@@ -199,6 +211,12 @@ public sealed class PluginManager : IPluginManager
             return Response.Failure($"The dependency {unsafeDependency.DependencyName} would be saved outside the plugin's folder ({unsafeDependency.DownloadLocation}).");
         }
         
+        List<OnlineNuGetDependency>? nuGetPackages = await _PluginRepository.GetNuGetDependenciesForPlugin(plugin.Id);
+        if (nuGetPackages is null)
+        {
+            return Response.Failure($"The plugin repository couldn't list the NuGet packages of {plugin.Name}.");
+        }
+
         string downloadLocation = $"{pluginsFolder}/{plugin.Name}.dll";
         
         try
@@ -214,11 +232,21 @@ public sealed class PluginManager : IPluginManager
             }
             
             await executor.ExecuteAllTasks();
+
+            if (nuGetPackages.Count > 0)
+            {
+                await _NuGetInstaller.InstallAsync(nuGetPackages, librariesFolder);
+            }
         }
         catch (HttpRequestException ex)
         {
             _Logger.Log($"Downloading {plugin.Name} failed: {ex.Message}", this, LogType.Error);
             return Response.Failure($"Download failed: {ex.Message}");
+        }
+        catch (NuGetInstallException ex)
+        {
+            _Logger.Log($"Installing the packages of {plugin.Name} failed: {ex.Message}", this, LogType.Error);
+            return Response.Failure(ex.Message);
         }
         
         LocalPlugin localPlugin = new LocalPlugin()

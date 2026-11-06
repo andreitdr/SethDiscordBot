@@ -184,4 +184,6 @@ public abstract class ConfigurationBase : IConfiguration
     public abstract Task SaveToFile();
 
     public abstract void LoadFromFile();
+
+    public abstract void MergeFromFile();
 }

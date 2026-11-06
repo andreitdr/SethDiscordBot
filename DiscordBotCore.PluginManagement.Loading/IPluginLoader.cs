@@ -16,12 +16,18 @@ public interface IPluginLoader
     public IReadOnlyList<LoadedPluginAssembly> LoadedPlugins { get; }
 
     /// <summary>
+    /// Plugins that are still in memory after <see cref="UnloadAllPlugins"/>, because they left something running.
+    /// The bot keeps working, but a restart is needed to remove them completely.
+    /// </summary>
+    public IReadOnlyList<string> PluginsStuckAfterUnload { get; }
+
+    /// <summary>
     /// Raised at the end of <see cref="LoadPlugins"/>, once <see cref="LoadedPlugins"/> is filled.
     /// </summary>
     public event Action? PluginsLoaded;
 
     /// <summary>
-    /// Raised at the start of <see cref="UnloadAllPlugins"/>, before the load context is unloaded. Subscribers must drop
+    /// Raised at the start of <see cref="UnloadAllPlugins"/>, before the load contexts are unloaded. Subscribers must drop
     /// every reference to plugin types here, or the context can't be collected.
     /// </summary>
     public event Action? PluginsUnloading;

@@ -47,6 +47,7 @@ public sealed class BotStateService : IStateNotifier, IDisposable
     public BotStatus Status { get; private set; } = BotStatus.Offline;
     public DateTime? OnlineSince { get; private set; }
     public bool PluginsLoaded => _PluginLoader.IsLoaded;
+    public IReadOnlyList<string> PluginsStuckAfterUnload => _PluginLoader.PluginsStuckAfterUnload;
     public bool PluginsBusy { get; private set; }
 
     public bool IsRunning => Status is BotStatus.Online or BotStatus.Reconnecting;

@@ -1,4 +1,5 @@
-using System.Net.Mime;
+using System.Net;
+using System.Text.Json;
 using DiscordBotCore.Logging;
 using DiscordBotCore.PluginManagement.Models;
 using DiscordBotCore.Utilities;
@@ -10,6 +11,8 @@ public class PluginRepository : IPluginRepository
     private readonly IPluginRepositoryConfiguration _pluginRepositoryConfiguration;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+    private RepositoryCompatibility? _knownCompatibility;
+    private string? _knownCompatibilityBaseUrl;
 
     public PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration, ILogger logger)
         : this(pluginRepositoryConfiguration, logger, new HttpClient())
@@ -20,10 +23,7 @@ public class PluginRepository : IPluginRepository
     {
         _pluginRepositoryConfiguration = pluginRepositoryConfiguration;
         _httpClient = httpClient;
-        if (_pluginRepositoryConfiguration.IsConfigured)
-        {
-            _httpClient.BaseAddress = new Uri(_pluginRepositoryConfiguration.BaseUrl);
-        }
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(RepositoryProtocol.HeaderName, RepositoryProtocol.ClientVersion.ToString());
         _logger = logger;
     }
 
@@ -31,7 +31,7 @@ public class PluginRepository : IPluginRepository
     
     public async Task<List<OnlinePlugin>> GetAllPlugins(int operatingSystem, bool includeNotApproved)
     {
-        if (!IsConfigured)
+        if (!await CanRequestAsync())
         {
             return [];
         }
@@ -45,7 +45,7 @@ public class PluginRepository : IPluginRepository
 
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(_pluginRepositoryConfiguration.BaseUrl + url);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -67,7 +67,7 @@ public class PluginRepository : IPluginRepository
 
     public async Task<OnlinePlugin?> GetPluginById(int pluginId)
     {
-        if (!IsConfigured)
+        if (!await CanRequestAsync())
         {
             return null;
         }
@@ -81,7 +81,7 @@ public class PluginRepository : IPluginRepository
 
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(_pluginRepositoryConfiguration.BaseUrl + url);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -103,7 +103,7 @@ public class PluginRepository : IPluginRepository
 
     public async Task<OnlinePlugin?> GetPluginByName(string pluginName, int operatingSystem, bool includeNotApproved)
     {
-        if (!IsConfigured)
+        if (!await CanRequestAsync())
         {
             return null;
         }
@@ -118,7 +118,7 @@ public class PluginRepository : IPluginRepository
 
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(_pluginRepositoryConfiguration.BaseUrl + url);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -141,7 +141,7 @@ public class PluginRepository : IPluginRepository
 
     public async Task<List<OnlineDependencyInfo>> GetDependenciesForPlugin(int pluginId)
     {
-        if (!IsConfigured)
+        if (!await CanRequestAsync())
         {
             return [];
         }
@@ -154,7 +154,7 @@ public class PluginRepository : IPluginRepository
 
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            HttpResponseMessage response = await _httpClient.GetAsync(_pluginRepositoryConfiguration.BaseUrl + url);
             if(!response.IsSuccessStatusCode)
             {
                 _logger.Log($"Failed to get dependencies for plugin with ID {pluginId}");
@@ -173,6 +173,108 @@ public class PluginRepository : IPluginRepository
         }
 
     }
+
+    public async Task<List<OnlineNuGetDependency>?> GetNuGetDependenciesForPlugin(int pluginId)
+    {
+        if (!await CanRequestAsync())
+        {
+            return null;
+        }
+
+        string url = CreateUrlWithQueryParams(_pluginRepositoryConfiguration.DependenciesRepositoryLocation,
+            "get-nuget-by-plugin-id", new Dictionary<string, string>
+            {
+                { "pluginId", pluginId.ToString() }
+            });
+
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(_pluginRepositoryConfiguration.BaseUrl + url);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.Log($"Failed to get NuGet dependencies for plugin with ID {pluginId}");
+                return null;
+            }
+
+            string content = await response.Content.ReadAsStringAsync();
+            return await JsonManager.ConvertFromJson<List<OnlineNuGetDependency>>(content);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException)
+        {
+            _logger.LogException(exception, this);
+            return null;
+        }
+    }
+
+    public async Task<RepositoryCompatibility> CheckCompatibilityAsync(bool recheck = false)
+    {
+        if (!IsConfigured)
+        {
+            return RepositoryCompatibility.Unreachable;
+        }
+
+        string baseUrl = _pluginRepositoryConfiguration.BaseUrl;
+        if (!recheck && _knownCompatibility is { } known && _knownCompatibilityBaseUrl == baseUrl)
+        {
+            return known;
+        }
+
+        RepositoryCompatibility compatibility = await AskRepositoryAsync(baseUrl);
+        _knownCompatibility = compatibility == RepositoryCompatibility.Unreachable ? null : compatibility;
+        _knownCompatibilityBaseUrl = baseUrl;
+
+        if (compatibility != RepositoryCompatibility.Compatible)
+        {
+            _logger.Log($"{baseUrl}: {compatibility.Describe()}", this, LogType.Warning);
+        }
+
+        return compatibility;
+    }
+
+    private async Task<RepositoryCompatibility> AskRepositoryAsync(string baseUrl)
+    {
+        try
+        {
+            using HttpResponseMessage response = await _httpClient.GetAsync(baseUrl + "compatibility");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return RepositoryCompatibility.ServerTooOld;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return RepositoryCompatibility.Unreachable;
+            }
+
+            using JsonDocument document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            int serverVersion = document.RootElement.GetProperty("protocolVersion").GetInt32();
+            int minimumClientVersion = document.RootElement.GetProperty("minimumClientProtocolVersion").GetInt32();
+
+            if (RepositoryProtocol.ClientVersion < minimumClientVersion)
+            {
+                return RepositoryCompatibility.BotTooOld;
+            }
+
+            return serverVersion < RepositoryProtocol.MinimumServerVersion
+                ? RepositoryCompatibility.ServerTooOld
+                : RepositoryCompatibility.Compatible;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogException(exception, this);
+            return RepositoryCompatibility.Unreachable;
+        }
+        catch (Exception exception) when (exception is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            // Something answered, but it doesn't speak this protocol
+            _logger.LogException(exception, this);
+            return RepositoryCompatibility.ServerTooOld;
+        }
+    }
+
+    private async Task<bool> CanRequestAsync() =>
+        IsConfigured && await CheckCompatibilityAsync() == RepositoryCompatibility.Compatible;
 
     internal static string CreateUrlWithQueryParams(string baseUrl, string endpoint, Dictionary<string, string> queryParams)
     {

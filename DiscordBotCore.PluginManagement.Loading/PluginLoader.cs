@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Discord;
 using Discord.WebSocket;
@@ -6,6 +7,7 @@ using DiscordBotCore.Configuration;
 using DiscordBotCore.Logging;
 using DiscordBotCore.PluginCore.Helpers.Execution.DbEvent;
 using DiscordBotCore.PluginCore.Interfaces;
+using DiscordBotCore.PluginManagement.Helpers;
 using DiscordBotCore.PluginManagement.Models;
 using DiscordBotCore.Utilities.Responses;
 
@@ -14,13 +16,24 @@ namespace DiscordBotCore.PluginManagement.Loading;
 public class PluginLoader : IPluginLoader
 {
     private static readonly string _HelpCommandNamespaceFullName = "DiscordBotCore.Commands.HelpCommand";
+    private static readonly string _NativeCacheFolder = Path.Combine("Data", "NativeCache");
+
+    /// <summary>
+    /// Off keeps a plugin's old native libraries in memory until the next restart, which is safer for a library that
+    /// runs its own background threads: freeing it would crash the process, and .NET can't detect that beforehand.
+    /// </summary>
+    public const string FreeNativeLibrariesConfigurationKey = "FreeNativeLibraries";
+
+    private const int UnloadAttempts = 25;
+    private static readonly TimeSpan UnloadAttemptDelay = TimeSpan.FromMilliseconds(200);
 
     private readonly IPluginManager _PluginManager;
     private readonly ILogger _Logger;
     private readonly IConfiguration _Configuration;
 
     private DiscordSocketClient? _DiscordClient;
-    private PluginLoaderContext? PluginLoaderContext;
+    private readonly List<(PluginLoaderContext Context, NativeLibraryTracker NativeLibraries)> _Contexts = new();
+    private readonly List<UnloadingContext> _UnloadingContexts = new();
     private bool _IsLoaded;
 
     private readonly List<IDbCommand> _Commands = new List<IDbCommand>();
@@ -38,6 +51,7 @@ public class PluginLoader : IPluginLoader
         _PluginManager = pluginManager;
         _Logger = logger;
         _Configuration = configuration;
+        DeleteLeftoverNativeCopies();
     }
 
     public IReadOnlyList<IDbCommand> Commands => _Commands;
@@ -45,6 +59,9 @@ public class PluginLoader : IPluginLoader
     public IReadOnlyList<IDbSlashCommand> SlashCommands => _SlashCommands;
     public IReadOnlyList<LoadedPluginAssembly> LoadedPlugins => _LoadedPlugins;
     public bool IsLoaded => _IsLoaded;
+    public IReadOnlyList<string> PluginsStuckAfterUnload => _UnloadingContexts.Select(context => context.PluginName).Distinct().ToList();
+
+    private sealed record UnloadingContext(string PluginName, WeakReference Context, NativeLibraryTracker NativeLibraries);
 
     public void SetDiscordClient(DiscordSocketClient discordSocketClient)
     {
@@ -143,15 +160,88 @@ public class PluginLoader : IPluginLoader
         _SlashCommands.Clear();
         _LoadedPlugins.Clear();
 
-        PluginLoaderContext?.Unload();
-        PluginLoaderContext = null;
+        UnloadContexts();
         _IsLoaded = false;
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        await WaitForContextsToUnload();
 
         _Logger.Log("Unloaded plugins", this);
+    }
+
+    /// <summary>Not inlined, so no reference to a context stays on the stack of the method that waits for it to go away.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void UnloadContexts()
+    {
+        foreach ((PluginLoaderContext context, NativeLibraryTracker nativeLibraries) in _Contexts)
+        {
+            _UnloadingContexts.Add(new UnloadingContext(context.Name ?? "unknown", new WeakReference(context), nativeLibraries));
+            context.Unload();
+        }
+
+        _Contexts.Clear();
+    }
+
+    /// <summary>
+    /// A context is gone only once nothing references it. Its native libraries are freed after that and never before,
+    /// because plugin code that is still running would crash the whole process. A context that stays is reported but
+    /// otherwise harmless: the bot keeps running, new versions load alongside it, and the next unload tries it again.
+    /// </summary>
+    private async Task WaitForContextsToUnload()
+    {
+        for (int attempt = 0; attempt < UnloadAttempts && _UnloadingContexts.Count > 0; attempt++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            foreach (UnloadingContext context in _UnloadingContexts.Where(context => !context.Context.IsAlive).ToList())
+            {
+                FreeNativeLibraries(context);
+                _UnloadingContexts.Remove(context);
+            }
+
+            if (_UnloadingContexts.Count > 0)
+            {
+                await Task.Delay(UnloadAttemptDelay);
+            }
+        }
+
+        foreach (string plugin in PluginsStuckAfterUnload)
+        {
+            _Logger.Log($"Plugin {plugin} is still in memory after unloading: it left something running, such as a task, a timer or an event handler. Restart the bot to remove it completely.", this, LogType.Warning);
+        }
+    }
+
+    private void FreeNativeLibraries(UnloadingContext context)
+    {
+        if (!_Configuration.Get(FreeNativeLibrariesConfigurationKey, true))
+        {
+            return;
+        }
+
+        try
+        {
+            context.NativeLibraries.FreeAll();
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+        {
+            _Logger.Log($"Plugin {context.PluginName}: failed to free its native libraries: {exception.Message}", this, LogType.Warning);
+        }
+    }
+
+    private void DeleteLeftoverNativeCopies()
+    {
+        try
+        {
+            if (Directory.Exists(_NativeCacheFolder))
+            {
+                Directory.Delete(_NativeCacheFolder, true);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _Logger.Log($"Couldn't clear {_NativeCacheFolder}: {exception.Message}", this, LogType.Warning);
+        }
     }
 
     private void RaiseSafely(Action? handlers, string eventName)
@@ -217,8 +307,6 @@ public class PluginLoader : IPluginLoader
 
     private async Task LoadPluginFiles()
     {
-        PluginLoaderContext = new PluginLoaderContext(_Logger, "PluginLoader");
-
         List<LocalPlugin> installedPlugins = await _PluginManager.GetInstalledPlugins();
         List<LocalPlugin> enabledPlugins = installedPlugins.Where(plugin => plugin.IsEnabled).ToList();
 
@@ -243,9 +331,13 @@ public class PluginLoader : IPluginLoader
                 continue;
             }
 
+            var nativeLibraries = new NativeLibraryTracker(Path.GetFullPath(_NativeCacheFolder), _Logger);
+            var context = new PluginLoaderContext(_Logger, plugin.PluginName, HostRuntime.GetPluginLibraryFolders(plugin.PluginName), nativeLibraries);
+            _Contexts.Add((context, nativeLibraries));
+
             try
             {
-                Assembly assembly = LoadFromMemory(PluginLoaderContext, fullFilePath);
+                Assembly assembly = LoadFromMemory(context, fullFilePath);
                 _LoadedPlugins.Add(new LoadedPluginAssembly(plugin, assembly));
             }
             catch (Exception ex)
@@ -254,7 +346,7 @@ public class PluginLoader : IPluginLoader
             }
         }
 
-        _Logger.Log($"Loaded {PluginLoaderContext.Assemblies.Count()} assemblies", this);
+        _Logger.Log($"Loaded {_Contexts.Sum(entry => entry.Context.Assemblies.Count())} assemblies", this);
     }
 
     /// <summary>
@@ -263,7 +355,7 @@ public class PluginLoader : IPluginLoader
     /// later, so loading by path after a plugin's file was replaced would keep returning the old version. It also
     /// leaves the file unlocked, so it can be replaced while the plugin is loaded.
     /// </summary>
-    private static Assembly LoadFromMemory(AssemblyLoadContext context, string assemblyPath)
+    internal static Assembly LoadFromMemory(AssemblyLoadContext context, string assemblyPath)
     {
         using var assemblyStream = new MemoryStream(File.ReadAllBytes(assemblyPath));
 
@@ -280,14 +372,11 @@ public class PluginLoader : IPluginLoader
     private List<T> CreateEverythingOfType<T>() where T : class
     {
         var instances = new List<T>();
-        if (PluginLoaderContext is null)
-        {
-            return instances;
-        }
 
-        foreach (Assembly assembly in PluginLoaderContext.Assemblies)
+        // Only the plugins' main assemblies: what lives in their libraries is not for the bot to run
+        foreach (LoadedPluginAssembly plugin in _LoadedPlugins)
         {
-            foreach (Type type in GetLoadableTypes(assembly))
+            foreach (Type type in GetLoadableTypes(plugin.Assembly))
             {
                 if (!type.IsClass || type.IsAbstract || !typeof(T).IsAssignableFrom(type))
                 {

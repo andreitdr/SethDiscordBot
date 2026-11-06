@@ -33,6 +33,9 @@
       <ProjectReference Include="..\..\DiscordBotCore\DiscordBotCore.csproj" />
       <!-- Built first and copied next to the tests, but never referenced: the loader loads it into its own context. -->
       <ProjectReference Include="..\TestPlugins\Tests.FixturePlugin\Tests.FixturePlugin.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\TestPlugins\Tests.VersionPluginA\Tests.VersionPluginA.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\TestPlugins\Tests.VersionPluginB\Tests.VersionPluginB.csproj" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\TestPlugins\Tests.NativePlugin\Tests.NativePlugin.csproj" ReferenceOutputAssembly="false" />
       <None Include="..\TestPlugins\Tests.FixturePlugin\bin\$(Configuration)\net10.0\Tests.FixturePlugin.dll" Link="TestPlugins\Tests.FixturePlugin.dll" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 

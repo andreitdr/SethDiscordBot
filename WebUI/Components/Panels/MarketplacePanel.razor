@@ -28,6 +28,14 @@
     {
         <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>
     }
+    else if (Catalog.Compatibility != RepositoryCompatibility.Compatible)
+    {
+        <EmptyState Icon="@(Catalog.Compatibility == RepositoryCompatibility.Unreachable ? "cloud_off" : "sync_problem")"
+                    Title="@(Catalog.Compatibility == RepositoryCompatibility.Unreachable ? "Marketplace unavailable" : "This bot and the plugin repository don't work together")"
+                    Text="@Catalog.Compatibility.Describe()">
+            <RadzenButton Text="Retry" Icon="refresh" Variant="Variant.Outlined" Size="ButtonSize.Small" IsBusy="Catalog.OnlineLoading" Click="Catalog.RetryRepositoryAsync"/>
+        </EmptyState>
+    }
     else if (Catalog.OnlineError is not null && Catalog.Online.Count == 0)
     {
         <EmptyState Icon="cloud_off" Title="Marketplace unavailable" Text="@Catalog.OnlineError">

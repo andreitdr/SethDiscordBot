@@ -10,6 +10,12 @@ public interface IPluginManager
     /// </summary>
     bool IsRepositoryConfigured { get; }
 
+    /// <summary>
+    /// Whether this bot and the configured repository can work together. Nothing else here contacts a repository unless
+    /// they can. The answer is kept until <paramref name="recheck"/> is set or the BaseUrl changes.
+    /// </summary>
+    Task<RepositoryCompatibility> CheckRepositoryCompatibility(bool recheck = false);
+
     Task<List<OnlinePlugin>> GetOnlinePluginsList();
     Task<IResponse<OnlinePlugin>> GetOnlinePluginDataByName(string pluginName);
     Task<IResponse<OnlinePlugin>> GetOnlinePluginDataById(int pluginId);

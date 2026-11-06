@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Runtime.Loader;
+using DiscordBotCore.PluginManagement.Loading;
 using PluginPages;
 using WebUI;
 using Radzen;
@@ -17,6 +19,13 @@ currentDomain.AssemblyResolve += (sender, args) => LoadFromSameFolder(sender,arg
 
 static Assembly? LoadFromSameFolder(object? sender, ResolveEventArgs args, string[] extensions)
 {
+    // A plugin finds its own libraries through its load context. Loading them here would put them in the default
+    // context, where they can never be unloaded.
+    if (args.RequestingAssembly is not null && AssemblyLoadContext.GetLoadContext(args.RequestingAssembly) is PluginLoaderContext)
+    {
+        return null;
+    }
+
     string? requestedAssemblyName = new AssemblyName(args.Name).Name;
 
     // Satellite resource assemblies are probed for every culture and missing ones are normal; the runtime falls back
@@ -89,6 +98,7 @@ builder.Services.AddPluginPages();
 builder.Services.AddHostedService<PluginPagesBridge>();
 // Starts the bot on launch when AutoStart is on, and stops it cleanly on shutdown.
 builder.Services.AddHostedService<BotLifetimeService>();
+builder.Services.AddHostedService<RepositoryCompatibilityStartupCheck>();
 
 // Password sign-in (Dashboard__Password); without a password only this machine can open the dashboard.
 builder.AddDashboardAuthentication();

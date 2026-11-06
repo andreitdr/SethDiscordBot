@@ -67,6 +67,25 @@ public class Configuration : ConfigurationBase
         }
     }
 
+    public override void MergeFromFile()
+    {
+        if (!File.Exists(_DiskLocation))
+        {
+            return;
+        }
+
+        var jObject = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(_DiskLocation));
+        if (jObject is null)
+        {
+            return;
+        }
+
+        foreach (var kvp in jObject)
+        {
+            AddPairToDictionary(kvp, _InternalDictionary);
+        }
+    }
+
     private void AddPairToDictionary(KeyValuePair<string, JToken> kvp, IDictionary<string, object> dict)
     {
         if (kvp.Value is JObject nestedJObject)

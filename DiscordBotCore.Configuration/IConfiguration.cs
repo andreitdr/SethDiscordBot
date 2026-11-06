@@ -1,4 +1,4 @@
-﻿namespace DiscordBotCore.Configuration;
+namespace DiscordBotCore.Configuration;
 
 public interface IConfiguration
 {
@@ -129,4 +129,10 @@ public interface IConfiguration
     /// </summary>
     /// <returns></returns>
     void LoadFromFile();
+
+    /// <summary>
+    /// Applies what is in the configuration file on top of the current values. Unlike <see cref="LoadFromFile"/> this
+    /// keeps values that were never saved, such as defaults added while the application runs.
+    /// </summary>
+    void MergeFromFile();
 }

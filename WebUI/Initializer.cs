@@ -49,27 +49,9 @@ public static class Initializer
             return configuration;
         });
 
+        // Without a BaseUrl the marketplace shows "No plugin repository configured" and requests nothing
         builder.Services.AddSingleton<IPluginRepositoryConfiguration>(sp =>
-        {
-            IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-            Dictionary<string, string>? remotePluginConnectionConfigurationDetails =
-                configuration.Get<Dictionary<string, string>>(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.Details);
-
-            // Without a BaseUrl the marketplace shows "No plugin repository configured" and requests nothing
-            if (remotePluginConnectionConfigurationDetails is null ||
-                !remotePluginConnectionConfigurationDetails.TryGetValue(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.BaseUrl, out string? baseUrl) ||
-                string.IsNullOrWhiteSpace(baseUrl))
-            {
-                return PluginRepositoryConfiguration.Default;
-            }
-
-            PluginRepositoryConfiguration defaults = PluginRepositoryConfiguration.Default;
-            return new PluginRepositoryConfiguration(
-                baseUrl,
-                remotePluginConnectionConfigurationDetails.GetValueOrDefault(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.PluginsEndpoint, defaults.PluginRepositoryLocation),
-                remotePluginConnectionConfigurationDetails.GetValueOrDefault(DefaultConfigurationKeys.RemotePluginConnectionConfiguration.DependenciesEndpoint, defaults.DependenciesRepositoryLocation)
-            );
-        });
+            new ConfiguredPluginRepositoryConfiguration(sp.GetRequiredService<IConfiguration>()));
 
         builder.Services.AddSingleton<IPluginRepository>(sp =>
         {

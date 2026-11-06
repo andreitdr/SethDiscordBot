@@ -35,6 +35,11 @@ public class PluginRepositoryHttpTests
 
     private readonly FakeHttpHandler _http = new();
 
+    public PluginRepositoryHttpTests()
+    {
+        Respond("compatibility", """{"protocolVersion":2,"minimumClientProtocolVersion":2}""");
+    }
+
     private PluginRepository CreateRepository() =>
         new(new PluginRepositoryConfiguration(Base, "plugin/", "dependency/"), new Mock<ILogger>().Object, new HttpClient(_http));
 

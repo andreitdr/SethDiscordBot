@@ -29,11 +29,16 @@ Only **approved** plugins built for the **current operating system** (Windows, L
 1. fetches the plugin's details by id,
 2. downloads the DLL to `<PluginFolder>/<name>.dll`,
 3. downloads each dependency to `./Libraries/<name>/<dependency location>`, in parallel,
-4. adds the plugin to the database, enabled, and records its *executable* dependencies.
+4. downloads the plugin's NuGet packages and everything they depend on from nuget.org into `./Libraries/<name>/`,
+5. adds the plugin to the database, enabled, and records its *executable* dependencies.
 
 If a plugin with the same name is already installed, Install only proceeds when the marketplace version is newer (versions are numeric `major.minor.patch`); it then replaces the old database entry and keeps its enabled state. Installing the same or an older version fails with *Versions are the same* or *Current version is newer*, and a version that isn't numeric `major.minor.patch` (such as `1.0.0-beta`) fails with *Invalid version*.
 
 Then load or reload plugins. The ⓘ button in **Installed plugins** shows the repository's details of a marketplace plugin.
+
+## When the bot and the repository don't match
+
+The bot asks the repository for `compatibility` at startup and whenever you open the Marketplace or click **Retry**. If they can't work together, the Marketplace says what to do and nothing else is requested: update the bot, or change `BaseUrl` in `config.json` and click **Retry**. No restart is needed.
 
 ## Repository API
 
@@ -66,6 +71,14 @@ Query values are URL-encoded (a plugin name with a space is sent as `My%20Plugin
 ```
 
 `version` must be `major.minor.patch`. Property names are matched case-insensitively.
+
+### Compatibility
+
+`GET {BaseUrl}compatibility` returns `{"protocolVersion": 2, "minimumClientProtocolVersion": 2}`. A repository without this route counts as too old. The bot sends its own version in the `X-Seth-Protocol` header on every request.
+
+### NuGet packages
+
+`GET {BaseUrl}{DependenciesEndpoint}get-nuget-by-plugin-id?pluginId={id}` returns the packages a plugin needs, as `[{"packageId": "Humanizer.Core", "version": "3.0.10"}]`.
 
 ### Dependency object
 

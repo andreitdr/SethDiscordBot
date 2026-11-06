@@ -25,6 +25,7 @@ public class PluginManagerOperationsTests : IDisposable
         Directory.CreateDirectory(_pluginFolder);
         _remote.Setup(r => r.IsConfigured).Returns(true);
         _remote.Setup(r => r.GetDependenciesForPlugin(It.IsAny<int>())).ReturnsAsync([]);
+        _remote.Setup(r => r.GetNuGetDependenciesForPlugin(It.IsAny<int>())).ReturnsAsync([]);
         _configuration.Setup(c => c.Get<string>("PluginFolder")).Returns(_pluginFolder);
         _local.Setup(r => r.AddPluginAsync(It.IsAny<LocalPlugin>())).Callback<LocalPlugin>(_added.Add).ReturnsAsync(Guid.NewGuid());
         _local.Setup(r => r.AddDependencyAsync(It.IsAny<LocalDependencyInfo>())).Callback<LocalDependencyInfo>(_addedDependencies.Add).ReturnsAsync(Guid.NewGuid());
@@ -41,8 +42,8 @@ public class PluginManagerOperationsTests : IDisposable
         }
     }
 
-    private PluginManager CreateManager() =>
-        new(_remote.Object, _local.Object, new Mock<ILogger>().Object, _configuration.Object, new HttpClient(_http));
+    private PluginManager CreateManager(INuGetDependencyInstaller? nuGetInstaller = null) =>
+        new(_remote.Object, _local.Object, new Mock<ILogger>().Object, _configuration.Object, new HttpClient(_http), nuGetInstaller);
 
     private OnlinePlugin OnlinePlugin(string version = "1.0.0", string? name = null) =>
         new(7, name ?? _pluginName, "description", version, "author", "https://files.example.com/plugin.dll", 1, true);
@@ -53,6 +54,65 @@ public class PluginManagerOperationsTests : IDisposable
     private static IProgress<float> NoProgress => new Progress<float>();
 
     #region InstallPlugin
+
+    [Theory]
+    [InlineData(RepositoryCompatibility.BotTooOld)]
+    [InlineData(RepositoryCompatibility.ServerTooOld)]
+    [InlineData(RepositoryCompatibility.Unreachable)]
+    public async Task InstallPlugin_RefusesARepositoryItCantWorkWith(RepositoryCompatibility compatibility)
+    {
+        _remote.Setup(r => r.CheckCompatibilityAsync(false)).ReturnsAsync(compatibility);
+
+        var response = await CreateManager().InstallPlugin(OnlinePlugin(), NoProgress);
+
+        Assert.False(response.IsSuccess);
+        Assert.Equal(compatibility.Describe(), response.Message);
+        Assert.Empty(_http.RequestedUrls);
+        Assert.Empty(_added);
+    }
+
+    [Fact]
+    public async Task InstallPlugin_InstallsNuGetPackagesIntoThePluginsOwnFolder()
+    {
+        _http.Add("https://files.example.com/plugin.dll", [1]);
+        var packages = new List<OnlineNuGetDependency> { new("Humanizer.Core", "3.0.10") };
+        _remote.Setup(r => r.GetNuGetDependenciesForPlugin(7)).ReturnsAsync(packages);
+        var installer = new Mock<INuGetDependencyInstaller>();
+
+        var response = await CreateManager(installer.Object).InstallPlugin(OnlinePlugin(), NoProgress);
+
+        Assert.True(response.IsSuccess, response.Message);
+        installer.Verify(i => i.InstallAsync(packages, Path.GetFullPath(Path.Combine("Libraries", _pluginName)), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Single(_added);
+    }
+
+    [Fact]
+    public async Task InstallPlugin_FailsWithoutAddingThePluginWhenAPackageCantBeInstalled()
+    {
+        _http.Add("https://files.example.com/plugin.dll", [1]);
+        _remote.Setup(r => r.GetNuGetDependenciesForPlugin(7)).ReturnsAsync([new OnlineNuGetDependency("Missing", "1.0.0")]);
+        var installer = new Mock<INuGetDependencyInstaller>();
+        installer.Setup(i => i.InstallAsync(It.IsAny<IReadOnlyCollection<OnlineNuGetDependency>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                 .ThrowsAsync(new NuGetInstallException("It doesn't exist"));
+
+        var response = await CreateManager(installer.Object).InstallPlugin(OnlinePlugin(), NoProgress);
+
+        Assert.False(response.IsSuccess);
+        Assert.Equal("It doesn't exist", response.Message);
+        Assert.Empty(_added);
+    }
+
+    [Fact]
+    public async Task InstallPlugin_FailsWhenTheRepositoryCantListThePackages()
+    {
+        _remote.Setup(r => r.GetNuGetDependenciesForPlugin(7)).ReturnsAsync((List<OnlineNuGetDependency>?)null);
+
+        var response = await CreateManager().InstallPlugin(OnlinePlugin(), NoProgress);
+
+        Assert.False(response.IsSuccess);
+        Assert.Contains("NuGet packages", response.Message);
+        Assert.Empty(_added);
+    }
 
     [Fact]
     public async Task InstallPlugin_DownloadsThePluginAndAddsItEnabled()

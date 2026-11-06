@@ -44,6 +44,12 @@ public sealed partial class PluginCatalogService : IStateNotifier
     public bool OnlineLoading { get; private set; }
     public string? OnlineError { get; private set; }
 
+    /// <summary>How this bot and the repository get along; the marketplace stays empty unless they are compatible.</summary>
+    public RepositoryCompatibility Compatibility { get; private set; } = RepositoryCompatibility.Compatible;
+
+    /// <summary>Plugins still in memory after the last unload, because they left something running. A restart removes them.</summary>
+    public IReadOnlyList<string> PluginsStuckAfterUnload => _BotState.PluginsStuckAfterUnload;
+
     /// <summary>False when no plugin repository URL is set; the marketplace then requests nothing.</summary>
     public bool RepositoryConfigured => _PluginManager.IsRepositoryConfigured;
 
@@ -108,7 +114,8 @@ public sealed partial class PluginCatalogService : IStateNotifier
             OnlineError = null;
             Changed?.Invoke();
 
-            Online = await _PluginManager.GetOnlinePluginsList();
+            Compatibility = await _PluginManager.CheckRepositoryCompatibility(recheck: true);
+            Online = Compatibility == RepositoryCompatibility.Compatible ? await _PluginManager.GetOnlinePluginsList() : [];
         }
         catch (Exception ex)
         {
@@ -122,6 +129,13 @@ public sealed partial class PluginCatalogService : IStateNotifier
             _OnlineGate.Release();
             Changed?.Invoke();
         }
+    }
+
+    /// <summary>Reads config.json again and asks the repository again, so a fixed BaseUrl works without a restart.</summary>
+    public async Task RetryRepositoryAsync()
+    {
+        _Configuration.MergeFromFile();
+        await RefreshOnlineAsync();
     }
 
     public async Task<IResponse<bool>> InstallAsync(OnlinePlugin plugin)

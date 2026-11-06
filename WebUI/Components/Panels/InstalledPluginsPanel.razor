@@ -21,6 +21,13 @@
                       Click="OpenAddLocal"/>
     </div>
 
+    @if (Catalog.PluginsStuckAfterUnload.Count > 0)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" Shade="Shade.Lighter" AllowClose="false" Size="AlertSize.Small">
+            Restart recommended: @string.Join(", ", Catalog.PluginsStuckAfterUnload) stayed in memory after unloading, because something it started is still running. The bot keeps working.
+        </RadzenAlert>
+    }
+
     @if (!Catalog.InstalledLoaded)
     {
         <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>

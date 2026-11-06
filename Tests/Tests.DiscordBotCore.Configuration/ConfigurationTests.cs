@@ -383,5 +383,6 @@ public class ConfigurationTests : IDisposable
     {
         public override Task SaveToFile() => Task.CompletedTask;
         public override void LoadFromFile() { }
+        public override void MergeFromFile() { }
     }
 }
