@@ -115,6 +115,25 @@ public class PluginManagerOperationsTests : IDisposable
     }
 
     [Fact]
+    public async Task InstallPlugin_DownloadsIdentifyThemselvesAsTheBot()
+    {
+        // The repository's API answers only the bot, file downloads included
+        _http.Add("https://files.example.com/plugin.dll", [1]);
+        _http.Add("https://files.example.com/helper.so", [2]);
+        _remote.Setup(r => r.GetDependenciesForPlugin(7)).ReturnsAsync([OnlineDependency("helper.so", "./Libraries/helper.so")]);
+
+        var response = await CreateManager().InstallPlugin(OnlinePlugin(), NoProgress);
+
+        Assert.True(response.IsSuccess, response.Message);
+        Assert.Equal(2, _http.RequestHeaders.Count);
+        Assert.All(_http.RequestHeaders, request =>
+        {
+            Assert.Equal(RepositoryProtocol.ClientVersion.ToString(), request.Protocol);
+            Assert.Equal(RepositoryProtocol.UserAgent, request.UserAgent);
+        });
+    }
+
+    [Fact]
     public async Task InstallPlugin_DownloadsThePluginAndAddsItEnabled()
     {
         _http.Add("https://files.example.com/plugin.dll", [1, 2, 3]);

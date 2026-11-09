@@ -23,7 +23,7 @@ public class PluginRepository : IPluginRepository
     {
         _pluginRepositoryConfiguration = pluginRepositoryConfiguration;
         _httpClient = httpClient;
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(RepositoryProtocol.HeaderName, RepositoryProtocol.ClientVersion.ToString());
+        RepositoryProtocol.Apply(_httpClient);
         _logger = logger;
     }
 

@@ -74,7 +74,9 @@ Query values are URL-encoded (a plugin name with a space is sent as `My%20Plugin
 
 ### Compatibility
 
-`GET {BaseUrl}compatibility` returns `{"protocolVersion": 2, "minimumClientProtocolVersion": 2}`. A repository without this route counts as too old. The bot sends its own version in the `X-Seth-Protocol` header on every request.
+`GET {BaseUrl}compatibility` returns `{"protocolVersion": 3, "minimumClientProtocolVersion": 3}`. A repository without this route counts as too old.
+
+Every request, file downloads included, sends the bot's protocol version in the `X-Seth-Protocol` header and identifies the bot with `User-Agent: SethDiscordBot/<version>` (`RepositoryProtocol.Apply`). Since protocol 3 the repository's API answers only requests that carry both, and refuses browsers.
 
 ### NuGet packages
 

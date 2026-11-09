@@ -1,3 +1,4 @@
+using DiscordBotCore.PluginManagement.Helpers;
 using System.Net;
 
 namespace Tests.DiscordBotCore.PluginManagement;
@@ -12,6 +13,9 @@ internal sealed class FakeHttpHandler : HttpMessageHandler
     public int MaxConcurrentRequests { get; private set; }
     public List<string> RequestedUrls { get; } = new();
 
+    /// <summary>The protocol and User-Agent headers of every request, in order</summary>
+    public List<(string Url, string? Protocol, string UserAgent)> RequestHeaders { get; } = new();
+
     public FakeHttpHandler Add(string url, byte[] body, HttpStatusCode status = HttpStatusCode.OK, bool sendLength = true)
     {
         _responses[url] = (status, body, sendLength);
@@ -24,6 +28,9 @@ internal sealed class FakeHttpHandler : HttpMessageHandler
         lock (RequestedUrls)
         {
             RequestedUrls.Add(url);
+            RequestHeaders.Add((url,
+                request.Headers.TryGetValues(RepositoryProtocol.HeaderName, out var protocol) ? protocol.Single() : null,
+                request.Headers.UserAgent.ToString()));
             _inFlight++;
             MaxConcurrentRequests = Math.Max(MaxConcurrentRequests, _inFlight);
         }

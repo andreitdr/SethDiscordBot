@@ -37,7 +37,7 @@ public class PluginRepositoryHttpTests
 
     public PluginRepositoryHttpTests()
     {
-        Respond("compatibility", """{"protocolVersion":2,"minimumClientProtocolVersion":2}""");
+        Respond("compatibility", $$"""{"protocolVersion":{{RepositoryProtocol.ClientVersion}},"minimumClientProtocolVersion":{{RepositoryProtocol.ClientVersion}}}""");
     }
 
     private PluginRepository CreateRepository() =>

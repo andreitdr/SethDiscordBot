@@ -29,11 +29,12 @@ public sealed class PluginManager : IPluginManager
     {
     }
 
-    /// <param name="httpClient">Downloads plugin and dependency files.</param>
+    /// <param name="httpClient">Downloads plugin and dependency files from the repository, so it identifies itself as this bot.</param>
     /// <param name="nuGetInstaller">Installs a plugin's NuGet packages; from nuget.org when not given.</param>
     public PluginManager(IPluginRepository pluginRepository, ILocalPluginRepository localPluginRepository, ILogger logger, IConfiguration configuration, HttpClient httpClient, INuGetDependencyInstaller? nuGetInstaller = null)
     {
         _HttpClient = httpClient;
+        RepositoryProtocol.Apply(_HttpClient);
         _NuGetInstaller = nuGetInstaller ?? new NuGetDependencyInstaller(new NuGetOrgPackageSource(), logger);
         _PluginRepository = pluginRepository;
         _Logger = logger;

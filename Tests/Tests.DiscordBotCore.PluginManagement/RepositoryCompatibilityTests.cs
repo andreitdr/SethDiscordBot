@@ -142,7 +142,7 @@ public class RepositoryCompatibilityTests
     }
 
     [Fact]
-    public async Task EveryRequestSaysWhichProtocolTheBotSpeaks()
+    public async Task EveryRequestSaysItIsTheBotAndWhichProtocolItSpeaks()
     {
         var capture = new HeaderCapture();
         var repository = new PluginRepository(new MutableConfiguration(), new Mock<ILogger>().Object, new HttpClient(capture));
@@ -150,15 +150,19 @@ public class RepositoryCompatibilityTests
         await repository.CheckCompatibilityAsync();
 
         Assert.Equal(RepositoryProtocol.ClientVersion.ToString(), capture.Protocol);
+        Assert.Equal(RepositoryProtocol.UserAgent, capture.UserAgent);
+        Assert.Matches(@"^SethDiscordBot/\S+$", capture.UserAgent);
     }
 
     private sealed class HeaderCapture : HttpMessageHandler
     {
         public string? Protocol { get; private set; }
+        public string? UserAgent { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Protocol = request.Headers.GetValues(RepositoryProtocol.HeaderName).Single();
+            UserAgent = request.Headers.UserAgent.ToString();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
         }
     }
