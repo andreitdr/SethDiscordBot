@@ -34,6 +34,15 @@ public sealed partial class PluginCatalogService : IStateNotifier
         _BotState = botState;
         _Configuration = configuration;
         _Logger = logger;
+        _BotState.PluginsLoadFinished += OnPluginsLoadFinished;
+    }
+
+    private async void OnPluginsLoadFinished()
+    {
+        if (InstalledLoaded)
+        {
+            await RefreshInstalledAsync();
+        }
     }
 
     public IReadOnlyList<LocalPlugin> Installed { get; private set; } = [];
@@ -52,6 +61,9 @@ public sealed partial class PluginCatalogService : IStateNotifier
 
     /// <summary>False when no plugin repository URL is set; the marketplace then requests nothing.</summary>
     public bool RepositoryConfigured => _PluginManager.IsRepositoryConfigured;
+
+    /// <summary>Installed plugins the marketplace said were removed from it</summary>
+    public IReadOnlyList<LocalPlugin> RemovedFromMarketplace => Installed.Where(p => p.RemovalNotice is not null).ToList();
 
     public bool IsInstalled(string pluginName) =>
         Installed.Any(p => string.Equals(p.PluginName, pluginName, StringComparison.OrdinalIgnoreCase));

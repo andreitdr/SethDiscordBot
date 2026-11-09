@@ -33,6 +33,12 @@ public sealed class BotStateService : IStateNotifier, IDisposable
 
     public event Action? Changed;
 
+    /// <summary>
+    /// After every plugin load. Loading can change installed plugins (one removed from the marketplace as unsafe is
+    /// turned off), so their list is read again.
+    /// </summary>
+    public event Action? PluginsLoadFinished;
+
     public BotStateService(IDiscordBotApplication bot, IPluginLoader pluginLoader, IConfiguration configuration, ILogger logger)
     {
         _Bot = bot;
@@ -263,6 +269,10 @@ public sealed class BotStateService : IStateNotifier, IDisposable
         {
             _Logger.LogException(ex, this);
             return Response.Failure($"Loading plugins failed: {ex.Message}");
+        }
+        finally
+        {
+            PluginsLoadFinished?.Invoke();
         }
     }
 

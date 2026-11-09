@@ -53,6 +53,30 @@ The **Enabled** switch decides whether a plugin is part of the next load. Disabl
 - **Local plugin**: replace its file in `Data/Plugins` with the new build (the file isn't locked while loaded) and reload. Or delete the plugin and add the new DLL with a new version number.
 - **Marketplace plugin**: delete it and install it again.
 
+## Plugins removed from the marketplace
+
+A plugin's developer, or the marketplace's administrator, can remove a plugin from the marketplace. It can't be installed
+or updated after that, but your copy keeps working. Each time plugins are loaded, the bot asks the repository about the
+plugins you installed from it (not the ones you added by hand), and for each removed one it tells you who removed it,
+when, how serious it is and why:
+
+- in the **Console**, as a warning, or as an error when it's Critical;
+- in **Installed plugins**, as a banner and a *Removed* badge next to its name.
+
+| Severity | Meaning | What the bot does |
+| --- | --- | --- |
+| Notice | Obsolete or no longer maintained | Tells you, keeps running it |
+| Warning | You should stop using it | Warns you, keeps running it |
+| Critical | Unsafe | Turns it off before loading plugins |
+
+A plugin turned off this way stays off until you decide. Turning it back on with the **Enabled** switch asks you to
+confirm, and then the bot keeps it on despite that notice. You're still told about it at every load, and it's turned off
+again only if a more serious notice arrives later.
+
+If the repository can't be reached, the bot uses the last answer it saved, so the message doesn't disappear. If the
+developer publishes the plugin again, the notice goes away (a plugin that was turned off stays off until you turn it on).
+Repositories older than protocol 4 can't say whether a plugin was removed, so nothing is reported for them.
+
 ## Delete a plugin
 
 Click the 🗑 button and confirm. The bot unloads the plugins if they are loaded, deletes the DLL, deletes the files in `Libraries/<name>/`, removes the plugin from the database, and loads the plugins again.

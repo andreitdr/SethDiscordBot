@@ -307,6 +307,16 @@ public class PluginLoader : IPluginLoader
 
     private async Task LoadPluginFiles()
     {
+        // Warns about plugins removed from the marketplace, and turns off the ones removed as unsafe, before loading
+        try
+        {
+            await _PluginManager.CheckRemovedPluginsAsync();
+        }
+        catch (Exception ex)
+        {
+            _Logger.Log($"Couldn't check whether installed plugins were removed from the marketplace: {ex.Message}", this, LogType.Warning);
+        }
+
         List<LocalPlugin> installedPlugins = await _PluginManager.GetInstalledPlugins();
         List<LocalPlugin> enabledPlugins = installedPlugins.Where(plugin => plugin.IsEnabled).ToList();
 

@@ -13,8 +13,16 @@ public static class RepositoryProtocol
     /// 2 = NuGet dependencies and the dependencyName/dependencyLink/dependencyLocation fields.
     /// 3 = the repository's API answers only the bot: every request, file downloads included, sends <see cref="HeaderName"/>
     /// and <see cref="UserAgent"/>.
+    /// 4 = <c>plugin/status</c>: whether installed plugins were removed from the repository. Asked only of servers that
+    /// speak <see cref="StatusServerVersion"/> or later; older ones still work for everything else.
     /// </summary>
-    public const int ClientVersion = 3;
+    public const int ClientVersion = 4;
+
+    /// <summary>The first server protocol with the <c>plugin/status</c> route</summary>
+    public const int StatusServerVersion = 4;
+
+    /// <summary>The most names the repository answers about in one <c>plugin/status</c> request</summary>
+    public const int MaxStatusNamesPerRequest = 200;
 
     public const int MinimumServerVersion = 3;
 

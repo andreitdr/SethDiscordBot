@@ -12,6 +12,9 @@ Plugins:
 - file_path
 - is_offline_added
 - is_enabled
+- removed_at, removed_by_admin, removal_severity, removal_reason: what the repository said when the plugin was removed
+  from it (null while it wasn't)
+- acknowledged_removal_severity: the removal the owner chose to keep running the plugin despite
 
 Dependencies:
 - id (guid)
@@ -25,6 +28,10 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
 {
     private readonly SqlDatabase _LocalPluginDatabase;
 
+    // Named, so rows read the same in databases created before the removal columns were added
+    private const string PluginColumns =
+        "id, name, version, file_path, is_offline_added, is_enabled, removed_at, removed_by_admin, removal_severity, removal_reason, acknowledged_removal_severity";
+
     public LocalPluginRepository(string pluginDatabaseFile)
     {
         _LocalPluginDatabase = new SqlDatabase(pluginDatabaseFile);
@@ -33,12 +40,12 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
     
     public async Task<List<LocalPlugin>> GetAllPluginsAsync()
     {
-        return await _LocalPluginDatabase.ReadListOfTypeAsync("select * from Plugins", PluginConvertor);
+        return await _LocalPluginDatabase.ReadListOfTypeAsync($"select {PluginColumns} from Plugins", PluginConvertor);
     }
 
     public async Task<LocalPlugin?> GetPluginByNameAsync(string name)
     {
-        return await _LocalPluginDatabase.ReadObjectOfTypeAsync("select * from Plugins where name = @name", PluginConvertor, Parameter("name", name));
+        return await _LocalPluginDatabase.ReadObjectOfTypeAsync($"select {PluginColumns} from Plugins where name = @name", PluginConvertor, Parameter("name", name));
     }
 
     public async Task<List<LocalDependencyInfo>> GetDependenciesForPluginAsync(Guid pluginId)
@@ -81,14 +88,22 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
     public async Task<bool> UpdatePluginAsync(LocalPlugin plugin)
     {
         string sql =
-            "update Plugins set name = @name, version = @version, file_path = @filePath, is_offline_added = @isOfflineAdded, is_enabled = @isEnabled where id = @pluginId";
+            "update Plugins set name = @name, version = @version, file_path = @filePath, is_offline_added = @isOfflineAdded, is_enabled = @isEnabled, " +
+            "removed_at = @removedAt, removed_by_admin = @removedByAdmin, removal_severity = @removalSeverity, removal_reason = @removalReason, " +
+            "acknowledged_removal_severity = @acknowledgedRemovalSeverity where id = @pluginId";
 
+        PluginRemovalNotice? notice = plugin.RemovalNotice;
         int result = await _LocalPluginDatabase.ExecuteNonQueryAsync(sql,
             Parameter("name", plugin.PluginName),
             Parameter("version", plugin.PluginVersion),
             Parameter("filePath", plugin.FilePath),
             Parameter("isOfflineAdded", plugin.IsOfflineAdded),
             Parameter("isEnabled", plugin.IsEnabled),
+            NullableParameter("removedAt", notice?.RemovedAt?.ToString("O")),
+            NullableParameter("removedByAdmin", notice is null ? null : notice.RemovedByAdministrator),
+            NullableParameter("removalSeverity", notice?.Severity.ToString()),
+            NullableParameter("removalReason", notice?.Reason),
+            NullableParameter("acknowledgedRemovalSeverity", plugin.AcknowledgedRemovalSeverity?.ToString()),
             IdParameter("pluginId", plugin.Id));
         return result > 0;
     }
@@ -135,6 +150,9 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
 
     private static KeyValuePair<string, object> Parameter(string name, object value) => new(name, value);
 
+    // SqlDatabase turns null into DBNull
+    private static KeyValuePair<string, object> NullableParameter(string name, object? value) => new(name, value!);
+
     // Ids are stored as lowercase text; a Guid parameter would be bound differently and never match
     private static KeyValuePair<string, object> IdParameter(string name, Guid id) => new(name, id.ToString());
 
@@ -150,8 +168,24 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
             FilePath = (string)values[3],
             IsOfflineAdded = values[4].ToString() == "1",
             IsEnabled = values[5].ToString() == "1",
+            RemovalNotice = ReadRemovalNotice(values),
+            AcknowledgedRemovalSeverity = ReadSeverity(values[10]),
         };
     }
+
+    private static PluginRemovalNotice? ReadRemovalNotice(object[] values)
+    {
+        if (ReadSeverity(values[8]) is not { } severity)
+        {
+            return null;
+        }
+
+        DateTimeOffset? removedAt = DateTimeOffset.TryParse(values[6] as string, out DateTimeOffset at) ? at : null;
+        return new PluginRemovalNotice(removedAt, values[7].ToString() == "1", severity, values[9] as string);
+    }
+
+    private static PluginRemovalSeverity? ReadSeverity(object value) =>
+        value is string text && Enum.TryParse(text, out PluginRemovalSeverity severity) && Enum.IsDefined(severity) ? severity : null;
 
     private LocalDependencyInfo DependencyConvertor(object[] values)
     {
@@ -185,6 +219,10 @@ public class LocalPluginRepository : ILocalPluginRepository, IAsyncDisposable
         );";
 
         _LocalPluginDatabase.Execute(sql);
+
+        // Added later: databases from older versions of the bot get them here
+        _LocalPluginDatabase.AddColumnsToTable("Plugins", ["removed_at", "removal_severity", "removal_reason", "acknowledged_removal_severity"]);
+        _LocalPluginDatabase.AddColumnsToTable("Plugins", ["removed_by_admin"], "INTEGER");
     }
 }
 

@@ -293,9 +293,78 @@ public sealed class PluginManager : IPluginManager
         }
 
         plugin.IsEnabled = status;
-        
+        if (status && plugin.RemovalNotice is { } notice)
+        {
+            plugin.AcknowledgedRemovalSeverity = notice.Severity;
+        }
+
         await _LocalPluginRepository.UpdatePluginAsync(plugin);
 
+    }
+
+    public async Task<List<LocalPlugin>> CheckRemovedPluginsAsync()
+    {
+        List<LocalPlugin> fromMarketplace = (await _LocalPluginRepository.GetAllPluginsAsync())
+            .Where(plugin => !plugin.IsOfflineAdded)
+            .ToList();
+        if (fromMarketplace.Count == 0)
+        {
+            return [];
+        }
+
+        List<OnlinePluginStatus>? statuses = IsRepositoryConfigured
+            ? await _PluginRepository.GetPluginStatuses(fromMarketplace.Select(plugin => plugin.PluginName).ToList())
+            : null;
+
+        var removed = new List<LocalPlugin>();
+        foreach (LocalPlugin plugin in fromMarketplace)
+        {
+            OnlinePluginStatus? status = statuses?.FirstOrDefault(s => string.Equals(s.Name, plugin.PluginName, StringComparison.OrdinalIgnoreCase));
+            bool changed = ApplyStatus(plugin, status);
+
+            if (plugin.RemovalNotice is { } notice)
+            {
+                if (notice.DisablesPlugin && plugin.IsEnabled && !(plugin.AcknowledgedRemovalSeverity >= notice.Severity))
+                {
+                    plugin.IsEnabled = false;
+                    changed = true;
+                }
+
+                removed.Add(plugin);
+                string turnedOff = plugin.IsDisabledByRemoval ? " It is turned off: turn it back on from the dashboard to keep using it anyway." : "";
+                _Logger.Log(notice.Describe(plugin.PluginName) + turnedOff, this,
+                    notice.Severity >= PluginRemovalSeverity.Critical ? LogType.Error : LogType.Warning);
+            }
+
+            if (changed)
+            {
+                await _LocalPluginRepository.UpdatePluginAsync(plugin);
+            }
+        }
+
+        return removed;
+    }
+
+    /// <summary>
+    /// Takes the repository's answer into the saved plugin. No answer (or Unknown) keeps what was saved: a plugin removed
+    /// once stays removed until the repository says it's available again.
+    /// </summary>
+    internal static bool ApplyStatus(LocalPlugin plugin, OnlinePluginStatus? status)
+    {
+        switch (status?.Status)
+        {
+            case OnlinePluginAvailability.Removed when status.Removal is { } notice && notice != plugin.RemovalNotice:
+                plugin.RemovalNotice = notice;
+                return true;
+
+            case OnlinePluginAvailability.Available when plugin.RemovalNotice is not null || plugin.AcknowledgedRemovalSeverity is not null:
+                plugin.RemovalNotice = null;
+                plugin.AcknowledgedRemovalSeverity = null;
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     public async Task<IResponse<bool>> UninstallPluginByName(string pluginName)

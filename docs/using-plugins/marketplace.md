@@ -50,6 +50,7 @@ A plugin repository must answer these `GET` requests. `{BaseUrl}`, `{PluginsEndp
 | `{BaseUrl}{PluginsEndpoint}get-by-id?pluginId={id}&includeNotApproved=false` | one plugin |
 | `{BaseUrl}{PluginsEndpoint}get-by-name?pluginName={name}&operatingSystem={os}&includeNotApproved=False` | one plugin |
 | `{BaseUrl}{DependenciesEndpoint}get-by-plugin-id?pluginId={id}` | array of dependencies |
+| `{BaseUrl}{PluginsEndpoint}status?names={name}&names={name}…` | array of plugin statuses (protocol 4, see below) |
 
 Query values are URL-encoded (a plugin name with a space is sent as `My%20Plugin`).
 
@@ -74,9 +75,23 @@ Query values are URL-encoded (a plugin name with a space is sent as `My%20Plugin
 
 ### Compatibility
 
-`GET {BaseUrl}compatibility` returns `{"protocolVersion": 3, "minimumClientProtocolVersion": 3}`. A repository without this route counts as too old.
+`GET {BaseUrl}compatibility` returns `{"protocolVersion": 4, "minimumClientProtocolVersion": 3}`. A repository without this route counts as too old. The bot speaks protocol 4 and works with repositories from protocol 3; only protocol 4 and later can report removed plugins.
 
 Every request, file downloads included, sends the bot's protocol version in the `X-Seth-Protocol` header and identifies the bot with `User-Agent: SethDiscordBot/<version>` (`RepositoryProtocol.Apply`). Since protocol 3 the repository's API answers only requests that carry both, and refuses browsers.
+
+### Plugin status
+
+`GET {BaseUrl}{PluginsEndpoint}status?names=A&names=B` (protocol 4, up to 200 names per request) says whether installed plugins are still in the repository:
+
+```json
+[
+  { "Name": "A", "Status": "Removed", "RemovedAt": "2026-11-09T19:51:04+00:00", "RemovedBy": "Administrator",
+    "Severity": "Critical", "Reason": "Sends the bot's token to another server" },
+  { "Name": "B", "Status": "Available", "RemovedAt": null, "RemovedBy": null, "Severity": null, "Reason": null }
+]
+```
+
+`Status` is `Available`, `Removed` or `Unknown` (never published there). `RemovedBy` is `Developer` or `Administrator`, `Severity` is `Notice`, `Warning` or `Critical`. A status the bot doesn't recognise counts as `Unknown`, and a severity it doesn't recognise as `Critical`. What the bot does with it: [Plugins removed from the marketplace](managing-plugins.md#plugins-removed-from-the-marketplace).
 
 ### NuGet packages
 

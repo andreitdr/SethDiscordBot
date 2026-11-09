@@ -13,6 +13,7 @@ public class PluginRepository : IPluginRepository
     private readonly ILogger _logger;
     private RepositoryCompatibility? _knownCompatibility;
     private string? _knownCompatibilityBaseUrl;
+    private int _knownServerVersion;
 
     public PluginRepository(IPluginRepositoryConfiguration pluginRepositoryConfiguration, ILogger logger)
         : this(pluginRepositoryConfiguration, logger, new HttpClient())
@@ -250,6 +251,7 @@ public class PluginRepository : IPluginRepository
             using JsonDocument document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             int serverVersion = document.RootElement.GetProperty("protocolVersion").GetInt32();
             int minimumClientVersion = document.RootElement.GetProperty("minimumClientProtocolVersion").GetInt32();
+            _knownServerVersion = serverVersion;
 
             if (RepositoryProtocol.ClientVersion < minimumClientVersion)
             {
@@ -271,6 +273,93 @@ public class PluginRepository : IPluginRepository
             _logger.LogException(exception, this);
             return RepositoryCompatibility.ServerTooOld;
         }
+    }
+
+    public async Task<List<OnlinePluginStatus>?> GetPluginStatuses(IReadOnlyCollection<string> pluginNames)
+    {
+        if (!await CanRequestAsync() || _knownServerVersion < RepositoryProtocol.StatusServerVersion)
+        {
+            return null;
+        }
+
+        var statuses = new List<OnlinePluginStatus>();
+        foreach (string[] chunk in pluginNames.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(RepositoryProtocol.MaxStatusNamesPerRequest))
+        {
+            string query = string.Join("&", chunk.Select(name => $"names={Uri.EscapeDataString(name)}"));
+            string url = _pluginRepositoryConfiguration.BaseUrl + _pluginRepositoryConfiguration.PluginRepositoryLocation + "status?" + query;
+
+            try
+            {
+                using HttpResponseMessage response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.Log($"The plugin repository couldn't say whether installed plugins were removed ({(int)response.StatusCode}).", this, LogType.Warning);
+                    return null;
+                }
+
+                statuses.AddRange(ParseStatuses(await response.Content.ReadAsStringAsync()));
+            }
+            catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException
+                                                  or KeyNotFoundException or InvalidOperationException or FormatException)
+            {
+                _logger.LogException(exception, this);
+                return null;
+            }
+        }
+
+        return statuses;
+    }
+
+    /// <summary>
+    /// Reads <c>plugin/status</c>: a list of <c>{Name, Status, RemovedAt, RemovedBy, Severity, Reason}</c>, with the
+    /// enums as names. Anything this bot doesn't recognise is treated as Unknown, so it never acts on a guess.
+    /// </summary>
+    internal static List<OnlinePluginStatus> ParseStatuses(string json)
+    {
+        using JsonDocument document = JsonDocument.Parse(json);
+        var statuses = new List<OnlinePluginStatus>();
+
+        foreach (JsonElement item in document.RootElement.EnumerateArray())
+        {
+            string name = GetString(item, "Name") ?? throw new FormatException("A plugin status has no name.");
+            string? statusText = GetString(item, "Status");
+            OnlinePluginAvailability availability =
+                statusText is not null && !char.IsDigit(statusText.FirstOrDefault())
+                && Enum.TryParse(statusText, true, out OnlinePluginAvailability parsedStatus) && Enum.IsDefined(parsedStatus)
+                    ? parsedStatus
+                    : OnlinePluginAvailability.Unknown;
+
+            PluginRemovalNotice? removal = null;
+            if (availability == OnlinePluginAvailability.Removed)
+            {
+                // A severity this bot doesn't know is newer than it, so it's taken as the most serious one it knows
+                string? severityText = GetString(item, "Severity");
+                PluginRemovalSeverity severity = severityText is not null && !char.IsDigit(severityText.FirstOrDefault())
+                    && Enum.TryParse(severityText, true, out PluginRemovalSeverity parsed) && Enum.IsDefined(parsed)
+                    ? parsed
+                    : PluginRemovalSeverity.Critical;
+                DateTimeOffset? removedAt = DateTimeOffset.TryParse(GetString(item, "RemovedAt"), out DateTimeOffset at) ? at : null;
+                bool byAdministrator = string.Equals(GetString(item, "RemovedBy"), "Administrator", StringComparison.OrdinalIgnoreCase);
+                removal = new PluginRemovalNotice(removedAt, byAdministrator, severity, GetString(item, "Reason"));
+            }
+
+            statuses.Add(new OnlinePluginStatus(name, availability, removal));
+        }
+
+        return statuses;
+    }
+
+    private static string? GetString(JsonElement item, string property)
+    {
+        foreach (JsonProperty candidate in item.EnumerateObject())
+        {
+            if (string.Equals(candidate.Name, property, StringComparison.OrdinalIgnoreCase))
+            {
+                return candidate.Value.ValueKind == JsonValueKind.String ? candidate.Value.GetString() : null;
+            }
+        }
+
+        return null;
     }
 
     private async Task<bool> CanRequestAsync() =>

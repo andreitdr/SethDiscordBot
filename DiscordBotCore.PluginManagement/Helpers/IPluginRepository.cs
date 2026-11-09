@@ -28,4 +28,10 @@ public interface IPluginRepository
     /// </summary>
     public Task<RepositoryCompatibility> CheckCompatibilityAsync(bool recheck = false);
 
+    /// <summary>
+    /// Whether these installed plugins are still in the repository, or were removed from it (and how seriously).
+    /// Null when the repository couldn't answer, including a repository too old to know (protocol below 4).
+    /// </summary>
+    public Task<List<OnlinePluginStatus>?> GetPluginStatuses(IReadOnlyCollection<string> pluginNames);
+
 }

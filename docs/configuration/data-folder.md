@@ -42,7 +42,13 @@ CREATE TABLE Plugins (
     version TEXT NOT NULL,                     -- major.minor.patch
     file_path TEXT NOT NULL,                   -- path of the DLL
     is_offline_added INTEGER NOT NULL DEFAULT 0, -- 1 = added from a local file
-    is_enabled INTEGER NOT NULL DEFAULT 1
+    is_enabled INTEGER NOT NULL DEFAULT 1,
+    -- Set when the repository said the plugin was removed from it (see Managing plugins). Added to older databases on start.
+    removed_at TEXT,                           -- ISO 8601
+    removal_severity TEXT,                     -- Notice, Warning or Critical; NULL = not removed
+    removal_reason TEXT,
+    acknowledged_removal_severity TEXT,        -- the notice the owner chose to keep the plugin despite
+    removed_by_admin INTEGER                   -- 1 = removed by the marketplace's administrator
 );
 
 CREATE TABLE Dependencies (                    -- executable dependencies of marketplace plugins

@@ -28,6 +28,18 @@
         </RadzenAlert>
     }
 
+    @foreach (LocalPlugin removed in Catalog.RemovedFromMarketplace)
+    {
+        <RadzenAlert AlertStyle="@(removed.RemovalNotice!.DisablesPlugin ? AlertStyle.Danger : AlertStyle.Warning)" Variant="Variant.Flat"
+                     Shade="Shade.Lighter" AllowClose="false" Size="AlertSize.Small">
+            @removed.RemovalNotice!.Describe(removed.PluginName)
+            @if (removed.IsDisabledByRemoval)
+            {
+                <text> It's turned off. Turn it back on only if you trust it.</text>
+            }
+        </RadzenAlert>
+    }
+
     @if (!Catalog.InstalledLoaded)
     {
         <div class="panel-loading"><RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small"/></div>
@@ -44,7 +56,14 @@
                         EmptyText="No plugins match the filter.">
             <Columns>
                 <RadzenDataGridColumn TItem="LocalPlugin" Property="PluginName" Title="Name">
-                    <Template Context="p"><span class="cell-strong">@p.PluginName</span></Template>
+                    <Template Context="p">
+                        <span class="cell-strong">@p.PluginName</span>
+                        @if (p.RemovalNotice is { } notice)
+                        {
+                            <RadzenBadge Text="@($"Removed: {notice.Severity}")" Variant="Variant.Flat" title="@notice.Describe(p.PluginName)"
+                                         BadgeStyle="@(notice.Severity switch { PluginRemovalSeverity.Critical => BadgeStyle.Danger, PluginRemovalSeverity.Warning => BadgeStyle.Warning, _ => BadgeStyle.Info })"/>
+                        }
+                    </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="LocalPlugin" Property="PluginVersion" Title="Version" Width="100px"/>
                 <RadzenDataGridColumn TItem="LocalPlugin" Property="IsOfflineAdded" Title="Source" Width="110px">
@@ -61,7 +80,7 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="LocalPlugin" Title="" Width="96px" Sortable="false" TextAlign="TextAlign.End">
                     <Template Context="p">
-                        @if (!p.IsOfflineAdded)
+                        @if (!p.IsOfflineAdded && p.RemovalNotice is null)
                         {
                             <RadzenButton Icon="info" ButtonStyle="ButtonStyle.Base" Variant="Variant.Text" Size="ButtonSize.ExtraSmall"
                                           title="Details" aria-label="@($"Details for {p.PluginName}")" Click="() => ShowDetails(p)"/>
@@ -89,6 +108,17 @@
 
     private async Task SetEnabled(LocalPlugin plugin, bool enabled)
     {
+        // Turning on a plugin removed from the marketplace keeps it despite the notice, so say what that means first
+        if (enabled && plugin.RemovalNotice is { } notice && !(plugin.AcknowledgedRemovalSeverity >= notice.Severity))
+        {
+            string message = notice.Describe(plugin.PluginName) + " Turn it on anyway? You won't be asked again for this notice.";
+            if (!await ConfirmAsync(message, "Plugin removed from the marketplace", "Turn on anyway", destructive: notice.DisablesPlugin))
+            {
+                await Catalog.RefreshInstalledAsync();
+                return;
+            }
+        }
+
         _Busy.Add(plugin.PluginName);
         try
         {
